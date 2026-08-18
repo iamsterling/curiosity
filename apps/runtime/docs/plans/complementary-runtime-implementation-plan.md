@@ -14,7 +14,8 @@ publishing or deployment authority. On 2026-08-18 ADRs
 [0025](../decisions/0025-m2-initial-local-test-snapshot.md),
 [0026](../decisions/0026-m2-foundational-durable-state-boundary.md), and
 [0027](../decisions/0027-m2-contract-abi-and-authority.md) accepted D4/D5 and
-authorized bounded M2 only. They grant no M3–M7 authority.
+authorized bounded M2 only. Later ADRs independently close M3–M7 only within
+the exact scopes summarized below.
 
 ## 1. Purpose and fixed framing
 
@@ -49,10 +50,16 @@ phase and all dependent phases. Completing this planning document grants no
 | D5 foundational durable-state boundary | **Accepted for bounded dependency-free M2** in ADR 0026 | Events, dependencies, migrations, and production durability remain unauthorized. |
 | D5A / M4 | **Accepted for one operation; GO** in ADRs 0034/0037 | No generic scheduler, daemon, or additional operation is authorized. |
 | Repository-only D6 and D7 / M6 cell | **Accepted for exact local synthetic cell; repository GO** in ADRs 0035/0036/0038 | Public/production crawl remains NO-GO; ADR 0021 remains proposed for any broader plane. |
+| Private M7 Darwin arm64 profile | **Accepted for the exact immutable private archive only** in ADRs 0039/0040 | Source is `0dfc71d`; ADR 0040 is a later documentation commit, not artifact source. Production/public, M5-live, M6-crawl, publication/signing/notarization, and other platforms remain NO-GO. |
 | This implementation plan | Planning artifact only | May be reviewed and revised; authorizes no code, manifests, packages, network calls, corpus work, or deployment. |
 
-WP0/M1–M4 are closed under their recorded ADRs; M5 and the exact repository M6
-cell have repository GO. Broader/public M6 and all M7 remain blocked.
+WP0/M1–M3 are closed under their recorded bounds; M4 is closed only for
+`build_owned_crawl_snapshot`; M5 has repository GO only; M6 is closed only for
+the exact local project-CA synthetic cell; and M7 is closed only for ADR 0040's
+private Darwin arm64 archive. This is M1–M7 repository/private-profile
+completion, not production authority. Broader/public M6, M5-live,
+production/public deployment, publication, signing, notarization, and all other
+platforms remain blocked.
 
 ## 3. Planning acceptance checks
 
@@ -416,24 +423,38 @@ or expansion outruns measured quality, rights, capacity, deletion, or rollback.
 **Depends on:** an accepted deployment ADR selecting a topology; approved
 artifacts/dependencies; threat model; operations owner; completed rollback and
 restore rehearsals. A local, remote, stdio, socket, or HTTP profile is not chosen
-by this plan.
+by this plan. This is the original planning gate; ADR 0039 later selected only
+the private foreground profile, and ADR 0040 verifies only that selection.
+
+**Status:** `GO` on 2026-08-18 under ADRs 0039 and 0040 for only the immutable,
+private, unpublished Darwin arm64 archive sourced from
+`0dfc71de02393da9aad37bc753724886c00e323c` and hashed
+`3aa8e5ba6660cafefb3d3121ba1e652346f4019a78922a0ec689b04b32e06642`.
+ADR 0040 is a later documentation commit, not artifact source. This status does
+not select or approve a production deployment topology.
 
 **Acceptance checks:**
 
-- [ ] Signed/versioned artifacts and complete dependency/platform manifests are
-  reproducible and verified.
-- [ ] Process/port/socket owner, paths, least privilege, credential lifecycle,
+- [x] The exact private, unsigned versioned artifact and complete
+  dependency/platform manifests are reproducible and verified; signing remains
+  a separate blocked publication gate.
+- [x] Process/port/socket owner, paths, least privilege, credential lifecycle,
   readiness, compatibility probes, resource limits, patching, and supervision
   are explicit.
-- [ ] Upgrade preflight, schema/API/adapter compatibility, rollback,
-  backup/restore, projection rebuild, and credential revocation are rehearsed.
-- [ ] Install and uninstall never silently fetch, crawl, retain, migrate, or
+- [x] Upgrade preflight, schema/API/adapter compatibility, rollback,
+  and state-preserving lifecycle are rehearsed. The artifact does not own
+  backup/restore, projection rebuild, or credential revocation; those remain
+  operator/state responsibilities and no broader rehearsal is claimed.
+- [x] Install and uninstall never silently fetch, crawl, retain, migrate, or
   delete corpus, quarantine, backups, logs, credentials, or configuration.
-- [ ] Production smoke tests are opt-in, authenticated, bounded, and separated
-  from deterministic CI.
+- [x] Private-host smoke tests are opt-in, authenticated, bounded, and separated
+  from deterministic CI. No production smoke or production deployment is
+  authorized.
 
-**GO:** release and deployment approvals identify the exact profile, immutable
-before-state, artifact digests, owner, and rollback target.
+**GO (2026-08-18):** ADR 0040 records all checks passing for the exact private
+profile, immutable source/archive digest, owner, lifecycle, and rollback target.
+Production/public, M5-live, M6-crawl, publication, signing, notarization, and
+other-platform gates remain NO-GO.
 
 **STOP:** deployment is inferred from local development, rollback is untested,
 or any production mutation lacks separately reviewed authority.
@@ -577,7 +598,9 @@ implementation diff. ADR 0020 remains authoritative throughout. ADRs 0021 and
    any dependency record pass D8?
 7. Who can grant explicit M2 implementation authority after D4, D5, and any
    applicable D8 approvals, and what exact bounded M2 scope would it name?
-8. Which deployment topology and supervisor, if any, are approved for M7?
+8. **Resolved only for the ADR 0039/0040 private foreground Darwin arm64
+   profile.** Which production topology and supervisor, if any, could be
+   approved remains blocking for production deployment.
 
 ### Nonblocking for M1, blocking when the named capability appears
 

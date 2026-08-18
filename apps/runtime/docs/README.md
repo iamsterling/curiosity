@@ -24,6 +24,7 @@
 - **Accepted (exact synthetic cell):** [ADR 0036: M6 owned-cell D7](decisions/0036-m6-owned-synthetic-cell-d7.md)
 - **Accepted (M4 GO):** [ADR 0037: M4 verification](decisions/0037-m4-verification-and-go.md)
 - **Accepted (repository GO; production/public NO-GO):** [ADR 0038: M6 verification](decisions/0038-m6-verification-and-repository-go.md)
+- **Accepted (exact private Darwin arm64 profile GO; all broader release gates NO-GO):** [ADR 0039: private local release profile](decisions/0039-private-local-darwin-arm64-release-profile.md) and [ADR 0040: M7 verification](decisions/0040-m7-private-profile-verification-and-go.md)
 - **Proposed:** [ADR 0021: stage an owned public-web search plane](decisions/0021-owned-public-web-search.md)
 - **Proposed:** [ADR 0022: installable local-first search runtime](decisions/0022-installable-search-runtime.md)
 
@@ -32,12 +33,15 @@
 - [D4 candidate snapshot manifest schema](schemas/d4-candidate-snapshot-manifest.schema.json)
 - [Canonical-file state design](design/canonical-file-state.md)
 
-ADRs 0025–0028 accept bounded dependency-free M2. ADRs 0029–0030 add the private
-query package and M3 adapter boundary. ADRs 0031–0032 authorize only the bounded
-M5 repository adapter; production, M4, M6, M7, crawl, generic fetch, packaging,
-  publication, and deployment remain NO-GO. ADRs 0034–0038 additionally accept
-  one M4 operation and one exact repository-only M6 synthetic cell; public and
-  production crawl remain NO-GO.
+M1–M3 have bounded repository completion under ADRs 0023–0030. ADRs 0031–0033
+close only the M5 repository adapter. ADRs 0034/0037 close M4 for exactly
+`build_owned_crawl_snapshot`; ADRs 0035/0036/0038 close M6 for only the fixed
+local project-CA synthetic cell. ADRs 0039/0040 close M7 only for the immutable
+private Darwin arm64 archive bound to source commit `0dfc71d`; ADR 0040 is a
+later documentation commit, not the artifact source. Thus M1–M7 repository or
+exact private-profile work is complete only within those scopes. Production and
+public deployment, M5-live, M6-crawl, generic fetch/public crawl, publication,
+signing, notarization, and all other platforms remain NO-GO.
 
 ## Research
 

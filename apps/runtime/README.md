@@ -3,8 +3,9 @@
 Private, independent home for Curiosity web-search and retrieval architecture,
 provider evaluation, deployment research, benchmarking records, and the
 authorized M1 runtime, bounded M2 local corpus projection, M3 query package,
-repository-only M5 gateway capability, one M4 admin job, and the exact local M6
-synthetic cell.
+repository-only M5 gateway capability, the M4 `build_owned_crawl_snapshot`
+operation, the exact local M6 synthetic cell, and the exact private M7 Darwin
+arm64 release profile.
 
 The dependency-free Rust core and in-process Bun shim live here under ADRs 0023
 and 0027. ADR 0024 records M1 `GO`; ADRs 0025–0027 accept only the repository
@@ -40,7 +41,10 @@ stated bounds. ADRs 0021 and 0022 remain **Proposed**. M5 authorizes one fixed
 repository adapter in source; production provider use remains NO-GO. Nothing
   authorizes generic/public crawling, generic fetch, publication, or production
   deployment. ADRs 0034–0038 authorize only the fixed local project-CA M6 cell;
-  ADR 0039 authorizes only a private, single-machine Darwin arm64 archive profile.
+  ADR 0039 authorizes only a private, single-machine Darwin arm64 archive profile;
+  ADR 0040 records GO for the archive from source commit `0dfc71d` with SHA-256
+  `3aa8e5ba6660cafefb3d3121ba1e652346f4019a78922a0ec689b04b32e06642`.
+  ADR 0040 is a later documentation commit and is not the artifact source.
 
 M4/M6 administration is isolated at `@curiosity/runtime/admin`; the query
 package exports no admin operation. Callers must invoke foreground `runNext`.
@@ -62,8 +66,10 @@ archive, generated-script, and lifecycle tests. `bun run m7:build` is intentiona
 usable only after the reviewed changes are committed and the worktree is clean;
 it produces a deterministic `m7-<commit>.tar.gz`. Extract with
 `bun tools/m7-release.mjs extract ARCHIVE DESTINATION`, then invoke the staged
-scripts directly. Full artifact and lifecycle acceptance remains a post-commit
-gate documented by ADR 0039; it is not a publication or production deployment.
+scripts directly. ADR 0040 records full artifact and lifecycle acceptance for
+that immutable source/archive pair. This completes M1–M7
+repository/private-profile work only: production/public, M5-live, M6-crawl,
+publication, signing, notarization, and other-platform gates remain NO-GO.
 
 ## M2 use
 
