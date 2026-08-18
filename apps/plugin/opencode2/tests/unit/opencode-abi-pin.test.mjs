@@ -11,11 +11,12 @@ const json = async (file) => JSON.parse((await readFile(file, "utf8")).replace(/
 test("OpenCode host, plugin SDK, installed packages, and lockfile share the reviewed ABI pin", async () => {
   const workspaceRoot = await findWorkspaceRoot(root)
   const workspacePackage = path.relative(workspaceRoot, root).split(path.sep).join("/")
-  const [pkg, lock, plugin, cli, realHost] = await Promise.all([
+  const [pkg, lock, plugin, cli, effect, realHost] = await Promise.all([
     json(path.join(root, "package.json")),
     json(path.join(workspaceRoot, "bun.lock")),
     json(path.join(root, "node_modules/@opencode-ai/plugin/package.json")),
     json(path.join(root, "node_modules/@opencode-ai/cli/package.json")),
+    json(path.join(root, "node_modules/effect/package.json")),
     readFile(new URL("../../src/platform/real-host/index.ts", import.meta.url), "utf8"),
   ])
 
@@ -25,5 +26,11 @@ test("OpenCode host, plugin SDK, installed packages, and lockfile share the revi
   assert.equal(lock.workspaces[workspacePackage].devDependencies["@opencode-ai/cli"], expected)
   assert.equal(plugin.version, expected)
   assert.equal(cli.version, expected)
+  assert.equal(pkg.devDependencies["@types/node"], "26.2.0")
+  assert.equal(lock.workspaces[workspacePackage].devDependencies["@types/node"], "26.2.0")
+  assert.equal(pkg.dependencies.effect, "4.0.0-beta.101")
+  assert.equal(lock.workspaces[workspacePackage].dependencies.effect, "4.0.0-beta.101")
+  assert.equal(plugin.dependencies.effect, "4.0.0-beta.101")
+  assert.equal(effect.version, "4.0.0-beta.101")
   assert.match(realHost, new RegExp(`PINNED_REAL_HOST_VERSION = ${JSON.stringify(expected)}`))
 })

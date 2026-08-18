@@ -1,4 +1,4 @@
-# ADR 0024 provenance stub: durable Ledger v2 and capture authority
+# Moved provenance stub: durable Ledger v2 and capture authority
 
 **Status:** Moved — 2026-08-18
 

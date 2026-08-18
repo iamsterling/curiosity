@@ -1,4 +1,4 @@
-# ADR 0023: unified retrieval and validated memory evidence substrate
+# ADR 0041: unified retrieval and validated memory evidence substrate
 
 **Status:** Accepted 2026-08-18; not implementation authority
 

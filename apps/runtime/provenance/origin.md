@@ -28,7 +28,7 @@ no third-party source code was transferred.
 On 2026-08-18, ADR 0024's durability design was moved while Proposed to
 [`apps/plugin/opencode2`](../../plugin/opencode2/docs/decisions/0024-durable-ledger-v2-and-capture-authority.md),
 beside the Ledger architecture it governs. The runtime path retains a
-[Moved provenance stub](../docs/decisions/0024-durable-ledger-v2-and-capture-authority.md).
+[Moved provenance stub](../docs/decisions/moved-durable-ledger-v2-and-capture-authority.md).
 The canonical design was accepted on 2026-08-18. Acceptance is design approval
 only; implementation and production authority/persistence remain blocked on its
 gates.

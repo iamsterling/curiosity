@@ -1,0 +1,6 @@
+User-agent: CuriosityM6
+Allow: /
+Disallow: /controlled/denied
+
+User-agent: *
+Disallow: /

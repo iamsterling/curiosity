@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "1.0.0",
+  "cellId": "m6-owned-observatory-support",
+  "cellVersion": "1.0.0",
+  "language": "en-US",
+  "region": "US",
+  "vertical": "project-authored fictional observatory technical-support docs",
+  "logicalOrigin": "https://docs.m6-owned.test",
+  "documentCount": 8,
+  "rights": {
+    "dedication": "CC0-1.0",
+    "scope": "Only rights controlled by the requester/project owner",
+    "distributionPermitted": true
+  },
+  "provenance": {
+    "author": "project owner with AI assistance",
+    "limitations": "No claim about provider training data, exclusivity, originality, or uncontrolled rights"
+  },
+  "authorization": {
+    "d6": "repository-local-project-CA-only",
+    "d7": "exact-synthetic-cell-only",
+    "productionPublicCrawl": "NO-GO"
+  },
+  "documents": [
+    {
+      "path": "site/alerts.html",
+      "url": "https://docs.m6-owned.test/alerts.html",
+      "mediaType": "text/html; charset=utf-8",
+      "byteLength": 262,
+      "sha256": "73b44dd34e4d71a52de282bc150a2670228acb24939a8b2100ae7e505a270542"
+    },
+    {
+      "path": "site/calibrate.html",
+      "url": "https://docs.m6-owned.test/calibrate.html",
+      "mediaType": "text/html; charset=utf-8",
+      "byteLength": 289,
+      "sha256": "e1be06450458fcdbce9e89cc640cc2a4f2c0830f97d95cc03867ad3173043972"
+    },
+    {
+      "path": "site/glossary.txt",
+      "url": "https://docs.m6-owned.test/glossary.txt",
+      "mediaType": "text/plain; charset=utf-8",
+      "byteLength": 136,
+      "sha256": "41e1af10689c76a7a1b65c8add793077485a053657aecb739a51847e9c103314"
+    },
+    {
+      "path": "site/index.html",
+      "url": "https://docs.m6-owned.test/",
+      "mediaType": "text/html; charset=utf-8",
+      "byteLength": 497,
+      "sha256": "a366d3c788d4c44a0f65f602a541ebab0353ce5e98189468da19c9bc1d2131a7"
+    },
+    {
+      "path": "site/install.html",
+      "url": "https://docs.m6-owned.test/install.html",
+      "mediaType": "text/html; charset=utf-8",
+      "byteLength": 295,
+      "sha256": "51096cfd44c848e407533e36a857c14ab85b102279e3a0824a01f5ed8fc100a9"
+    },
+    {
+      "path": "site/maintenance.html",
+      "url": "https://docs.m6-owned.test/maintenance.html",
+      "mediaType": "text/html; charset=utf-8",
+      "byteLength": 271,
+      "sha256": "efece14b886f5c9a408e6b0e24e00ea26d199730e089c750461f87ae5accbc11"
+    },
+    {
+      "path": "site/network.html",
+      "url": "https://docs.m6-owned.test/network.html",
+      "mediaType": "text/html; charset=utf-8",
+      "byteLength": 276,
+      "sha256": "508395978c137f6458910422a4ee088d82e6196db30e2926f7747809a7d3a6bc"
+    },
+    {
+      "path": "site/troubleshoot.html",
+      "url": "https://docs.m6-owned.test/troubleshoot.html",
+      "mediaType": "text/html; charset=utf-8",
+      "byteLength": 279,
+      "sha256": "3a51abe408e897f15e839b38a70f41256704826bb0867090e4658794d7eda1e0"
+    }
+  ],
+  "robots_txtSha256": "db123a232da84d0974b32b4e286ea56025f29212c49f8f1e1ba0d77a24f52027",
+  "controlled-routes_jsonSha256": "5576485e0c574873e3de780707d0abadcc302b51ff9d928b784b022b5f4ac9f9",
+  "qrels_jsonSha256": "0d2666021bd071496694479d9f7b648efb766b82af3fe86aaa6c7390056ae018",
+  "aggregateSha256": "c5cb2343ce5e17cb83015a5543885a96beedec205555ec267130d9d0ff9ebf4c"
+}

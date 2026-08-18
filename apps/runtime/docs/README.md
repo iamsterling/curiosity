@@ -1,14 +1,54 @@
 # Architecture and research index
 
+## Plans
+
+- [Complementary runtime implementation plan](plans/complementary-runtime-implementation-plan.md)
+  — planning artifact only; it does not authorize implementation or deployment
+
 ## Decisions
 
 - **Accepted:** [ADR 0020: provider-neutral bounded web search](decisions/0020-provider-neutral-web-search.md)
+- **Accepted:** [ADR 0023: stateless M1 Rust core and Bun shim](decisions/0023-stateless-m1-runtime.md)
+- **Accepted:** [ADR 0024: M1 verification and GO](decisions/0024-m1-verification-and-go.md)
+- **Accepted:** [ADR 0025: M2 initial local test snapshot](decisions/0025-m2-initial-local-test-snapshot.md)
+- **Accepted:** [ADR 0026: M2 foundational durable-state boundary](decisions/0026-m2-foundational-durable-state-boundary.md)
+- **Accepted:** [ADR 0027: M2 contract, ABI, and authority](decisions/0027-m2-contract-abi-and-authority.md)
+- **Accepted:** [ADR 0028: M2 verification and GO](decisions/0028-m2-verification-and-go.md)
+- **Accepted:** [ADR 0029: M3 query authority and source contract](decisions/0029-m3-query-authority-and-source-contract.md)
+- **Accepted:** [ADR 0030: M3 verification and GO](decisions/0030-m3-verification-and-go.md)
+- **Accepted (repository only; production NO-GO):** [ADR 0031: M5 SearXNG gateway D6](decisions/0031-m5-searxng-gateway-d6.md)
+- **Accepted:** [ADR 0032: M5 no-new-dependency D8](decisions/0032-m5-no-new-dependency-d8.md)
+- **Accepted (repository GO; production NO-GO):** [ADR 0033: M5 verification](decisions/0033-m5-verification-and-repository-go.md)
+- **Accepted:** [ADR 0034: M4 D5A owned-crawl jobs](decisions/0034-m4-d5a-owned-crawl-job-semantics.md)
+- **Accepted (repository local only):** [ADR 0035: M6 local fetch D6](decisions/0035-m6-repository-local-fetch-d6.md)
+- **Accepted (exact synthetic cell):** [ADR 0036: M6 owned-cell D7](decisions/0036-m6-owned-synthetic-cell-d7.md)
+- **Accepted (M4 GO):** [ADR 0037: M4 verification](decisions/0037-m4-verification-and-go.md)
+- **Accepted (repository GO; production/public NO-GO):** [ADR 0038: M6 verification](decisions/0038-m6-verification-and-repository-go.md)
+- **Accepted (exact private Darwin arm64 profile GO; all broader release gates NO-GO):** [ADR 0039: private local release profile](decisions/0039-private-local-darwin-arm64-release-profile.md) and [ADR 0040: M7 verification](decisions/0040-m7-private-profile-verification-and-go.md)
 - **Proposed:** [ADR 0021: stage an owned public-web search plane](decisions/0021-owned-public-web-search.md)
 - **Proposed:** [ADR 0022: installable local-first search runtime](decisions/0022-installable-search-runtime.md)
-- **Accepted:** [ADR 0023: unified retrieval and validated memory evidence substrate](decisions/0023-unified-retrieval-memory-evidence-substrate.md)
+- **Accepted (design only; not implementation authority):** [ADR 0041: unified retrieval and validated memory evidence substrate](decisions/0041-unified-retrieval-memory-evidence-substrate.md)
 - **Moved / Accepted at canonical location:** [ADR 0024: durable Ledger v2 and
   capture authority](../../plugin/opencode2/docs/decisions/0024-durable-ledger-v2-and-capture-authority.md)
-  ([provenance stub](decisions/0024-durable-ledger-v2-and-capture-authority.md))
+  ([provenance stub](decisions/moved-durable-ledger-v2-and-capture-authority.md))
+
+## M2 design and schema
+
+- [D4 candidate snapshot manifest schema](schemas/d4-candidate-snapshot-manifest.schema.json)
+- [Canonical-file state design](design/canonical-file-state.md)
+
+M1–M3 have bounded repository completion under ADRs 0023–0030. ADRs 0031–0033
+close only the M5 repository adapter. ADRs 0034/0037 close M4 for exactly
+`build_owned_crawl_snapshot`; ADRs 0035/0036/0038 close M6 for only the fixed
+local project-CA synthetic cell. ADRs 0039/0040 close M7 only for the immutable
+private Darwin arm64 archive bound to source commit `0dfc71d`; ADR 0040 is a
+later documentation commit, not the artifact source. Thus M1–M7 repository or
+exact private-profile work is complete only within those scopes. Production and
+public deployment, M5-live, M6-crawl, generic fetch/public crawl, publication,
+signing, notarization, and all other platforms remain NO-GO.
+ADR 0041 and canonical plugin ADR 0024 add accepted unified-substrate and Ledger
+durability designs only; they do not widen those implementation or production
+authorities.
 
 ## Research
 

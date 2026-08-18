@@ -1,10 +1,11 @@
 # ADR 0016: Darwin real-host confinement oracle
 
-**Status: Proposed, corrected 2026-08-13.** This decision replaces the weak
+**Status: Proposed, corrected 2026-08-18.** This decision replaces the weak
 security oracle described in ADR 0015; it does not claim the current harness
 implements this design. The correction incorporates conflicting exact-host
-evidence: isolated probes observed two rejected catalog attempts, while the
-pinned `/api/plugin` probe with `OPENCODE_DISABLE_MODELS_FETCH=1` observed zero.
+evidence: isolated probes observed two catalog attempts that the proxy rejected,
+while the pinned `/api/plugin` probe with `OPENCODE_DISABLE_MODELS_FETCH=1`
+observed zero, and adopts M7's zero-external-attempt release-smoke invariant.
 
 ## Decision and invariant
 
@@ -31,13 +32,13 @@ rejects `/tmp` outside it. `(deny process-fork)` rejects a shell fork. The exact
 `(deny process-fork)`, so this acceptance path has no demonstrated child-process
 requirement. The existing non-loopback network deny also permits the loopback
 activation path. Prior isolated runtime probes observed two HTTPS proxy `CONNECT`
-attempts to `models.opencode.ai:443`; the controlled proxy rejected both and their
-authority classifies them as catalog metadata rather than provider inference. A
+attempts to `models.opencode.ai:443`; the controlled proxy rejected both. A
 subsequent exact pinned-host `/api/plugin` probe with
-`OPENCODE_DISABLE_MODELS_FETCH=1` observed zero proxy attempts. Attempt count is
-therefore environment-sensitive evidence, not a safety invariant. `/api/model`
-remains an unnecessarily broad activation oracle, while either zero or a finite
-number of rejected catalog attempts can satisfy the narrow `/api/plugin` oracle.
+`OPENCODE_DISABLE_MODELS_FETCH=1` observed zero proxy attempts. The differing
+observations make zero attempts an explicit acceptance invariant rather than an
+environment-sensitive assumption. `/api/model` remains an unnecessarily broad
+activation oracle; the narrow `/api/plugin` release smoke requires zero external
+proxy records.
 
 **Assumption to validate in implementation.** The final literal profile must be
 exercised against both the exact host and adversarial fixtures on every supported
@@ -48,10 +49,8 @@ that a future OS release preserves its behavior.
 
 - the sandbox prevented successful non-loopback network connections during the
   run;
-- the controlled proxy recorded the exact observed attempt count, rejected every
-  observed attempt, and every observed attempt (if any) was a catalog-metadata
-  `CONNECT` to `models.opencode.ai:443`; no provider-inference or
-  unknown-authority attempt was observed;
+- the controlled proxy recorded zero external attempts; any proxy record,
+  including a model-catalog or GitHub request, is a release-smoke failure;
 - the sandbox prevented successful writes outside the disposable root;
 - a complete scan of regular files retained below the root at the scan barrier,
   plus captured stdout/stderr and proxy requests, found no raw Basic secret or
@@ -63,8 +62,8 @@ tree scan proves a file was never created and removed, or that stdout regexes
 prove no model call. Darwin's available unprivileged sandbox interface prevents
 network success but does not provide a complete per-attempt audit stream. The
 report therefore separates `successfulExternalEgressPrevented: true` from the
-observed rejected-proxy-attempt count, which may be zero; it never translates a
-zero proxy count into `allAttempts: 0` or `noNetworkAttempts: true`.
+required zero observed proxy records; it never translates a zero proxy count
+into proof that no direct denied network attempt occurred.
 
 ## Enforceable probe design
 
@@ -102,39 +101,45 @@ write fails acceptance.
 The controller sets only an allowlisted environment: `PATH`, isolated `HOME`,
 `XDG_CONFIG_HOME`, `XDG_DATA_HOME`, `XDG_CACHE_HOME`,
 `OPENCODE_CONFIG_DIR`, `OPENCODE_CONFIG_CONTENT`, `OPENCODE_PASSWORD`,
-`OPENCODE_DISABLE_MODELS_FETCH=1`, `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`, and
+`OPENCODE_CONFIG_PROJECT_DISABLE=1`, `OPENCODE_DISABLE_MODELS_FETCH=1`,
+`OPENCODE_DISABLE_FFF=1`, `HTTP_PROXY`, `HTTPS_PROXY`, `ALL_PROXY`, and
 `NO_PROXY=127.0.0.1,localhost`. The fetch-disable setting is retained but is not
 represented as proof of zero traffic: exact-host observations differ across
 probe environments. The controller does not spread `process.env`; provider,
 cloud, git, npm, SSH-agent, and system proxy variables are absent. The three
 proxy variables point to a controller-owned loopback HTTP canary that records
 method, authority, and path but never headers or bodies. Unknown proxy protocol,
-or any request is an observed outbound attempt and fails except for the catalog
-classification below. Zero or more `CONNECT` records whose normalized authority
-is exactly `models.opencode.ai:443` may be classified
-`catalog-metadata/expected-rejected`, provided the proxy rejected every one and
-the report states the observed count. Any other method or authority,
-including a model provider or inference endpoint, fails with
-`REAL_HOST_EXTERNAL_ATTEMPT_OBSERVED`; an unclassifiable authority fails with
-`REAL_HOST_UNKNOWN_AUTHORITY_ATTEMPT`. The proxy never tunnels an accepted
-`CONNECT` or forwards any request. Direct non-loopback traffic remains impossible
-even if the runtime ignores proxy variables.
+or any request is an observed outbound attempt and fails with
+`REAL_HOST_EXTERNAL_ATTEMPT_OBSERVED`. There is no authority exception: models,
+GitHub, provider, inference, and unknown-authority records all fail release
+smoke. The proxy never tunnels an accepted `CONNECT` or forwards any request.
+Direct non-loopback traffic remains impossible even if the runtime ignores proxy
+variables.
 
-The authority exception is an evidence-classification allowlist, not a network
-allowlist: it permits acceptance of finite, fully recorded *rejected* catalog
-records and permits no successful external connection. Catalog metadata
-enumerates available models; it neither authenticates to a provider nor submits
-an inference request.
-No provider credentials are present, and any inference-classified attempt fails
-regardless of whether the sandbox or proxy rejects it.
+The exact-host fixture copies the approved ripgrep 15.1.0 Darwin arm64 binary
+(SHA-256
+`4fdf1d8365af224bc70e3c1490d8461d859c37cc70e739a11e987af0215f3e94`)
+from `/Users/sterling/.cache/opencode/bin/rg`, verifies its version,
+architecture, hash, and system-only links, and sets PATH to only artifact
+`bin`, `/usr/bin`, and `/bin`. Repeated clean runs require zero GitHub, model,
+provider, or inference proxy attempts.
 
-There is no semantic catalog-attempt ceiling: no defensible numeric safety budget
-has been measured. The scenario must nevertheless complete within the suite's
-declared deadline, and the recorder must fail closed if its configured evidence
-capacity is exhausted. Timeout or evidence truncation is a failed/inconclusive
-probe, never an accepted unbounded stream. Any future numeric capacity is an
-operational resource bound that must be justified by measured runtime behavior;
-it is not an expected catalog count.
+Rejected records do not satisfy the invariant: any recorded external attempt is
+a release-smoke failure even though the proxy permits no successful external
+connection. No provider credentials are present.
+
+Internal negative probes use a fresh 256-bit nonce in their generated wrapper.
+Import, setup, and duplicate wrappers append exactly one nonce-bound failure
+condition; the harness maps it to `REAL_HOST_TEST_IMPORT_FAILED`,
+`REAL_HOST_TEST_SETUP_FAILED`, or `REAL_HOST_TEST_DUPLICATE_FAILED`, kills and
+reaps the isolated process group, and removes the disposable root. Tests match
+the specific code, a bounded duration, and the recorded PID's non-survival.
+These test-only codes are not exposed by public artifact diagnostics.
+
+The scenario must complete within the suite's declared deadline, and the recorder
+must fail closed if its configured evidence capacity is exhausted. Timeout or
+evidence truncation is a failed/inconclusive probe. Any future numeric capacity
+is only an operational resource bound, never an attempt allowance.
 
 The unpredictable Basic password exists only in controller memory and the child
 environment. Before any diagnostic is serialized, the controller scans raw
@@ -184,13 +189,15 @@ The public result is JSON-shaped and secret-free:
 ```text
 activation: { method: "GET", path: "/api/plugin",
               query: { "location[directory]": "<disposable-project>" },
-              authenticated: true }
+              authenticated: true, source: "OPENCODE_CONFIG_CONTENT",
+              projectConfig: false }
 network: { successfulExternalEgressPrevented: true,
            successfulExternalEgressCount: 0,
-           observedProxyAttempts: N,
+           observedProxyAttempts: 0,
            catalogMetadata: { method: "CONNECT",
                               authority: "models.opencode.ai:443",
-                              disposition: "rejected", attempts: N },
+                              disposition: "rejected", attempts: 0 },
+           modelCatalogAttempts: 0, githubAttempts: 0,
            providerInferenceAttempts: 0, successfulInferenceCount: 0,
            unknownAuthorityAttempts: 0 }
 filesystem: { outsideWritesPrevented: true, retainedFilesScanned: N }
@@ -202,28 +209,33 @@ fixtures: { network: "caught", proxy: "caught", outsideWrite: "caught",
             secretPersistence: "caught", detachedChild: "caught" }
 ```
 
+`source` is the literal configuration source used to activate the copied plugin,
+and `projectConfig: false` confirms project configuration was disabled.
+`catalogMetadata` describes the only catalog attempt classification: fixed
+`CONNECT`, authority, and rejected disposition strings plus a numeric `attempts`
+count equal to both `observedProxyAttempts` and `modelCatalogAttempts`. Acceptance
+requires all three counts to be zero; `githubAttempts` remains a separate numeric
+counter that must also be zero.
+
 Acceptance is binary:
 
 1. Darwin and `sandbox-exec` are required; unsupported platforms fail with
    `REAL_HOST_DARWIN_SANDBOX_REQUIRED`, not a weaker fallback.
 2. The exact pinned copied artifact completes activation, registration, tool,
    and cleanup assertions under the literal final profile.
-3. All fixture qualification results are `caught`; the exact host reports its
-   observed proxy count, every observed record (zero or more) is a rejected
-   `CONNECT` for exactly `models.opencode.ai:443`, and the catalog count equals
-   the total observed-proxy count. It has zero successful external egress, zero
-   provider/inference attempts, zero unknown-authority attempts, and zero retained
-   secret matches. Any method, authority, disposition, accounting mismatch,
-   timeout, or recorder-capacity exhaustion fails closed; count variation alone
-   does not.
+3. All fixture qualification results are `caught`; the exact host has zero proxy
+   records, zero successful external egress, zero model-catalog, GitHub,
+   provider/inference, and unknown-authority attempts, and zero retained secret
+   matches. Any proxy record, method, authority, disposition, accounting
+   mismatch, timeout, or recorder-capacity exhaustion fails closed.
 4. The controller deletes the root and sibling fixture canaries in `finally`.
 5. `bun run test:unit`, `bun run test:security`, `bun run test:real-host`, and
    `bun run verify` pass without global mutation.
 
 ## Alternatives considered
 
-1. **Inherited sandbox plus exact-authority rejected-catalog classification and fork
-   denial (selected).** This
+1. **Inherited sandbox plus zero-record proxy assertion and fork denial
+   (selected).** This
    is plausible because it gives kernel-enforced network/write/process boundaries
    while retaining useful attempt evidence. It loses complete attempt
    observability: direct denied connections are prevented but not exhaustively
@@ -246,16 +258,16 @@ Acceptance is binary:
   tree, and PID security conclusions with a shared sandbox runner, allowlisted
   environment, in-memory proxy, scan barrier, and the evidence schema above.
 - `tools/lib/darwin-real-host-guard.mjs` (new): canonical-root/profile builder,
-  sandbox availability self-test, controlled-proxy recorder, exact authority and
-  disposition classifier, byte scanner, and detached-group finalizer. It exports
+  sandbox availability self-test, controlled-proxy recorder, zero-record
+  assertion, byte scanner, and detached-group finalizer. It exports
   testable policy functions, not secrets.
 - `tests/fixtures/real-host-adversary.mjs` (new): the four fixture modes; no
   production import and no behavior selected by the production plugin.
 - `tests/security/darwin-real-host-guard.test.mjs` (new, Darwin-gated): benign
   controls, each malicious fixture, symlink escape, scanner race/unreadable-file
-  fail-closed cases, zero- and two-catalog-attempt acceptance, non-catalog method
-  and authority rejection, timeout/capacity failure, and mutation tests proving
-  each guard is discriminating.
+  fail-closed cases, zero-attempt acceptance, model-catalog, GitHub, provider,
+  method, and authority rejection, timeout/capacity failure, and mutation tests
+  proving each guard is discriminating.
 - `tests/unit/real-host-suite.test.mjs`: evidence-schema and stable-code tests;
   delete assertions that infer security from output regexes or PID snapshots.
 - `docs/operations/real-host-probes.md` and ADR 0015: remain Proposed pending
@@ -274,16 +286,16 @@ bun run verify
 ## Pre-mortem, revisit triggers, and non-goals
 
 Likely failures are sandbox syntax drift (fixture controls stop discriminating),
-an exact-host child requirement (serve fails with fork denial), catalog authority
-or method drift (classification fails closed), proxy bypass (still prevented, but
+an exact-host child requirement (serve fails with fork denial), an unexpected
+external attempt (release smoke fails), proxy bypass (still prevented, but
 no attempt record), secret material written then deleted (outside the
 retained-content claim), or scanner races (fail closed). A residual contradiction
 remains: `OPENCODE_DISABLE_MODELS_FETCH=1` coincided with zero attempts in the
 exact-host run but does not explain the prior two-attempt observations. Revisit
 on any Darwin version change in CI, removal/behavior change of `sandbox-exec`,
-host pin or packaged source-map
-change, a change in catalog authority or method, measured evidence that justifies
-an operational capacity, resolution of the fetch-setting contradiction,
+host pin or packaged source-map change, any recurring external attempt, measured
+evidence that justifies an operational capacity, resolution of the
+fetch-setting contradiction,
 demonstrated host child requirement, or a release
 requirement for complete denied-attempt telemetry.
 

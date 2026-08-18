@@ -1,0 +1,7 @@
+CC0 1.0 Universal reference: https://creativecommons.org/publicdomain/zero/1.0/legalcode
+
+To the extent the project owner controls copyright and related rights in this
+fixture, the project owner dedicates those rights under CC0 1.0 Universal.
+This dedication does not claim copyrightability, originality, exclusive
+ownership, third-party rights, or rights controlled by an AI provider. The
+fixture is AI-authored and carries the provenance limitations in manifest.json.

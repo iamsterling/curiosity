@@ -1,0 +1,3 @@
+Northstar: fictional observatory support system.
+Starweave: fictional simulated telescope array.
+Lumen-7: fictional calibration marker.

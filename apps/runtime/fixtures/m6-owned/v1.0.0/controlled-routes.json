@@ -1,0 +1,9 @@
+{
+  "/controlled/redirect/same": { "status": 302, "location": "/install.html" },
+  "/controlled/redirect/cross": { "status": 302, "location": "https://outside.test/" },
+  "/controlled/media": { "status": 200, "contentType": "application/pdf" },
+  "/controlled/encoding": { "status": 200, "contentEncoding": "gzip" },
+  "/controlled/server-error": { "status": 503 },
+  "/controlled/oversize-page": { "status": 200, "generatedBytes": 131073 },
+  "/controlled/oversize-robots": { "status": 200, "generatedBytes": 524289 }
+}

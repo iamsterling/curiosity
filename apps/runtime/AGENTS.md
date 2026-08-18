@@ -1,7 +1,9 @@
 # Repository Constitution
 
-This private repository contains documentation for Curiosity search and
-retrieval architecture.
+This private repository contains Curiosity search/retrieval architecture, the
+bounded M1–M4 implementation, repository-only M5 and M6 profiles, and the exact
+private M7 Darwin arm64 release profile. Production/public crawling, deployment,
+publication, signing, notarization, and other-platform release remain NO-GO.
 
 - Preserve attribution and transfer history in `provenance/`.
 - Keep provider-neutral contracts separate from provider adapters and operations.
@@ -12,4 +14,9 @@ retrieval architecture.
   deployment snapshots, or global user configuration.
 - Do not publish packages, deploy services, or mutate production from this repo
   without a separately reviewed change.
+- Keep runtime implementation in `apps/runtime`; harness adapters and harness
+  lifecycle remain owned elsewhere.
+- Keep unified retrieval/Ledger substrate decisions design-only until their
+  explicit implementation and production gates pass. Canonical Ledger design
+  remains owned in `apps/plugin/opencode2`.
 - Use concise ADRs in `docs/decisions/` for consequential choices.

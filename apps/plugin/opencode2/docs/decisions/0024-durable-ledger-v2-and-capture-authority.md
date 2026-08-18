@@ -6,7 +6,7 @@ below passes
 
 ## Context and repository evidence
 
-[ADR 0023](../../../../runtime/docs/decisions/0023-unified-retrieval-memory-evidence-substrate.md)
+[ADR 0041](../../../../runtime/docs/decisions/0041-unified-retrieval-memory-evidence-substrate.md)
 accepts one Ledger/capture evidence substrate but blocks implementation until
 durability, fencing, encryption, retention, authorization, reconciliation, and
 migration are decided. Ledger and its publication boundary are owned by this
