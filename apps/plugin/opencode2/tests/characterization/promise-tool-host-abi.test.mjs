@@ -38,7 +38,7 @@ const adapterFixture = async (execute) => {
     hook: unused,
   }
   const host = new Proxy(
-    { app: { name: "opencode2", version: "0.0.0-beta-17519", channel: "beta" }, options: {}, tool },
+    { app: { name: "opencode2", version: "0.0.0-beta-17595", channel: "beta" }, options: {}, tool },
     { get: (target, key) => key in target ? target[key] : unused },
   )
   const { fromPromise } = await import(adapterFile.href)
@@ -69,7 +69,7 @@ test("pinned Promise tool ABI exposes trusted agent identity but no AbortSignal"
     readFile(schemaToolDeclarationFile, "utf8"),
     readFile(adapterFile, "utf8"),
   ])
-  assert.equal(pkg.version, "0.0.0-beta-17519")
+  assert.equal(pkg.version, "0.0.0-beta-17595")
   assert.match(schemaToolDeclaration, /readonly agent: Agent\.ID;/)
   assert.doesNotMatch(schemaToolDeclaration, /AbortSignal|readonly signal:/)
   assert.doesNotMatch(toolDeclaration, /AbortSignal|readonly signal:/)
@@ -161,7 +161,7 @@ test("exported plugin.effect owns runtime search registration, execution, interr
     close: () => lifecycle.push("close:runtime"),
   }
   const host = new Proxy({
-    app: { name: "opencode2", version: "0.0.0-beta-17519", channel: "beta" },
+    app: { name: "opencode2", version: "0.0.0-beta-17595", channel: "beta" },
     options: {
       directory,
       search: {

@@ -21,8 +21,8 @@ const M7_RIPGREP_NOTICE_SHA256 = Object.freeze({
 const M7_RIPGREP_FILES = Object.freeze(["bin/rg"])
 export const M7_PROFILE = Object.freeze({
   platform: "darwin", architecture: "arm64", macOS: "27.0", bun: "1.3.14",
-  rustc: "1.97.1", cargo: "1.97.1", opencode: "0.0.0-beta-17519",
-  effect: "4.0.0-beta.101", stateSchema: "curiosity-query-state/v1",
+  rustc: "1.97.1", cargo: "1.97.1", opencode: "0.0.0-beta-17595",
+  effect: "4.0.0-beta.107", stateSchema: "curiosity-query-state/v1",
   controlledPluginId: "iamsterling.opencode2-config",
   ripgrep: { version: M7_RIPGREP.version, architecture: M7_RIPGREP.architecture, sha256: M7_RIPGREP.sha256 },
 })

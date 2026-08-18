@@ -13,7 +13,7 @@ const contextFor = (directory, log, definitions, permissionsByAgent = {}) => {
     return { dispose: async () => log.push(`dispose:${id}`) }
   }
   return {
-    app: { name: "opencode2", version: "0.0.0-beta-17519", channel: "beta" },
+    app: { name: "opencode2", version: "0.0.0-beta-17595", channel: "beta" },
     options: { directory },
     agent: {
       transform: async (callback) => {
@@ -116,12 +116,12 @@ test("setup rejects an unreviewed host ABI before registering behavior", async (
   assert.deepEqual(log, [])
 })
 
-test("setup accepts the reviewed beta-17519 host ABI", async () => {
-  const directory = await mkdtemp(path.join(os.tmpdir(), "plugin-beta-17519-"))
+test("setup accepts the reviewed beta-17595 host ABI", async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), "plugin-beta-17595-"))
   const definitions = new Map()
   try {
     const context = contextFor(directory, [], definitions)
-    context.app.version = "0.0.0-beta-17519"
+    context.app.version = "0.0.0-beta-17595"
     const cleanup = await plugin.setup(context)
     assert.equal(definitions.get("agent:default"), "orchestrator")
     await cleanup?.()

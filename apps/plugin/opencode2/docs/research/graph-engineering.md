@@ -929,7 +929,7 @@ Current OpenCode 2 documentation exposes plugin transforms for tools, commands, 
 
 ### Repository-specific constraint
 
-The repository is pinned to `@opencode-ai/plugin@0.0.0-beta-17519`, not an abstract current release. `src/platform/real-host/index.ts` and real-host probes remain authoritative for what this exact build proves. Current repository policy reports native child lineage, interrupt automation, concurrent setup, and authoritative persistence as unsupported.
+The repository is pinned to `@opencode-ai/plugin@0.0.0-beta-17595`, not an abstract current release. `src/platform/real-host/index.ts` and real-host probes remain authoritative for what this exact build proves. Current repository policy reports native child lineage, interrupt automation, concurrent setup, and authoritative persistence as unsupported.
 
 ### Integration sequence
 

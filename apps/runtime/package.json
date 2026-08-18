@@ -26,9 +26,11 @@
     "test:network-denied": "CURIOSITY_RUNTIME_NATIVE_PROFILE=development sandbox-exec -p '(version 1)(allow default)(deny network*)' bun test tests/boundaries.test.ts tests/corpus.test.ts tests/owned-crawl.test.ts tests/query-boundary.test.ts tests/repository-search.test.ts tests/runtime.test.ts",
     "test:characterization": "bun test tests/characterization/*.test.ts",
     "search:smoke": "bun tools/repository-live-smoke.ts",
-    "m7:test": "CURIOSITY_RUNTIME_NATIVE_PROFILE=development bun test tests/m7-*.test.ts",
+    "m7:test": "turbo run m7:test:run --filter=@curiosity/runtime",
+    "m7:test:run": "CURIOSITY_RUNTIME_NATIVE_PROFILE=development bun test tests/m7-*.test.ts",
     "m7:build": "bun tools/m7-release.mjs build",
-    "verify": "cargo fmt --manifest-path native/Cargo.toml --check && cargo clippy --manifest-path native/Cargo.toml --locked --all-targets -- -D warnings && cargo test --manifest-path native/Cargo.toml --locked && bun run build:native && bun run build:native:release && bun run check-types && CURIOSITY_RUNTIME_NATIVE_PROFILE=development bun test tests/*.test.ts && CURIOSITY_RUNTIME_NATIVE_PROFILE=development bun test tests/characterization/*.test.ts"
+    "verify": "turbo run verify:run --filter=@curiosity/runtime",
+    "verify:run": "cargo fmt --manifest-path native/Cargo.toml --check && cargo clippy --manifest-path native/Cargo.toml --locked --all-targets -- -D warnings && cargo test --manifest-path native/Cargo.toml --locked && bun run build:native && bun run check-types && CURIOSITY_RUNTIME_NATIVE_PROFILE=development bun test tests/*.test.ts && CURIOSITY_RUNTIME_NATIVE_PROFILE=development bun test tests/characterization/*.test.ts"
   },
   "devDependencies": {
     "@types/bun": "1.3.14",

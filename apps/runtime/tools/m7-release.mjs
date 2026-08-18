@@ -25,7 +25,7 @@ const dependencyRoot = () => {
   return configured ?? join(root, "node_modules")
 }
 const requiredDependencyFile = (dependencies, path) => m7DependencyInput(dependencies, path)
-const findHost = (dependencies) => requiredDependencyFile(dependencies, join(dependencies, ".bun/@opencode-ai+cli-darwin-arm64@0.0.0-beta-17519/node_modules/@opencode-ai/cli-darwin-arm64/bin/opencode2"))
+const findHost = (dependencies) => requiredDependencyFile(dependencies, join(dependencies, ".bun/@opencode-ai+cli-darwin-arm64@0.0.0-beta-17595/node_modules/@opencode-ai/cli-darwin-arm64/bin/opencode2"))
 
 const assertToolPins = () => {
   const actual = {
@@ -48,7 +48,7 @@ const component = (name, version, files, licenseFile, properties = {}) => ({ typ
 const writeInventory = (stage, releaseId, bundledPackages, dependencies) => {
   const licenses = join(stage, "licenses"); mkdirSync(licenses)
   copyFileSync(join(runtime, "LICENSE"), join(licenses, "MIT-Curiosity.txt"))
-  copyFileSync(requiredDependencyFile(dependencies, join(dependencies, ".bun/effect@4.0.0-beta.101/node_modules/effect/LICENSE")), join(licenses, "MIT-Effect.txt"))
+  copyFileSync(requiredDependencyFile(dependencies, join(dependencies, ".bun/effect@4.0.0-beta.107/node_modules/effect/LICENSE")), join(licenses, "MIT-Effect.txt"))
   copyFileSync(requiredDependencyFile(dependencies, join(dependencies, ".bun/fast-check@4.9.0/node_modules/fast-check/LICENSE")), join(licenses, "MIT-fast-check.txt"))
   copyFileSync(requiredDependencyFile(dependencies, join(dependencies, ".bun/pure-rand@8.4.2/node_modules/pure-rand/LICENSE")), join(licenses, "MIT-pure-rand.txt"))
   copyFileSync(join(root, "apps/plugin/opencode2/LICENSE"), join(licenses, "MIT-Plugin.txt"))

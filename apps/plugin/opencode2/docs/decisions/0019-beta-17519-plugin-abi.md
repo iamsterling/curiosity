@@ -1,6 +1,6 @@
 # ADR 0019: exact beta-17519 plugin ABI
 
-**Status:** Proposed 2026-08-17; supersedes ADR 0015's host pin
+**Status:** Superseded 2026-08-18 by ADR 0025; superseded ADR 0015's host pin
 
 ## Evidence
 

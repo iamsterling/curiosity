@@ -1,6 +1,6 @@
 # ADR 0022: M7 private OpenCode adapter
 
-**Status:** Accepted 2026-08-18 for the exact private local M7 profile
+**Status:** Superseded for future builds by ADR 0025 and runtime ADR 0042; the recorded beta-17519 artifact remains historical
 
 ## Decision
 

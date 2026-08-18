@@ -1,7 +1,7 @@
 # OpenCode2 Config
 
 Private OpenCode 2 Effect plugin (with a Promise compatibility setup seam) pinned
-to `@opencode-ai/plugin@0.0.0-beta-17519`.
+to `@opencode-ai/plugin@0.0.0-beta-17595`.
 
 ## Web search
 

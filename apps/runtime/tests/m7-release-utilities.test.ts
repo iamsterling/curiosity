@@ -1,13 +1,21 @@
 import { afterEach, expect, test } from "bun:test";
 import { chmodSync, cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { basename, join } from "node:path";
+import { homedir, tmpdir } from "node:os";
+import { basename, dirname, join } from "node:path";
 // @ts-expect-error Detached release utilities are plain ESM.
 import { M7_PLUGIN_BUILD_ARGUMENTS, M7_RIPGREP, assertM7RipgrepLinks, copyVerifiedExecutable, createReleaseArchive, extractReleaseArchive, listReleaseArchive, m7PluginAdapterSource, stageM7BuildDependencies, verifyM7RipgrepInput, writeReleaseScripts } from "../tools/m7-release-lib.mjs";
 
 const roots: string[] = [];
 afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }); });
-const temporary = () => { const root = realpathSync(mkdtempSync(join(tmpdir(), "m7-utility-"))); roots.push(root); return root; };
+const safeTemporaryParent = (candidate: string) => {
+  const uid = process.getuid?.(); if (uid === undefined) return false;
+  for (let path = realpathSync(candidate); ; path = dirname(path)) {
+    const status = lstatSync(path); if (!status.isDirectory() || (status.uid !== 0 && status.uid !== uid) || (status.mode & 0o022) !== 0) return false;
+    if (dirname(path) === path) return true;
+  }
+};
+const temporaryParent = [tmpdir(), homedir()].find(safeTemporaryParent); if (!temporaryParent) throw new Error("M7_TEST_TEMPORARY_PARENT_UNAVAILABLE");
+const temporary = () => { const root = realpathSync(mkdtempSync(join(temporaryParent, "m7-utility-"))); roots.push(root); return root; };
 const waitFor = async (condition: () => boolean, attempts = 200) => {
   for (let attempt = 0; attempt < attempts; attempt += 1) { if (condition()) return; await Bun.sleep(10); }
   throw new Error("fixture timeout");
@@ -109,9 +117,9 @@ test("a clean source copy materializes exact local M7 build dependencies without
   cpSync(new URL("../../plugin/opencode2/package.json", import.meta.url), join(pluginRoot, "package.json"));
   mkdirSync(join(sourceRoot, "apps/runtime"), { recursive: true });
   const packages = [
-    ["@opencode-ai/plugin", "0.0.0-beta-17519"], ["@opencode-ai/cli", "0.0.0-beta-17519"],
-    ["effect", "4.0.0-beta.101"], ["typescript", "5.8.2"], ["@types/node", "26.2.0"],
-    ["@opencode-ai/cli-darwin-arm64", "0.0.0-beta-17519"], ["fast-check", "4.9.0"], ["pure-rand", "8.4.2"],
+    ["@opencode-ai/plugin", "0.0.0-beta-17595"], ["@opencode-ai/cli", "0.0.0-beta-17595"],
+    ["effect", "4.0.0-beta.107"], ["typescript", "5.8.2"], ["@types/node", "26.2.0"],
+    ["@opencode-ai/cli-darwin-arm64", "0.0.0-beta-17595"], ["fast-check", "4.9.0"], ["pure-rand", "8.4.2"],
   ] as const;
   for (const [name, version] of packages) {
     const packageRoot = join(dependencyRoot, ".bun", `${name.replace("/", "+")}@${version}`, "node_modules", name);
@@ -121,15 +129,15 @@ test("a clean source copy materializes exact local M7 build dependencies without
   expect(existsSync(join(pluginRoot, "node_modules"))).toBe(false);
   const staged = stageM7BuildDependencies({ sourceRoot, dependencyRoot });
   expect(staged).toEqual({ network: "disabled", source: realpathSync(dependencyRoot) });
-  expect(JSON.parse(readFileSync(join(pluginRoot, "node_modules/@opencode-ai/plugin/package.json"), "utf8")).version).toBe("0.0.0-beta-17519");
-  expect(JSON.parse(readFileSync(join(pluginRoot, "node_modules/effect/package.json"), "utf8")).version).toBe("4.0.0-beta.101");
+  expect(JSON.parse(readFileSync(join(pluginRoot, "node_modules/@opencode-ai/plugin/package.json"), "utf8")).version).toBe("0.0.0-beta-17595");
+  expect(JSON.parse(readFileSync(join(pluginRoot, "node_modules/effect/package.json"), "utf8")).version).toBe("4.0.0-beta.107");
   expect(existsSync(join(pluginRoot, "node_modules/.bin/tsc"))).toBe(true);
   rmSync(join(pluginRoot, "node_modules"), { recursive: true, force: true });
   const sourceManifest = join(pluginRoot, "package.json"); const sourcePackage = JSON.parse(readFileSync(sourceManifest, "utf8"));
   sourcePackage.devDependencies["@types/node"] = "^26.2.0"; writeFileSync(sourceManifest, JSON.stringify(sourcePackage));
   expect(() => stageM7BuildDependencies({ sourceRoot, dependencyRoot })).toThrow("M7_BUILD_DEPENDENCY_PIN_MISMATCH");
   sourcePackage.devDependencies["@types/node"] = "26.2.0"; writeFileSync(sourceManifest, JSON.stringify(sourcePackage));
-  const pluginManifest = join(dependencyRoot, ".bun/@opencode-ai+plugin@0.0.0-beta-17519/node_modules/@opencode-ai/plugin/package.json");
+  const pluginManifest = join(dependencyRoot, ".bun/@opencode-ai+plugin@0.0.0-beta-17595/node_modules/@opencode-ai/plugin/package.json");
   writeFileSync(pluginManifest, JSON.stringify({ name: "@opencode-ai/plugin", version: "0.0.0-beta-99999" }));
   expect(() => stageM7BuildDependencies({ sourceRoot, dependencyRoot })).toThrow("M7_BUILD_DEPENDENCY_PIN_MISMATCH");
   rmSync(pluginManifest);
@@ -170,8 +178,8 @@ test("dependency staging rejects Bun-store escapes with a stable redacted failur
   cpSync(new URL("../../plugin/opencode2/package.json", import.meta.url), join(pluginRoot, "package.json"));
   mkdirSync(join(sourceRoot, "apps/runtime"), { recursive: true });
   const escapedPackage = join(outside, "plugin"); mkdirSync(escapedPackage); writeFileSync(join(escapedPackage, "marker"), "unchanged");
-  writeFileSync(join(escapedPackage, "package.json"), JSON.stringify({ name: "@opencode-ai/plugin", version: "0.0.0-beta-17519" }));
-  const storeEntry = join(dependencyRoot, ".bun/@opencode-ai+plugin@0.0.0-beta-17519/node_modules/@opencode-ai");
+  writeFileSync(join(escapedPackage, "package.json"), JSON.stringify({ name: "@opencode-ai/plugin", version: "0.0.0-beta-17595" }));
+  const storeEntry = join(dependencyRoot, ".bun/@opencode-ai+plugin@0.0.0-beta-17595/node_modules/@opencode-ai");
   mkdirSync(storeEntry, { recursive: true }); symlinkSync(escapedPackage, join(storeEntry, "plugin"), "dir");
   let message = "";
   try { stageM7BuildDependencies({ sourceRoot, dependencyRoot }); } catch (error) { message = error instanceof Error ? error.message : String(error); }
@@ -266,7 +274,7 @@ test("generated clean-environment smoke uses the exact real host and bundled rip
   const stage = temporary(); const profile = join(temporary(), "profile"); const entry = join(stage, "plugin-entry.mjs");
   mkdirSync(join(stage, "bin"), { recursive: true }); mkdirSync(join(stage, "tools"), { recursive: true }); mkdirSync(join(stage, "plugin"), { recursive: true }); mkdirSync(join(stage, "native"), { recursive: true }); mkdirSync(join(stage, "runtime"), { recursive: true });
   writeFileSync(join(stage, "tools/m7-release.mjs"), "// fixture\n");
-  cpSync(new URL("../../../node_modules/.bun/@opencode-ai+cli-darwin-arm64@0.0.0-beta-17519/node_modules/@opencode-ai/cli-darwin-arm64/bin/opencode2", import.meta.url), join(stage, "bin/opencode2"));
+  cpSync(new URL("../../../node_modules/.bun/@opencode-ai+cli-darwin-arm64@0.0.0-beta-17595/node_modules/@opencode-ai/cli-darwin-arm64/bin/opencode2", import.meta.url), join(stage, "bin/opencode2"));
   verifyM7RipgrepInput(M7_RIPGREP.source, join(stage, "bin/rg")); chmodSync(join(stage, "bin/opencode2"), 0o755);
   cpSync(new URL("../native/target/release/libcuriosity_runtime_native.dylib", import.meta.url), join(stage, "native/libcuriosity_runtime_native.dylib"));
   const runtimeBundle = Bun.spawnSync([process.execPath, "build", new URL("../src/query.ts", import.meta.url).pathname, "--target=bun", "--outfile", join(stage, "runtime/query.js")], { stdout: "pipe", stderr: "pipe" }); expect(runtimeBundle.exitCode).toBe(0);
