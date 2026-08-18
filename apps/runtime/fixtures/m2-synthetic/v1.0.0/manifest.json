@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "1.0.0",
+  "candidateId": "m2-synthetic-lexical",
+  "candidateVersion": "1.0.0",
+  "purpose": "Small deterministic fictional fixture for M2 persistence, lifecycle, and lexical retrieval tests; not representative of production or the web.",
+  "accountableOwner": "Project owner (requester)",
+  "sha256": "592f00726c0c36c059f321ae22d940926ee81b8d1d7ef1075ad16d461c7a7acb",
+  "provenance": {
+    "authorType": "ai",
+    "provider": "OpenAI",
+    "model": "API-hosted model; exact model identity unavailable to this runtime session",
+    "generatedAt": "2026-08-18T00:00:00Z",
+    "promptRecordSha256": "8a208facc7ab640ee181059a1c17d3b96590d79a169c64d4dc955fb6437bed82",
+    "transformations": ["UTF-8 text written with LF line endings", "SHA-256 digests computed over exact repository bytes"],
+    "sourceReview": {
+      "status": "passed",
+      "notes": "AI-authored from an owner-authorized synthetic prompt without supplied source text. Human legal certainty, originality, and absence of model memorization cannot be guaranteed; review found no apparent copied, personal, secret, production, or prohibited material."
+    }
+  },
+  "creationAuthorization": {
+    "authorizationId": "M2-OWNER-AUTH-2026-08-18",
+    "authorizedBy": "Project owner (requester)",
+    "authorizedAt": "2026-08-18T00:00:00Z",
+    "scope": "Create and commit a deliberately small AI-authored synthetic fixture for M2 under CC0-1.0, limited to rights controlled by the requester.",
+    "rightsDisclaimerAccepted": true
+  },
+  "rights": {
+    "ownershipStatus": "cleared",
+    "rightsholderAuthority": "confirmed",
+    "licenseGrant": "granted",
+    "licenseOrGrantReference": "CC0-1.0.txt",
+    "claimedRightsholder": "Project owner (requester), solely for rights they control",
+    "distributionPermitted": true,
+    "intendedUses": ["copy", "commit", "test", "index", "display", "modify", "distribute"],
+    "jurisdictions": ["Worldwide, to the extent legally possible"],
+    "restrictions": "CC0 dedication applies only to rights the requester controls; third-party rights, model-provider terms, and non-copyright rights are not warranted.",
+    "notes": "No assertion of copyrightability, exclusive ownership, originality, or legal certainty is made for AI-generated text."
+  },
+  "classification": {
+    "reviewStatus": "passed",
+    "level": "public-synthetic",
+    "personalData": "absent",
+    "secrets": "absent",
+    "regulatedData": "absent",
+    "productionIdentifiers": "absent",
+    "prohibitedContent": "absent"
+  },
+  "custody": {
+    "custodian": "Project owner (requester)",
+    "repositoryPath": "fixtures/m2-synthetic/v1.0.0",
+    "permittedEnvironment": "repository-quarantine",
+    "retentionStart": "2026-08-18T00:00:00Z",
+    "retentionReviewAt": "2027-08-18T00:00:00Z",
+    "deletionOwner": "Project owner (requester)",
+    "withdrawalContact": "project-owner"
+  },
+  "documents": [
+    {"documentId": "aurora", "version": "1.0.0", "path": "documents/aurora.txt", "sourceUrl": "https://m2-synthetic.invalid/documents/aurora", "mediaType": "text/plain", "byteLength": 131, "recordCount": 1, "sha256": "27f8fb8019ed8359633a9c043af440120833fc6036dc4dfd4480d88672d595e6"},
+    {"documentId": "harbor", "version": "1.0.0", "path": "documents/harbor.txt", "sourceUrl": "https://m2-synthetic.invalid/documents/harbor", "mediaType": "text/plain", "byteLength": 113, "recordCount": 1, "sha256": "d71c3fed2369e6b8c63892f559f54d6c053123de01b8ebb437a97836514c622f"}
+  ],
+  "approvals": {
+    "legal": {"status": "approved", "approvalId": "M2-LEGAL-2026-08-18", "approvedBy": "Project owner (requester)", "decidedAt": "2026-08-18T00:00:00Z"},
+    "privacySecurity": {"status": "approved", "approvalId": "M2-PRIVSEC-2026-08-18", "approvedBy": "Project owner (requester)", "decidedAt": "2026-08-18T00:00:00Z"},
+    "productTest": {"status": "approved", "approvalId": "M2-TEST-2026-08-18", "approvedBy": "Project owner (requester)", "decidedAt": "2026-08-18T00:00:00Z"},
+    "custody": {"status": "approved", "approvalId": "M2-CUSTODY-2026-08-18", "approvedBy": "Project owner (requester)", "decidedAt": "2026-08-18T00:00:00Z"},
+    "manifest": {"status": "approved", "approvalId": "M2-MANIFEST-2026-08-18", "approvedBy": "Project owner (requester)", "decidedAt": "2026-08-18T00:00:00Z"},
+    "digestVerification": {"status": "approved", "approvalId": "M2-DIGEST-2026-08-18", "approvedBy": "Project owner (requester)", "decidedAt": "2026-08-18T00:00:00Z"}
+  },
+  "governanceGates": {
+    "d4": {"status": "accepted", "decisionReference": "docs/decisions/0025-m2-initial-local-test-snapshot.md"},
+    "d5": {"status": "accepted", "decisionReference": "docs/decisions/0026-m2-foundational-durable-state-boundary.md"},
+    "dependencyDesign": "dependency-free",
+    "d8": {"status": "not-required"}
+  },
+  "status": "approved-candidate",
+  "activationEligible": true
+}

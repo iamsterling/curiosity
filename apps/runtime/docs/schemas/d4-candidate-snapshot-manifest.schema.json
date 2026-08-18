@@ -1,0 +1,361 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://curiosity.invalid/schemas/d4-candidate-snapshot-manifest.schema.json",
+  "title": "D4 candidate snapshot manifest",
+  "description": "Design-only manifest for an immutable AI-authored candidate. Validation is not D4 acceptance, a rights finding, or activation authority.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "candidateId",
+    "candidateVersion",
+    "purpose",
+    "accountableOwner",
+    "sha256",
+    "provenance",
+    "creationAuthorization",
+    "rights",
+    "classification",
+    "custody",
+    "documents",
+    "approvals",
+    "governanceGates",
+    "status",
+    "activationEligible"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "candidateId": {
+      "type": "string",
+      "pattern": "^[a-z0-9](?:[a-z0-9._-]{0,62}[a-z0-9])?$",
+      "description": "Immutable once assigned and never reused for different candidate content.",
+      "readOnly": true
+    },
+    "candidateVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[a-z0-9.-]+)?$",
+      "description": "Immutable once assigned; a content change requires a new version and digest.",
+      "readOnly": true
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "accountableOwner": {
+      "type": "string",
+      "description": "Owner of the candidate record and review process, not an assertion of output copyright ownership.",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authorType", "provider", "model", "generatedAt", "promptRecordSha256", "transformations", "sourceReview"],
+      "properties": {
+        "authorType": { "const": "ai" },
+        "provider": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "model": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "generatedAt": { "$ref": "#/$defs/canonicalUtcDateTime" },
+        "promptRecordSha256": { "$ref": "#/$defs/sha256" },
+        "transformations": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1, "maxLength": 500 }
+        },
+        "sourceReview": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "notes"],
+          "properties": {
+            "status": { "enum": ["pending", "passed", "failed"] },
+            "notes": { "type": "string", "minLength": 1, "maxLength": 2000 }
+          }
+        }
+      }
+    },
+    "creationAuthorization": {
+      "type": "object",
+      "description": "Permission for the generation act only; not ownership, a license, or permission to activate the output.",
+      "additionalProperties": false,
+      "required": ["authorizationId", "authorizedBy", "authorizedAt", "scope", "rightsDisclaimerAccepted"],
+      "properties": {
+        "authorizationId": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" },
+        "authorizedBy": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "authorizedAt": { "$ref": "#/$defs/canonicalUtcDateTime" },
+        "scope": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "rightsDisclaimerAccepted": { "const": true }
+      }
+    },
+    "rights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ownershipStatus", "rightsholderAuthority", "licenseGrant", "licenseOrGrantReference", "claimedRightsholder", "distributionPermitted", "intendedUses", "jurisdictions", "restrictions", "notes"],
+      "properties": {
+        "ownershipStatus": { "enum": ["missing", "unresolved", "cleared", "rejected"] },
+        "rightsholderAuthority": { "enum": ["missing", "unresolved", "confirmed", "rejected"] },
+        "licenseGrant": { "enum": ["missing", "pending", "granted", "rejected"] },
+        "licenseOrGrantReference": { "type": ["string", "null"], "minLength": 1, "maxLength": 500 },
+        "claimedRightsholder": { "type": ["string", "null"], "minLength": 1, "maxLength": 200 },
+        "distributionPermitted": { "type": "boolean" },
+        "intendedUses": {
+          "type": "array",
+          "description": "Declared intended uses. Activation eligibility requires copy, test, index, display, modify, and distribute; other enumerated uses may also be declared.",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "enum": ["copy", "commit", "test", "index", "display", "modify", "distribute"] }
+        },
+        "jurisdictions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1, "maxLength": 100 }
+        },
+        "restrictions": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "notes": { "type": "string", "minLength": 1, "maxLength": 2000 }
+      }
+    },
+    "classification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reviewStatus", "level", "personalData", "secrets", "regulatedData", "productionIdentifiers", "prohibitedContent"],
+      "properties": {
+        "reviewStatus": { "enum": ["pending", "passed", "failed"] },
+        "level": { "enum": ["public-synthetic", "internal", "restricted", "prohibited"] },
+        "personalData": { "enum": ["absent", "suspected", "present"] },
+        "secrets": { "enum": ["absent", "suspected", "present"] },
+        "regulatedData": { "enum": ["absent", "suspected", "present"] },
+        "productionIdentifiers": { "enum": ["absent", "suspected", "present"] },
+        "prohibitedContent": { "enum": ["absent", "suspected", "present"] }
+      }
+    },
+    "custody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["custodian", "repositoryPath", "permittedEnvironment", "retentionStart", "retentionReviewAt", "deletionOwner", "withdrawalContact"],
+      "properties": {
+        "custodian": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "repositoryPath": { "$ref": "#/$defs/safeRelativePath" },
+        "permittedEnvironment": { "const": "repository-quarantine" },
+        "retentionStart": { "$ref": "#/$defs/canonicalUtcDateTime" },
+        "retentionReviewAt": { "$ref": "#/$defs/canonicalUtcDateTime" },
+        "deletionOwner": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "withdrawalContact": { "type": "string", "minLength": 1, "maxLength": 320 }
+      }
+    },
+    "documents": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["documentId", "version", "path", "sourceUrl", "mediaType", "byteLength", "recordCount", "sha256"],
+        "properties": {
+          "documentId": { "type": "string", "pattern": "^[a-z0-9](?:[a-z0-9._-]{0,62}[a-z0-9])?$", "readOnly": true },
+          "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[a-z0-9.-]+)?$", "readOnly": true },
+          "path": { "$ref": "#/$defs/safeRelativePath" },
+          "sourceUrl": { "type": "string", "format": "uri", "pattern": "^https://" },
+          "mediaType": { "type": "string", "pattern": "^[a-z0-9!#$&^_.+-]+/[a-z0-9!#$&^_.+-]+$" },
+          "byteLength": { "type": "integer", "minimum": 0 },
+          "recordCount": { "type": "integer", "minimum": 1 },
+          "sha256": { "$ref": "#/$defs/sha256" }
+        }
+      }
+    },
+    "approvals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["legal", "privacySecurity", "productTest", "custody", "manifest", "digestVerification"],
+      "properties": {
+        "legal": { "$ref": "#/$defs/approval" },
+        "privacySecurity": { "$ref": "#/$defs/approval" },
+        "productTest": { "$ref": "#/$defs/approval" },
+        "custody": { "$ref": "#/$defs/approval" },
+        "manifest": { "$ref": "#/$defs/approval" },
+        "digestVerification": { "$ref": "#/$defs/approval" }
+      }
+    },
+    "governanceGates": {
+      "type": "object",
+      "description": "Records proposed or future gate dispositions; inclusion does not assert that a gate is currently satisfied.",
+      "additionalProperties": false,
+      "required": ["d4", "d5", "dependencyDesign", "d8"],
+      "properties": {
+        "d4": { "$ref": "#/$defs/decisionGate" },
+        "d5": { "$ref": "#/$defs/decisionGate" },
+        "dependencyDesign": { "enum": ["dependency-free", "requires-d8-approval"] },
+        "d8": { "$ref": "#/$defs/dependencyGate" }
+      }
+    },
+    "status": { "enum": ["quarantined", "approved-candidate"] },
+    "activationEligible": { "type": "boolean" }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "readOnly": true
+    },
+    "safeRelativePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*(?:/[A-Za-z0-9][A-Za-z0-9._-]*)*$",
+      "description": "Slash-separated relative file path. Each non-empty segment starts with an ASCII letter or digit; absolute paths, dot/dot-dot segments, duplicate or trailing separators, and backslashes are excluded."
+    },
+    "canonicalUtcDateTime": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12][0-9]|3[01])|(?:0[469]|11)-(?:0[1-9]|[12][0-9]|30)|02-(?:0[1-9]|1[0-9]|2[0-8]))T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](?:\\.[0-9]{1,9})?Z$",
+      "description": "Portable conservative RFC 3339 UTC subset: YYYY-MM-DDTHH:mm:ssZ with an optional 1-9 digit fractional second. Offsets, lowercase t/z, leap seconds, and February 29 are excluded so the pattern itself admits only calendar-valid values without relying on format assertion."
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["pending", "approved", "failed"] },
+        "approvalId": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" },
+        "approvedBy": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "decidedAt": { "$ref": "#/$defs/canonicalUtcDateTime" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "approved" } }, "required": ["status"] },
+          "then": { "required": ["approvalId", "approvedBy", "decidedAt"] }
+        }
+      ]
+    },
+    "decisionGate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["proposed", "accepted", "rejected"] },
+        "decisionReference": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,499}$" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "accepted" } }, "required": ["status"] },
+          "then": { "required": ["decisionReference"] }
+        }
+      ]
+    },
+    "dependencyGate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["pending", "accepted", "not-required", "rejected"] },
+        "decisionReference": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,499}$" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "accepted" } }, "required": ["status"] },
+          "then": { "required": ["decisionReference"] }
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "rights": {
+            "properties": {
+              "ownershipStatus": { "const": "cleared" },
+              "rightsholderAuthority": { "const": "confirmed" },
+              "licenseGrant": { "const": "granted" },
+              "licenseOrGrantReference": { "type": "string", "minLength": 1 },
+              "claimedRightsholder": { "type": "string", "minLength": 1 },
+              "distributionPermitted": { "const": true },
+              "intendedUses": {
+                "allOf": [
+                  { "contains": { "const": "copy" } },
+                  { "contains": { "const": "test" } },
+                  { "contains": { "const": "index" } },
+                  { "contains": { "const": "display" } },
+                  { "contains": { "const": "modify" } },
+                  { "contains": { "const": "distribute" } }
+                ]
+              }
+            },
+            "required": ["ownershipStatus", "rightsholderAuthority", "licenseGrant", "licenseOrGrantReference", "claimedRightsholder", "distributionPermitted", "intendedUses"]
+          },
+          "provenance": {
+            "properties": {
+              "sourceReview": {
+                "properties": { "status": { "const": "passed" } },
+                "required": ["status"]
+              }
+            },
+            "required": ["sourceReview"]
+          },
+          "classification": {
+            "properties": {
+              "reviewStatus": { "const": "passed" },
+              "level": { "const": "public-synthetic" },
+              "personalData": { "const": "absent" },
+              "secrets": { "const": "absent" },
+              "regulatedData": { "const": "absent" },
+              "productionIdentifiers": { "const": "absent" },
+              "prohibitedContent": { "const": "absent" }
+            },
+            "required": ["reviewStatus", "level", "personalData", "secrets", "regulatedData", "productionIdentifiers", "prohibitedContent"]
+          },
+          "approvals": {
+            "properties": {
+              "legal": { "properties": { "status": { "const": "approved" } }, "required": ["status"] },
+              "privacySecurity": { "properties": { "status": { "const": "approved" } }, "required": ["status"] },
+              "productTest": { "properties": { "status": { "const": "approved" } }, "required": ["status"] },
+              "custody": { "properties": { "status": { "const": "approved" } }, "required": ["status"] },
+              "manifest": { "properties": { "status": { "const": "approved" } }, "required": ["status"] },
+              "digestVerification": { "properties": { "status": { "const": "approved" } }, "required": ["status"] }
+            },
+            "required": ["legal", "privacySecurity", "productTest", "custody", "manifest", "digestVerification"]
+          },
+          "governanceGates": {
+            "properties": {
+              "d4": { "properties": { "status": { "const": "accepted" } }, "required": ["status", "decisionReference"] },
+              "d5": { "properties": { "status": { "const": "accepted" } }, "required": ["status", "decisionReference"] }
+            },
+            "required": ["d4", "d5", "dependencyDesign", "d8"],
+            "anyOf": [
+              {
+                "properties": {
+                  "dependencyDesign": { "const": "dependency-free" },
+                  "d8": { "properties": { "status": { "const": "not-required" } }, "required": ["status"] }
+                }
+              },
+              {
+                "properties": {
+                  "dependencyDesign": { "const": "requires-d8-approval" },
+                  "d8": { "properties": { "status": { "const": "accepted" } }, "required": ["status", "decisionReference"] }
+                }
+              }
+            ]
+          }
+        },
+        "required": ["rights", "provenance", "classification", "approvals", "governanceGates"]
+      },
+      "else": {
+        "properties": {
+          "status": { "const": "quarantined" },
+          "activationEligible": { "const": false }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "approved-candidate" } }, "required": ["status"] },
+      "then": { "properties": { "activationEligible": { "const": true } } }
+    },
+    {
+      "if": { "properties": { "activationEligible": { "const": true } }, "required": ["activationEligible"] },
+      "then": { "properties": { "status": { "const": "approved-candidate" } } }
+    }
+  ]
+}

@@ -14,8 +14,8 @@ const EXPECTED_TOOL_IDS = [
 
 const execute = promisify(execFile)
 
-test("isolated exact host invokes and registers the Promise plugin", async () => {
-  const { stdout } = await execute("node", ["tools/real-host-suite.mjs"], { cwd: process.cwd(), timeout: 30_000 })
+test("isolated exact host invokes and registers the exported Effect plugin", async () => {
+  const { stdout } = await execute("node", ["tools/real-host-suite.mjs"], { cwd: process.cwd(), timeout: 60_000 })
   const result = JSON.parse(stdout)
   if (!result.supported) return
   assert.deepEqual(result.serve, { status: "confirmed", code: "REAL_HOST_SERVE_CONFIRMED" })
@@ -34,7 +34,7 @@ test("isolated exact host invokes and registers the Promise plugin", async () =>
   assert.equal(result.processes.forkPrevented, true)
   assert.deepEqual(result.fixtures, { network: "caught", proxy: "caught", outsideWrite: "caught", secretPersistence: "caught", detachedChild: "caught" })
   assert.ok(["artifact", "cache", "config", "data", "home", "project", "sandbox.sb"].every((name) => result.topLevelWrites.includes(name)))
-  assert.deepEqual(result.discovery, { status: "invoked", code: "REAL_HOST_PLUGIN_SETUP_INVOKED", invoked: true })
+  assert.deepEqual(result.discovery, { status: "invoked", code: "REAL_HOST_PLUGIN_EFFECT_INVOKED", invoked: true, lifecycle: "effect" })
   assert.deepEqual(result.activation, { method: "GET", path: "/api/plugin", query: { "location[directory]": "<disposable-project>" }, authenticated: true })
   assert.deepEqual(result.http, { status: 200, path: "/api/plugin", authenticated: true })
   assert.equal(result.setupCount, 1)

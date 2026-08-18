@@ -11,7 +11,7 @@ import {
 import { NativeLoopEngine } from "../loop-engine/index.js";
 import { projectRootKey } from "../../plugin/lifecycle.js";
 import { createSearchDefinitions } from "../search/index.js";
-import type { SearchOptions } from "../search/searxng-adapter.js";
+import type { SearchBackendOptions } from "../search/index.js";
 
 const schema = (properties: Record<string, unknown>, required: string[] = []) => ({
   type: "object",
@@ -28,8 +28,12 @@ const actor = (context: { sessionID: unknown }, kind: Actor["kind"] = "model"): 
   sessionID: String(context.sessionID),
 });
 
-const definitions = (ledger: Ledger, loop: NativeLoopEngine, searchOptions: SearchOptions) => [
-  ...createSearchDefinitions(searchOptions),
+const definitions = (
+  ledger: Ledger,
+  loop: NativeLoopEngine,
+  searchDefinitions: ReturnType<typeof createSearchDefinitions>,
+) => [
+  ...searchDefinitions,
   {
     name: "ledger_intent_propose",
     description: "Propose and capture a root-scoped intent. This does not grant approval.",
@@ -329,11 +333,21 @@ export const structuredToolsFeature: FeatureRegistration = {
     });
     const configured = (context.options as Record<string, unknown>).search;
     const searchOptions =
-      typeof configured === "object" && configured !== null ? (configured as SearchOptions) : ({} as SearchOptions);
+      typeof configured === "object" && configured !== null
+        ? (configured as SearchBackendOptions)
+        : ({} as SearchBackendOptions);
+    const runtimeOwnedByEffectPlugin = (searchOptions as { backend?: unknown }).backend === "runtime";
+    const searchDefinitions = runtimeOwnedByEffectPlugin
+      ? (Object.assign([], { cleanup: () => undefined }) as ReturnType<typeof createSearchDefinitions>)
+      : createSearchDefinitions(searchOptions);
+    const allDefinitions = definitions(ledger, loop, searchDefinitions);
     const registration = await context.tool.transform((draft) => {
-      for (const definition of definitions(ledger, loop, searchOptions)) draft.add(definition as never);
+      for (const definition of allDefinitions) draft.add(definition as never);
     });
-    return () => registration.dispose();
+    return () => {
+      searchDefinitions.cleanup();
+      return registration.dispose();
+    };
   },
 };
 

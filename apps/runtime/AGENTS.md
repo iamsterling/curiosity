@@ -1,7 +1,8 @@
 # Repository Constitution
 
-This private repository contains documentation for Curiosity search and
-retrieval architecture.
+This private repository contains Curiosity search/retrieval architecture and
+the bounded M1–M4, repository-only M5, and exact repository-only M6 synthetic
+cell implementations. Production/public crawling remains NO-GO.
 
 - Preserve attribution and transfer history in `provenance/`.
 - Keep provider-neutral contracts separate from provider adapters and operations.
@@ -12,4 +13,6 @@ retrieval architecture.
   deployment snapshots, or global user configuration.
 - Do not publish packages, deploy services, or mutate production from this repo
   without a separately reviewed change.
+- Keep runtime implementation in `apps/runtime`; harness adapters and harness
+  lifecycle remain owned elsewhere.
 - Use concise ADRs in `docs/decisions/` for consequential choices.

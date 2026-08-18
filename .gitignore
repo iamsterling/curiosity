@@ -26,6 +26,7 @@ coverage
 out/
 build
 dist
+target/
 
 
 # Debug
@@ -36,3 +37,10 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+
+# M6 loopback-only project CA fixture. These are non-production test keys.
+!apps/runtime/fixtures/m6-owned/v1.0.0/tls/
+!apps/runtime/fixtures/m6-owned/v1.0.0/tls/ca-key.pem
+!apps/runtime/fixtures/m6-owned/v1.0.0/tls/ca.pem
+!apps/runtime/fixtures/m6-owned/v1.0.0/tls/server-key.pem
+!apps/runtime/fixtures/m6-owned/v1.0.0/tls/server.pem

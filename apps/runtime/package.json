@@ -1,0 +1,36 @@
+{
+  "name": "@curiosity/runtime",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./query": {
+      "types": "./src/query.d.ts",
+      "import": "./src/query.ts"
+    },
+    "./admin": {
+      "import": "./src/admin.ts"
+    },
+    "./owned-query": {
+      "import": "./src/owned-query.ts"
+    }
+  },
+  "scripts": {
+    "build:native": "cargo build --manifest-path native/Cargo.toml --locked",
+    "build": "bun run build:native && tsc --noEmit",
+    "check-types": "tsc --noEmit",
+    "lint": "cargo fmt --manifest-path native/Cargo.toml --check && cargo clippy --manifest-path native/Cargo.toml --locked --all-targets -- -D warnings",
+    "test": "bun run build:native && CURIOSITY_RUNTIME_NATIVE_PROFILE=development bun test tests/*.test.ts && CURIOSITY_RUNTIME_NATIVE_PROFILE=development bun test tests/characterization/*.test.ts",
+    "test:network-denied": "CURIOSITY_RUNTIME_NATIVE_PROFILE=development sandbox-exec -p '(version 1)(allow default)(deny network*)' bun test tests/*.test.ts",
+    "test:characterization": "bun test tests/characterization/*.test.ts",
+    "search:smoke": "bun tools/repository-live-smoke.ts",
+    "m7:test": "CURIOSITY_RUNTIME_NATIVE_PROFILE=development bun test tests/m7-*.test.ts",
+    "m7:build": "bun tools/m7-release.mjs build",
+    "verify": "cargo fmt --manifest-path native/Cargo.toml --check && cargo clippy --manifest-path native/Cargo.toml --locked --all-targets -- -D warnings && cargo test --manifest-path native/Cargo.toml --locked && cargo build --manifest-path native/Cargo.toml --locked && bun run check-types && CURIOSITY_RUNTIME_NATIVE_PROFILE=development bun test tests/*.test.ts && CURIOSITY_RUNTIME_NATIVE_PROFILE=development bun test tests/characterization/*.test.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "1.3.14",
+    "typescript": "5.9.2"
+  }
+}

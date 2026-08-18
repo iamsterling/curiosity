@@ -1,6 +1,7 @@
 # OpenCode2 Config
 
-Private OpenCode 2 Promise-compatible plugin pinned to `@opencode-ai/plugin@0.0.0-beta-17519`.
+Private OpenCode 2 Effect plugin (with a Promise compatibility setup seam) pinned
+to `@opencode-ai/plugin@0.0.0-beta-17519`.
 
 ## Web search
 
@@ -17,6 +18,15 @@ HTTPS route. Setup is offline. Query input, redirects, media type, response
 bytes, URLs, duplicates, result count, timeout, and upstream failures are
 bounded; returned text is explicitly marked as untrusted evidence candidates.
 The human SearXNG UI and `/healthz` are separate from the agent ABI.
+
+SearXNG remains the default. An operator-controlled typed deployment wrapper may
+explicitly select `search.backend: "runtime"` only when it also supplies the
+query capability, external state root, canonical workspace scope, and exact
+controlled plugin inventory. That local path has no fallback or network egress,
+checks trusted researcher identity again at execution, and imports only
+`@curiosity/runtime/query`. Its synchronous FFI call is internally
+deadline-bounded, not natively preemptible. Name uniqueness is deployment
+attestation against the pinned host, not a host-global guarantee.
 
 ## OpenCode configuration
 

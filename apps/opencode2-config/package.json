@@ -66,7 +66,9 @@
   },
   "private": true,
   "dependencies": {
-    "@opencode-ai/plugin": "0.0.0-beta-17519"
+    "@curiosity/runtime": "workspace:*",
+    "@opencode-ai/plugin": "0.0.0-beta-17519",
+    "effect": "4.0.0-beta.101"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.8",

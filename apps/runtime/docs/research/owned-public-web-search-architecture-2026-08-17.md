@@ -6,6 +6,9 @@ path with an owned-semantics, locally installable public-web search system that
 strengthens Curiosity without widening agent authority.
 **Related decision:** [ADR 0021](../decisions/0021-owned-public-web-search.md)
 **Status:** research recommendation, not an implementation or deployment record.
+**Later status note:** ADR 0023 subsequently authorized only the corpus-free,
+stateless M1 skeleton in `apps/runtime`. Documentation-only observations below
+describe this dossier's baseline; ADR 0021 remains proposed.
 
 ## Executive conclusion
 

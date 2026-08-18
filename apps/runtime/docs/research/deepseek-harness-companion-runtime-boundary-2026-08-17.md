@@ -4,6 +4,9 @@
 **Decision frame:** what integration boundary and operational lessons should inform a complementary runtime that sits beside an existing agent harness?
 **Status:** research dossier only. It is not an ADR, implementation authorization, dependency approval, deployment record, or recommendation to adopt DeepSeek Harness.
 **Scope correction:** the target runtime is **not a harness**. Retrieval is its initial service, not its complete or permanent identity. Harness replacement, harness-like modularity, and duplicate orchestration are out of scope.
+**Later status note:** ADR 0023 subsequently authorized only the stateless M1
+implementation in `apps/runtime`; documentation-only observations in this dated
+dossier describe its research baseline, not the current repository contents.
 
 ## Executive conclusion
 
@@ -149,9 +152,9 @@ These assignments are documented in the official architecture and generated capa
 
 ### 4.2 Retrieval is initial, not exclusive
 
-**FACT (high):** locally, this repository is currently documentation-only and independently houses retrieval architecture; it was split so retrieval decisions could evolve without coupling to the OpenCode plugin, Ledger, or Loop (`apps/retrieval/README.md:3-9`). The accepted/proposed status of each decision remains explicit, and ADRs 0021/0022 do not authorize implementation (`apps/retrieval/README.md:27-29`).
+**FACT (high, at the research baseline):** this repository independently housed retrieval architecture and was split so retrieval decisions could evolve without coupling to the OpenCode plugin, Ledger, or Loop (`apps/runtime/README.md:3-13`). The accepted/proposed status of each decision remains explicit, and ADRs 0021/0022 do not authorize crawling, corpus acquisition, or deployment (`apps/runtime/README.md:32-35`). See the later status note above for the subsequently authorized M1 implementation.
 
-**FACT (high):** proposed ADR 0022 currently describes an installable local-first **search runtime**, one canonical provider-neutral domain API, separation of read-only query from administration, and runtime ownership of retrieval semantics and provenance (`apps/retrieval/docs/decisions/0022-installable-search-runtime.md:12-42`). Its status is Proposed and not implementation authority (`:1-4,56-60`).
+**FACT (high):** proposed ADR 0022 currently describes an installable local-first **search runtime**, one canonical provider-neutral domain API, separation of read-only query from administration, and runtime ownership of retrieval semantics and provenance (`apps/runtime/docs/decisions/0022-installable-search-runtime.md:12-42`). Its status is Proposed and not implementation authority (`:1-4,56-60`).
 
 **SCOPE CORRECTION — INFERENCE (high):** this new frame is broader than that proposed search-specific description. Retrieval can be the first service while the companion runtime's identity remains a bounded domain runtime. Future non-retrieval services must earn their place by sharing runtime-grade concerns—state, policy, evidence, long-lived jobs, provider isolation—not merely by being “plugins.” This dossier does not amend ADR 0022 or authorize that broader product definition.
 
@@ -265,7 +268,7 @@ Every arrow is a validation boundary. The adapter's acceptance does not waive ru
 
 ### 6.2 Required separations
 
-- Query/read capability is separate from corpus/provider/admin mutation. This follows the local constitution's provider-neutral and untrusted-result requirements (`apps/retrieval/AGENTS.md:6-10`) and proposed ADR 0022's read/admin separation (`apps/retrieval/docs/decisions/0022-installable-search-runtime.md:22-29`).
+- Query/read capability is separate from corpus/provider/admin mutation. This follows the local constitution's provider-neutral and untrusted-result requirements (`apps/runtime/AGENTS.md:7-10`) and proposed ADR 0022's read/admin separation (`apps/runtime/docs/decisions/0022-installable-search-runtime.md:22-29`).
 - Runtime credentials are audience-bound and least privilege. Do not pass harness/model/provider tokens through to downstream systems. Current MCP security guidance explicitly rejects token passthrough and warns about confused-deputy and SSRF risks [S24].
 - Session ids are not authentication. MCP security guidance says sessions must not be used for authentication and recommends secure unpredictable ids [S24].
 - A local HTTP service binds to loopback by default, validates `Origin`, and authenticates requests; these are explicit MCP Streamable HTTP security requirements/recommendations [S21].

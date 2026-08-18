@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0.0",
+  "cellId": "m6-owned-observatory-support",
+  "analyzerVersion": "lexical-v1",
+  "judgments": [
+    { "id": "dev-01", "split": "development", "query": "Starweave array", "grades": { "doc-01": 2, "doc-04": 1 }, "expectedOrder": ["doc-01", "doc-04"], "noAnswer": false },
+    { "id": "dev-02", "split": "development", "query": "isolated simulation VLAN", "grades": { "doc-07": 3 }, "expectedOrder": ["doc-07"], "noAnswer": false },
+    { "id": "dev-03", "split": "development", "query": "amber simulated drift", "grades": { "doc-02": 3 }, "expectedOrder": ["doc-02"], "noAnswer": false },
+    { "id": "dev-04", "split": "development", "query": "synthetic mirror monthly", "grades": { "doc-06": 3 }, "expectedOrder": ["doc-06"], "noAnswer": false },
+    { "id": "dev-05", "split": "development", "query": "blue simulator lead", "grades": { "doc-05": 3 }, "expectedOrder": ["doc-05"], "noAnswer": false },
+    { "id": "dev-06", "split": "development", "query": "real production telescope", "grades": {}, "expectedOrder": [], "noAnswer": true },
+    { "id": "held-01", "split": "held-out", "query": "orbit-console telemetry endpoint", "grades": { "doc-07": 3 }, "expectedOrder": ["doc-07"], "noAnswer": false },
+    { "id": "held-02", "split": "held-out", "query": "violet shutter paused", "grades": { "doc-02": 3 }, "expectedOrder": ["doc-02"], "noAnswer": false },
+    { "id": "held-03", "split": "held-out", "query": "Lumen-7 absent calibration", "grades": { "doc-08": 3, "doc-03": 1 }, "expectedOrder": ["doc-08", "doc-03"], "noAnswer": false },
+    { "id": "held-04", "split": "held-out", "query": "Northstar status lamp", "grades": { "doc-05": 3 }, "expectedOrder": ["doc-05"], "noAnswer": false },
+    { "id": "held-05", "split": "held-out", "query": "dry-run marker baseline", "grades": { "doc-03": 3 }, "expectedOrder": ["doc-03"], "noAnswer": false },
+    { "id": "held-06", "split": "held-out", "query": "customer billing password", "grades": {}, "expectedOrder": [], "noAnswer": true }
+  ]
+}
