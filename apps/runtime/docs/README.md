@@ -5,6 +5,10 @@
 - **Accepted:** [ADR 0020: provider-neutral bounded web search](decisions/0020-provider-neutral-web-search.md)
 - **Proposed:** [ADR 0021: stage an owned public-web search plane](decisions/0021-owned-public-web-search.md)
 - **Proposed:** [ADR 0022: installable local-first search runtime](decisions/0022-installable-search-runtime.md)
+- **Accepted:** [ADR 0023: unified retrieval and validated memory evidence substrate](decisions/0023-unified-retrieval-memory-evidence-substrate.md)
+- **Moved / Accepted at canonical location:** [ADR 0024: durable Ledger v2 and
+  capture authority](../../plugin/opencode2/docs/decisions/0024-durable-ledger-v2-and-capture-authority.md)
+  ([provenance stub](decisions/0024-durable-ledger-v2-and-capture-authority.md))
 
 ## Research
 

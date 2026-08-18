@@ -29,7 +29,7 @@
         "typescript": "5.9.2",
       },
     },
-    "apps/opencode2-config": {
+    "apps/plugin/opencode2": {
       "name": "@iamsterling/opencode2-config",
       "version": "0.1.0",
       "bin": {
@@ -168,7 +168,7 @@
 
     "@humanwhocodes/retry": ["@humanwhocodes/retry@0.4.3", "", {}, "sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ=="],
 
-    "@iamsterling/opencode2-config": ["@iamsterling/opencode2-config@workspace:apps/opencode2-config"],
+    "@iamsterling/opencode2-config": ["@iamsterling/opencode2-config@workspace:apps/plugin/opencode2"],
 
     "@img/colour": ["@img/colour@1.1.0", "", {}, "sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ=="],
 

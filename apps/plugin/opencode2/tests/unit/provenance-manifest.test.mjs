@@ -24,7 +24,7 @@ test("artifact provenance hashes the workspace lock and records its exact OpenCo
 
 test("provenance includes untracked runtime sources and rejects a stale manifest after one changes", async () => {
   const workspace = await mkdtemp(path.join(os.tmpdir(), "opencode2-provenance-"))
-  const root = path.join(workspace, "apps", "opencode2-config")
+  const root = path.join(workspace, "apps", "plugin", "opencode2")
   try {
     await cp(".", root, {
       recursive: true,
@@ -32,11 +32,11 @@ test("provenance includes untracked runtime sources and rejects a stale manifest
     })
     await Promise.all([
       cp("dist", path.join(root, "dist"), { recursive: true }),
-      writeFile(path.join(workspace, "package.json"), `${JSON.stringify({ private: true, workspaces: ["apps/*"] })}\n`),
+      writeFile(path.join(workspace, "package.json"), `${JSON.stringify({ private: true, workspaces: ["apps/plugin/*"] })}\n`),
       writeFile(path.join(workspace, "bun.lock"), `{
   "lockfileVersion": 1,
   "workspaces": {
-    "apps/opencode2-config": {
+    "apps/plugin/opencode2": {
       "dependencies": { "@opencode-ai/plugin": "0.0.0-beta-17519" },
       "devDependencies": { "@opencode-ai/cli": "0.0.0-beta-17519" }
     }
