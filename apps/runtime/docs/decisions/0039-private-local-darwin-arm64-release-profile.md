@@ -35,6 +35,15 @@ and identical. It also requires the CycloneDX inventory to cover every shipped
 first-party package and every package observed in the plugin bundle metafile,
 with exact versions, payload files, and included license text.
 
+The release-only Cargo invocation passes Darwin linker flags that set
+`LC_ID_DYLIB` to `@rpath/libcuriosity_runtime_native.dylib` and suppress the
+Mach-O UUID. These flags are scoped to the release subprocess and do not alter
+development or test Cargo builds. Immediately after the native library is
+copied into the staging tree, and before inventory, hashes, manifests, or
+archive creation, native verification accepts exactly that self-ID and
+`/usr/lib/libSystem.B.dylib`; absolute build paths and every other linked
+library remain rejected.
+
 Generated lifecycle scripts derive the release root from their own path. Build
 and preflight execute `rustc --version` and `cargo --version` and require exactly
 1.97.1 rather than merely recording constants. Install lock removal is owned by
@@ -56,8 +65,12 @@ independent review remain required.
 ## Verification timing
 
 Source tests cover integrity contradictions, FIFO rejection, lock contention,
-external release symlinks, generated-script invocation, and deterministic safe
-archive extraction. Because the release ID must be the final clean commit, the
-full `m7:build`, extracted `scripts/verify`, `scripts/preflight`, install,
-upgrade, rollback, uninstall, launch/smoke, and final archive hash/list checks
-are post-commit gates and are not claimed by this pre-commit change.
+external release symlinks, generated-script invocation, deterministic safe
+archive extraction, and release-native builds from different-length source
+roots producing byte-identical dylibs with no source roots or Mach-O UUID. Run
+them with `bun run --cwd apps/runtime m7:test`; run the complete runtime checks
+with `bun run --cwd apps/runtime verify`. Because the release ID must be the
+final clean commit, the full `m7:build`, extracted `scripts/verify`,
+`scripts/preflight`, `otool -L` exact-link check, install, upgrade, rollback,
+uninstall, launch/smoke, and final archive hash/list checks are post-commit
+gates and are not claimed by this pre-commit change.

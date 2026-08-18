@@ -1,4 +1,5 @@
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto"
+import { execFileSync } from "node:child_process"
 import {
   closeSync, constants, copyFileSync, existsSync, fstatSync, lstatSync, mkdirSync, openSync, readFileSync, readSync,
   readdirSync, readlinkSync, realpathSync, renameSync, rmSync, symlinkSync, unlinkSync, writeFileSync,
@@ -11,6 +12,11 @@ export const M7_PROFILE = Object.freeze({
   rustc: "1.97.1", cargo: "1.97.1", opencode: "0.0.0-beta-17519",
   effect: "4.0.0-beta.101", stateSchema: "curiosity-query-state/v1",
 })
+export const M7_NATIVE_INSTALL_ID = "@rpath/libcuriosity_runtime_native.dylib"
+const M7_NATIVE_RUSTFLAGS = [
+  "-C", `link-arg=-Wl,-install_name,${M7_NATIVE_INSTALL_ID}`,
+  "-C", "link-arg=-Wl,-no_uuid",
+].join("\x1f")
 
 const METADATA = new Set(["manifest.json", "SHA256SUMS"])
 const fail = (code) => { throw new Error(code) }
@@ -23,6 +29,32 @@ export const assertCleanReleaseInput = ({ head, dirty, tracked }) => {
   if (dirty) return fail("M7_RELEASE_SOURCE_DIRTY")
   if (!tracked || typeof head !== "string" || !/^[0-9a-f]{40}$/u.test(head)) return fail("M7_RELEASE_COMMIT_REQUIRED")
   return `m7-${head}`
+}
+
+export const m7NativeCargoEnvironment = (environment) => {
+  const { RUSTFLAGS: _rustflags, CARGO_ENCODED_RUSTFLAGS: _encodedRustflags, ...clean } = environment
+  return { ...clean, CARGO_ENCODED_RUSTFLAGS: M7_NATIVE_RUSTFLAGS }
+}
+
+export const darwinLinkedLibraries = (path) => {
+  let output
+  try { output = execFileSync("otool", ["-L", path], { encoding: "utf8" }) }
+  catch { fail("M7_NATIVE_LINK_INVALID") }
+  return output.split("\n").slice(1).map((line) => line.trim().split(" ")[0]).filter(Boolean)
+}
+
+export const assertM7NativeLinks = (linked) => {
+  const expected = [M7_NATIVE_INSTALL_ID, "/usr/lib/libSystem.B.dylib"]
+  if (!Array.isArray(linked) || linked.length !== expected.length || expected.some((path) => !linked.includes(path))) fail("M7_NATIVE_LINK_INVALID")
+  return true
+}
+
+export const assertM7NativeHasNoUuid = (path) => {
+  let output
+  try { output = execFileSync("otool", ["-l", path], { encoding: "utf8" }) }
+  catch { fail("M7_NATIVE_UUID_INVALID") }
+  if (output.includes("LC_UUID")) fail("M7_NATIVE_UUID_INVALID")
+  return true
 }
 
 const entries = (root, directory = root) => readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {

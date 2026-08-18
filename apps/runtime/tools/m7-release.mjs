@@ -4,7 +4,8 @@ import { copyFileSync, cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync
 import { dirname, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import {
-  M7_PROFILE, assertCleanReleaseInput, createReleaseArchive, extractReleaseArchive, installRelease, listReleaseArchive,
+  M7_PROFILE, assertCleanReleaseInput, assertM7NativeHasNoUuid, assertM7NativeLinks, createReleaseArchive, darwinLinkedLibraries, extractReleaseArchive, installRelease, listReleaseArchive,
+  m7NativeCargoEnvironment,
   rollbackRelease, uninstallRelease, validateArtifactTree, validateReleaseInventory,
   writeArtifactMetadata, writeReleaseScripts,
 } from "./m7-release-lib.mjs"
@@ -75,9 +76,10 @@ const build = (output) => {
   const tools = assertToolPins(); const releaseId = releaseIdentity(); const parent = resolve(output); mkdirSync(parent, { recursive: true })
   const stage = mkdtempSync(join(parent, ".m7-stage-"))
   try {
-    run("cargo", ["build", "--manifest-path", "apps/runtime/native/Cargo.toml", "--release", "--locked", "--no-default-features"])
+    run("cargo", ["build", "--manifest-path", "apps/runtime/native/Cargo.toml", "--release", "--locked", "--no-default-features"], { env: m7NativeCargoEnvironment(process.env) })
     run("bun", ["run", "build"], { code: "M7_PLUGIN_BUILD_FAILED", cwd: join(root, "apps/opencode2-config") })
-    mkdirSync(join(stage, "native")); copyFileSync(join(runtime, "native/target/release/libcuriosity_runtime_native.dylib"), join(stage, "native/libcuriosity_runtime_native.dylib"))
+    mkdirSync(join(stage, "native")); const stagedDylib = join(stage, "native/libcuriosity_runtime_native.dylib")
+    copyFileSync(join(runtime, "native/target/release/libcuriosity_runtime_native.dylib"), stagedDylib); assertM7NativeLinks(darwinLinkedLibraries(stagedDylib)); assertM7NativeHasNoUuid(stagedDylib)
     mkdirSync(join(stage, "runtime")); run("bun", ["build", "apps/runtime/src/query.ts", "--target=bun", "--outfile", join(stage, "runtime/query.js")]); copyFileSync(join(runtime, "src/query.d.ts"), join(stage, "runtime/query.d.ts"))
     mkdirSync(join(stage, "plugin")); const metafile = join(stage, ".plugin-metafile.json")
     run("bun", ["build", "apps/opencode2-config/dist/index.js", "--target=bun", "--outfile", join(stage, "plugin/index.js"), "--external", "@curiosity/runtime/query", `--metafile=${metafile}`]); cpSync(join(root, "apps/opencode2-config/assets"), join(stage, "plugin/assets"), { recursive: true })
@@ -102,7 +104,7 @@ const verify = (artifact) => {
   const dylib = join(rootPath, "native/libcuriosity_runtime_native.dylib"); if (!run("file", [dylib], { capture: true }).includes("Mach-O 64-bit dynamically linked shared library arm64")) throw new Error("M7_NATIVE_ARCH_INVALID")
   const symbols = run("nm", ["-gU", dylib], { capture: true }); for (const symbol of ["curiosity_runtime_v0_web_search", "curiosity_runtime_v1_corpus_query"]) if (!symbols.includes(symbol)) throw new Error("M7_NATIVE_SYMBOL_INVALID")
   for (const forbidden of ["corpus_admin", "owned_crawl", "crawl_job"]) if (symbols.includes(forbidden)) throw new Error("M7_QUERY_ONLY_SYMBOL_INVALID")
-  const linked = run("otool", ["-L", dylib], { capture: true }).split("\n").slice(1).map((line) => line.trim().split(" ")[0]).filter(Boolean); if (linked.some((path) => !path.startsWith("/usr/lib/") && !path.startsWith("/System/Library/"))) throw new Error("M7_NATIVE_LINK_INVALID")
+  assertM7NativeLinks(darwinLinkedLibraries(dylib)); assertM7NativeHasNoUuid(dylib)
   console.log("M7 private artifact verified; no publication, signature, notarization, M5-live, or M6-crawl claim")
 }
 
