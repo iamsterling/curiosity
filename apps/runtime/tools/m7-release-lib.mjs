@@ -1,18 +1,45 @@
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto"
 import { execFileSync } from "node:child_process"
 import {
-  closeSync, constants, copyFileSync, existsSync, fstatSync, lstatSync, mkdirSync, openSync, readFileSync, readSync,
-  readdirSync, readlinkSync, realpathSync, renameSync, rmSync, symlinkSync, unlinkSync, writeFileSync,
+  closeSync, constants, copyFileSync, existsSync, fchmodSync, fstatSync, fsyncSync, linkSync, lstatSync, mkdirSync, openSync, readFileSync, readSync,
+  readdirSync, readlinkSync, realpathSync, renameSync, rmSync, symlinkSync, unlinkSync, writeFileSync, writeSync,
 } from "node:fs"
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path"
 import { gzipSync, gunzipSync } from "node:zlib"
 
+export const M7_RIPGREP = Object.freeze({
+  version: "15.1.0",
+  architecture: "arm64",
+  sha256: "4fdf1d8365af224bc70e3c1490d8461d859c37cc70e739a11e987af0215f3e94",
+  source: "/Users/sterling/.cache/opencode/bin/rg",
+})
+const M7_RIPGREP_NOTICE_SHA256 = Object.freeze({
+  "licenses/ripgrep-COPYING.txt": "01c266bced4a434da0051174d6bee16a4c82cf634e2679b6155d40d75012390f",
+  "licenses/ripgrep-MIT.txt": "0f96a83840e146e43c0ec96a22ec1f392e0680e6c1226e6f3ba87e0740af850f",
+  "licenses/ripgrep-UNLICENSE.txt": "7e12e5df4bae12cb21581ba157ced20e1986a0508dd10d0e8a4ab9a4cf94e85c",
+})
+const M7_RIPGREP_FILES = Object.freeze(["bin/rg"])
 export const M7_PROFILE = Object.freeze({
   platform: "darwin", architecture: "arm64", macOS: "27.0", bun: "1.3.14",
   rustc: "1.97.1", cargo: "1.97.1", opencode: "0.0.0-beta-17519",
   effect: "4.0.0-beta.101", stateSchema: "curiosity-query-state/v1",
+  controlledPluginId: "iamsterling.opencode2-config",
+  ripgrep: { version: M7_RIPGREP.version, architecture: M7_RIPGREP.architecture, sha256: M7_RIPGREP.sha256 },
 })
 export const M7_NATIVE_INSTALL_ID = "@rpath/libcuriosity_runtime_native.dylib"
+export const M7_PLUGIN_ENTRYPOINT = "plugin/index.js"
+export const m7PluginAdapterSource = ({ delegate, effect }) => `import { closeSync, constants, fstatSync, openSync, writeSync } from "node:fs"
+import delegated from ${JSON.stringify(delegate)}
+import { Effect } from ${JSON.stringify(effect)}
+const identity=${JSON.stringify(M7_PROFILE.controlledPluginId)}
+if(delegated?.id!==identity||typeof delegated.effect!=="function")throw new Error("M7_PLUGIN_IDENTITY_INVALID")
+const nonce=process.env.CURIOSITY_M7_SMOKE_NONCE, marker=process.env.CURIOSITY_M7_SMOKE_MARKER
+const probing=typeof nonce==="string"&&/^[0-9a-f]{64}$/.test(nonce)&&typeof marker==="string"&&marker.length>0
+const record=(value)=>{if(!probing)return;const fd=openSync(marker,constants.O_WRONLY|constants.O_APPEND|constants.O_NOFOLLOW);try{const status=fstatSync(fd);if(!status.isFile()||status.uid!==process.getuid()||(status.mode&0o777)!==0o600)throw new Error("M7_SMOKE_MARKER_INVALID");writeSync(fd,JSON.stringify({nonce,...value})+"\\n")}finally{closeSync(fd)}}
+const wrapHook=(domain,kind)=>({...domain,hook:(...args)=>domain.hook(...args).pipe(Effect.tap(()=>Effect.sync(()=>record({kind:"registration",registration:kind,id:String(args[0])}))))})
+const tool=(context)=>({...wrapHook(context.tool,"tool.hook"),transform:(callback)=>{const tools=[];return context.tool.transform((draft)=>callback({...draft,add:(definition)=>{tools.push(definition.name);return draft.add(definition)}})).pipe(Effect.tap(()=>Effect.sync(()=>record({kind:"registration",registration:"tool.transform",id:"transform",tools}))))}})
+export default {id:identity,effect:(context)=>Effect.gen(function*(){record({kind:"setup",id:identity});yield* Effect.addFinalizer(()=>Effect.sync(()=>record({kind:"cleanup",id:identity})));yield* delegated.effect({...context,session:probing?wrapHook(context.session,"session.hook"):context.session,tool:probing?tool(context):context.tool})})}
+`
 const M7_BUILD_DEPENDENCIES = Object.freeze([
   ["@opencode-ai/plugin", M7_PROFILE.opencode], ["@opencode-ai/cli", M7_PROFILE.opencode],
   ["effect", M7_PROFILE.effect], ["typescript", "5.8.2"], ["@types/node", "26.2.0"],
@@ -171,6 +198,66 @@ export const assertM7NativeLinks = (linked) => {
   return true
 }
 
+export const assertM7RipgrepLinks = (linked) => {
+  const expected = ["/usr/lib/libiconv.2.dylib", "/usr/lib/libSystem.B.dylib"]
+  if (!Array.isArray(linked) || linked.length !== expected.length || expected.some((path) => !linked.includes(path))) fail("M7_RIPGREP_LINK_INVALID")
+  return true
+}
+
+export const copyVerifiedExecutable = ({ source, destination, sha256, code, unavailableCode = code }) => {
+  if (!isAbsolute(source) || resolve(source) !== source || !isAbsolute(destination) || resolve(destination) !== destination || existsSync(destination)) fail(code)
+  let canonical; let destinationParent
+  try { canonical = realpathSync(source) } catch { fail(unavailableCode) }
+  try { destinationParent = lstatSync(dirname(destination)) } catch { fail(code) }
+  if (canonical !== source || realpathSync(dirname(destination)) !== dirname(destination) || !destinationParent.isDirectory() || destinationParent.uid !== process.getuid() || (destinationParent.mode & 0o022) !== 0) fail(code)
+  const temporary = `${destination}.copy-${process.pid}-${randomBytes(8).toString("hex")}`
+  let input; let output; let identity; let published = false; const hash = createHash("sha256")
+  try {
+    input = openSync(source, constants.O_RDONLY | constants.O_NOFOLLOW)
+    identity = fstatSync(input, { bigint: true })
+    if (!identity.isFile() || identity.uid !== BigInt(process.getuid()) || (identity.mode & 0o022n) !== 0n || (identity.mode & 0o111n) === 0n) fail(code)
+    output = openSync(temporary, constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY | constants.O_NOFOLLOW, 0o700)
+    const bytes = Buffer.alloc(1024 * 1024)
+    while (true) {
+      const length = readSync(input, bytes, 0, bytes.length, null)
+      if (length === 0) break
+      hash.update(bytes.subarray(0, length))
+      let offset = 0
+      while (offset < length) offset += writeSync(output, bytes, offset, length - offset)
+    }
+    fchmodSync(output, 0o755); fsyncSync(output); closeSync(output); output = undefined
+    if (hash.digest("hex") !== sha256) fail(code)
+    linkSync(temporary, destination); published = true; unlinkSync(temporary)
+    let sourceStable = false
+    try { const current = lstatSync(source, { bigint: true }); sourceStable = !current.isSymbolicLink() && current.dev === identity.dev && current.ino === identity.ino }
+    catch { /* Diagnostic only: trust remains with the opened descriptor and copied digest. */ }
+    return { path: destination, sourceIdentity: { dev: identity.dev, ino: identity.ino }, sourceStable }
+  } catch (error) {
+    rmSync(temporary, { force: true }); if (published) rmSync(destination, { force: true }); throw error
+  } finally {
+    if (output !== undefined) closeSync(output)
+    if (input !== undefined) closeSync(input)
+  }
+}
+
+export const verifyM7RipgrepInput = (input, destination) => {
+  if (input !== M7_RIPGREP.source) {
+    try { lstatSync(input) } catch { fail("M7_RIPGREP_INPUT_UNAVAILABLE") }
+    fail("M7_RIPGREP_INPUT_MISMATCH")
+  }
+  if (typeof destination !== "string") fail("M7_RIPGREP_INPUT_MISMATCH")
+  const artifact = copyVerifiedExecutable({ source: input, destination, sha256: M7_RIPGREP.sha256, code: "M7_RIPGREP_INPUT_MISMATCH", unavailableCode: "M7_RIPGREP_INPUT_UNAVAILABLE" }).path
+  let version; let architecture; let linked
+  try {
+    version = execFileSync(artifact, ["--version"], { encoding: "utf8" }).split("\n", 1)[0]
+    architecture = execFileSync("file", [artifact], { encoding: "utf8" })
+    linked = execFileSync("otool", ["-L", artifact], { encoding: "utf8" }).split("\n").slice(1).map((line) => line.trim().split(" ")[0]).filter(Boolean)
+    if (version !== `ripgrep ${M7_RIPGREP.version} (rev af60c2de9d)` || !architecture.includes(`Mach-O 64-bit executable ${M7_RIPGREP.architecture}`)) fail("M7_RIPGREP_INPUT_MISMATCH")
+    assertM7RipgrepLinks(linked)
+    return artifact
+  } catch { rmSync(artifact, { force: true }); fail("M7_RIPGREP_INPUT_MISMATCH") }
+}
+
 export const darwinUuid = (path) => {
   let output
   try { output = execFileSync("otool", ["-l", path], { encoding: "utf8" }) }
@@ -258,15 +345,32 @@ export const validateReleaseInventory = (root) => {
   let sbom
   try { sbom = JSON.parse(readFileSync(join(root, "SBOM.json"), "utf8")) } catch { fail("M7_SBOM_INVALID") }
   if (sbom?.bomFormat !== "CycloneDX" || sbom.specVersion !== "1.6" || !Array.isArray(sbom.components) || sbom.components.length === 0) fail("M7_SBOM_INVALID")
+  let integrity
+  try { integrity = parseManifest(JSON.parse(readFileSync(join(root, "manifest.json"), "utf8"))) } catch { fail("M7_LICENSE_INVENTORY_INVALID") }
   const names = new Set(); const covered = new Set()
   for (const component of sbom.components) {
-    if (typeof component?.name !== "string" || names.has(component.name) || typeof component.version !== "string" || !component.version || component.license !== "MIT" || !Array.isArray(component.files) || component.files.length === 0 || !safeRelative(component.licenseFile)) fail("M7_SBOM_INVALID")
-    names.add(component.name); secureFile(join(root, component.licenseFile), "M7_LICENSE_INVENTORY_INVALID")
-    for (const path of component.files) { if (!safeRelative(path)) fail("M7_SBOM_INVALID"); secureFile(join(root, path), "M7_SBOM_INVALID"); covered.add(path) }
+    if (typeof component?.name !== "string" || names.has(component.name) || typeof component.version !== "string" || !component.version || typeof component.license !== "string" || !component.license || !Array.isArray(component.files) || component.files.length === 0 || !safeRelative(component.licenseFile) || (component.notices !== undefined && (!Array.isArray(component.notices) || component.notices.some((path) => !safeRelative(path))))) fail("M7_SBOM_INVALID")
+    const references = [component.licenseFile, ...(component.notices ?? [])]
+    if (component.name === "ripgrep" && (component.version !== M7_RIPGREP.version || component.platform !== M7_PROFILE.platform || component.architecture !== M7_RIPGREP.architecture || component.sha256 !== M7_RIPGREP.sha256 || JSON.stringify([...component.files].sort()) !== JSON.stringify([...M7_RIPGREP_FILES].sort()))) fail("M7_SBOM_INVALID")
+    if (component.name === "ripgrep" && (component.license !== "MIT OR Unlicense" || component.licenseFile !== "licenses/ripgrep-MIT.txt" || JSON.stringify([...(component.notices ?? [])].sort()) !== JSON.stringify(Object.keys(M7_RIPGREP_NOTICE_SHA256).sort()))) fail("M7_LICENSE_INVENTORY_INVALID")
+    names.add(component.name)
+    for (const path of references) {
+      secureFile(join(root, path), "M7_LICENSE_INVENTORY_INVALID")
+      const entry = integrity.get(path)
+      if (!entry || digest(join(root, path)) !== entry.sha256) fail("M7_LICENSE_INVENTORY_INVALID")
+      if (component.name === "ripgrep" && digest(join(root, path)) !== M7_RIPGREP_NOTICE_SHA256[path]) fail("M7_LICENSE_INVENTORY_INVALID")
+      covered.add(path)
+    }
+    for (const path of component.files) {
+      if (!safeRelative(path)) fail("M7_SBOM_INVALID")
+      secureFile(join(root, path), "M7_SBOM_INVALID")
+      if (component.name === "ripgrep" && (digest(join(root, path)) !== M7_RIPGREP.sha256 || integrity.get(path)?.sha256 !== M7_RIPGREP.sha256)) fail("M7_SBOM_INVALID")
+      covered.add(path)
+    }
   }
-  for (const required of ["curiosity-m7-release", "curiosity-runtime-native", "@curiosity/runtime", "@iamsterling/opencode2-config", "opencode2", "@opencode-ai/plugin", "@opencode-ai/protocol", "@opencode-ai/schema", "effect", "fast-check", "pure-rand"]) if (!names.has(required)) fail("M7_SBOM_COVERAGE_INVALID")
+  for (const required of ["curiosity-m7-release", "curiosity-runtime-native", "@curiosity/runtime", "@iamsterling/opencode2-config", "opencode2", "ripgrep", "@opencode-ai/plugin", "@opencode-ai/protocol", "@opencode-ai/schema", "effect", "fast-check", "pure-rand"]) if (!names.has(required)) fail("M7_SBOM_COVERAGE_INVALID")
   for (const { path } of payloadEntries(root)) {
-    if (["SBOM.json", "DEPENDENCIES-LICENSES.md", "RELEASE.json", "provenance.json"].includes(path) || path.startsWith("licenses/")) continue
+    if (["SBOM.json", "DEPENDENCIES-LICENSES.md", "RELEASE.json", "provenance.json"].includes(path)) continue
     if (!covered.has(path)) fail("M7_SBOM_COVERAGE_INVALID")
   }
   return true
@@ -392,9 +496,216 @@ export const uninstallRelease = (prefix, { purgeState = false } = {}) => withLoc
   if (purgeState) rmSync(join(prefix, "state"), { recursive: true, force: true })
 })
 
-const scriptRoot = 'CURIOSITY_RUNTIME_RELEASE_ROOT="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd -P)"\nexport CURIOSITY_RUNTIME_RELEASE_ROOT'
+const scriptRoot = 'CURIOSITY_RUNTIME_RELEASE_ROOT="$(CDPATH= cd -- "$(/usr/bin/dirname -- "$0")/.." && pwd -P)"\nexport CURIOSITY_RUNTIME_RELEASE_ROOT'
+const hostSmokeRunner = `import { spawn } from "node:child_process"
+import { randomBytes } from "node:crypto"
+import { createServer } from "node:http"
+import { closeSync, constants, fstatSync, lstatSync, mkdirSync, openSync, readSync, realpathSync, readdirSync, unlinkSync, writeFileSync, writeSync } from "node:fs"
+import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path"
+
+const pluginId = ${JSON.stringify(M7_PROFILE.controlledPluginId)}
+const expectedTools = ${JSON.stringify(["formerhuman_search", "ledger_approval_request", "ledger_approval_status", "ledger_claim_release", "ledger_claim_request", "ledger_evidence_submit", "ledger_fact_record", "ledger_intent_activate", "ledger_intent_frame", "ledger_intent_propose", "ledger_progress_propose", "ledger_resolution_propose", "ledger_review_propose", "ledger_work_propose", "native_loop_pause", "native_loop_resume", "native_loop_start", "native_loop_status", "native_loop_stop", "web_search"])}
+const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds))
+const groupAlive = (pid) => { try { process.kill(-pid, 0); return true } catch { return false } }
+const terminateGroup = async (pid) => {
+  if (!groupAlive(pid)) return
+  try { process.kill(-pid, "SIGTERM") } catch {}
+  for (let attempt = 0; attempt < 20 && groupAlive(pid); attempt += 1) await delay(25)
+  if (groupAlive(pid)) { try { process.kill(-pid, "SIGKILL") } catch {} }
+  for (let attempt = 0; attempt < 20 && groupAlive(pid); attempt += 1) await delay(25)
+  if (groupAlive(pid)) throw new Error("survivor")
+}
+const ownedFile = (directory, prefix, suffix, contents = "") => {
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const path = join(directory, prefix + randomBytes(16).toString("hex") + suffix)
+    let fd
+    try {
+      fd = openSync(path, constants.O_CREAT | constants.O_EXCL | constants.O_RDWR | constants.O_NOFOLLOW, 0o600)
+      if (contents) writeFileSync(fd, contents)
+      const status = fstatSync(fd, { bigint: true })
+      if (!status.isFile() || status.uid !== BigInt(process.getuid()) || (status.mode & 0o177n) !== 0n) throw new Error("owned")
+      return { path, fd, dev: status.dev, ino: status.ino, contents }
+    } catch (error) {
+      if (fd !== undefined) closeSync(fd)
+      if (error?.code !== "EEXIST") throw error
+    }
+  }
+  throw new Error("owned")
+}
+const removeOwned = (owned) => {
+  if (!owned) return
+  try {
+    const current = lstatSync(owned.path, { bigint: true })
+    if (!current.isSymbolicLink() && current.isFile() && current.dev === owned.dev && current.ino === owned.ino) unlinkSync(owned.path)
+  } catch (error) { if (error?.code !== "ENOENT") throw error }
+}
+const readOwned = (owned, maximum = 65_536) => {
+  const status = fstatSync(owned.fd, { bigint: true })
+  if (!status.isFile() || status.dev !== owned.dev || status.ino !== owned.ino || status.size > BigInt(maximum)) throw new Error("probe")
+  const bytes = Buffer.alloc(Number(status.size)); let offset = 0
+  while (offset < bytes.length) { const length = readSync(owned.fd, bytes, offset, bytes.length - offset, offset); if (!length) break; offset += length }
+  if (offset !== bytes.length) throw new Error("probe")
+  return bytes.toString("utf8")
+}
+const secureDirectory = (path) => {
+  const status = lstatSync(path)
+  if (status.isSymbolicLink() || !status.isDirectory() || status.uid !== process.getuid() || (status.mode & 0o022) !== 0) throw new Error("profile")
+  return realpathSync(path)
+}
+const externalDirectory = (input) => {
+  if (!input || !isAbsolute(input) || resolve(input) !== input || secureDirectory(input) !== input) throw new Error("external")
+  return input
+}
+const externalFile = (input) => {
+  if (!input || !isAbsolute(input) || resolve(input) !== input) throw new Error("external")
+  const status = lstatSync(input)
+  if (status.isSymbolicLink() || !status.isFile() || status.uid !== process.getuid() || (status.mode & 0o022) !== 0 || realpathSync(input) !== input) throw new Error("external")
+  return input
+}
+const profile = (input) => {
+  if (!input || !isAbsolute(input) || resolve(input) !== input) throw new Error("profile")
+  let ancestor = input
+  while (true) { try { lstatSync(ancestor); break } catch (error) { if (error?.code !== "ENOENT") throw error; const parent = dirname(ancestor); if (parent === ancestor) throw error; ancestor = parent } }
+  if (realpathSync(ancestor) !== ancestor) throw new Error("profile")
+  if (ancestor !== input) {
+    const missing = []; for (let path = input; path !== ancestor; path = dirname(path)) missing.push(path)
+    for (const path of missing.reverse()) { mkdirSync(path, { mode: 0o700 }); if (secureDirectory(path) !== path) throw new Error("profile") }
+  }
+  const root = secureDirectory(input); if (root !== input) throw new Error("profile")
+  const paths = { root, home: join(root, "home"), config: join(root, "config"), data: join(root, "data"), cache: join(root, "cache") }
+  for (const path of [paths.home, paths.config, paths.data, paths.cache]) {
+    try { lstatSync(path) } catch (error) { if (error?.code !== "ENOENT") throw error; mkdirSync(path, { mode: 0o700 }) }
+    if (secureDirectory(path) !== path || relative(root, path).startsWith(\`..\${sep}\`)) throw new Error("profile")
+  }
+  paths.opencode = join(paths.config, "opencode")
+  for (const path of [paths.opencode]) {
+    try { lstatSync(path) } catch (error) { if (error?.code !== "ENOENT") throw error; mkdirSync(path, { mode: 0o700 }) }
+    if (secureDirectory(path) !== path) throw new Error("profile")
+  }
+  return paths
+}
+const materialize = (paths) => {
+  const releaseRoot = process.env.CURIOSITY_RUNTIME_RELEASE_ROOT
+  if (!releaseRoot || !isAbsolute(releaseRoot) || resolve(releaseRoot) !== releaseRoot || realpathSync(releaseRoot) !== releaseRoot) throw new Error("template")
+  const pluginPath = join(releaseRoot, ${JSON.stringify(M7_PLUGIN_ENTRYPOINT)})
+  const pluginStatus = lstatSync(pluginPath)
+  if (pluginStatus.isSymbolicLink() || !pluginStatus.isFile() || realpathSync(pluginPath) !== pluginPath) throw new Error("plugin")
+  const search = { backend: "runtime", runtime: { stateRoot: externalDirectory(process.env.CURIOSITY_M7_STATE_ROOT), workspaceScope: externalDirectory(process.env.CURIOSITY_M7_WORKSPACE), queryCapabilityFile: externalFile(process.env.CURIOSITY_M7_QUERY_CAPABILITY_FILE) }, controlledPluginIds: [pluginId] }
+  if (readdirSync(paths.opencode).length) throw new Error("duplicate")
+  const config = JSON.stringify({ plugins: ["-opencode.*", { package: pluginPath, options: { search } }] })
+  return { workspace: search.runtime.workspaceScope, state: search.runtime.stateRoot, config }
+}
+const probeRecords = (owned, nonce) => {
+  const text = readOwned(owned); if (!text.endsWith("\\n")) throw new Error("probe")
+  const records = text.slice(0, -1).split("\\n").map((line) => JSON.parse(line))
+  if (records.some((record) => record.nonce !== nonce || !["setup", "cleanup", "registration"].includes(record.kind))) throw new Error("probe")
+  return records
+}
+const validateSetup = (owned, nonce) => {
+  const records = probeRecords(owned, nonce)
+  if (records.filter((record) => record.kind === "setup" && record.id === pluginId).length !== 1 || records.some((record) => record.kind === "cleanup")) throw new Error("probe")
+}
+const validateProbe = (owned, nonce) => {
+  const records = probeRecords(owned, nonce)
+  if (records.filter((record) => record.kind === "setup" && record.id === pluginId).length !== 1 || records.filter((record) => record.kind === "cleanup" && record.id === pluginId).length !== 1) throw new Error("probe")
+  const registrations = records.filter((record) => record.kind === "registration")
+  const hooks = registrations.filter((record) => record.registration !== "tool.transform").map((record) => record.registration + ":" + record.id).sort()
+  if (JSON.stringify(hooks) !== JSON.stringify(["session.hook:context", "tool.hook:execute.after", "tool.hook:execute.before"])) throw new Error("probe")
+  const tools = registrations.flatMap((record) => record.registration === "tool.transform" && Array.isArray(record.tools) ? record.tools : []).sort()
+  if (JSON.stringify(tools) !== JSON.stringify(expectedTools)) throw new Error("probe")
+}
+const proxyRecorder = async () => {
+  const records = []; let truncated = false
+  const record = (method, authority) => { if (records.length === 64) truncated = true; else records.push({ method, authority: authority.trim().toLowerCase().replace(/\\.$/u, "") }) }
+  const server = createServer((request, response) => { record(request.method ?? "UNKNOWN", request.headers.host ?? ""); response.writeHead(502).end() })
+  server.on("connect", (request, socket) => { record("CONNECT", request.url ?? ""); socket.destroy() })
+  await new Promise((accept, reject) => { server.once("error", reject); server.listen(0, "127.0.0.1", accept) })
+  const address = server.address(); if (!address || typeof address === "string") throw new Error("proxy")
+  return { records, get truncated() { return truncated }, url: \`http://127.0.0.1:\${address.port}\`, close: () => new Promise((accept, reject) => { server.close((error) => error ? reject(error) : accept()); server.closeAllConnections() }) }
+}
+const environment = (paths, materialized, probe, proxyURL, password) => ({
+  PATH: process.env.PATH, HOME: paths.home, XDG_CONFIG_HOME: paths.config, XDG_DATA_HOME: paths.data, XDG_CACHE_HOME: paths.cache,
+  OPENCODE_CONFIG_DIR: paths.opencode, OPENCODE_CONFIG_CONTENT: materialized.config, OPENCODE_CONFIG_PROJECT_DISABLE: "1", OPENCODE_PASSWORD: password,
+  OPENCODE_DISABLE_MODELS_FETCH: "1", OPENCODE_DISABLE_FFF: "1", CURIOSITY_RUNTIME_RELEASE_ROOT: process.env.CURIOSITY_RUNTIME_RELEASE_ROOT,
+  ...(probe ? { CURIOSITY_M7_SMOKE_NONCE: probe.nonce, CURIOSITY_M7_SMOKE_MARKER: probe.path } : {}),
+  ...(proxyURL ? { HTTP_PROXY: proxyURL, HTTPS_PROXY: proxyURL, ALL_PROXY: proxyURL, http_proxy: proxyURL, https_proxy: proxyURL, all_proxy: proxyURL, NO_PROXY: "127.0.0.1,localhost", no_proxy: "127.0.0.1,localhost" } : {}),
+})
+const mode = process.argv[2]; const host = process.argv[3]
+const diagnostic = mode === "launch" ? "M7_LAUNCH_FAILED" : "M7_HOST_SMOKE_FAILED"; const diagnosticFd = Number(process.env.CURIOSITY_M7_DIAGNOSTIC_FD)
+let child; let policy; let probe; let proxy; let failed = false; let pendingSignal; let signalExitCode; let shutdown; let childSettled = false; let ownedGroupAfterExit = false
+const signalHandlers = new Map(); const signalCodes = { SIGHUP: 129, SIGINT: 130, SIGTERM: 143 }
+const beginShutdown = (signal) => {
+  pendingSignal ??= signal; signalExitCode ??= signalCodes[signal]; failed = true
+  if (!child?.pid) return
+  if (shutdown) { if (!childSettled || ownedGroupAfterExit) { try { process.kill(-child.pid, "SIGKILL") } catch {} }; return }
+  shutdown = (async () => { try { process.kill(-child.pid, signal) } catch {}; await delay(250); if ((!childSettled || ownedGroupAfterExit) && groupAlive(child.pid)) { try { process.kill(-child.pid, "SIGKILL") } catch {} } })()
+}
+for (const signal of ["SIGINT", "SIGTERM", "SIGHUP"]) { const handler = () => beginShutdown(signal); signalHandlers.set(signal, handler); process.on(signal, handler) }
+try {
+  const paths = profile(process.env.CURIOSITY_M7_PROFILE_ROOT); const materialized = materialize(paths)
+  if (mode === "launch") {
+    probe = ownedFile(paths.cache, "m7-host-probe-", ".jsonl"); probe.nonce = randomBytes(32).toString("hex")
+    const password = randomBytes(32).toString("base64url")
+    child = spawn(host, ["--standalone", ...process.argv.slice(4)], { cwd: materialized.workspace, detached: true, env: environment(paths, materialized, probe, undefined, password), stdio: "inherit" })
+    if (pendingSignal) beginShutdown(pendingSignal)
+    await delay(500)
+    const activationDeadline = Date.now() + 9_500
+    while (true) { try { validateSetup(probe, probe.nonce); break } catch { if (Date.now() >= activationDeadline || child.exitCode !== null) throw new Error("activation"); await delay(50) } }
+    const status = child.exitCode !== null || child.signalCode !== null
+      ? { code: child.exitCode, signal: child.signalCode }
+      : await new Promise((accept, reject) => { child.once("error", reject); child.once("exit", (code, signal) => { childSettled = true; ownedGroupAfterExit = groupAlive(child.pid); accept({ code, signal }) }) })
+    childSettled = true; ownedGroupAfterExit = groupAlive(child.pid)
+    if (shutdown) await shutdown
+    if (status.code !== 0 || status.signal) throw new Error("host")
+    validateProbe(probe, probe.nonce)
+  } else if (mode === "smoke") {
+    const sandbox = "/usr/bin/sandbox-exec"; if (!lstatSync(sandbox).isFile()) throw new Error("sandbox")
+    policy = ownedFile(paths.cache, "m7-host-smoke-", ".sb", \`(version 1)\n(allow default)\n(deny network-outbound)\n(allow network-outbound (remote ip "localhost:*"))\n(deny file-write*)\n(allow file-write* (subpath \${JSON.stringify(paths.root)}))\n(allow file-write* (subpath \${JSON.stringify(materialized.workspace)}))\n(allow file-write* (subpath \${JSON.stringify(materialized.state)}))\n\`)
+    probe = ownedFile(paths.cache, "m7-host-probe-", ".jsonl"); probe.nonce = randomBytes(32).toString("hex")
+    proxy = await proxyRecorder()
+    try {
+      const password = randomBytes(32).toString("base64url")
+      child = spawn(sandbox, ["-p", policy.contents, host, "serve", "--hostname", "127.0.0.1", "--port", "0", "--log-level", "all"], { cwd: materialized.workspace, detached: true, env: environment(paths, materialized, probe, proxy.url, password), stdio: ["ignore", "pipe", "pipe"] })
+      if (pendingSignal) beginShutdown(pendingSignal)
+      const output = []; let size = 0; let overflow = false
+      const capture = (chunk) => { size += chunk.length; if (size > 65_536) overflow = true; else output.push(Buffer.from(chunk)) }
+      child.stdout.on("data", capture); child.stderr.on("data", capture)
+      const deadline = Date.now() + 30_000
+      let confirmed = false
+      while (Date.now() < deadline) {
+        if (overflow || child.exitCode !== null) throw new Error("host")
+        const baseURL = Buffer.concat(output).toString().match(/server listening on (http:\\/\\/127\\.0\\.0\\.1:\\d+)/u)?.[1]
+        if (!baseURL) { await delay(25); continue }
+        const url = new URL("/api/plugin", baseURL); url.searchParams.set("location[directory]", materialized.workspace)
+        try {
+          const authorization = "Basic " + Buffer.from("opencode:" + password).toString("base64")
+          const response = await fetch(url, { headers: { Authorization: authorization }, signal: AbortSignal.timeout(1_000) })
+          const bytes = Buffer.from(await response.arrayBuffer()); if (bytes.length > 65_536) throw new Error("response")
+          const payload = JSON.parse(bytes.toString("utf8")); const ids = Array.isArray(payload?.data) ? payload.data.map((entry) => entry?.id) : []
+          if (response.ok && ids.length === 1 && ids[0] === pluginId) { validateSetup(probe, probe.nonce); confirmed = true; break }
+        } catch {}
+        await delay(50)
+      }
+      if (!confirmed) throw new Error("timeout")
+      const reaped = child.exitCode === null ? new Promise((resolve) => child.once("exit", resolve)) : Promise.resolve()
+      await terminateGroup(child.pid); await Promise.race([reaped, delay(1_000).then(() => { throw new Error("reap") })]); childSettled = true; ownedGroupAfterExit = false
+      validateProbe(probe, probe.nonce)
+      const settledProxy = proxy; await settledProxy.close(); proxy = undefined
+      if (settledProxy.truncated || settledProxy.records.length !== 0) throw new Error("external")
+    } finally { if (child?.pid) await terminateGroup(child.pid) }
+  } else throw new Error("mode")
+} catch { failed = true } finally {
+  if (child?.pid && (!childSettled || ownedGroupAfterExit)) { try { await terminateGroup(child.pid) } catch { failed = true } }
+  for (const [signal, handler] of signalHandlers) process.off(signal, handler)
+  if (proxy) { try { await proxy.close() } catch { failed = true } }
+  for (const owned of [probe, policy]) { if (owned?.fd !== undefined) { try { closeSync(owned.fd) } catch { failed = true } }; try { removeOwned(owned) } catch { failed = true } }
+}
+if (failed) { try { writeSync(Number.isInteger(diagnosticFd) ? diagnosticFd : 2, diagnostic + "\\n") } catch {}; process.exitCode = signalExitCode ?? 1 }
+`
 export const writeReleaseScripts = (stage) => {
   mkdirSync(join(stage, "scripts"), { recursive: true, mode: 0o755 })
+  mkdirSync(join(stage, "tools"), { recursive: true, mode: 0o755 })
+  writeFileSync(join(stage, "tools/m7-host-smoke.mjs"), hostSmokeRunner, { mode: 0o644 })
   const script = (name, body) => writeFileSync(join(stage, "scripts", name), `#!/bin/sh\nset -eu\n${scriptRoot}\n${body}\n`, { mode: 0o755 })
   script("verify", 'exec bun "$CURIOSITY_RUNTIME_RELEASE_ROOT/tools/m7-release.mjs" verify "$CURIOSITY_RUNTIME_RELEASE_ROOT"')
   script("preflight", 'exec bun "$CURIOSITY_RUNTIME_RELEASE_ROOT/tools/m7-release.mjs" verify "$CURIOSITY_RUNTIME_RELEASE_ROOT"')
@@ -402,8 +713,12 @@ export const writeReleaseScripts = (stage) => {
   script("upgrade", 'exec bun "$CURIOSITY_RUNTIME_RELEASE_ROOT/tools/m7-release.mjs" install "$CURIOSITY_RUNTIME_RELEASE_ROOT" "${1:?prefix}"')
   script("rollback", 'exec bun "$CURIOSITY_RUNTIME_RELEASE_ROOT/tools/m7-release.mjs" rollback "${1:?prefix}" "${2:?release-id}"')
   script("uninstall", 'exec bun "$CURIOSITY_RUNTIME_RELEASE_ROOT/tools/m7-release.mjs" uninstall "${1:?prefix}"')
-  script("launch", 'export OPENCODE_CONFIG_DIR="${CURIOSITY_M7_CONFIG_DIR:?isolated config directory}"; exec "$CURIOSITY_RUNTIME_RELEASE_ROOT/bin/opencode2" "$@"')
-  script("smoke", '"$CURIOSITY_RUNTIME_RELEASE_ROOT/bin/opencode2" --version | grep -Fx "opencode2 v0.0.0-beta-17519" >/dev/null; cd "$CURIOSITY_RUNTIME_RELEASE_ROOT"; exec bun -e \'import("./runtime/query.js").then(m=>{if(Object.keys(m).sort().join(",")!=="createQueryRuntime,queryRuntimeCapabilities")process.exit(1)})\'')
+  const runtimeExecutable = `'${process.execPath.replaceAll("'", `'\\''`)}'`
+  const fixedPath = `$CURIOSITY_RUNTIME_RELEASE_ROOT/bin:/usr/bin:/bin`
+  const isolatedRunner = (mode) => `/usr/bin/env -i PATH="${fixedPath}" CURIOSITY_M7_PROFILE_ROOT="$CURIOSITY_M7_PROFILE_ROOT" CURIOSITY_M7_STATE_ROOT="$CURIOSITY_M7_STATE_ROOT" CURIOSITY_M7_WORKSPACE="$CURIOSITY_M7_WORKSPACE" CURIOSITY_M7_QUERY_CAPABILITY_FILE="$CURIOSITY_M7_QUERY_CAPABILITY_FILE" CURIOSITY_RUNTIME_RELEASE_ROOT="$CURIOSITY_RUNTIME_RELEASE_ROOT" CURIOSITY_M7_DIAGNOSTIC_FD=3 ${runtimeExecutable} "$CURIOSITY_RUNTIME_RELEASE_ROOT/tools/m7-host-smoke.mjs" ${mode} "$CURIOSITY_RUNTIME_RELEASE_ROOT/bin/opencode2" "$@"`
+  const redacted = (mode, code) => `CURIOSITY_RUNTIME_RELEASE_ROOT="$(CDPATH= cd -- "$(/usr/bin/dirname -- "$0")/.." 2>/dev/null && pwd -P)" || { printf '%s\\n' '${code}' >&2; exit 1; }\nif [ -z "\${CURIOSITY_M7_PROFILE_ROOT:-}" ] || [ -z "\${CURIOSITY_M7_STATE_ROOT:-}" ] || [ -z "\${CURIOSITY_M7_WORKSPACE:-}" ] || [ -z "\${CURIOSITY_M7_QUERY_CAPABILITY_FILE:-}" ] || [ ! -f "$CURIOSITY_RUNTIME_RELEASE_ROOT/tools/m7-host-smoke.mjs" ]; then\n  printf '%s\\n' '${code}' >&2\n  exit 1\nfi\nexport CURIOSITY_RUNTIME_RELEASE_ROOT CURIOSITY_M7_PROFILE_ROOT CURIOSITY_M7_STATE_ROOT CURIOSITY_M7_WORKSPACE CURIOSITY_M7_QUERY_CAPABILITY_FILE\nexec 3>&2\nexec ${isolatedRunner(mode)} 2>/dev/null`
+  writeFileSync(join(stage, "scripts/launch"), `#!/bin/sh\n${redacted("launch", "M7_LAUNCH_FAILED")}\n`, { mode: 0o755 })
+  writeFileSync(join(stage, "scripts/smoke"), `#!/bin/sh\n${redacted("smoke", "M7_HOST_SMOKE_FAILED")}\n`, { mode: 0o755 })
 }
 
 const tarName = (path) => {

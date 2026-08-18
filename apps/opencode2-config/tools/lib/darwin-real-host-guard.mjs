@@ -3,10 +3,36 @@ import { lstat, readdir, readFile, realpath } from "node:fs/promises"
 import { createRequire } from "node:module"
 import path from "node:path"
 import { createHash } from "node:crypto"
+import { randomBytes } from "node:crypto"
+import { closeSync, constants, existsSync, fchmodSync, fstatSync, fsyncSync, linkSync, lstatSync as lstatFileSync, openSync, readSync, realpathSync as realpathFileSync, rmSync, unlinkSync, writeSync } from "node:fs"
 import { fileURLToPath } from "node:url"
 
 const fail = (code) => { throw new Error(code) }
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex")
+
+export const copyVerifiedExecutable = ({ source, destination, expectedSha256, code }) => {
+  if (!path.isAbsolute(source) || path.resolve(source) !== source || !path.isAbsolute(destination) || path.resolve(destination) !== destination || existsSync(destination)) fail(code)
+  let canonical; let destinationParent
+  try { canonical = realpathFileSync(source) } catch { fail(code) }
+  try { destinationParent = lstatFileSync(path.dirname(destination)) } catch { fail(code) }
+  if (canonical !== source || realpathFileSync(path.dirname(destination)) !== path.dirname(destination) || !destinationParent.isDirectory() || destinationParent.uid !== process.getuid() || (destinationParent.mode & 0o022) !== 0) fail(code)
+  const temporary = `${destination}.copy-${process.pid}-${randomBytes(8).toString("hex")}`
+  let input; let output; let identity; let published = false; const hash = createHash("sha256")
+  try {
+    input = openSync(source, constants.O_RDONLY | constants.O_NOFOLLOW); identity = fstatSync(input, { bigint: true })
+    if (!identity.isFile() || identity.uid !== BigInt(process.getuid()) || (identity.mode & 0o022n) !== 0n || (identity.mode & 0o111n) === 0n) fail(code)
+    output = openSync(temporary, constants.O_CREAT | constants.O_EXCL | constants.O_WRONLY | constants.O_NOFOLLOW, 0o700)
+    const bytes = Buffer.alloc(1024 * 1024)
+    while (true) { const length = readSync(input, bytes, 0, bytes.length, null); if (!length) break; hash.update(bytes.subarray(0, length)); let offset = 0; while (offset < length) offset += writeSync(output, bytes, offset, length - offset) }
+    fchmodSync(output, 0o755); fsyncSync(output); closeSync(output); output = undefined
+    if (hash.digest("hex") !== expectedSha256) fail(code)
+    linkSync(temporary, destination); published = true; unlinkSync(temporary)
+    let sourceStable = false
+    try { const current = lstatFileSync(source, { bigint: true }); sourceStable = !current.isSymbolicLink() && current.dev === identity.dev && current.ino === identity.ino } catch {}
+    return { path: destination, sourceStable }
+  } catch (error) { rmSync(temporary, { force: true }); if (published) rmSync(destination, { force: true }); throw error }
+  finally { if (output !== undefined) closeSync(output); if (input !== undefined) closeSync(input) }
+}
 
 export const runtimeIdentity = {
   cliExecutable: "5e25c1eb8c1afd5b0665340f9ba9c07eeb60d5e5e33434885a190cf034eb43ec",
@@ -53,8 +79,10 @@ export const isolatedEnvironment = ({ root, home, config, data, cache, password,
   XDG_CACHE_HOME: cache,
   OPENCODE_CONFIG_DIR: path.join(config, "opencode"),
   OPENCODE_CONFIG_CONTENT: pluginConfig,
+  OPENCODE_CONFIG_PROJECT_DISABLE: "1",
   OPENCODE_PASSWORD: password,
   OPENCODE_DISABLE_MODELS_FETCH: "1",
+  OPENCODE_DISABLE_FFF: "1",
   HTTP_PROXY: proxyURL,
   HTTPS_PROXY: proxyURL,
   ALL_PROXY: proxyURL,
@@ -66,6 +94,7 @@ const normalizedAuthority = (authority) => authority.trim().toLowerCase().replac
 /** Classifies only proxy-observed attempts; sandbox enforcement covers bypasses. */
 export const classifyProxyAttempts = (records, { truncated = false } = {}) => {
   if (truncated) fail("REAL_HOST_PROXY_CAPACITY_EXHAUSTED")
+  if (records.length) fail("REAL_HOST_EXTERNAL_ATTEMPT_OBSERVED")
   const catalog = records.filter((record) => record.method === "CONNECT" && normalizedAuthority(record.authority) === "models.opencode.ai:443" && record.disposition === "rejected")
   const unknown = records.filter((record) => !(record.method === "CONNECT" && normalizedAuthority(record.authority) === "models.opencode.ai:443" && record.disposition === "rejected"))
   if (unknown.length) {
@@ -78,6 +107,8 @@ export const classifyProxyAttempts = (records, { truncated = false } = {}) => {
     successfulExternalEgressCount: 0,
     observedProxyAttempts: records.length,
     catalogMetadata: { method: "CONNECT", authority: "models.opencode.ai:443", disposition: "rejected", attempts: catalog.length },
+    modelCatalogAttempts: catalog.length,
+    githubAttempts: 0,
     providerInferenceAttempts: 0,
     successfulInferenceCount: 0,
     unknownAuthorityAttempts: 0,
@@ -104,7 +135,7 @@ export const createProxyRecorder = async ({ capacity = 64 } = {}) => {
   await new Promise((resolve, reject) => { server.once("error", reject); server.listen(0, "127.0.0.1", resolve) })
   const address = server.address()
   if (!address || typeof address === "string") fail("REAL_HOST_PROXY_START_FAILED")
-  return { records, get truncated() { return truncated }, url: `http://127.0.0.1:${address.port}`, close: () => new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve())) }
+  return { records, get truncated() { return truncated }, url: `http://127.0.0.1:${address.port}`, close: () => new Promise((resolve, reject) => { server.close((error) => error ? reject(error) : resolve()); server.closeAllConnections() }) }
 }
 
 const byteMatches = (value, secret) => value.includes(Buffer.from(secret))

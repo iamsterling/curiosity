@@ -6,17 +6,24 @@ import { once } from "node:events"
 import { cp, lstat, mkdir, mkdtemp, readFile, readdir, rm, stat, symlink, writeFile } from "node:fs/promises"
 import os from "node:os"
 import path from "node:path"
-import { fileURLToPath, pathToFileURL } from "node:url"
+import { fileURLToPath } from "node:url"
 import { promisify } from "node:util"
 import { capabilityReport } from "../dist/platform/real-host/index.js"
 import { PINNED_REAL_HOST_VERSION } from "../dist/platform/real-host/index.js"
-import { canonicalRoot, classifyProxyAttempts, createProxyRecorder, isolatedEnvironment, resolveInstalledRuntimePaths, sandboxProfile, scanRetainedFiles, verifyCopiedRuntimeIdentity } from "./lib/darwin-real-host-guard.mjs"
-import { findWorkspaceRoot } from "./workspace-root.mjs"
+import { canonicalRoot, classifyProxyAttempts, copyVerifiedExecutable, createProxyRecorder, isolatedEnvironment, resolveInstalledRuntimePaths, sandboxProfile, scanRetainedFiles, verifyCopiedRuntimeIdentity } from "./lib/darwin-real-host-guard.mjs"
 
 export { capabilityReport } from "../dist/platform/real-host/index.js"
 const execute = promisify(execFile)
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 const digest = async (file) => createHash("sha256").update(await readFile(file)).digest("hex")
+const RIPGREP = Object.freeze({ source: "/Users/sterling/.cache/opencode/bin/rg", version: "ripgrep 15.1.0 (rev af60c2de9d)", sha256: "4fdf1d8365af224bc70e3c1490d8461d859c37cc70e739a11e987af0215f3e94" })
+const verifiedRipgrep = async (destination) => {
+  copyVerifiedExecutable({ source: RIPGREP.source, destination, expectedSha256: RIPGREP.sha256, code: "REAL_HOST_RIPGREP_PIN_MISMATCH" })
+  const [version, file, links] = await Promise.all([execute(destination, ["--version"]), execute("file", [destination]), execute("otool", ["-L", destination])])
+  const linked = links.stdout.split("\n").slice(1).map((line) => line.trim().split(" ")[0]).filter(Boolean)
+  if (version.stdout.split("\n", 1)[0] !== RIPGREP.version || !file.stdout.includes("Mach-O 64-bit executable arm64") || await digest(destination) !== RIPGREP.sha256 || JSON.stringify(linked) !== JSON.stringify(["/usr/lib/libiconv.2.dylib", "/usr/lib/libSystem.B.dylib"])) throw new Error("REAL_HOST_RIPGREP_PIN_MISMATCH")
+  return destination
+}
 const waitFor = async (predicate, timeout) => {
   const end = Date.now() + timeout
   while (Date.now() < end) { const result = await predicate(); if (result) return result; await delay(25) }
@@ -24,6 +31,11 @@ const waitFor = async (predicate, timeout) => {
 }
 const versionOf = async (host, env) => (await execute(host, ["--version"], { env })).stdout.match(/\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?/u)?.[0] ?? "unknown"
 const markers = async (file) => { try { return (await readFile(file, "utf8")).trim().split("\n").filter(Boolean).map(JSON.parse) } catch { return [] } }
+const forcedFailureCode = (records, nonce) => {
+  const failures = records.filter((record) => record?.nonce === nonce && record.kind === "failure")
+  if (failures.length !== 1) return undefined
+  return { import: "REAL_HOST_TEST_IMPORT_FAILED", setup: "REAL_HOST_TEST_SETUP_FAILED", duplicate: "REAL_HOST_TEST_DUPLICATE_FAILED" }[failures[0].condition]
+}
 const groupMembers = async (pid) => {
   const { stdout } = await execute("ps", ["-axo", "pid=,pgid="])
   return stdout.split("\n").map((line) => line.trim().split(/\s+/u)).filter((fields) => fields[1] === String(pid)).map(([member]) => Number(member)).filter(Number.isFinite).sort((a, b) => a - b)
@@ -97,6 +109,7 @@ export const runRealHostSuite = async () => {
   if (process.platform !== "darwin" || !await stat("/usr/bin/sandbox-exec").then(() => true).catch(() => false)) throw new Error("REAL_HOST_DARWIN_SANDBOX_REQUIRED")
   const root = await mkdtemp(path.join(os.tmpdir(), "opencode2-real-host-"))
   const output = []; let child; let proxy
+  const testFailure = process.env.REAL_HOST_FORCED_FAILURE
   const password = randomBytes(32).toString("base64url")
   const authorization = `Basic ${Buffer.from(`opencode:${password}`).toString("base64")}`
   const secrets = [password, `opencode:${password}`, authorization]
@@ -105,35 +118,43 @@ export const runRealHostSuite = async () => {
     const running = () => child.exitCode === null && child.signalCode === null
     const before = await groupMembers(child.pid)
     if (!running()) return { before, after: await groupMembers(child.pid) }
-    try { process.kill(-child.pid, "SIGTERM") } catch {}
-    await Promise.race([once(child, "exit"), delay(10_000)])
+    try { process.kill(-child.pid, testFailure ? "SIGKILL" : "SIGTERM") } catch {}
+    await Promise.race([once(child, "exit"), delay(testFailure ? 500 : 10_000)])
     if (running()) {
       try { process.kill(-child.pid, "SIGKILL") } catch {}
       try { process.kill(child.pid, "SIGKILL") } catch {}
     }
-    if (running()) await Promise.race([once(child, "exit"), delay(10_000)])
+    if (running()) await Promise.race([once(child, "exit"), delay(testFailure ? 2_000 : 10_000)])
     if (running()) throw new Error("REAL_HOST_TERMINATION_TIMEOUT")
     const after = await groupMembers(child.pid)
     if (after.length) throw new Error(`REAL_HOST_PROCESS_SURVIVORS:${after.join(",")}`)
     return { before, after }
   }
   try {
-    const workspaceRoot = await findWorkspaceRoot(process.cwd())
     const canonical = await canonicalRoot(root)
     const paths = Object.fromEntries(["home", "config", "data", "cache", "project"].map((name) => [name, path.join(canonical, name)]))
     await Promise.all(Object.values(paths).map((dir) => mkdir(dir, { recursive: true })))
-    await mkdir(path.join(paths.project, ".opencode", "plugins"), { recursive: true }); await mkdir(path.join(paths.config, "opencode"), { recursive: true })
+    await mkdir(path.join(paths.project, ".opencode"), { recursive: true }); await mkdir(path.join(paths.config, "opencode"), { recursive: true })
     const artifact = path.join(canonical, "artifact"); await mkdir(artifact)
-    await cp(path.resolve("dist"), path.join(artifact, "dist"), { recursive: true }); await cp(path.resolve("package.json"), path.join(artifact, "package.json")); await cp(path.join(workspaceRoot, "node_modules/.bun/node_modules"), path.join(artifact, "node_modules"), { recursive: true, dereference: true }); await cp(path.resolve("node_modules"), path.join(artifact, "node_modules"), { recursive: true, dereference: true, force: true })
+    await cp(path.resolve("dist"), path.join(artifact, "dist"), { recursive: true }); await cp(path.resolve("package.json"), path.join(artifact, "package.json")); await mkdir(path.join(artifact, "node_modules/@opencode-ai/plugin/dist/promise"), { recursive: true }); await cp(resolveInstalledRuntimePaths().sdk, path.join(artifact, "node_modules/@opencode-ai/plugin/dist/promise/index.js"))
+    await mkdir(path.join(artifact, "plugin"), { recursive: true }); const bundleEntry = path.join(artifact, ".plugin-entry.mjs")
     const installedRuntime = resolveInstalledRuntimePaths()
     await mkdir(path.join(artifact, "node_modules/@opencode-ai/cli-darwin-arm64/bin"), { recursive: true }); await cp(installedRuntime.cli, path.join(artifact, "node_modules/@opencode-ai/cli-darwin-arm64/bin/opencode2"))
-    const entrypoint = pathToFileURL(path.join(artifact, "dist/index.js")).href; const effectEntrypoint = pathToFileURL(path.join(artifact, "node_modules/effect/dist/index.js")).href; const artifactHash = await digest(path.join(artifact, "dist/index.js")); const marker = path.join(paths.project, ".opencode", "host-marker.jsonl")
-    await writeFile(path.join(paths.project, ".opencode/plugins/opencode2-config.js"), `import { appendFile } from "node:fs/promises"; import { Effect } from ${JSON.stringify(effectEntrypoint)}; const marker=${JSON.stringify(marker)}, entry=${JSON.stringify(entrypoint)}, hash=${JSON.stringify(artifactHash)}; const record=(x)=>appendFile(marker,JSON.stringify(x)+"\\n"); export default {id:"iamsterling.opencode2-config",effect:(context)=>Effect.gen(function*(){const {default:plugin}=yield* Effect.promise(()=>import(entry));yield* Effect.promise(()=>record({kind:"setup",lifecycle:"effect",id:plugin.id,artifactEntrypoint:entry,artifactHash:hash}));yield* Effect.addFinalizer(()=>Effect.promise(()=>record({kind:"cleanup",lifecycle:"effect",id:plugin.id})));const wrapHook=(domain,kind)=>({...domain,hook:(...args)=>domain.hook(...args).pipe(Effect.tap(()=>Effect.promise(()=>record({kind:"registration",registration:kind,id:String(args[0])}))))});const tool={...wrapHook(context.tool,"tool.hook"),transform:(callback)=>{const tools=[];return context.tool.transform((draft)=>callback({...draft,add:(definition)=>{tools.push(definition.name);return draft.add(definition)}})).pipe(Effect.tap(()=>Effect.promise(()=>record({kind:"registration",registration:"tool.transform",id:"transform",tools}))))}};yield* plugin.effect({...context,session:wrapHook(context.session,"session.hook"),tool})})}`)
-    const pluginConfig = JSON.stringify({ plugins: [path.join(paths.project, ".opencode/plugins/opencode2-config.js")] })
-    await writeFile(path.join(paths.project, "opencode.json"), pluginConfig)
+    await mkdir(path.join(artifact, "bin")); await verifiedRipgrep(path.join(artifact, "bin/rg"))
+    const forcedFailure = process.env.REAL_HOST_FORCED_FAILURE; const probeNonce = randomBytes(32).toString("hex")
+    const builtEntrypoint = path.join(artifact, "plugin/index.js")
+    const entrypoint = builtEntrypoint
+    const marker = path.join(paths.project, ".opencode", "host-marker.jsonl")
+    const setupFailure = forcedFailure === "setup" ? 'yield* Effect.promise(()=>record({kind:"failure",condition:"setup"}));throw new Error("FORCED_REAL_HOST_SETUP_FAILURE");' : ""
+    const importFailure = forcedFailure === "import" ? 'await record({kind:"failure",condition:"import"});throw new Error("FORCED_REAL_HOST_IMPORT_FAILURE");' : ""
+    await writeFile(bundleEntry, `import { appendFile } from "node:fs/promises"; import { Effect } from ${JSON.stringify(path.resolve("node_modules/effect/dist/index.js"))}; import plugin from ${JSON.stringify(path.resolve("dist/index.js"))}; const marker=${JSON.stringify(marker)},nonce=${JSON.stringify(probeNonce)}; const record=(x)=>appendFile(marker,JSON.stringify({nonce,...x})+"\\n");${importFailure} export default {id:"iamsterling.opencode2-config",effect:(context)=>Effect.gen(function*(){${setupFailure}yield* Effect.promise(()=>record({kind:"setup",lifecycle:"effect",id:plugin.id}));yield* Effect.addFinalizer(()=>Effect.promise(()=>record({kind:"cleanup",lifecycle:"effect",id:plugin.id})));const wrapHook=(domain,kind)=>({...domain,hook:(...args)=>domain.hook(...args).pipe(Effect.tap(()=>Effect.promise(()=>record({kind:"registration",registration:kind,id:String(args[0])}))))});const tool={...wrapHook(context.tool,"tool.hook"),transform:(callback)=>{const tools=[];return context.tool.transform((draft)=>callback({...draft,add:(definition)=>{tools.push(definition.name);return draft.add(definition)}})).pipe(Effect.tap(()=>Effect.promise(()=>record({kind:"registration",registration:"tool.transform",id:"transform",tools}))))}};yield* plugin.effect({...context,session:wrapHook(context.session,"session.hook"),tool})})}`)
+    await execute("bun", ["build", bundleEntry, "--target=bun", "--outfile", builtEntrypoint]); await rm(bundleEntry)
+    const artifactHash = await digest(builtEntrypoint)
+    const duplicate = path.join(artifact, "plugin/duplicate.js"); if (forcedFailure === "duplicate") await writeFile(duplicate, `import{appendFile}from"node:fs/promises";await appendFile(${JSON.stringify(marker)},JSON.stringify({nonce:${JSON.stringify(probeNonce)},kind:"failure",condition:"duplicate"})+"\\n");throw new Error("FORCED_REAL_HOST_DUPLICATE_FAILURE")`)
+    const pluginConfig = JSON.stringify({ plugins: ["-opencode.*", { package: entrypoint, options: {} }, ...(forcedFailure === "duplicate" ? [{ package: duplicate, options: {} }] : [])] })
     proxy = await createProxyRecorder()
-    const fixtures = await qualifyFixtures({ canonical, proxy, secrets })
-    const env = isolatedEnvironment({ root: canonical, ...paths, password, proxyURL: proxy.url, pluginConfig })
+    const fixtures = forcedFailure ? {} : await qualifyFixtures({ canonical, proxy, secrets })
+    const env = { ...isolatedEnvironment({ root: canonical, ...paths, password, proxyURL: proxy.url, pluginConfig }), PATH: `${path.join(artifact, "bin")}:/usr/bin:/bin` }
     const host = path.join(artifact, "node_modules/@opencode-ai/cli-darwin-arm64/bin/opencode2")
     const runtime = await verifyCopiedRuntimeIdentity({
       cli: installedRuntime.cli,
@@ -145,18 +166,30 @@ export const runRealHostSuite = async () => {
     const profile = path.join(canonical, "sandbox.sb"); await writeFile(profile, sandboxProfile(canonical))
     child = spawn("/usr/bin/sandbox-exec", ["-f", profile, host, "serve", "--hostname", "127.0.0.1", "--port", "0", "--log-level", "all"], { cwd: paths.project, env, detached: true, stdio: ["ignore", "pipe", "pipe"] })
     child.stdout.on("data", (chunk) => output.push(Buffer.from(chunk))); child.stderr.on("data", (chunk) => output.push(Buffer.from(chunk))); await once(child, "spawn")
-    const baseURL = await waitFor(() => Buffer.concat(output).toString().match(/server listening on (http:\/\/127\.0\.0\.1:\d+)/u)?.[1], Number(process.env.REAL_HOST_TIMEOUT_MS || 10_000)).catch(() => { throw new Error("REAL_HOST_START_FAILED") })
+    if (process.env.REAL_HOST_TEST_PID_FILE) await writeFile(process.env.REAL_HOST_TEST_PID_FILE, String(child.pid))
+    const failureDeadline = forcedFailure ? 4_000 : Number(process.env.REAL_HOST_TIMEOUT_MS || 10_000)
+    const baseURL = await waitFor(async () => { const code = forcedFailureCode(await markers(marker), probeNonce); if (code) throw new Error(code); return Buffer.concat(output).toString().match(/server listening on (http:\/\/127\.0\.0\.1:\d+)/u)?.[1] }, failureDeadline).catch((error) => { if (String(error.message).startsWith("REAL_HOST_TEST_")) throw error; throw new Error("REAL_HOST_START_FAILED") })
     const plugin = new URL("/api/plugin", baseURL); plugin.searchParams.set("location[directory]", paths.project)
-    const response = await fetch(plugin, { headers: { Authorization: authorization }, signal: AbortSignal.timeout(10_000) }); if (!response.ok) throw new Error(`REAL_HOST_HTTP_${response.status}`); await response.arrayBuffer()
+    const response = await waitFor(async () => {
+      const code = forcedFailureCode(await markers(marker), probeNonce); if (code) throw new Error(code)
+      const candidate = await fetch(plugin, { headers: { Authorization: authorization }, signal: AbortSignal.timeout(1_000) })
+      if (forcedFailure && !candidate.ok) return undefined
+      if (!candidate.ok) throw new Error(`REAL_HOST_HTTP_${candidate.status}`)
+      const payload = await candidate.json()
+      if (!Array.isArray(payload?.data) || payload.data.length === 0) return
+      if (JSON.stringify(payload.data) !== JSON.stringify([{ id: "iamsterling.opencode2-config" }])) throw new Error("REAL_HOST_PLUGIN_INVENTORY_MISMATCH")
+      return candidate
+    }, forcedFailure ? 4_000 : 10_000)
     const records = await waitFor(async () => { const values = await markers(marker); return values.filter((x) => x.kind === "registration").length === 4 ? values : undefined }, 10_000)
     await delay(100)
     const cleanup = await terminate()
     const all = await markers(marker); const registrations = all.filter((x) => x.kind === "registration"); const tools = registrations.find((x) => x.registration === "tool.transform")?.tools ?? []
     if (all.filter((x) => x.kind === "setup").length !== 1 || all.filter((x) => x.kind === "cleanup").length !== 1 || registrations.length !== 4 || JSON.stringify([...tools].sort()) !== JSON.stringify(TOOL_IDS)) throw new Error("REAL_HOST_REGISTRATION_MISMATCH")
     const rawOutput = Buffer.concat(output); const retainedFilesScanned = await scanRetainedFiles(canonical, { output: rawOutput, proxyRecords: proxy.records, secrets })
-    const network = classifyProxyAttempts(proxy.records, { truncated: proxy.truncated })
+    const settledProxy = proxy; await settledProxy.close(); proxy = undefined
+    const network = classifyProxyAttempts(settledProxy.records, { truncated: settledProxy.truncated })
     const capabilities = capabilityReport({ hostVersion: version, pluginApiVersion: PINNED_REAL_HOST_VERSION })
-    return { supported: true, serve: { status: "confirmed", code: "REAL_HOST_SERVE_CONFIRMED" }, discovery: { status: "invoked", code: "REAL_HOST_PLUGIN_EFFECT_INVOKED", invoked: true, lifecycle: "effect" }, activation: { method: "GET", path: "/api/plugin", query: { "location[directory]": "<disposable-project>" }, authenticated: true }, http: { status: response.status, path: "/api/plugin", authenticated: true }, setupCount: 1, cleanupCount: 1, registrations: registrations.map((x) => `${x.registration}:${x.id}`), tools, artifact: { entrypoint: "artifact/dist/index.js", sha256: artifactHash, copied: true, runtime }, network, filesystem: { outsideWritesPrevented: true, retainedFilesScanned }, credentials: { providerCredentialsInherited: false, retainedRawMatches: 0, outputRawMatches: 0 }, processes: { forkPrevented: true, observedGroupMembersBeforeCleanup: cleanup.before, survivingGroupMembersAfterCleanup: cleanup.after }, fixtures, hostVersion: version, capabilities, output: "[captured output withheld]", topLevelWrites: (await readdir(canonical)).sort(), projectWrites: (await readdir(path.join(paths.project, ".opencode"))).sort() }
+    return { supported: true, serve: { status: "confirmed", code: "REAL_HOST_SERVE_CONFIRMED" }, discovery: { status: "invoked", code: "REAL_HOST_PLUGIN_EFFECT_INVOKED", invoked: true, lifecycle: "effect" }, activation: { method: "GET", path: "/api/plugin", query: { "location[directory]": "<disposable-project>" }, authenticated: true, source: "OPENCODE_CONFIG_CONTENT", projectConfig: false }, http: { status: response.status, path: "/api/plugin", authenticated: true }, setupCount: 1, cleanupCount: 1, registrations: registrations.map((x) => `${x.registration}:${x.id}`), tools, artifact: { entrypoint: "artifact/plugin/index.js", sha256: artifactHash, copied: true, runtime }, network, filesystem: { outsideWritesPrevented: true, retainedFilesScanned }, credentials: { providerCredentialsInherited: false, retainedRawMatches: 0, outputRawMatches: 0 }, processes: { forkPrevented: true, observedGroupMembersBeforeCleanup: cleanup.before, survivingGroupMembersAfterCleanup: cleanup.after }, fixtures, hostVersion: version, capabilities, output: "[captured output withheld]", topLevelWrites: (await readdir(canonical)).sort(), projectWrites: (await readdir(path.join(paths.project, ".opencode"))).sort() }
   } finally { await terminate(); await proxy?.close(); await rm(root, { recursive: true, force: true }); try { await stat(root); throw new Error("REAL_HOST_ROOT_NOT_REMOVED") } catch (error) { if (error.code !== "ENOENT") throw error } }
 }
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) process.stdout.write(`${JSON.stringify(await runRealHostSuite())}\n`)

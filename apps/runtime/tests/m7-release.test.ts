@@ -1,9 +1,9 @@
 import { afterEach, expect, test } from "bun:test";
-import { chmodSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, realpathSync, renameSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, copyFileSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, realpathSync, renameSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 // @ts-expect-error The release CLI is intentionally plain ESM for detached artifact use.
-import { assertCleanReleaseInput, installRelease, manifestFor, rollbackRelease, uninstallRelease, validateArtifactTree, validateReleaseInventory, writeArtifactMetadata } from "../tools/m7-release-lib.mjs";
+import { M7_RIPGREP, assertCleanReleaseInput, installRelease, manifestFor, rollbackRelease, uninstallRelease, validateArtifactTree, validateReleaseInventory, writeArtifactMetadata } from "../tools/m7-release-lib.mjs";
 
 const roots: string[] = [];
 afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }); });
@@ -11,9 +11,12 @@ const temporary = () => { const root = realpathSync(mkdtempSync(join(tmpdir(), "
 const makeArtifact = (path: string, releaseId: string, largePayload = false) => {
   writeFileSync(join(path, "RELEASE.json"), JSON.stringify({ releaseId }));
   writeFileSync(join(path, "LICENSE"), "MIT\n");
+  mkdirSync(join(path, "licenses"), { recursive: true });
+  for (const name of ["ripgrep-COPYING.txt", "ripgrep-MIT.txt", "ripgrep-UNLICENSE.txt"]) copyFileSync(new URL(`../licenses/${name}`, import.meta.url), join(path, "licenses", name));
+  mkdirSync(join(path, "bin"), { recursive: true }); copyFileSync(M7_RIPGREP.source, join(path, "bin/rg"));
   if (largePayload) writeFileSync(join(path, "payload"), Buffer.alloc(64 * 1024 * 1024, 0x61));
-  const names = ["curiosity-m7-release", "curiosity-runtime-native", "@curiosity/runtime", "@iamsterling/opencode2-config", "opencode2", "@opencode-ai/plugin", "@opencode-ai/protocol", "@opencode-ai/schema", "effect", "fast-check", "pure-rand"];
-  writeFileSync(join(path, "SBOM.json"), JSON.stringify({ bomFormat: "CycloneDX", specVersion: "1.6", components: names.map((name) => ({ name, version: "test", license: "MIT", licenseFile: "LICENSE", files: ["RELEASE.json", "LICENSE", ...(largePayload ? ["payload"] : [])] })) }));
+  const names = ["curiosity-m7-release", "curiosity-runtime-native", "@curiosity/runtime", "@iamsterling/opencode2-config", "opencode2", "ripgrep", "@opencode-ai/plugin", "@opencode-ai/protocol", "@opencode-ai/schema", "effect", "fast-check", "pure-rand"];
+  writeFileSync(join(path, "SBOM.json"), JSON.stringify({ bomFormat: "CycloneDX", specVersion: "1.6", components: names.map((name) => name === "ripgrep" ? ({ name, version: "15.1.0", platform: "darwin", architecture: "arm64", sha256: "4fdf1d8365af224bc70e3c1490d8461d859c37cc70e739a11e987af0215f3e94", license: "MIT OR Unlicense", licenseFile: "licenses/ripgrep-MIT.txt", notices: ["licenses/ripgrep-COPYING.txt", "licenses/ripgrep-MIT.txt", "licenses/ripgrep-UNLICENSE.txt"], files: ["bin/rg"] }) : ({ name, version: "test", license: "MIT", licenseFile: "LICENSE", files: ["RELEASE.json", "LICENSE", ...(largePayload ? ["payload"] : [])] })) }));
   writeArtifactMetadata(path); return path;
 };
 
@@ -68,6 +71,34 @@ test("M7 SBOM inventory covers payload files and every referenced license", () =
   expect(() => validateReleaseInventory(root)).toThrow("M7_SBOM_COVERAGE_INVALID");
   rmSync(join(root, "unowned-payload")); rmSync(join(root, "LICENSE"));
   expect(() => validateReleaseInventory(root)).toThrow("M7_LICENSE_INVENTORY_INVALID");
+});
+
+test("M7 SBOM requires integrity-covered exact ripgrep notices", () => {
+  const root = temporary(); makeArtifact(root, "m7-a");
+  const sbomPath = join(root, "SBOM.json"); const sbom = JSON.parse(readFileSync(sbomPath, "utf8")); const ripgrep = sbom.components.find((component: { name: string }) => component.name === "ripgrep");
+  ripgrep.notices.pop(); writeFileSync(sbomPath, JSON.stringify(sbom)); writeArtifactMetadata(root);
+  expect(() => validateReleaseInventory(root)).toThrow("M7_LICENSE_INVENTORY_INVALID");
+  makeArtifact(root, "m7-a"); rmSync(join(root, "licenses/ripgrep-COPYING.txt")); writeArtifactMetadata(root);
+  expect(() => validateReleaseInventory(root)).toThrow("M7_LICENSE_INVENTORY_INVALID");
+  makeArtifact(root, "m7-a"); writeFileSync(join(root, "licenses/ripgrep-MIT.txt"), "tampered\n"); writeArtifactMetadata(root);
+  expect(() => validateReleaseInventory(root)).toThrow("M7_LICENSE_INVENTORY_INVALID");
+});
+
+test("M7 SBOM rejects false ripgrep version, hash, architecture, and files", () => {
+  const root = temporary(); const sbomPath = join(root, "SBOM.json");
+  for (const mutate of [
+    (ripgrep: Record<string, unknown>) => { ripgrep.version = "15.1.1"; },
+    (ripgrep: Record<string, unknown>) => { ripgrep.sha256 = "0".repeat(64); },
+    (ripgrep: Record<string, unknown>) => { ripgrep.architecture = "x64"; },
+    (ripgrep: Record<string, unknown>) => { ripgrep.platform = "linux"; },
+    (ripgrep: Record<string, unknown>) => { ripgrep.files = ["bin/rg", "RELEASE.json"]; },
+    (ripgrep: Record<string, unknown>) => { ripgrep.files = []; },
+  ]) {
+    makeArtifact(root, "m7-a"); const sbom = JSON.parse(readFileSync(sbomPath, "utf8")); mutate(sbom.components.find((component: { name: string }) => component.name === "ripgrep")); writeFileSync(sbomPath, JSON.stringify(sbom)); writeArtifactMetadata(root);
+    expect(() => validateReleaseInventory(root)).toThrow("M7_SBOM_INVALID");
+  }
+  makeArtifact(root, "m7-a"); writeFileSync(join(root, "bin/rg"), "false artifact"); writeArtifactMetadata(root);
+  expect(() => validateReleaseInventory(root)).toThrow("M7_SBOM_INVALID");
 });
 
 test("M7 install, upgrade, rollback and uninstall are atomic and preserve unrelated state and credentials", () => {

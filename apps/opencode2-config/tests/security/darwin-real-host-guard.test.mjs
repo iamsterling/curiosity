@@ -124,22 +124,23 @@ test("canonical root rejects a symlink root", async () => {
   } finally { await rm(parent, { recursive: true, force: true }) }
 })
 
-test("zero or more rejected exact catalog CONNECT attempts are accepted and all other proxy records fail", () => {
+test("only an empty settled proxy recorder is accepted", () => {
   const records = [
     { method: "CONNECT", authority: "models.opencode.ai:443", disposition: "rejected" },
     { method: "CONNECT", authority: "models.opencode.ai:443", disposition: "rejected" },
   ]
-  assert.deepEqual(classifyProxyAttempts(records), {
+  assert.deepEqual(classifyProxyAttempts([]), {
     successfulExternalEgressPrevented: true,
     successfulExternalEgressCount: 0,
-    observedProxyAttempts: 2,
-    catalogMetadata: { method: "CONNECT", authority: "models.opencode.ai:443", disposition: "rejected", attempts: 2 },
+    observedProxyAttempts: 0,
+    catalogMetadata: { method: "CONNECT", authority: "models.opencode.ai:443", disposition: "rejected", attempts: 0 },
+    modelCatalogAttempts: 0,
+    githubAttempts: 0,
     providerInferenceAttempts: 0,
     successfulInferenceCount: 0,
     unknownAuthorityAttempts: 0,
   })
-  assert.deepEqual(classifyProxyAttempts([]).catalogMetadata.attempts, 0)
-  assert.deepEqual(classifyProxyAttempts(records.slice(0, 1)).catalogMetadata.attempts, 1)
+  assert.throws(() => classifyProxyAttempts(records), /REAL_HOST_EXTERNAL_ATTEMPT_OBSERVED/)
   assert.throws(() => classifyProxyAttempts([...records, { method: "CONNECT", authority: "api.openai.com:443" }]), /REAL_HOST_EXTERNAL_ATTEMPT_OBSERVED/)
   assert.throws(() => classifyProxyAttempts([{ method: "GET", authority: "models.opencode.ai:443" }]), /REAL_HOST_EXTERNAL_ATTEMPT_OBSERVED/)
   assert.throws(() => classifyProxyAttempts([{ method: "CONNECT", authority: "models.opencode.ai:443", disposition: "accepted" }]), /REAL_HOST_EXTERNAL_ATTEMPT_OBSERVED/)
