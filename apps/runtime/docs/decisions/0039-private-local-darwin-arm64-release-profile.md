@@ -35,10 +35,11 @@ and identical. It also requires the CycloneDX inventory to cover every shipped
 first-party package and every package observed in the plugin bundle metafile,
 with exact versions, payload files, and included license text.
 
-The release-only Cargo invocation passes Darwin linker flags that set
-`LC_ID_DYLIB` to `@rpath/libcuriosity_runtime_native.dylib` and suppress the
-Mach-O UUID. These flags are scoped to the release subprocess and do not alter
-development or test Cargo builds. Immediately after the native library is
+The release-only Cargo invocation passes a Darwin linker flag that sets
+`LC_ID_DYLIB` to `@rpath/libcuriosity_runtime_native.dylib`. Darwin 27 requires
+a valid, nonzero `LC_UUID`; after normalized install-ID and source-root inputs,
+the linker-derived UUID remains deterministic. The release flag is scoped to
+the release subprocess and does not alter development or test Cargo builds. Immediately after the native library is
 copied into the staging tree, and before inventory, hashes, manifests, or
 archive creation, native verification accepts exactly that self-ID and
 `/usr/lib/libSystem.B.dylib`; absolute build paths and every other linked
@@ -67,7 +68,8 @@ independent review remain required.
 Source tests cover integrity contradictions, FIFO rejection, lock contention,
 external release symlinks, generated-script invocation, deterministic safe
 archive extraction, and release-native builds from different-length source
-roots producing byte-identical dylibs with no source roots or Mach-O UUID. Run
+roots producing byte-identical dylibs with no source roots, identical nonzero
+Mach-O UUIDs, exact links, and successful Bun `dlopen`/query smoke. Run
 them with `bun run --cwd apps/runtime m7:test`; run the complete runtime checks
 with `bun run --cwd apps/runtime verify`. Because the release ID must be the
 final clean commit, the full `m7:build`, extracted `scripts/verify`,

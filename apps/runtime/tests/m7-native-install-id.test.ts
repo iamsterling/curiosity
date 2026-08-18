@@ -4,14 +4,15 @@ import { cpSync, mkdtempSync, readFileSync, realpathSync, rmSync } from "node:fs
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createRuntime } from "../src/index.js";
 // @ts-expect-error The release utility is intentionally plain ESM for detached artifact use.
-import { M7_NATIVE_INSTALL_ID, assertM7NativeHasNoUuid, assertM7NativeLinks, darwinLinkedLibraries, m7NativeCargoEnvironment } from "../tools/m7-release-lib.mjs";
+import { M7_NATIVE_INSTALL_ID, assertM7NativeHasValidUuid, assertM7NativeLinks, darwinLinkedLibraries, darwinUuid, m7NativeCargoEnvironment } from "../tools/m7-release-lib.mjs";
 
 const roots: string[] = [];
 afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }); });
 const temporary = (name: string) => { const root = realpathSync(mkdtempSync(join(tmpdir(), name))); roots.push(root); return root; };
 
-test("M7 release-native linking is reproducible across different-length source roots", () => {
+test("M7 release-native linking is reproducible and loadable across different-length source roots", async () => {
   const native = realpathSync(join(dirname(fileURLToPath(import.meta.url)), "../native"));
   const target = join(native, "target");
   const sourceRoots = [temporary("m7-native-a-"), temporary("m7-native-source-root-with-a-deliberately-different-length-")];
@@ -27,12 +28,21 @@ test("M7 release-native linking is reproducible across different-length source r
   const [first, second] = dylibs;
   if (!first || !second) throw new Error("M7_TEST_BUILD_REQUIRED");
   expect(readFileSync(first)).toEqual(readFileSync(second));
+  const uuids = dylibs.map(darwinUuid);
+  expect(uuids[0]).toBe(uuids[1]);
+  expect(uuids[0]).toMatch(/^[0-9A-F]{8}(?:-[0-9A-F]{4}){3}-[0-9A-F]{12}$/);
+  expect(uuids[0]).not.toBe("00000000-0000-0000-0000-000000000000");
   for (const dylib of dylibs) {
     const bytes = readFileSync(dylib);
     for (const root of sourceRoots) expect(bytes.includes(Buffer.from(root))).toBe(false);
     expect(darwinLinkedLibraries(dylib)).toEqual([M7_NATIVE_INSTALL_ID, "/usr/lib/libSystem.B.dylib"]);
     expect(assertM7NativeLinks(darwinLinkedLibraries(dylib))).toBe(true);
-    expect(assertM7NativeHasNoUuid(dylib)).toBe(true);
+    expect(assertM7NativeHasValidUuid(dylib)).toBe(true);
+    const runtime = createRuntime({ libraryPath: dylib, now: () => 1_700_000_000_000 });
+    await expect(runtime.webSearch({ apiVersion: "curiosity.runtime/v0", operation: "web_search", requestId: "m7-smoke", query: "bounded query", deadlineUnixMs: 1_700_000_001_000 })).resolves.toMatchObject({
+      status: "unavailable", diagnostic: { code: "corpus_absent" }, results: [],
+    });
+    runtime.close();
   }
 });
 
@@ -42,7 +52,7 @@ test("M7 release linker flags are isolated from the caller environment", () => {
   expect(environment).toEqual({ PATH: process.env.PATH, RUSTFLAGS: "development-flags", CARGO_ENCODED_RUSTFLAGS: "development-encoded-flags" });
   expect(releaseEnvironment.RUSTFLAGS).toBeUndefined();
   expect(releaseEnvironment.CARGO_ENCODED_RUSTFLAGS).not.toContain("development");
-  expect(releaseEnvironment.CARGO_ENCODED_RUSTFLAGS).toContain("-no_uuid");
+  expect(releaseEnvironment.CARGO_ENCODED_RUSTFLAGS).not.toContain("-no_uuid");
 });
 
 test("M7 native link verification rejects absolute and unapproved libraries", () => {

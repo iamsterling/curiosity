@@ -22,7 +22,6 @@ const M7_RELEASE_DEPENDENCIES = Object.freeze([
 ])
 const M7_NATIVE_RUSTFLAGS = [
   "-C", `link-arg=-Wl,-install_name,${M7_NATIVE_INSTALL_ID}`,
-  "-C", "link-arg=-Wl,-no_uuid",
 ].join("\x1f")
 
 const METADATA = new Set(["manifest.json", "SHA256SUMS"])
@@ -172,11 +171,17 @@ export const assertM7NativeLinks = (linked) => {
   return true
 }
 
-export const assertM7NativeHasNoUuid = (path) => {
+export const darwinUuid = (path) => {
   let output
   try { output = execFileSync("otool", ["-l", path], { encoding: "utf8" }) }
   catch { fail("M7_NATIVE_UUID_INVALID") }
-  if (output.includes("LC_UUID")) fail("M7_NATIVE_UUID_INVALID")
+  const uuids = [...output.matchAll(/^\s*uuid ([0-9A-F]{8}(?:-[0-9A-F]{4}){3}-[0-9A-F]{12})$/gmu)].map((match) => match[1])
+  if (uuids.length !== 1 || !output.includes("cmd LC_UUID") || uuids[0] === "00000000-0000-0000-0000-000000000000") fail("M7_NATIVE_UUID_INVALID")
+  return uuids[0]
+}
+
+export const assertM7NativeHasValidUuid = (path) => {
+  darwinUuid(path)
   return true
 }
 
