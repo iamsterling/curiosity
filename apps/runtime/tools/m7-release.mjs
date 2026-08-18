@@ -4,7 +4,7 @@ import { copyFileSync, cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync
 import { dirname, isAbsolute, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import {
-  M7_PLUGIN_ENTRYPOINT, M7_PROFILE, M7_RIPGREP, assertCleanReleaseInput, assertM7NativeHasValidUuid, assertM7NativeLinks, assertM7RipgrepLinks, createReleaseArchive, darwinLinkedLibraries, extractReleaseArchive, installRelease, listReleaseArchive,
+  M7_PLUGIN_BUILD_ARGUMENTS, M7_PLUGIN_ENTRYPOINT, M7_PROFILE, M7_RIPGREP, assertCleanReleaseInput, assertM7NativeHasValidUuid, assertM7NativeLinks, assertM7RipgrepLinks, createReleaseArchive, darwinLinkedLibraries, extractReleaseArchive, installRelease, listReleaseArchive,
   m7NativeCargoEnvironment,
   rollbackRelease, uninstallRelease, validateArtifactTree, validateReleaseInventory,
   m7DependencyInput, m7PluginAdapterSource, stageM7BuildDependencies, verifyM7RipgrepInput, writeArtifactMetadata, writeReleaseScripts,
@@ -95,7 +95,7 @@ const build = (output) => {
     mkdirSync(join(stage, "runtime")); run("bun", ["build", "apps/runtime/src/query.ts", "--target=bun", "--outfile", join(stage, "runtime/query.js")]); copyFileSync(join(runtime, "src/query.d.ts"), join(stage, "runtime/query.d.ts"))
     mkdirSync(join(stage, "plugin")); const metafile = join(stage, ".plugin-metafile.json"); const releaseEntry = join(stage, ".plugin-entry.mjs")
     writeFileSync(releaseEntry, m7PluginAdapterSource({ delegate: join(root, "apps/opencode2-config/dist/index.js"), effect: join(root, "apps/opencode2-config/node_modules/effect/dist/index.js") }))
-    run("bun", ["build", releaseEntry, "--target=bun", "--outfile", join(stage, M7_PLUGIN_ENTRYPOINT), `--metafile=${metafile}`]); rmSync(releaseEntry); cpSync(join(root, "apps/opencode2-config/assets"), join(stage, "plugin/assets"), { recursive: true })
+    run("bun", ["build", releaseEntry, ...M7_PLUGIN_BUILD_ARGUMENTS, "--outfile", join(stage, M7_PLUGIN_ENTRYPOINT), `--metafile=${metafile}`]); rmSync(releaseEntry); cpSync(join(root, "apps/opencode2-config/assets"), join(stage, "plugin/assets"), { recursive: true })
     const bundled = bundledPackageNames(metafile); rmSync(metafile)
     mkdirSync(join(stage, "bin")); copyFileSync(findHost(dependencies.source), join(stage, "bin/opencode2")); import.meta.require("node:fs").chmodSync(join(stage, "bin/opencode2"), 0o755)
     verifyM7RipgrepInput(M7_RIPGREP.source, join(stage, "bin/rg"))

@@ -28,6 +28,7 @@ export const M7_PROFILE = Object.freeze({
 })
 export const M7_NATIVE_INSTALL_ID = "@rpath/libcuriosity_runtime_native.dylib"
 export const M7_PLUGIN_ENTRYPOINT = "plugin/index.js"
+export const M7_PLUGIN_BUILD_ARGUMENTS = Object.freeze(["--target=bun", "--minify-whitespace"])
 export const m7PluginAdapterSource = ({ delegate, effect }) => `import { closeSync, constants, fstatSync, openSync, writeSync } from "node:fs"
 import delegated from ${JSON.stringify(delegate)}
 import { Effect } from ${JSON.stringify(effect)}

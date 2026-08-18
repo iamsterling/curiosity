@@ -1,9 +1,9 @@
 import { afterEach, expect, test } from "bun:test";
 import { chmodSync, cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 // @ts-expect-error Detached release utilities are plain ESM.
-import { M7_RIPGREP, assertM7RipgrepLinks, copyVerifiedExecutable, createReleaseArchive, extractReleaseArchive, listReleaseArchive, m7PluginAdapterSource, stageM7BuildDependencies, verifyM7RipgrepInput, writeReleaseScripts } from "../tools/m7-release-lib.mjs";
+import { M7_PLUGIN_BUILD_ARGUMENTS, M7_RIPGREP, assertM7RipgrepLinks, copyVerifiedExecutable, createReleaseArchive, extractReleaseArchive, listReleaseArchive, m7PluginAdapterSource, stageM7BuildDependencies, verifyM7RipgrepInput, writeReleaseScripts } from "../tools/m7-release-lib.mjs";
 
 const roots: string[] = [];
 afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }); });
@@ -134,6 +134,24 @@ test("a clean source copy materializes exact local M7 build dependencies without
   expect(() => stageM7BuildDependencies({ sourceRoot, dependencyRoot })).toThrow("M7_BUILD_DEPENDENCY_PIN_MISMATCH");
   rmSync(pluginManifest);
   expect(() => stageM7BuildDependencies({ sourceRoot, dependencyRoot })).toThrow("M7_BUILD_DEPENDENCIES_UNAVAILABLE");
+});
+
+test("the real M7 plugin bundle and release archive are independent of the staging root", () => {
+  expect(M7_PLUGIN_BUILD_ARGUMENTS).toEqual(["--target=bun", "--minify-whitespace"]);
+  const root = temporary(); const sourceRoot = realpathSync(new URL("../../opencode2-config", import.meta.url).pathname);
+  const stages = [join(root, "short-stage"), join(root, "a-deliberately-different-and-longer-staging-root")];
+  const archives = stages.map((stage, index) => {
+    mkdirSync(join(stage, "plugin"), { recursive: true });
+    const entry = join(stage, ".plugin-entry.mjs"); const output = join(stage, "plugin/index.js");
+    writeFileSync(entry, m7PluginAdapterSource({ delegate: join(sourceRoot, "src/index.ts"), effect: join(sourceRoot, "node_modules/effect/dist/index.js") }));
+    const bundle = Bun.spawnSync([process.execPath, "build", entry, ...M7_PLUGIN_BUILD_ARGUMENTS, "--outfile", output], { stdout: "pipe", stderr: "pipe" });
+    expect(bundle.exitCode, bundle.stderr.toString()).toBe(0); rmSync(entry);
+    const bytes = readFileSync(output);
+    for (const path of [...stages, ...stages.map((path) => basename(path)), output]) expect(bytes.includes(Buffer.from(path))).toBe(false);
+    const archive = join(root, `release-${index}.tar.gz`); createReleaseArchive(stage, archive, "m7-reproducible"); return { archive, bytes };
+  });
+  expect(archives[0]!.bytes).toEqual(archives[1]!.bytes);
+  expect(readFileSync(archives[0]!.archive)).toEqual(readFileSync(archives[1]!.archive));
 });
 
 test("dependency staging rejects a hostile source node_modules link without mutating its target", () => {
