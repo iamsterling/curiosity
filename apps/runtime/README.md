@@ -25,8 +25,13 @@ Any `products.zip` archive is excluded from the canonical inventory; the live
 `docs/research/products/` directory is authoritative.
 
 ADR status is per document. ADR 0020 is **Accepted** for repository
-implementation with deployment pending; ADRs 0021 and 0022 are **Proposed** and
-do not authorize implementation, crawling, corpus acquisition, or deployment.
+implementation with deployment pending; ADRs 0021 and 0022 are **Proposed**.
+ADR 0023 is **Accepted** but does not authorize implementation, crawling, corpus
+acquisition, or deployment. Canonical ADR 0024 is the **Accepted** durability
+follow-up, is owned in
+[`apps/opencode2-config`](../opencode2-config/docs/decisions/0024-durable-ledger-v2-and-capture-authority.md),
+and is design approval only: implementation and production authority/persistence
+remain blocked on its gates. This repository retains a provenance stub.
 
 ## Boundaries
 

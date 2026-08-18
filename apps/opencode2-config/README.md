@@ -28,12 +28,16 @@ active session model.
 ```jsonc
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugins": ["@iamsterling/opencode2-config"]
+  "plugins": ["@iamsterling/opencode2-config"],
 }
 ```
 
 ## Product architecture
 
+- **Accepted durability architecture:** [ADR 0024](docs/decisions/0024-durable-ledger-v2-and-capture-authority.md)
+  is the canonical Ledger v2/capture-authority design. Its acceptance is design
+  approval only: implementation and production authority/persistence remain
+  blocked on its gates, and it introduces no OpenSpec assets.
 - **Ledger Authority v1:** immutable event authority for intent, capability/delta framing, criteria, work, claims, typed evidence, approvals, reconciliation, archive lineage, facts, audit and capture gaps.
 - **Native Loop Engine:** same-root-session execution journal using native prompt/interrupt/event primitives only.
 - **Hook foundation:** durable event envelopes, bounded provenance-labelled context, tool observations and compaction/event capture.
