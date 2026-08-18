@@ -13,20 +13,25 @@ const readJSON = async (file) => JSON.parse((await readFile(file, "utf8")).repla
 export const checkOpenCodeAbi = async ({ active = false, binary = "opencode2" } = {}) => {
   const workspaceRoot = await findWorkspaceRoot(root)
   const workspacePackage = path.relative(workspaceRoot, root).split(path.sep).join("/")
-  const [pkg, lock, plugin, cli, realHost] = await Promise.all([
+  const [pkg, lock, plugin, cli, effect, realHost] = await Promise.all([
     readJSON(path.join(root, "package.json")),
     readJSON(path.join(workspaceRoot, "bun.lock")),
     readJSON(path.join(root, "node_modules/@opencode-ai/plugin/package.json")),
     readJSON(path.join(root, "node_modules/@opencode-ai/cli/package.json")),
+    readJSON(path.join(root, "node_modules/effect/package.json")),
     readFile(path.join(root, "src/platform/real-host/index.ts"), "utf8"),
   ])
   const expected = pkg.dependencies?.["@opencode-ai/plugin"]
-  assert.match(expected ?? "", /^0\.0\.0-(?:next|beta)-\d+$/u, "plugin ABI must use an exact prerelease build")
+  assert.equal(expected, "0.0.0-beta-17519", "plugin ABI must use the reviewed exact beta-17519 build")
   assert.equal(pkg.devDependencies?.["@opencode-ai/cli"], expected, "repository CLI and plugin SDK pins differ")
   assert.equal(lock.workspaces?.[workspacePackage]?.dependencies?.["@opencode-ai/plugin"], expected, "plugin lock pin differs")
   assert.equal(lock.workspaces?.[workspacePackage]?.devDependencies?.["@opencode-ai/cli"], expected, "CLI lock pin differs")
   assert.equal(plugin.version, expected, "installed plugin SDK differs from package pin; run bun install")
   assert.equal(cli.version, expected, "installed CLI differs from package pin; run bun install")
+  assert.equal(pkg.dependencies?.effect, "4.0.0-beta.101", "repository Effect pin differs from reviewed M7 pin")
+  assert.equal(lock.workspaces?.[workspacePackage]?.dependencies?.effect, "4.0.0-beta.101", "Effect lock pin differs")
+  assert.equal(plugin.dependencies?.effect, "4.0.0-beta.101", "plugin SDK Effect ABI differs from reviewed M7 pin")
+  assert.equal(effect.version, "4.0.0-beta.101", "installed Effect differs from reviewed M7 pin; stage dependencies or run bun install")
   assert.match(
     realHost,
     new RegExp(`PINNED_REAL_HOST_VERSION = ${JSON.stringify(expected)}`),

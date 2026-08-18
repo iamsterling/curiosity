@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 import { execFileSync, spawnSync } from "node:child_process"
 import { copyFileSync, cpSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs"
-import { dirname, join, resolve } from "node:path"
+import { dirname, isAbsolute, join, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import {
   M7_PROFILE, assertCleanReleaseInput, assertM7NativeHasNoUuid, assertM7NativeLinks, createReleaseArchive, darwinLinkedLibraries, extractReleaseArchive, installRelease, listReleaseArchive,
   m7NativeCargoEnvironment,
   rollbackRelease, uninstallRelease, validateArtifactTree, validateReleaseInventory,
-  writeArtifactMetadata, writeReleaseScripts,
+  m7DependencyInput, stageM7BuildDependencies, writeArtifactMetadata, writeReleaseScripts,
 } from "./m7-release-lib.mjs"
 
 const runtime = resolve(dirname(fileURLToPath(import.meta.url)), "..")
@@ -19,7 +19,13 @@ const run = (program, args, options = {}) => {
 }
 const git = (...args) => execFileSync("git", args, { cwd: root, encoding: "utf8" }).trim()
 const releaseIdentity = () => assertCleanReleaseInput({ head: git("rev-parse", "HEAD"), dirty: git("status", "--porcelain=v1", "--untracked-files=all"), tracked: git("cat-file", "-e", "HEAD^{commit}") === "" })
-const findHost = () => realpathSync(join(root, "node_modules/.bun/@opencode-ai+cli-darwin-arm64@0.0.0-beta-17519/node_modules/@opencode-ai/cli-darwin-arm64/bin/opencode2"))
+const dependencyRoot = () => {
+  const configured = process.env.CURIOSITY_M7_DEPENDENCY_ROOT
+  if (configured && !isAbsolute(configured)) throw new Error("M7_BUILD_DEPENDENCIES_UNAVAILABLE")
+  return configured ?? join(root, "node_modules")
+}
+const requiredDependencyFile = (dependencies, path) => m7DependencyInput(dependencies, path)
+const findHost = (dependencies) => requiredDependencyFile(dependencies, join(dependencies, ".bun/@opencode-ai+cli-darwin-arm64@0.0.0-beta-17519/node_modules/@opencode-ai/cli-darwin-arm64/bin/opencode2"))
 
 const assertToolPins = () => {
   const actual = {
@@ -39,12 +45,12 @@ const packageFiles = (stage, prefix) => {
   walk(join(stage, prefix)); return files.sort()
 }
 const component = (name, version, files, licenseFile, properties = {}) => ({ type: "library", name, version, license: "MIT", licenseFile, files, ...properties })
-const writeInventory = (stage, releaseId, bundledPackages) => {
+const writeInventory = (stage, releaseId, bundledPackages, dependencies) => {
   const licenses = join(stage, "licenses"); mkdirSync(licenses)
   copyFileSync(join(runtime, "LICENSE"), join(licenses, "MIT-Curiosity.txt"))
-  copyFileSync(join(root, "node_modules/.bun/effect@4.0.0-beta.101/node_modules/effect/LICENSE"), join(licenses, "MIT-Effect.txt"))
-  copyFileSync(join(root, "node_modules/.bun/fast-check@4.9.0/node_modules/fast-check/LICENSE"), join(licenses, "MIT-fast-check.txt"))
-  copyFileSync(join(root, "node_modules/.bun/pure-rand@8.4.2/node_modules/pure-rand/LICENSE"), join(licenses, "MIT-pure-rand.txt"))
+  copyFileSync(requiredDependencyFile(dependencies, join(dependencies, ".bun/effect@4.0.0-beta.101/node_modules/effect/LICENSE")), join(licenses, "MIT-Effect.txt"))
+  copyFileSync(requiredDependencyFile(dependencies, join(dependencies, ".bun/fast-check@4.9.0/node_modules/fast-check/LICENSE")), join(licenses, "MIT-fast-check.txt"))
+  copyFileSync(requiredDependencyFile(dependencies, join(dependencies, ".bun/pure-rand@8.4.2/node_modules/pure-rand/LICENSE")), join(licenses, "MIT-pure-rand.txt"))
   copyFileSync(join(root, "apps/opencode2-config/LICENSE"), join(licenses, "MIT-Plugin.txt"))
   copyFileSync(join(runtime, "licenses/opencode-MIT.txt"), join(licenses, "MIT-OpenCode.txt"))
   const pluginFile = ["plugin/index.js"]
@@ -74,6 +80,8 @@ const bundledPackageNames = (metafile) => new Set(Object.keys(JSON.parse(readFil
 const build = (output) => {
   if (process.platform !== M7_PROFILE.platform || process.arch !== M7_PROFILE.architecture) throw new Error("M7_PLATFORM_PIN_MISMATCH")
   const tools = assertToolPins(); const releaseId = releaseIdentity(); const parent = resolve(output); mkdirSync(parent, { recursive: true })
+  const dependencies = stageM7BuildDependencies({ sourceRoot: root, dependencyRoot: dependencyRoot() })
+  console.log(`M7 build dependencies verified locally at ${dependencies.source}; network disabled`)
   const stage = mkdtempSync(join(parent, ".m7-stage-"))
   try {
     run("cargo", ["build", "--manifest-path", "apps/runtime/native/Cargo.toml", "--release", "--locked", "--no-default-features"], { env: m7NativeCargoEnvironment(process.env) })
@@ -84,13 +92,13 @@ const build = (output) => {
     mkdirSync(join(stage, "plugin")); const metafile = join(stage, ".plugin-metafile.json")
     run("bun", ["build", "apps/opencode2-config/dist/index.js", "--target=bun", "--outfile", join(stage, "plugin/index.js"), "--external", "@curiosity/runtime/query", `--metafile=${metafile}`]); cpSync(join(root, "apps/opencode2-config/assets"), join(stage, "plugin/assets"), { recursive: true })
     const bundled = bundledPackageNames(metafile); rmSync(metafile)
-    mkdirSync(join(stage, "bin")); copyFileSync(findHost(), join(stage, "bin/opencode2")); import.meta.require("node:fs").chmodSync(join(stage, "bin/opencode2"), 0o755)
+    mkdirSync(join(stage, "bin")); copyFileSync(findHost(dependencies.source), join(stage, "bin/opencode2")); import.meta.require("node:fs").chmodSync(join(stage, "bin/opencode2"), 0o755)
     mkdirSync(join(stage, "tools")); copyFileSync(fileURLToPath(import.meta.url), join(stage, "tools/m7-release.mjs")); copyFileSync(join(runtime, "tools/m7-release-lib.mjs"), join(stage, "tools/m7-release-lib.mjs"))
     mkdirSync(join(stage, "config")); writeFileSync(join(stage, "config/opencode.json.template"), JSON.stringify({ plugin: ["__RELEASE_ROOT__/plugin/index.js"], options: { search: { backend: "runtime", runtime: { stateRoot: "__STATE_ROOT__", workspaceScope: "__WORKSPACE__", queryCapabilityFile: "__QUERY_CAPABILITY_FILE__" }, controlledPluginIds: ["iamsterling.opencode2-config"] } } }, null, 2) + "\n")
     writeReleaseScripts(stage)
     writeFileSync(join(stage, "RELEASE.json"), JSON.stringify({ releaseId, commit: releaseId.slice(3), profile: { ...M7_PROFILE, ...tools }, private: true, published: false, signed: false, notarized: false, m5Live: false, m6Crawl: false }, null, 2) + "\n")
     writeFileSync(join(stage, "provenance.json"), JSON.stringify({ subject: releaseId, digestAlgorithm: "SHA-256", operatorModel: "private same-operator", publisherIdentity: null, signature: null, notarization: null }, null, 2) + "\n")
-    writeInventory(stage, releaseId, bundled); writeArtifactMetadata(stage); validateArtifactTree(stage); validateReleaseInventory(stage)
+    writeInventory(stage, releaseId, bundled, dependencies.source); writeArtifactMetadata(stage); validateArtifactTree(stage); validateReleaseInventory(stage)
     const destination = join(parent, `${releaseId}.tar.gz`); createReleaseArchive(stage, destination, releaseId); console.log(destination)
   } catch (error) { throw error } finally { rmSync(stage, { recursive: true, force: true }) }
 }

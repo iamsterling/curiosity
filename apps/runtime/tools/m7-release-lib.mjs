@@ -13,6 +13,13 @@ export const M7_PROFILE = Object.freeze({
   effect: "4.0.0-beta.101", stateSchema: "curiosity-query-state/v1",
 })
 export const M7_NATIVE_INSTALL_ID = "@rpath/libcuriosity_runtime_native.dylib"
+const M7_BUILD_DEPENDENCIES = Object.freeze([
+  ["@opencode-ai/plugin", M7_PROFILE.opencode], ["@opencode-ai/cli", M7_PROFILE.opencode],
+  ["effect", M7_PROFILE.effect], ["typescript", "5.8.2"], ["@types/node", "26.2.0"],
+])
+const M7_RELEASE_DEPENDENCIES = Object.freeze([
+  ["@opencode-ai/cli-darwin-arm64", M7_PROFILE.opencode], ["fast-check", "4.9.0"], ["pure-rand", "8.4.2"],
+])
 const M7_NATIVE_RUSTFLAGS = [
   "-C", `link-arg=-Wl,-install_name,${M7_NATIVE_INSTALL_ID}`,
   "-C", "link-arg=-Wl,-no_uuid",
@@ -24,6 +31,122 @@ const safeRelative = (value) => typeof value === "string" && value.length > 0 &&
   value.split(/[\\/]/u).every((part) => part && part !== "." && part !== "..")
 const digestBytes = (value) => createHash("sha256").update(value).digest("hex")
 const digest = (path) => digestBytes(readFileSync(path))
+const CONFINEMENT = "M7_BUILD_DEPENDENCY_CONFINEMENT_INVALID"
+
+const beneath = (root, candidate) => {
+  const path = relative(root, candidate)
+  return path === "" || (!path.startsWith(`..${sep}`) && path !== ".." && !isAbsolute(path))
+}
+
+const canonicalDirectory = (path, unavailableCode) => {
+  let canonical; let status
+  try { canonical = realpathSync(path); status = lstatSync(canonical) }
+  catch (error) { fail(error?.code === "ELOOP" ? CONFINEMENT : unavailableCode) }
+  if (!status.isDirectory()) fail(CONFINEMENT)
+  return canonical
+}
+
+export const m7DependencyInput = (dependencyRoot, candidate, type = "file") => {
+  const root = canonicalDirectory(dependencyRoot, "M7_BUILD_DEPENDENCIES_UNAVAILABLE")
+  const lexical = resolve(candidate)
+  if (!beneath(root, lexical)) fail(CONFINEMENT)
+  let canonical; let status
+  try { canonical = realpathSync(lexical); status = lstatSync(canonical) }
+  catch (error) { fail(error?.code === "ELOOP" ? CONFINEMENT : "M7_BUILD_DEPENDENCIES_UNAVAILABLE") }
+  if (!beneath(root, canonical) || (type === "file" ? !status.isFile() : !status.isDirectory())) fail(CONFINEMENT)
+  return canonical
+}
+
+const readPackage = (path, code) => {
+  try { return JSON.parse(readFileSync(path, "utf8")) } catch { fail(code) }
+}
+
+const dependencyPackage = (dependencyRoot, name, version) => {
+  const store = m7DependencyInput(dependencyRoot, join(dependencyRoot, ".bun"), "directory"); let foundName = false
+  let entries
+  try { entries = readdirSync(store).sort() } catch { fail("M7_BUILD_DEPENDENCIES_UNAVAILABLE") }
+  for (const entry of entries) {
+    const candidate = join(store, entry, "node_modules", ...name.split("/"), "package.json")
+    let metadata
+    try { metadata = lstatSync(candidate) } catch (error) {
+      if (error?.code === "ENOENT") continue
+      fail(error?.code === "ELOOP" ? CONFINEMENT : "M7_BUILD_DEPENDENCIES_UNAVAILABLE")
+    }
+    if (!metadata.isFile() && !metadata.isSymbolicLink()) fail(CONFINEMENT)
+    const manifestPath = m7DependencyInput(dependencyRoot, candidate)
+    const manifest = readPackage(manifestPath, "M7_BUILD_DEPENDENCIES_UNAVAILABLE")
+    if (manifest.name !== name) continue
+    foundName = true
+    if (manifest.version === version) return m7DependencyInput(dependencyRoot, dirname(candidate), "directory")
+  }
+  fail(foundName ? "M7_BUILD_DEPENDENCY_PIN_MISMATCH" : "M7_BUILD_DEPENDENCIES_UNAVAILABLE")
+}
+
+const sourceDirectory = (root, path, required = true) => {
+  let status
+  try { status = lstatSync(path) } catch (error) {
+    if (!required && error?.code === "ENOENT") return false
+    fail("M7_BUILD_DEPENDENCIES_UNAVAILABLE")
+  }
+  if (status.isSymbolicLink() || !status.isDirectory() || !beneath(root, path)) fail(CONFINEMENT)
+  return true
+}
+
+const removeStagedPath = (path, permittedTargets) => {
+  let status
+  try { status = lstatSync(path) } catch (error) {
+    if (error?.code === "ENOENT") return
+    fail(CONFINEMENT)
+  }
+  if (status.isSymbolicLink()) {
+    let canonical
+    try { canonical = realpathSync(path) } catch { fail(CONFINEMENT) }
+    if (!permittedTargets.includes(canonical)) fail(CONFINEMENT)
+    unlinkSync(path); return
+  }
+  if (!status.isDirectory()) fail(CONFINEMENT)
+  rmSync(path, { recursive: true, force: true })
+}
+
+export const stageM7BuildDependencies = ({ sourceRoot, dependencyRoot }) => {
+  let source; let dependencies
+  try { source = realpathSync(sourceRoot) }
+  catch { fail("M7_BUILD_DEPENDENCIES_UNAVAILABLE") }
+  if (!lstatSync(source).isDirectory()) fail(CONFINEMENT)
+  const pluginRoot = join(source, "apps/opencode2-config")
+  sourceDirectory(source, join(source, "apps")); sourceDirectory(source, pluginRoot)
+  const modules = join(pluginRoot, "node_modules")
+  sourceDirectory(source, modules, false)
+  const manifest = readPackage(join(pluginRoot, "package.json"), "M7_BUILD_DEPENDENCIES_UNAVAILABLE")
+  if (manifest.dependencies?.["@opencode-ai/plugin"] !== M7_PROFILE.opencode ||
+    manifest.devDependencies?.["@opencode-ai/cli"] !== M7_PROFILE.opencode ||
+    manifest.dependencies?.effect !== M7_PROFILE.effect || manifest.devDependencies?.typescript !== "5.8.2" ||
+    manifest.devDependencies?.["@types/node"] !== "26.2.0") {
+    fail("M7_BUILD_DEPENDENCY_PIN_MISMATCH")
+  }
+  dependencies = canonicalDirectory(dependencyRoot, "M7_BUILD_DEPENDENCIES_UNAVAILABLE")
+  const buildPackages = M7_BUILD_DEPENDENCIES.map(([name, version]) => [name, dependencyPackage(dependencies, name, version)])
+  for (const [name, version] of M7_RELEASE_DEPENDENCIES) dependencyPackage(dependencies, name, version)
+  const runtimeTarget = canonicalDirectory(join(source, "apps/runtime"), "M7_BUILD_DEPENDENCIES_UNAVAILABLE")
+  if (!beneath(source, runtimeTarget)) fail(CONFINEMENT)
+  const typescript = buildPackages.find(([name]) => name === "typescript")?.[1]
+  const tsc = m7DependencyInput(dependencies, join(typescript, "bin/tsc"))
+
+  if (!existsSync(modules)) mkdirSync(modules, { mode: 0o700 })
+  for (const [name, packageTarget] of buildPackages) {
+    const target = join(modules, ...name.split("/")); const parent = dirname(target)
+    if (!existsSync(parent)) mkdirSync(parent, { recursive: true, mode: 0o700 })
+    else sourceDirectory(source, parent)
+    removeStagedPath(target, [packageTarget]); symlinkSync(packageTarget, target, "dir")
+  }
+  const runtime = join(modules, "@curiosity/runtime"); const runtimeParent = dirname(runtime)
+  if (!existsSync(runtimeParent)) mkdirSync(runtimeParent, { recursive: true, mode: 0o700 })
+  else sourceDirectory(source, runtimeParent)
+  removeStagedPath(runtime, [runtimeTarget]); symlinkSync(runtimeTarget, runtime, "dir")
+  const bin = join(modules, ".bin"); if (!existsSync(bin)) mkdirSync(bin, { mode: 0o700 }); else sourceDirectory(source, bin)
+  removeStagedPath(join(bin, "tsc"), [tsc]); symlinkSync("../typescript/bin/tsc", join(bin, "tsc"))
+  return { network: "disabled", source: dependencies }
+}
 
 export const assertCleanReleaseInput = ({ head, dirty, tracked }) => {
   if (dirty) return fail("M7_RELEASE_SOURCE_DIRTY")
