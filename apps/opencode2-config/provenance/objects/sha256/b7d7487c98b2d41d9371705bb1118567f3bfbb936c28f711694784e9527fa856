@@ -1,0 +1,16 @@
+{
+  "decisions": { "state": "clear", "objective": "Research and update one guide." },
+  "authority": { "policyStatus": "allowed", "parallelAuthorized": true },
+  "contract": {
+    "schemaVersion": "handoff-contract/v1", "contractId": "mixed-001", "revision": 1,
+    "taskClass": "integration", "objective": "Research and update one guide.", "invariant": "Only the integration unit mutates the repository.",
+    "units": [
+      { "id": "research", "kind": "read-only", "objective": "Collect source evidence.", "readOnlyLocators": ["https://example.test/reference"] },
+      { "id": "integrate", "kind": "mutation", "objective": "Update the guide.", "writableArtifacts": ["docs/guide.md"] }
+    ],
+    "parallelGroups": [{ "id": "mixed", "unitIds": ["integrate", "research"] }],
+    "criteria": [{ "id": "integrated", "observable": { "subject": "Guide", "expectedCondition": "Reflects cited source facts" }, "oracle": "review", "requiredEvidence": ["review-report"] }],
+    "handback": { "status": true, "resultArtifacts": true, "criterionEvidence": true, "dependencies": true },
+    "completionAuthority": "external-loop-evidence"
+  }
+}

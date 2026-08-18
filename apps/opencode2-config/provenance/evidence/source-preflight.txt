@@ -1,0 +1,12 @@
+Source repository: https://github.com/ByBrawe/opencode-loop.git
+Source HEAD: 925b599cfab213c1e5198046d468021137c8f9fe
+Source branch: main
+Tracking state: main...origin/main
+Staged diff SHA-256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 (empty)
+Dirty tracked binary diff SHA-256: d0a0bd3fdefb0b12d6c8a46c4e7f8f6ff104661178b319db337795101a0142d4
+Dirty tracked binary diff bytes: 118302
+Untracked inventory SHA-256: e5c7fd928f8718eb1acc9551040456eed4a3db99fd24d920a0d3cf6619a2397d
+Untracked intended file: bun.lock
+Ignored source paths observed and excluded: .opencode/, node_modules/
+Source tests before import: npm run check exit 0; npm test exit 0.
+Source test lines: OpenCode Loop installer test passed; daemon test passed; OpenCode 2 Loop smoke test passed; OpenCode 2 Loop comprehensive test passed.

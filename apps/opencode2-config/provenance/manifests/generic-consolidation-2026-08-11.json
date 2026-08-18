@@ -1,0 +1,671 @@
+{
+  "schemaVersion": 1,
+  "createdAt": "2026-08-11",
+  "scope": "generic OpenCode logic created or modified today",
+  "entries": [
+    {
+      "sourcePath": "/Volumes/dev/crafty/opencode.json",
+      "destinationPath": "config/agents/orchestrator.json",
+      "sourceHash": "bebe1ebf182e3889b914551ad88aa4c55cabdfba472f1791a0b169438a9639aa",
+      "treatment": "adapted",
+      "rationale": "Extract provider-neutral role prompt; model route becomes required overlay input.",
+      "destinationHash": "dd581bf372de29de332e8cc6c17c4b34115440a7ac7b4e930a28d254a93282d0"
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/opencode.json",
+      "destinationPath": "config/agents/generalist.json",
+      "sourceHash": "bebe1ebf182e3889b914551ad88aa4c55cabdfba472f1791a0b169438a9639aa",
+      "treatment": "adapted",
+      "rationale": "Extract provider-neutral role prompt; model route becomes required overlay input.",
+      "destinationHash": "a16c5e041a3bc95454f7ecb660722e7ae4edc659435d92e75a11bf95ef3570cc"
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/opencode.json",
+      "destinationPath": "config/agents/analyst.json",
+      "sourceHash": "bebe1ebf182e3889b914551ad88aa4c55cabdfba472f1791a0b169438a9639aa",
+      "treatment": "adapted",
+      "rationale": "Extract provider-neutral role prompt; model route becomes required overlay input.",
+      "destinationHash": "296b8ec6bcc1276fd2670a4a927e61a08f9b62126b52f28f9d84008225c08624"
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/opencode.json",
+      "destinationPath": "config/agents/implementer.json",
+      "sourceHash": "bebe1ebf182e3889b914551ad88aa4c55cabdfba472f1791a0b169438a9639aa",
+      "treatment": "adapted",
+      "rationale": "Extract provider-neutral role prompt; model route becomes required overlay input.",
+      "destinationHash": "a5e8c84417c325781e62be6f1ba4b45453057d28c24373bd5ebadc3e9f6da29c"
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/opencode.json",
+      "destinationPath": "config/agents/strategist.json",
+      "sourceHash": "bebe1ebf182e3889b914551ad88aa4c55cabdfba472f1791a0b169438a9639aa",
+      "treatment": "adapted",
+      "rationale": "Extract provider-neutral role prompt; model route becomes required overlay input.",
+      "destinationHash": "39d7f8255f8365a2bfa7fa3f4a2b4444536b0ca2133b5085f60f8021d69ad854"
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/opencode.json",
+      "destinationPath": "config/agents/reviewer.json",
+      "sourceHash": "bebe1ebf182e3889b914551ad88aa4c55cabdfba472f1791a0b169438a9639aa",
+      "treatment": "adapted",
+      "rationale": "Extract provider-neutral role prompt; model route becomes required overlay input.",
+      "destinationHash": "4eec3cfb73a2ae72d9aebe8e5025336bc6beaf0dd383bb6b17d924eb8f021bb8"
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/opencode.json",
+      "destinationPath": "config/agents/researcher.json",
+      "sourceHash": "bebe1ebf182e3889b914551ad88aa4c55cabdfba472f1791a0b169438a9639aa",
+      "treatment": "adapted",
+      "rationale": "Extract provider-neutral role prompt; model route becomes required overlay input.",
+      "destinationHash": "52c912e64b69062400c1f37bc2a227a4a9a606751953b3added960900618b05e"
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/opencode.json",
+      "destinationPath": "config/agents/worker.json",
+      "sourceHash": "bebe1ebf182e3889b914551ad88aa4c55cabdfba472f1791a0b169438a9639aa",
+      "treatment": "adapted",
+      "rationale": "Extract provider-neutral role prompt; model route becomes required overlay input.",
+      "destinationHash": "826791b860a724ce9cca3817213d762ae3a1e15e86dc65156fe02c14e96de184"
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/opencode.json",
+      "destinationPath": "config/agents/build.json",
+      "sourceHash": "bebe1ebf182e3889b914551ad88aa4c55cabdfba472f1791a0b169438a9639aa",
+      "treatment": "adapted",
+      "rationale": "Preserve disabled built-in intent without repository or provider policy.",
+      "destinationHash": "eb02d34487ad9f05859fdf900d4f4086c54b4d99a8781c4aab7ab4ff58012b56"
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/opencode.json",
+      "destinationPath": "config/agents/plan.json",
+      "sourceHash": "bebe1ebf182e3889b914551ad88aa4c55cabdfba472f1791a0b169438a9639aa",
+      "treatment": "adapted",
+      "rationale": "Preserve disabled built-in intent without repository or provider policy.",
+      "destinationHash": "eb02d34487ad9f05859fdf900d4f4086c54b4d99a8781c4aab7ab4ff58012b56"
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/skills/deep-research/SKILL.md",
+      "destinationPath": "skills/deep-research/SKILL.md",
+      "sourceHash": "71f7098881d9118b86d961c50a784638cb7e6b62aaf14e69a776a8d5baf71e5b",
+      "treatment": "adapted",
+      "rationale": "Import locally authored generic skill and remove repository-product references.",
+      "destinationHash": "8979c8521cdb8ad1496dafc6c8a9c81623c4bdf4e8b267d31d74e88534bdce8a"
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/skills/competitive-analysis/SKILL.md",
+      "destinationPath": "skills/competitive-analysis/SKILL.md",
+      "sourceHash": "16806b995977d9ed7439d759f1844b008e22a65463a6c5c8965fb52147b3d58e",
+      "treatment": "adapted",
+      "rationale": "Import locally authored generic skill and remove repository-product references.",
+      "destinationHash": "1dba9fd4a41baeb85d7815cadb8dac69ca465ca4b328cfafcc87ad5dd85bdd75"
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/skills/reverse-engineering/SKILL.md",
+      "destinationPath": "skills/reverse-engineering/SKILL.md",
+      "sourceHash": "c60d6c0c2e109b046c9644c635e4ef6babdf2141ff51a395394efbb19f467d81",
+      "treatment": "adapted",
+      "rationale": "Import locally authored generic skill and remove repository-product references.",
+      "destinationHash": "b63ffb159948dbac1a87ef18f1aad7207adaf07944619fa708dc3400ae5cb7cb"
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/skills/review/SKILL.md",
+      "destinationPath": "skills/review/SKILL.md",
+      "sourceHash": "0bdca013b289eaefbb0f3c4a80933837027d8a8128b02a5611f79a017b9d81a9",
+      "treatment": "adapted",
+      "rationale": "Import locally authored generic skill and remove repository-product references.",
+      "destinationHash": "d90a2229bea718d038f2b9ed16b26484a6be6745e335a470dbd811c28018518b"
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/skills/verify/SKILL.md",
+      "destinationPath": "skills/verify/SKILL.md",
+      "sourceHash": "d1e5e480beb31d444b66ccd9c5fe911e1389beb966b67c688cb01d5560895043",
+      "treatment": "adapted",
+      "rationale": "Import locally authored generic skill and remove repository-product references.",
+      "destinationHash": "5403f358609cb03219db0c999a6428058f765d591b2a034da29ff0220dc08a15"
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/skills/goal-loop/SKILL.md",
+      "destinationPath": "skills/goal-loop/SKILL.md",
+      "sourceHash": "c4fdf30b302e607cda8f399e49d53bb0b31f90720bcee9bdc02959464fca4ed9",
+      "treatment": "adapted",
+      "rationale": "Import locally authored generic skill and remove repository-product references.",
+      "destinationHash": "a62689b8f1f9d670e508c1aee624f6b943c429f4d06d706e69b131338032c59c"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/skills/handoff-compiler/SKILL.md",
+      "destinationPath": "skills/handoff-compiler/SKILL.md",
+      "sourceHash": "0774241c45f7fe9c1b158342c1b9a45030916449066150520b967147c3be784a",
+      "treatment": "imported",
+      "rationale": "Already durable authored source; bundle remains canonical.",
+      "destinationHash": "0774241c45f7fe9c1b158342c1b9a45030916449066150520b967147c3be784a"
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/commands/task.md",
+      "destinationPath": "commands/task.md",
+      "sourceHash": "0f79ca3541058eab536107bcabf3b4926179451c29791dc53314ea36c4da0454",
+      "treatment": "adapted",
+      "rationale": "Import locally authored generic command and bind bundled skill paths.",
+      "destinationHash": "39ae4cf3347ae1cecc88d12933f9d6850ed2ae029c97a930beb859418cce7092"
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/commands/verify.md",
+      "destinationPath": "commands/verify.md",
+      "sourceHash": "7371253ed37961c84d067fb1b14e43df258c9cb7a62adc3dc6bb7e07e187e82b",
+      "treatment": "adapted",
+      "rationale": "Import locally authored generic command and bind bundled skill paths.",
+      "destinationHash": "b368af295f998ba5d49678abe0c36643339e9b9fe1ae33c0e6eb863d9edff0de"
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/commands/review.md",
+      "destinationPath": "commands/review.md",
+      "sourceHash": "bf93210206a02239fb5d12eaba03b28619e5f07c10ba3a9ff785f300ab692558",
+      "treatment": "adapted",
+      "rationale": "Import locally authored generic command and bind bundled skill paths.",
+      "destinationHash": "81e1bf9a47ca16a0a340ea5442c32b2ebea81b631045961199c762e3ab0abf2d"
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/commands/goal.md",
+      "destinationPath": "commands/goal.md",
+      "sourceHash": "db97a2aac7023bdd52842ca5679729284e3627a8aee5e857ff049e7f4e89b3d5",
+      "treatment": "adapted",
+      "rationale": "Import locally authored generic command and bind bundled skill paths.",
+      "destinationHash": "8c4ec69a7af1d3a1b1987b581d5e14962fa29a88fd10d9fff8cec7469a54e9bf"
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/commands/research.md",
+      "destinationPath": "commands/research.md",
+      "sourceHash": "4b463fe833ff4cfbac49672e6ddc8f0283a6413dd2f98cc80d8ed819e32d40bf",
+      "treatment": "adapted",
+      "rationale": "Import locally authored generic command and bind bundled skill paths.",
+      "destinationHash": "f48a08e51c331ebdce71396c6b3f6164e425e3b014585a87f80ded185d16249e"
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/commands/landscape.md",
+      "destinationPath": "commands/landscape.md",
+      "sourceHash": "5318414942b3d59edd44a95576782b1ddc6e6c9f3f208268fac6e9bfa91bdd1c",
+      "treatment": "adapted",
+      "rationale": "Import locally authored generic command and bind bundled skill paths.",
+      "destinationHash": "f52916e46fd6afff205708145561afdefef0feeea5e018a73db4289d6a1a9e32"
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/commands/teardown.md",
+      "destinationPath": "commands/teardown.md",
+      "sourceHash": "f55b402f3a8b47e9c493bc0ec12214db76ce0771a96200041a67e8a61c40eca5",
+      "treatment": "adapted",
+      "rationale": "Import locally authored generic command and bind bundled skill paths.",
+      "destinationHash": "2cc7281178b8a3d5ee58ba9e3e5c5a207f7190c12b19a9849e577f6d34a50275"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/compile-handoff.md",
+      "destinationPath": "commands/compile-handoff.md",
+      "sourceHash": "d27defa86819151dd54c6463560c42175b7d5d0ae00c0232c230adb984b8ac29",
+      "treatment": "imported",
+      "rationale": "Already durable authored source.",
+      "destinationHash": "d27defa86819151dd54c6463560c42175b7d5d0ae00c0232c230adb984b8ac29"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-ask.md",
+      "destinationPath": "commands/loop-ask.md",
+      "sourceHash": "0583d04de0d4d179b5abcee07b5510b3aefa99b1de25257e72f02dba759c5653",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "0583d04de0d4d179b5abcee07b5510b3aefa99b1de25257e72f02dba759c5653"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-clear.md",
+      "destinationPath": "commands/loop-clear.md",
+      "sourceHash": "ebde872e3e1b6e3336d57b11236bb860d2bd870e86773e908c73c169eabb85a8",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "ebde872e3e1b6e3336d57b11236bb860d2bd870e86773e908c73c169eabb85a8"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-cmd.md",
+      "destinationPath": "commands/loop-cmd.md",
+      "sourceHash": "d62e4d71409e864822bf572997432c41c26591d9a883ca5d8efac4f9a359ec90",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "d62e4d71409e864822bf572997432c41c26591d9a883ca5d8efac4f9a359ec90"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-command.md",
+      "destinationPath": "commands/loop-command.md",
+      "sourceHash": "77bace70636904e60180c2e4063672a70bc46d0cc2d5e247363293ad3d935666",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "77bace70636904e60180c2e4063672a70bc46d0cc2d5e247363293ad3d935666"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-compact.md",
+      "destinationPath": "commands/loop-compact.md",
+      "sourceHash": "1d8fc6b52accce3b5506037bdf943d18d18f3618be8044144185f7194ecb8a28",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "1d8fc6b52accce3b5506037bdf943d18d18f3618be8044144185f7194ecb8a28"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-dev.md",
+      "destinationPath": "commands/loop-dev.md",
+      "sourceHash": "4b00bfeff93679c37c3a33f598c4f112f9c6f8e32c1cf217d4e5b0bf736b5fd3",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "4b00bfeff93679c37c3a33f598c4f112f9c6f8e32c1cf217d4e5b0bf736b5fd3"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-doctor.md",
+      "destinationPath": "commands/loop-doctor.md",
+      "sourceHash": "5cf3c1ebc25637af1f663d341092b5f59d1a4843c99bcdedbdf63e2e98a75066",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "5cf3c1ebc25637af1f663d341092b5f59d1a4843c99bcdedbdf63e2e98a75066"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-export.md",
+      "destinationPath": "commands/loop-export.md",
+      "sourceHash": "b691e8cf1eb2f46f72d5407b34e9932436839a4bcb2b0d9578fd35d6fa92b0cb",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "b691e8cf1eb2f46f72d5407b34e9932436839a4bcb2b0d9578fd35d6fa92b0cb"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-goal-blocked.md",
+      "destinationPath": "commands/loop-goal-blocked.md",
+      "sourceHash": "522eb67a2e235ebad4c74ccb7853fe94b26ad96536599e500a9d61144dcda3e1",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "522eb67a2e235ebad4c74ccb7853fe94b26ad96536599e500a9d61144dcda3e1"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-goal-clear.md",
+      "destinationPath": "commands/loop-goal-clear.md",
+      "sourceHash": "db89ef7e7f2de83c8574a6cce368958c019feb232c47985c3b36d964fb9ad671",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "db89ef7e7f2de83c8574a6cce368958c019feb232c47985c3b36d964fb9ad671"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-goal-done.md",
+      "destinationPath": "commands/loop-goal-done.md",
+      "sourceHash": "58bf2ebfba03d6895c17d22122591539138a1dd999db4552f2128fae49ff3e76",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "58bf2ebfba03d6895c17d22122591539138a1dd999db4552f2128fae49ff3e76"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-goal-pause.md",
+      "destinationPath": "commands/loop-goal-pause.md",
+      "sourceHash": "bef02fc3e919d8b7c4c7be329ae2e1387d15f70f9010f86ccfc6bd180d814fc7",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "bef02fc3e919d8b7c4c7be329ae2e1387d15f70f9010f86ccfc6bd180d814fc7"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-goal-resume.md",
+      "destinationPath": "commands/loop-goal-resume.md",
+      "sourceHash": "7a5eadd4d504aaefc791e46e58007b2863674399c4d44a297b4f9d2df9da1f2d",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "7a5eadd4d504aaefc791e46e58007b2863674399c4d44a297b4f9d2df9da1f2d"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-goal-status.md",
+      "destinationPath": "commands/loop-goal-status.md",
+      "sourceHash": "a37ab77289f719e0dead8a91e4817ca7d9e678b61573f17daf65772d68779caa",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "a37ab77289f719e0dead8a91e4817ca7d9e678b61573f17daf65772d68779caa"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-goal.md",
+      "destinationPath": "commands/loop-goal.md",
+      "sourceHash": "e70240b2e3023544a072b9d7beae2822d96bfab54cdce27c56927ff515ce474e",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "e70240b2e3023544a072b9d7beae2822d96bfab54cdce27c56927ff515ce474e"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-help.md",
+      "destinationPath": "commands/loop-help.md",
+      "sourceHash": "29b1504e14fdd08cb0de8dfc2a398d9e0e6e4ab2c710de48860ac683b6a7a1c2",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "29b1504e14fdd08cb0de8dfc2a398d9e0e6e4ab2c710de48860ac683b6a7a1c2"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-init.md",
+      "destinationPath": "commands/loop-init.md",
+      "sourceHash": "c2d9d81b8a857597f475a69d829db800c7d38b61e28eaf6b9aa59c11f10025c1",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "c2d9d81b8a857597f475a69d829db800c7d38b61e28eaf6b9aa59c11f10025c1"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-logs.md",
+      "destinationPath": "commands/loop-logs.md",
+      "sourceHash": "22a612d0c21a55afa19d42553132e17adc12f8d395072871058a7767dd85303c",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "22a612d0c21a55afa19d42553132e17adc12f8d395072871058a7767dd85303c"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-now.md",
+      "destinationPath": "commands/loop-now.md",
+      "sourceHash": "1ca34d39993bd3d3a99da814b7363b1d11eb8e21d8c61617c47ab2ad48648183",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "1ca34d39993bd3d3a99da814b7363b1d11eb8e21d8c61617c47ab2ad48648183"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-pause.md",
+      "destinationPath": "commands/loop-pause.md",
+      "sourceHash": "3d121daf45398040dab0ceae89430510203bd6b7d7b75db7be705e50d0fa7720",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "3d121daf45398040dab0ceae89430510203bd6b7d7b75db7be705e50d0fa7720"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-progress.md",
+      "destinationPath": "commands/loop-progress.md",
+      "sourceHash": "ebebc0bc3942b702e0a594d7df158ed371e77293049e2c2c6b955b24dac7858c",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "ebebc0bc3942b702e0a594d7df158ed371e77293049e2c2c6b955b24dac7858c"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-prompt.md",
+      "destinationPath": "commands/loop-prompt.md",
+      "sourceHash": "bb2db50e995242c29732241723c29633a2d6b92c59c6592c48de76159d087c5c",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "bb2db50e995242c29732241723c29633a2d6b92c59c6592c48de76159d087c5c"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-remove.md",
+      "destinationPath": "commands/loop-remove.md",
+      "sourceHash": "93f8672e008078826c5b3c96b21123bbe95380465c50c8f3ec718dedd3be9d48",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "93f8672e008078826c5b3c96b21123bbe95380465c50c8f3ec718dedd3be9d48"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-resume.md",
+      "destinationPath": "commands/loop-resume.md",
+      "sourceHash": "5920107bbf2689dd1e04de952851be04d998bbfb05269b77ec798a178e5dcbb4",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "5920107bbf2689dd1e04de952851be04d998bbfb05269b77ec798a178e5dcbb4"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-safe-dev.md",
+      "destinationPath": "commands/loop-safe-dev.md",
+      "sourceHash": "d79356926cae368b361456178e3631f244beda3f6f46242c5ce174b0a6b7adbb",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "d79356926cae368b361456178e3631f244beda3f6f46242c5ce174b0a6b7adbb"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-shell.md",
+      "destinationPath": "commands/loop-shell.md",
+      "sourceHash": "bd3eda47428c6026d1b6420517a590b3fb53584a0af4ab8c653284fb4707474c",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "bd3eda47428c6026d1b6420517a590b3fb53584a0af4ab8c653284fb4707474c"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-status.md",
+      "destinationPath": "commands/loop-status.md",
+      "sourceHash": "1f493139c41d4a4238cccff65580e75196119d6809f04f8c86668ece0f93402c",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "1f493139c41d4a4238cccff65580e75196119d6809f04f8c86668ece0f93402c"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-stop.md",
+      "destinationPath": "commands/loop-stop.md",
+      "sourceHash": "a9b4cd04d9eccdc588e1d63878b433a82ebe6a799cea8de8df6b479bc6373e18",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "a9b4cd04d9eccdc588e1d63878b433a82ebe6a799cea8de8df6b479bc6373e18"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop-testfix.md",
+      "destinationPath": "commands/loop-testfix.md",
+      "sourceHash": "f9bda1e56c0060fa9d58b7ff339eccfbf48816bd326a558b1a8cbd90391626a5",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "f9bda1e56c0060fa9d58b7ff339eccfbf48816bd326a558b1a8cbd90391626a5"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/commands/loop.md",
+      "destinationPath": "commands/loop.md",
+      "sourceHash": "f5ed748d97f9277ad652b1a9d009077a1c2c56d6c53823510521bfb298490589",
+      "treatment": "imported",
+      "rationale": "Existing loop command compatibility retained.",
+      "destinationHash": "f5ed748d97f9277ad652b1a9d009077a1c2c56d6c53823510521bfb298490589"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/src/index.js",
+      "destinationPath": "src/index.js",
+      "sourceHash": "2624a19fc6517011e3403c39d2d4a944caa907c74564e90e733eb37daf0cbf13",
+      "treatment": "imported",
+      "rationale": "Existing loop runtime, daemon, installer, state contract, or acknowledgement agent remains canonical.",
+      "destinationHash": "2624a19fc6517011e3403c39d2d4a944caa907c74564e90e733eb37daf0cbf13"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/src/loop-state.mjs",
+      "destinationPath": "src/loop-state.mjs",
+      "sourceHash": "64eb8b6d30758c55c60c1b5c2ec72f75afacc54ab924056602017b81bd0a6ea4",
+      "treatment": "imported",
+      "rationale": "Existing loop runtime, daemon, installer, state contract, or acknowledgement agent remains canonical.",
+      "destinationHash": "64eb8b6d30758c55c60c1b5c2ec72f75afacc54ab924056602017b81bd0a6ea4"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/scripts/loopd.mjs",
+      "destinationPath": "scripts/loopd.mjs",
+      "sourceHash": "e6c4a8754d7d0f6d4eff22906975aaffae57dfcbbccd10b8b6f648b1ff749a4d",
+      "treatment": "imported",
+      "rationale": "Existing loop runtime, daemon, installer, state contract, or acknowledgement agent remains canonical.",
+      "destinationHash": "e6c4a8754d7d0f6d4eff22906975aaffae57dfcbbccd10b8b6f648b1ff749a4d"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/scripts/install-node.mjs",
+      "destinationPath": "scripts/install-node.mjs",
+      "sourceHash": "6a78b73a736116ebe806b9022d12375d8e33a91b6910b35c82ecfdb20b0c3d81",
+      "treatment": "imported",
+      "rationale": "Existing loop runtime, daemon, installer, state contract, or acknowledgement agent remains canonical.",
+      "destinationHash": "6a78b73a736116ebe806b9022d12375d8e33a91b6910b35c82ecfdb20b0c3d81"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/scripts/state-tool.mjs",
+      "destinationPath": "scripts/state-tool.mjs",
+      "sourceHash": "2e72717a36d19a41f940f25f8bb54a2c2e28ed6064d06cb85c6021b1a65cacac",
+      "treatment": "imported",
+      "rationale": "Existing loop runtime, daemon, installer, state contract, or acknowledgement agent remains canonical.",
+      "destinationHash": "2e72717a36d19a41f940f25f8bb54a2c2e28ed6064d06cb85c6021b1a65cacac"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/agents/opencode-loop-local.md",
+      "destinationPath": "agents/opencode-loop-local.md",
+      "sourceHash": "57a7c2fa26ce842a79f1b373f486a4885d055e2995711bcb866546d636e90c74",
+      "treatment": "imported",
+      "rationale": "Existing loop runtime, daemon, installer, state contract, or acknowledgement agent remains canonical.",
+      "destinationHash": "57a7c2fa26ce842a79f1b373f486a4885d055e2995711bcb866546d636e90c74"
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/skills/openspec-apply-change/SKILL.md",
+      "destinationPath": null,
+      "sourceHash": "cccb13131268cf1d830c30b649e695dbc46e42331b9aaff7401dad152d088701",
+      "treatment": "excluded-generated",
+      "rationale": "Externally generated OpenSpec asset; discover/regenerate through doctor documentation, never vendor as authored source.",
+      "destinationHash": null
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/skills/openspec-archive-change/SKILL.md",
+      "destinationPath": null,
+      "sourceHash": "faa510800a1306763f4c3f209345b2ae445942cc8912c2a3052881c1d531a03b",
+      "treatment": "excluded-generated",
+      "rationale": "Externally generated OpenSpec asset; discover/regenerate through doctor documentation, never vendor as authored source.",
+      "destinationHash": null
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/skills/openspec-explore/SKILL.md",
+      "destinationPath": null,
+      "sourceHash": "2f4b8dc5cb4370fe3d73a38fdd24fceb2115230bdbbc7df7158cb5313f4420b0",
+      "treatment": "excluded-generated",
+      "rationale": "Externally generated OpenSpec asset; discover/regenerate through doctor documentation, never vendor as authored source.",
+      "destinationHash": null
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/skills/openspec-propose/SKILL.md",
+      "destinationPath": null,
+      "sourceHash": "874f03a92979dec878627709410f91933fdcb66abddf521b67be23ac117b4645",
+      "treatment": "excluded-generated",
+      "rationale": "Externally generated OpenSpec asset; discover/regenerate through doctor documentation, never vendor as authored source.",
+      "destinationHash": null
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/skills/openspec-sync-specs/SKILL.md",
+      "destinationPath": null,
+      "sourceHash": "cdb1b182315c86b8038c42fce9c65ec7b92627bd9d5c51908f494b2e5af08b87",
+      "treatment": "excluded-generated",
+      "rationale": "Externally generated OpenSpec asset; discover/regenerate through doctor documentation, never vendor as authored source.",
+      "destinationHash": null
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/skills/openspec-update-change/SKILL.md",
+      "destinationPath": null,
+      "sourceHash": "f4ffb89ece3be2a55a95a693ca0a1dbcd2139c17ab45edf796b14c99cb7d5a50",
+      "treatment": "excluded-generated",
+      "rationale": "Externally generated OpenSpec asset; discover/regenerate through doctor documentation, never vendor as authored source.",
+      "destinationHash": null
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/commands/opsx-apply.md",
+      "destinationPath": null,
+      "sourceHash": "a17cd35552965a7e34272533866e3137893d2316e771b8ba69bdb17f8f372461",
+      "treatment": "excluded-generated",
+      "rationale": "Externally generated OpenSpec command; discover/regenerate through doctor documentation.",
+      "destinationHash": null
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/commands/opsx-archive.md",
+      "destinationPath": null,
+      "sourceHash": "0fe28e3ed1b4b3dc3437e37fbf5f85df77106ccb27f4d3a9da1e645aed2fb257",
+      "treatment": "excluded-generated",
+      "rationale": "Externally generated OpenSpec command; discover/regenerate through doctor documentation.",
+      "destinationHash": null
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/commands/opsx-explore.md",
+      "destinationPath": null,
+      "sourceHash": "1dabc9ba3d121577c6ce7beb413941029736d64f783c629fe676cc777bf69e55",
+      "treatment": "excluded-generated",
+      "rationale": "Externally generated OpenSpec command; discover/regenerate through doctor documentation.",
+      "destinationHash": null
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/commands/opsx-propose.md",
+      "destinationPath": null,
+      "sourceHash": "d13e2ffbec59b3300922ac848a86edff6ed9f79e32abe84d114bbbb61b86c602",
+      "treatment": "excluded-generated",
+      "rationale": "Externally generated OpenSpec command; discover/regenerate through doctor documentation.",
+      "destinationHash": null
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/commands/opsx-sync.md",
+      "destinationPath": null,
+      "sourceHash": "e6bfdaac43472d24bb345000dec21476cc04e21b06cd37af9f42dbd214419e04",
+      "treatment": "excluded-generated",
+      "rationale": "Externally generated OpenSpec command; discover/regenerate through doctor documentation.",
+      "destinationHash": null
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/commands/opsx-update.md",
+      "destinationPath": null,
+      "sourceHash": "b7aa2d93fb05739ae097e7d198eb43480d6cb8c00be3120543ae9e0f5bd197cd",
+      "treatment": "excluded-generated",
+      "rationale": "Externally generated OpenSpec command; discover/regenerate through doctor documentation.",
+      "destinationHash": null
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/.opencode/agents",
+      "destinationPath": null,
+      "sourceHash": "651fc7059ef72acc3545e8e2361b78049f64de192aa0d60c9559eb13287e362c",
+      "treatment": "excluded-stale",
+      "rationale": "AI-DLC agent artifacts are stale and explicitly excluded.",
+      "destinationHash": null
+    },
+    {
+      "sourcePath": "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/curiosity-engine-lab",
+      "destinationPath": null,
+      "sourceHash": "cabb8f6bd89c96769289419adce3c1f6f5a5ca9d31fc4736eb7b2245032c05c5",
+      "treatment": "deferred-failed",
+      "rationale": "Preserve only research verdict and NO-GO; failed validator/harness is not production logic.",
+      "destinationHash": null
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/AGENTS.md",
+      "destinationPath": "docs/research/adaptive-prompts.md",
+      "sourceHash": "e7b70987e955f244ee96a817b0bff58f32cb6322c7b31430c4a81d2ab4f3e9a4",
+      "treatment": "adapted",
+      "rationale": "Preserve generic adaptive prompt rationale and bibliography without Crafty policy.",
+      "destinationHash": "f07c8ff5d539c8e248fc5e225df642a528dd25fde8357629a07828acb9c4c085"
+    },
+    {
+      "sourcePath": "/Volumes/dev/crafty/opencode.json",
+      "destinationPath": "config/overlay.example.json",
+      "sourceHash": "bebe1ebf182e3889b914551ad88aa4c55cabdfba472f1791a0b169438a9639aa",
+      "treatment": "adapted",
+      "rationale": "Provider-neutral overlay template with explicit model inputs and bounded nested review depth recommendation.",
+      "destinationHash": "6cc00f75d7333ca0c4d2395d810c5afcf5ff27f19b726daeaa241677eff0cc6e"
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/scripts/bundle-assets.mjs",
+      "destinationPath": "scripts/bundle-assets.mjs",
+      "sourceHash": "c3bd76aedda36cb49bb80df67d2974a5bdbc6f1e1addfd0366ab37cf7d8d4732",
+      "destinationHash": "c3bd76aedda36cb49bb80df67d2974a5bdbc6f1e1addfd0366ab37cf7d8d4732",
+      "treatment": "imported",
+      "rationale": "Authored consolidation implementation and verification asset."
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/scripts/bundle-test.mjs",
+      "destinationPath": "scripts/bundle-test.mjs",
+      "sourceHash": "05bf8144d22a56101a5e26089aede0d501dd15d8ea6d7bb38570b974a25e60c8",
+      "destinationHash": "05bf8144d22a56101a5e26089aede0d501dd15d8ea6d7bb38570b974a25e60c8",
+      "treatment": "imported",
+      "rationale": "Authored consolidation implementation and verification asset."
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/test/runtime-contract.test.mjs",
+      "destinationPath": "test/runtime-contract.test.mjs",
+      "sourceHash": "88d2b27394cadd940eb7f93589cc81a92f61eefd03da2bb961538e67f901889d",
+      "destinationHash": "88d2b27394cadd940eb7f93589cc81a92f61eefd03da2bb961538e67f901889d",
+      "treatment": "imported",
+      "rationale": "Authored consolidation implementation and verification asset."
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/config/overlay.schema.json",
+      "destinationPath": "config/overlay.schema.json",
+      "sourceHash": "a3cccb712b2852c6adef2743358cab7479ff936b683c1cdc15b6b461db11dc68",
+      "destinationHash": "a3cccb712b2852c6adef2743358cab7479ff936b683c1cdc15b6b461db11dc68",
+      "treatment": "imported",
+      "rationale": "Authored consolidation implementation and verification asset."
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/docs/generic-bundle.md",
+      "destinationPath": "docs/generic-bundle.md",
+      "sourceHash": "cce048ff6ced474af31ed3f89df66c57bda5e3e3a554a5bac7286229c098574d",
+      "destinationHash": "cce048ff6ced474af31ed3f89df66c57bda5e3e3a554a5bac7286229c098574d",
+      "treatment": "imported",
+      "rationale": "Authored consolidation implementation and verification asset."
+    },
+    {
+      "sourcePath": "/Volumes/dev/opencode2-config/scripts/consolidation-test.mjs",
+      "destinationPath": "scripts/consolidation-test.mjs",
+      "treatment": "imported",
+      "rationale": "Verifies migration matrix completeness and treatment policy.",
+      "sourceHash": "85d4b37f8f070e5162b41be94fba74011a1cab70762da695afe1852e337b9ba9",
+      "destinationHash": "85d4b37f8f070e5162b41be94fba74011a1cab70762da695afe1852e337b9ba9"
+    }
+  ]
+}

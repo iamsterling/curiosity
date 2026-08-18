@@ -1,0 +1,352 @@
+{
+  "schemaVersion": 1,
+  "mappings": [
+    {
+      "historicalPath": "config/agents/orchestrator.json",
+      "currentPath": "assets/config/agents/orchestrator.json",
+      "currentDigest": "sha256:226078e0c36e5fecc3eca78b192a598087d72a85b2ff0811b91c407d933855cc"
+    },
+    {
+      "historicalPath": "config/agents/generalist.json",
+      "currentPath": "assets/config/agents/generalist.json",
+      "currentDigest": "sha256:4b0d593647d27ee4d3770eb2e72e3f1c9891ccb1478218d2ddcfc9049685780c"
+    },
+    {
+      "historicalPath": "config/agents/analyst.json",
+      "currentPath": "assets/config/agents/analyst.json",
+      "currentDigest": "sha256:80ce4701417b6c16b79c07bd733a4f28feb83508014503f872ab58c2ae59a907"
+    },
+    {
+      "historicalPath": "config/agents/implementer.json",
+      "currentPath": "assets/config/agents/implementer.json",
+      "currentDigest": "sha256:48b344f8a5a6cc46a54d324ec6064596edf6aa4a5617f37fe2050fa86491b72d"
+    },
+    {
+      "historicalPath": "config/agents/strategist.json",
+      "currentPath": "assets/config/agents/strategist.json",
+      "currentDigest": "sha256:07aea95b413c90e7e9280de0d7b328f14c6450ddbe52d83888024564e1012dab"
+    },
+    {
+      "historicalPath": "config/agents/reviewer.json",
+      "currentPath": "assets/config/agents/reviewer.json",
+      "currentDigest": "sha256:f6882b1f1698f9b410f3f0692e444746aa4f610c11ea661b75c6f84396571931"
+    },
+    {
+      "historicalPath": "config/agents/researcher.json",
+      "currentPath": "assets/config/agents/researcher.json",
+      "currentDigest": "sha256:110ba2301b824d5c6bf01662723ae5bded4ae877f1c41ff470f321857f986be9"
+    },
+    {
+      "historicalPath": "config/agents/worker.json",
+      "currentPath": "assets/config/agents/worker.json",
+      "currentDigest": "sha256:5bbde116c6c356af18293778ebeb385c18f379fa6a8e521e65190cdc5b953b1d"
+    },
+    {
+      "historicalPath": "config/agents/build.json",
+      "currentPath": "assets/config/agents/build.json",
+      "currentDigest": "sha256:eb02d34487ad9f05859fdf900d4f4086c54b4d99a8781c4aab7ab4ff58012b56"
+    },
+    {
+      "historicalPath": "config/agents/plan.json",
+      "currentPath": "assets/config/agents/plan.json",
+      "currentDigest": "sha256:eb02d34487ad9f05859fdf900d4f4086c54b4d99a8781c4aab7ab4ff58012b56"
+    },
+    {
+      "historicalPath": "skills/deep-research/SKILL.md",
+      "currentPath": "assets/skills/deep-research/SKILL.md",
+      "currentDigest": "sha256:8979c8521cdb8ad1496dafc6c8a9c81623c4bdf4e8b267d31d74e88534bdce8a"
+    },
+    {
+      "historicalPath": "skills/competitive-analysis/SKILL.md",
+      "currentPath": "assets/skills/competitive-analysis/SKILL.md",
+      "currentDigest": "sha256:1dba9fd4a41baeb85d7815cadb8dac69ca465ca4b328cfafcc87ad5dd85bdd75"
+    },
+    {
+      "historicalPath": "skills/reverse-engineering/SKILL.md",
+      "currentPath": "assets/skills/reverse-engineering/SKILL.md",
+      "currentDigest": "sha256:b63ffb159948dbac1a87ef18f1aad7207adaf07944619fa708dc3400ae5cb7cb"
+    },
+    {
+      "historicalPath": "skills/review/SKILL.md",
+      "currentPath": "assets/skills/review/SKILL.md",
+      "currentDigest": "sha256:d90a2229bea718d038f2b9ed16b26484a6be6745e335a470dbd811c28018518b"
+    },
+    {
+      "historicalPath": "skills/verify/SKILL.md",
+      "currentPath": "assets/skills/verify/SKILL.md",
+      "currentDigest": "sha256:5403f358609cb03219db0c999a6428058f765d591b2a034da29ff0220dc08a15"
+    },
+    {
+      "historicalPath": "skills/goal-loop/SKILL.md",
+      "currentPath": "assets/skills/goal-loop/SKILL.md",
+      "currentDigest": "sha256:a62689b8f1f9d670e508c1aee624f6b943c429f4d06d706e69b131338032c59c"
+    },
+    {
+      "historicalPath": "skills/handoff-compiler/SKILL.md",
+      "currentPath": "assets/skills/handoff-compiler/SKILL.md",
+      "currentDigest": "sha256:0774241c45f7fe9c1b158342c1b9a45030916449066150520b967147c3be784a"
+    },
+    {
+      "historicalPath": "commands/task.md",
+      "currentPath": "assets/commands/task.md",
+      "currentDigest": "sha256:39ae4cf3347ae1cecc88d12933f9d6850ed2ae029c97a930beb859418cce7092"
+    },
+    {
+      "historicalPath": "commands/verify.md",
+      "currentPath": "assets/commands/verify.md",
+      "currentDigest": "sha256:b368af295f998ba5d49678abe0c36643339e9b9fe1ae33c0e6eb863d9edff0de"
+    },
+    {
+      "historicalPath": "commands/review.md",
+      "currentPath": "assets/commands/review.md",
+      "currentDigest": "sha256:81e1bf9a47ca16a0a340ea5442c32b2ebea81b631045961199c762e3ab0abf2d"
+    },
+    {
+      "historicalPath": "commands/goal.md",
+      "currentPath": "assets/commands/goal.md",
+      "currentDigest": "sha256:8c4ec69a7af1d3a1b1987b581d5e14962fa29a88fd10d9fff8cec7469a54e9bf"
+    },
+    {
+      "historicalPath": "commands/research.md",
+      "currentPath": "assets/commands/research.md",
+      "currentDigest": "sha256:f48a08e51c331ebdce71396c6b3f6164e425e3b014585a87f80ded185d16249e"
+    },
+    {
+      "historicalPath": "commands/landscape.md",
+      "currentPath": "assets/commands/landscape.md",
+      "currentDigest": "sha256:f52916e46fd6afff205708145561afdefef0feeea5e018a73db4289d6a1a9e32"
+    },
+    {
+      "historicalPath": "commands/teardown.md",
+      "currentPath": "assets/commands/teardown.md",
+      "currentDigest": "sha256:2cc7281178b8a3d5ee58ba9e3e5c5a207f7190c12b19a9849e577f6d34a50275"
+    },
+    {
+      "historicalPath": "commands/compile-handoff.md",
+      "currentPath": "assets/commands/compile-handoff.md",
+      "currentDigest": "sha256:d27defa86819151dd54c6463560c42175b7d5d0ae00c0232c230adb984b8ac29"
+    },
+    {
+      "historicalPath": "commands/loop-ask.md",
+      "currentPath": "assets/commands/loop-ask.md",
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+    },
+    {
+      "historicalPath": "commands/loop-clear.md",
+      "currentPath": "assets/commands/loop-clear.md",
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+    },
+    {
+      "historicalPath": "commands/loop-cmd.md",
+      "currentPath": "assets/commands/loop-cmd.md",
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+    },
+    {
+      "historicalPath": "commands/loop-command.md",
+      "currentPath": "assets/commands/loop-command.md",
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+    },
+    {
+      "historicalPath": "commands/loop-compact.md",
+      "currentPath": "assets/commands/loop-compact.md",
+      "currentDigest": "sha256:4345d92a561765dcf22dd07ad9a7f6129cd49d04ddb87e0adbf1fcba41714661"
+    },
+    {
+      "historicalPath": "commands/loop-dev.md",
+      "currentPath": "assets/commands/loop-dev.md",
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+    },
+    {
+      "historicalPath": "commands/loop-doctor.md",
+      "currentPath": "assets/commands/loop-doctor.md",
+      "currentDigest": "sha256:a37dd1bbc9ab52cdb9f588d9be8cc4c5463dcd6a590cdae11f890c909a1c94d6"
+    },
+    {
+      "historicalPath": "commands/loop-export.md",
+      "currentPath": "assets/commands/loop-export.md",
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+    },
+    {
+      "historicalPath": "commands/loop-goal-blocked.md",
+      "currentPath": "assets/commands/loop-goal-blocked.md",
+      "currentDigest": "sha256:3140f166bb861d23fbfaaaacc1c68a1f029206319b6bc13225964272ab6754c7"
+    },
+    {
+      "historicalPath": "commands/loop-goal-clear.md",
+      "currentPath": "assets/commands/loop-goal-clear.md",
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+    },
+    {
+      "historicalPath": "commands/loop-goal-done.md",
+      "currentPath": "assets/commands/loop-goal-done.md",
+      "currentDigest": "sha256:f599868e3b81ef656d1537f644f21b8c8b1a3df9dbc30850714791c5bf642788"
+    },
+    {
+      "historicalPath": "commands/loop-goal-pause.md",
+      "currentPath": "assets/commands/loop-goal-pause.md",
+      "currentDigest": "sha256:e548b704b89f5dc9e892ab532e18ebe5bbdb8f6acd02a061ea261ffdccec0160"
+    },
+    {
+      "historicalPath": "commands/loop-goal-resume.md",
+      "currentPath": "assets/commands/loop-goal-resume.md",
+      "currentDigest": "sha256:1ed82666e729ae5b923a2ae9fd625097394c65a143d21a2c0546a9a1278cf8cf"
+    },
+    {
+      "historicalPath": "commands/loop-goal-status.md",
+      "currentPath": "assets/commands/loop-goal-status.md",
+      "currentDigest": "sha256:f2e4233de606796618e7aac8bdba16a70c37abcdf109f99b42f57412eb2eefaf"
+    },
+    {
+      "historicalPath": "commands/loop-goal.md",
+      "currentPath": "assets/commands/loop-goal.md",
+      "currentDigest": "sha256:8b4513e175bc8abf1cb1e35e06fa3795e48e589dc9a96e9d71d66ab42dbdddbf"
+    },
+    {
+      "historicalPath": "commands/loop-help.md",
+      "currentPath": "assets/commands/loop-help.md",
+      "currentDigest": "sha256:ccde8500fc0883adfec6a61f509531a79f5c2cf2274c85d6d61ddc6e8ac9ba41"
+    },
+    {
+      "historicalPath": "commands/loop-init.md",
+      "currentPath": "assets/commands/loop-init.md",
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+    },
+    {
+      "historicalPath": "commands/loop-logs.md",
+      "currentPath": "assets/commands/loop-logs.md",
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+    },
+    {
+      "historicalPath": "commands/loop-now.md",
+      "currentPath": "assets/commands/loop-now.md",
+      "currentDigest": "sha256:9b6310f5f964aee144185baed0db1fcc067c40d6ffe6c2d8c16cd3b444939fa3"
+    },
+    {
+      "historicalPath": "commands/loop-pause.md",
+      "currentPath": "assets/commands/loop-pause.md",
+      "currentDigest": "sha256:e548b704b89f5dc9e892ab532e18ebe5bbdb8f6acd02a061ea261ffdccec0160"
+    },
+    {
+      "historicalPath": "commands/loop-progress.md",
+      "currentPath": "assets/commands/loop-progress.md",
+      "currentDigest": "sha256:ae8bfc25736e16bced4bd3435a9b3824ed034513174788d6112b83f7e17ea91d"
+    },
+    {
+      "historicalPath": "commands/loop-prompt.md",
+      "currentPath": "assets/commands/loop-prompt.md",
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+    },
+    {
+      "historicalPath": "commands/loop-remove.md",
+      "currentPath": "assets/commands/loop-remove.md",
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+    },
+    {
+      "historicalPath": "commands/loop-resume.md",
+      "currentPath": "assets/commands/loop-resume.md",
+      "currentDigest": "sha256:1ed82666e729ae5b923a2ae9fd625097394c65a143d21a2c0546a9a1278cf8cf"
+    },
+    {
+      "historicalPath": "commands/loop-safe-dev.md",
+      "currentPath": "assets/commands/loop-safe-dev.md",
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+    },
+    {
+      "historicalPath": "commands/loop-shell.md",
+      "currentPath": "assets/commands/loop-shell.md",
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+    },
+    {
+      "historicalPath": "commands/loop-status.md",
+      "currentPath": "assets/commands/loop-status.md",
+      "currentDigest": "sha256:f2e4233de606796618e7aac8bdba16a70c37abcdf109f99b42f57412eb2eefaf"
+    },
+    {
+      "historicalPath": "commands/loop-stop.md",
+      "currentPath": "assets/commands/loop-stop.md",
+      "currentDigest": "sha256:87cb537af46475752c825f915b2cb9a61f79da2b8b671ae0a47c042cee49f1fc"
+    },
+    {
+      "historicalPath": "commands/loop-testfix.md",
+      "currentPath": "assets/commands/loop-testfix.md",
+      "currentDigest": "sha256:3ee92888aca6723241a1ef6119d2a5a1e920a7906541c65f120e81db8b1d6ffd"
+    },
+    {
+      "historicalPath": "commands/loop.md",
+      "currentPath": "assets/commands/loop.md",
+      "currentDigest": "sha256:8b4513e175bc8abf1cb1e35e06fa3795e48e589dc9a96e9d71d66ab42dbdddbf"
+    },
+    {
+      "historicalPath": "src/index.js",
+      "currentPath": null,
+      "currentDigest": null,
+      "disposition": "deleted-from-product; provenance retained in git history and imported manifests",
+      "deletedAt": "native-ledger-v1"
+    },
+    {
+      "historicalPath": "src/loop-state.mjs",
+      "currentPath": null,
+      "currentDigest": null,
+      "disposition": "deleted-from-product; provenance retained in git history and imported manifests",
+      "deletedAt": "native-ledger-v1"
+    },
+    {
+      "historicalPath": "scripts/loopd.mjs",
+      "currentPath": null,
+      "currentDigest": null,
+      "disposition": "deleted-from-product; provenance retained in git history and imported manifests",
+      "deletedAt": "native-ledger-v1"
+    },
+    {
+      "historicalPath": "scripts/install-node.mjs",
+      "currentPath": "tools/install-node.mjs",
+      "currentDigest": "sha256:4522c5d8ccf4083a82169af6fce0170f0a083dc132dfe9819d37810090d6ffe4"
+    },
+    {
+      "historicalPath": "scripts/state-tool.mjs",
+      "currentPath": null,
+      "currentDigest": null,
+      "disposition": "deleted-from-product; provenance retained in git history and imported manifests",
+      "deletedAt": "native-ledger-v1"
+    },
+    {
+      "historicalPath": "agents/opencode-loop-local.md",
+      "currentPath": null,
+      "currentDigest": null,
+      "disposition": "deleted-from-product; provenance retained in git history and imported manifests",
+      "deletedAt": "native-ledger-v1"
+    },
+    {
+      "historicalPath": "config/overlay.example.json",
+      "currentPath": "assets/config/overlay.example.json",
+      "currentDigest": "sha256:6cc00f75d7333ca0c4d2395d810c5afcf5ff27f19b726daeaa241677eff0cc6e"
+    },
+    {
+      "historicalPath": "scripts/bundle-assets.mjs",
+      "currentPath": "tools/bundle-assets.mjs",
+      "currentDigest": "sha256:c9b87dfcb2a0eae57bf437be1e08f83c18c3a731a7da925cb280f6166896749b"
+    },
+    {
+      "historicalPath": "scripts/bundle-test.mjs",
+      "currentPath": "tools/bundle-test.mjs",
+      "currentDigest": "sha256:8831542688b51221c0b6b7f21e3197df8f22f9c08fc00710f885daf54c03059d"
+    },
+    {
+      "historicalPath": "test/runtime-contract.test.mjs",
+      "currentPath": null,
+      "currentDigest": null,
+      "disposition": "deleted-from-product; provenance retained in git history and imported manifests",
+      "deletedAt": "native-ledger-v1"
+    },
+    {
+      "historicalPath": "config/overlay.schema.json",
+      "currentPath": "assets/config/overlay.schema.json",
+      "currentDigest": "sha256:a3cccb712b2852c6adef2743358cab7479ff936b683c1cdc15b6b461db11dc68"
+    },
+    {
+      "historicalPath": "scripts/consolidation-test.mjs",
+      "currentPath": "tools/consolidation-test.mjs",
+      "currentDigest": "sha256:c659c46d7ba4346cc333a2ee448ff24c46f9d8cb06d101eb17ba37ff3f9ce3aa"
+    }
+  ]
+}

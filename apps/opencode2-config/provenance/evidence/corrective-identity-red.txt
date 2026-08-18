@@ -1,0 +1,573 @@
+✖ package binaries use only the new identity (1.377458ms)
+✖ daemon has no legacy identity in environment, diagnostics, defaults, or help (0.451666ms)
+✖ installer uses the new identity for its binary, plugin path, and diagnostics (0.285292ms)
+✖ third-party CI actions are pinned to immutable commit SHAs (0.101542ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 0
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 47.233791
+
+✖ failing tests:
+
+test at scripts/identity-test.mjs:14:1
+✖ package binaries use only the new identity (1.377458ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+    {
+  +   'opencode-loop': 'scripts/install-node.mjs',
+  +   'opencode-loopd': 'scripts/loopd.mjs'
+  -   'opencode2-config': 'scripts/install-node.mjs',
+  -   'opencode2-configd': 'scripts/loopd.mjs'
+    }
+  
+      at TestContext.<anonymous> (file:///Volumes/dev/opencode2-config/scripts/identity-test.mjs:15:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.start (node:internal/test_runner/test:1191:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { 'opencode-loop': 'scripts/install-node.mjs', 'opencode-loopd': 'scripts/loopd.mjs' },
+    expected: { 'opencode2-config': 'scripts/install-node.mjs', 'opencode2-configd': 'scripts/loopd.mjs' },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at scripts/identity-test.mjs:21:1
+✖ daemon has no legacy identity in environment, diagnostics, defaults, or help (0.451666ms)
+  AssertionError [ERR_ASSERTION]: The input was expected to not match the regular expression /OPENCODE_LOOPD_/. Input:
+  
+  '#!/usr/bin/env node\n' +
+    'import fs from "node:fs"\n' +
+    'import path from "node:path"\n' +
+    'import { spawn, spawnSync } from "node:child_process"\n' +
+    'import { createHash } from "node:crypto"\n' +
+    'import { homedir } from "node:os"\n' +
+    'import { fileURLToPath } from "node:url"\n' +
+    '\n' +
+    'const args = process.argv.slice(2)\n' +
+    'const configuredRetryMs = Number(process.env.OPENCODE_LOOPD_FAILED_RUN_RETRY_MS)\n' +
+    'const FAILED_RUN_RETRY_MS = Number.isFinite(configuredRetryMs) && configuredRetryMs >= 0 ? configuredRetryMs : 5_000\n' +
+    'const OPENCODE_BIN = process.env.OPENCODE_BIN || "opencode2"\n' +
+    'const SCHTASKS_BIN = process.env.SCHTASKS_BIN || "schtasks"\n' +
+    'const TASK_ROOT = process.env.OPENCODE2_CONFIG_TASK_DIR || path.join(process.env.LOCALAPPDATA || path.join(homedir(), "AppData", "Local"), "opencode2-config", "tasks")\n' +
+    '\n' +
+    'function arg(name, fallback = null) {\n' +
+    '  const i = args.indexOf(name)\n' +
+    '  if (i < 0) return fallback\n' +
+    '  if (i + 1 >= args.length) throw new Error(`Missing value for ${name}`)\n' +
+    '  return args[i + 1]\n' +
+    '}\n' +
+    '\n' +
+    'function has(name) {\n' +
+    '  return args.includes(name)\n' +
+    '}\n' +
+    '\n' +
+    'function parseMs(value) {\n' +
+    '  const v = String(value ?? "0s").trim().toLowerCase()\n' +
+    '  if (v === "0" || v === "0s" || v === "now") return 0\n' +
+    '\n' +
+    '  const m = v.match(/^(\\d+(?:\\.\\d+)?)\\s*(ms|s|sec|secs|m|min|mins|h|hr|hrs|d|day|days)$/)\n' +
+    '  if (!m) throw new Error(`Invalid duration: ${value}`)\n' +
+    '\n' +
+    '  const n = Number(m[1])\n' +
+    '  const unit = m[2]\n' +
+    '\n' +
+    '  if (unit === "ms") return n\n' +
+    '  if (unit.startsWith("s")) return n * 1000\n' +
+    '  if (unit.startsWith("m")) return n * 60_000\n' +
+    '  if (unit.startsWith("h")) return n * 3_600_000\n' +
+    '  if (unit.startsWith("d")) return n * 86_400_000\n' +
+    '\n' +
+    '  return n\n' +
+    '}\n' +
+    '\n' +
+    'function parseMaxRuns(value) {\n' +
+    '  const text = String(value ?? "0").trim()\n' +
+    '  if (!/^\\d+$/.test(text)) throw new Error(`Invalid --max-runs value: ${value}`)\n' +
+    '  const parsed = Number(text)\n' +
+    '  if (!Number.isSafeInteger(parsed)) throw new Error(`Invalid --max-runs value: ${value}`)\n' +
+    '  return parsed\n' +
+    '}\n' +
+    '\n' +
+    'function validateProject(project) {\n' +
+    '  let stat\n' +
+    '  try { stat = fs.statSync(project) } catch { throw new Error(`Project directory does not exist: ${project}`) }\n' +
+    '  if (!stat.isDirectory()) throw new Error(`Project path is not a directory: ${project}`)\n' +
+    '}\n' +
+    '\n' +
+    'function sleep(ms) {\n' +
+    '  return new Promise((resolve) => setTimeout(resolve, ms))\n' +
+    '}\n' +
+    '\n' +
+    'function spawnOnce(command, commandArgs, cwd) {\n' +
+    '  return new Promise((resolve) => {\n' +
+    '    let settled = false\n' +
+    '    const done = (result) => {\n' +
+    '      if (settled) return\n' +
+    '      settled = true\n' +
+    '      resolve(result)\n' +
+    '    }\n' +
+    '\n' +
+    '    let child\n' +
+    '    try {\n' +
+    '      child = spawn(command, commandArgs, {\n' +
+    '        cwd,\n' +
+    '        shell: false,\n' +
+    '        stdio: "inherit",\n' +
+    '        env: process.env,\n' +
+    '        windowsHide: true,\n' +
+    '      })\n' +
+    '    } catch (error) {\n' +
+    '      done({ code: -1, error })\n' +
+    '      return\n' +
+    '    }\n' +
+    '\n' +
+    '    child.on("error", (error) => done({ code: -1, error }))\n' +
+    '    child.on("exit", (code, signal) => done({ code: code ?? (signal ? 1 : 0), signal }))\n' +
+    '  })\n' +
+    '}\n' +
+    '\n' +
+    'function quoteWindowsArg(value) {\n' +
+    '  const text = String(value ?? "")\n' +
+    '  return `"${text.replace(/(\\\\*)"/g, \'$1$1\\\\"\').replace(/\\\\+$/g, "$&$&")}"`\n' +
+    '}\n' +
+    '\n' +
+    'function stripBom(text) {\n' +
+    '  return text.charCodeAt(0) === 0xfeff ? text.slice(1) : text\n' +
+    '}\n' +
+    '\n' +
+    'async function run(command, commandArgs, cwd) {\n' +
+    '  const direct = await spawnOnce(command, commandArgs, cwd)\n' +
+    '  if (direct.code !== -1 || process.platform !== "win32" || !["ENOENT", "EINVAL"].includes(direct.error?.code)) return direct.code\n' +
+    '\n' +
+    '  const fallback = await spawnOnce("cmd.exe", ["/d", "/s", "/c", command, ...commandArgs], cwd)\n' +
+    '  if (fallback.code === -1) {\n' +
+    '    console.error(`[opencode-loopd] failed to start ${command}: ${fallback.error?.message || direct.error?.message || "unknown error"}`)\n' +
+    '  }\n' +
+    '  return fallback.code\n' +
+    '}\n' +
+    '\n' +
+    'function runSync(command, commandArgs) {\n' +
+    '  const options = { shell: false, stdio: "inherit", windowsHide: true }\n' +
+    '  const direct = spawnSync(command, commandArgs, options)\n' +
+    '  const extension = path.extname(String(command || "")).toLowerCase()\n' +
+    '  if (!direct.error || process.platform !== "win32" || direct.error.code !== "EINVAL" || ![".cmd", ".bat"].includes(extension)) return direct\n' +
+    '  return spawnSync("cmd.exe", ["/d", "/s", "/c", command, ...commandArgs], options)\n' +
+    '}\n' +
+    '\n' +
+    'function readPrompt(project, options = {}) {\n' +
+    '  const promptFile = options.promptFile ?? arg("--prompt-file")\n' +
+    '  const promptArg = options.prompt ?? arg("--prompt")\n' +
+    '\n' +
+    '  if (promptFile) {\n' +
+    '    return stripBom(fs.readFileSync(path.resolve(project, promptFile), "utf8"))\n' +
+    '  }\n' +
+    '\n' +
+    '  if (promptArg) return promptArg\n' +
+    '\n' +
+    '  return [\n' +
+    '    "Continue from progress.md and implement the next unfinished TODO.",\n' +
+    '    "Do not ask questions.",\n' +
+    '    "Make reasonable assumptions.",\n' +
+    '    "Mark completed TODO items with [x].",\n' +
+    '    "Add useful follow-up TODOs when needed.",\n' +
+    '    "Run tests/lint/build when available.",\n' +
+    '    "Do not run destructive commands such as git reset, git clean, rm -rf, force push, deploy, or production migrations.",\n' +
+    '    "Keep going while work remains.",\n' +
+    '  ].join(" ")\n' +
+    '}\n' +
+    '\n' +
+    'async function daemon(options = {}) {\n' +
+    '  const project = path.resolve(options.project ?? arg("--project", process.cwd()))\n' +
+    '  validateProject(project)\n' +
+    '  const every = options.every ?? arg("--every", "0s")\n' +
+    '  const delay = parseMs(every)\n' +
+    '  const maxRuns = parseMaxRuns(options.maxRuns ?? arg("--max-runs", "0"))\n' +
+    '  const sleepFirst = options.sleepFirst ?? has("--sleep-first")\n' +
+    '  const prompt = readPrompt(project, options)\n' +
+    '  const model = options.model ?? arg("--model")\n' +
+    '  const agent = options.agent ?? arg("--agent")\n' +
+    '  const opencodeBin = options.opencodeBin || OPENCODE_BIN\n' +
+    '\n' +
+    '  console.log("OpenCode 2 Loop daemon")\n' +
+    '  console.log(`project: ${project}`)\n' +
+    '  console.log(`every: ${every}`)\n' +
+    '  console.log(`maxRuns: ${maxRuns || "unlimited"}`)\n' +
+    '  console.log(`binary: ${opencodeBin} (override with OPENCODE_BIN)`)\n' +
+    '\n' +
+    '  let count = 0\n' +
+    '\n' +
+    '  if (sleepFirst && delay > 0) {\n' +
+    '    await sleep(delay)\n' +
+    '  }\n' +
+    '\n' +
+    '  while (true) {\n' +
+    '    count += 1\n' +
+    '\n' +
+    '    console.log("")\n' +
+    '    console.log(`[opencode-loopd] run #${count} ${new Date().toISOString()}`)\n' +
+    '\n' +
+    '    const runArgs = ["run", "--continue"]\n' +
+    '    if (model) runArgs.push("--model", model)\n' +
+    '    if (agent) runArgs.push("--agent", agent)\n' +
+    '    runArgs.push(prompt)\n' +
+    '    const code = await run(opencodeBin, runArgs, project)\n' +
+    '\n' +
+    '    if (code !== 0) {\n' +
+    '      console.log(`[opencode-loopd] ${opencodeBin} exited with code ${code}`)\n' +
+    '      if (delay === 0) {\n' +
+    '        await sleep(FAILED_RUN_RETRY_MS)\n' +
+    '      }\n' +
+    '    }\n' +
+    '\n' +
+    '    if (maxRuns > 0 && count >= maxRuns) {\n' +
+    '      console.log("[opencode-loopd] max runs reached")\n' +
+    '      return Number.isInteger(code) && code > 0 ? code : code < 0 ? 1 : 0\n' +
+    '    }\n' +
+    '\n' +
+    '    if (delay > 0) {\n' +
+    '      await sleep(delay)\n' +
+    '    }\n' +
+    '  }\n' +
+    '}\n' +
+    '\n' +
+    'function taskArtifacts(name) {\n' +
+    '  const id = createHash("sha256").update(String(name || "OpenCodeLoop")).digest("hex").slice(0, 16)\n' +
+    '  return {\n' +
+    '    config: path.join(TASK_ROOT, `${id}.json`),\n' +
+    '    launcher: path.join(TASK_ROOT, `${id}.cmd`),\n' +
+    '  }\n' +
+    '}\n' +
+    '\n' +
+    'function removeTaskArtifacts(artifacts) {\n' +
+    '  for (const target of [artifacts.launcher, artifacts.config]) {\n' +
+    '    try { fs.rmSync(target, { force: true }) } catch {}\n' +
+    '  }\n' +
+    '}\n' +
+    '\n' +
+    'async function taskRun() {\n' +
+    '  const configFile = path.resolve(arg("--config"))\n' +
+    '  let config\n' +
+    '  try { config = JSON.parse(fs.readFileSync(configFile, "utf8")) } catch (error) { throw new Error(`Could not read task config ${configFile}: ${error.message}`) }\n' +
+    '  return await daemon(config)\n' +
+    '}\n' +
+    '\n' +
+    'function installTask() {\n' +
+    '  if (process.platform !== "win32") {\n' +
+    '    throw new Error("install-task is currently implemented for Windows Task Scheduler only. Use daemon mode on macOS/Linux.")\n' +
+    '  }\n' +
+    '\n' +
+    '  const project = path.resolve(arg("--project", process.cwd()))\n' +
+    '  validateProject(project)\n' +
+    '  const every = arg("--every", "10m")\n' +
+    '  const minutes = Math.max(1, Math.round(parseMs(every) / 60_000))\n' +
+    '  const name = arg("--name", "OpenCodeLoop")\n' +
+    '  const promptFile = arg("--prompt-file")\n' +
+    '  const promptArg = arg("--prompt")\n' +
+    '  const model = arg("--model")\n' +
+    '  const agent = arg("--agent")\n' +
+    '  const node = process.execPath\n' +
+    '  const script = fileURLToPath(import.meta.url)\n' +
+    '  const artifacts = taskArtifacts(name)\n' +
+    '  fs.mkdirSync(TASK_ROOT, { recursive: true })\n' +
+    '  const taskConfig = {\n' +
+    '    project,\n' +
+    '    every: "0s",\n' +
+    '    maxRuns: 1,\n' +
+    '    promptFile: promptFile ? path.resolve(project, promptFile) : undefined,\n' +
+    '    prompt: promptArg || undefined,\n' +
+    '    model: model || undefined,\n' +
+    '    agent: agent || undefined,\n' +
+    '    opencodeBin: OPENCODE_BIN,\n' +
+    '  }\n' +
+    '  fs.writeFileSync(artifacts.config, JSON.stringify(taskConfig, null, 2) + "\\n", "utf8")\n' +
+    '  const launcherCommand = [quoteWindowsArg(node), quoteWindowsArg(script), "task-run", "--config", quoteWindowsArg(artifacts.config)].join(" ")\n' +
+    '  fs.writeFileSync(artifacts.launcher, `@echo off\\r\\n${launcherCommand}\\r\\nexit /b %errorlevel%\\r\\n`, "utf8")\n' +
+    '  const taskCommand = `cmd.exe /d /s /c "${quoteWindowsArg(artifacts.launcher)}"`\n' +
+    '  if (taskCommand.length > 261) {\n' +
+    '    removeTaskArtifacts(artifacts)\n' +
+    '    throw new Error(`Task Scheduler command is still too long (${taskCommand.length} characters). Set OPENCODE2_CONFIG_TASK_DIR to a shorter directory.`)\n' +
+    '  }\n' +
+    '  const taskArgs = ["/Create", "/F", "/SC", "MINUTE", "/MO", String(minutes), "/TN", name, "/TR", taskCommand]\n' +
+    '\n' +
+    '  console.log([SCHTASKS_BIN, ...taskArgs.map((part) => JSON.stringify(part))].join(" "))\n' +
+    '  const result = runSync(SCHTASKS_BIN, taskArgs)\n' +
+    '  if (result.error) {\n' +
+    '    removeTaskArtifacts(artifacts)\n' +
+    '    console.error(`[opencode-loopd] failed to start ${SCHTASKS_BIN}: ${result.error.message}`)\n' +
+    '    return 1\n' +
+    '  }\n' +
+    '  const status = Number.isInteger(result.status) ? result.status : 1\n' +
+    '  if (status !== 0) removeTaskArtifacts(artifacts)\n' +
+    '  return status\n' +
+    '}\n' +
+    '\n' +
+    'function uninstallTask() {\n' +
+    '  if (process.platform !== "win32") {\n' +
+    '    throw new Error("uninstall-task is currently implemented for Windows Task Scheduler only.")\n' +
+    '  }\n' +
+    '\n' +
+    '  const name = arg("--name", "OpenCodeLoop")\n' +
+    '  const result = runSync(SCHTASKS_BIN, ["/Delete", "/F", "/TN", name])\n' +
+    '  if (result.error) {\n' +
+    '    console.error(`[opencode-loopd] failed to start ${SCHTASKS_BIN}: ${result.error.message}`)\n' +
+    '    return 1\n' +
+    '  }\n' +
+    '  const status = Number.isInteger(result.status) ? result.status : 1\n' +
+    '  if (status === 0) removeTaskArtifacts(taskArtifacts(name))\n' +
+    '  return status\n'... 1644 more characters
+  
+      at TestContext.<anonymous> (file:///Volumes/dev/opencode2-config/scripts/identity-test.mjs:22:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '#!/usr/bin/env node\nimport fs from "node:fs"\nimport path from "node:path"\nimport { spawn, spawnSync } from "node:child_process"\nimport { createHash } from "node:crypto"\nimport { homedir } from "node:os"\nimport { fileURLToPath } from "node:url"\n\nconst args = process.argv.slice(2)\nconst configuredRetryMs = Number(process.env.OPENCODE_LOOPD_FAILED_RUN_RETRY_MS)\nconst FAILED_RUN_RETRY_MS = Number.isFinite(configuredRetryMs) && configuredRetryMs >= 0 ? configuredRetryMs : 5_000\nconst OPENCODE_BIN = process.env.OPENCODE_BIN || "opencode2"\nconst SCHTASKS_BIN = process.env.SCHTASKS_BIN || "schtasks"\nconst TASK_ROOT = process.env.OPENCODE2_CONFIG_TASK_DIR || path.join(process.env.LOCALAPPDATA || path.join(homedir(), "AppData", "Local"), "opencode2-config", "tasks")\n\nfunction arg(name, fallback = null) {\n  const i = args.indexOf(name)\n  if (i < 0) return fallback\n  if (i + 1 >= args.length) throw new Error(`Missing value for ${name}`)\n  return args[i + 1]\n}\n\nfunction has(name) {\n  return args.includes(name)\n}\n\nfunction parseMs(value) {\n  const v = String(value ?? "0s").trim().toLowerCase()\n  if (v === "0" || v === "0s" || v === "now") return 0\n\n  const m = v.match(/^(\\d+(?:\\.\\d+)?)\\s*(ms|s|sec|secs|m|min|mins|h|hr|hrs|d|day|days)$/)\n  if (!m) throw new Error(`Invalid duration: ${value}`)\n\n  const n = Number(m[1])\n  const unit = m[2]\n\n  if (unit === "ms") return n\n  if (unit.startsWith("s")) return n * 1000\n  if (unit.startsWith("m")) return n * 60_000\n  if (unit.startsWith("h")) return n * 3_600_000\n  if (unit.startsWith("d")) return n * 86_400_000\n\n  return n\n}\n\nfunction parseMaxRuns(value) {\n  const text = String(value ?? "0").trim()\n  if (!/^\\d+$/.test(text)) throw new Error(`Invalid --max-runs value: ${value}`)\n  const parsed = Number(text)\n  if (!Number.isSafeInteger(parsed)) throw new Error(`Invalid --max-runs value: ${value}`)\n  return parsed\n}\n\nfunction validateProject(project) {\n  let stat\n  try { stat = fs.statSync(project) } catch { throw new Error(`Project directory does not exist: ${project}`) }\n  if (!stat.isDirectory()) throw new Error(`Project path is not a directory: ${project}`)\n}\n\nfunction sleep(ms) {\n  return new Promise((resolve) => setTimeout(resolve, ms))\n}\n\nfunction spawnOnce(command, commandArgs, cwd) {\n  return new Promise((resolve) => {\n    let settled = false\n    const done = (result) => {\n      if (settled) return\n      settled = true\n      resolve(result)\n    }\n\n    let child\n    try {\n      child = spawn(command, commandArgs, {\n        cwd,\n        shell: false,\n        stdio: "inherit",\n        env: process.env,\n        windowsHide: true,\n      })\n    } catch (error) {\n      done({ code: -1, error })\n      return\n    }\n\n    child.on("error", (error) => done({ code: -1, error }))\n    child.on("exit", (code, signal) => done({ code: code ?? (signal ? 1 : 0), signal }))\n  })\n}\n\nfunction quoteWindowsArg(value) {\n  const text = String(value ?? "")\n  return `"${text.replace(/(\\\\*)"/g, \'$1$1\\\\"\').replace(/\\\\+$/g, "$&$&")}"`\n}\n\nfunction stripBom(text) {\n  return text.charCodeAt(0) === 0xfeff ? text.slice(1) : text\n}\n\nasync function run(command, commandArgs, cwd) {\n  const direct = await spawnOnce(command, commandArgs, cwd)\n  if (direct.code !== -1 || process.platform !== "win32" || !["ENOENT", "EINVAL"].includes(direct.error?.code)) return direct.code\n\n  const fallback = await spawnOnce("cmd.exe", ["/d", "/s", "/c", command, ...commandArgs], cwd)\n  if (fallback.code === -1) {\n    console.error(`[opencode-loopd] failed to start ${command}: ${fallback.error?.message || direct.error?.message || "unknown error"}`)\n  }\n  return fallback.code\n}\n\nfunction runSync(command, commandArgs) {\n  const options = { shell: false, stdio: "inherit", windowsHide: true }\n  const direct = spawnSync(command, commandArgs, options)\n  const extension = path.extname(String(command || "")).toLowerCase()\n  if (!direct.error || process.platform !== "win32" || direct.error.code !== "EINVAL" || ![".cmd", ".bat"].includes(extension)) return direct\n  return spawnSync("cmd.exe", ["/d", "/s", "/c", command, ...commandArgs], options)\n}\n\nfunction readPrompt(project, options = {}) {\n  const promptFile = options.promptFile ?? arg("--prompt-file")\n  const promptArg = options.prompt ?? arg("--prompt")\n\n  if (promptFile) {\n    return stripBom(fs.readFileSync(path.resolve(project, promptFile), "utf8"))\n  }\n\n  if (promptArg) return promptArg\n\n  return [\n    "Continue from progress.md and implement the next unfinished TODO.",\n    "Do not ask questions.",\n    "Make reasonable assumptions.",\n    "Mark completed TODO items with [x].",\n    "Add useful follow-up TODOs when needed.",\n    "Run tests/lint/build when available.",\n    "Do not run destructive commands such as git reset, git clean, rm -rf, force push, deploy, or production migrations.",\n    "Keep going while work remains.",\n  ].join(" ")\n}\n\nasync function daemon(options = {}) {\n  const project = path.resolve(options.project ?? arg("--project", process.cwd()))\n  validateProject(project)\n  const every = options.every ?? arg("--every", "0s")\n  const delay = parseMs(every)\n  const maxRuns = parseMaxRuns(options.maxRuns ?? arg("--max-runs", "0"))\n  const sleepFirst = options.sleepFirst ?? has("--sleep-first")\n  const prompt = readPrompt(project, options)\n  const model = options.model ?? arg("--model")\n  const agent = options.agent ?? arg("--agent")\n  const opencodeBin = options.opencodeBin || OPENCODE_BIN\n\n  console.log("OpenCode 2 Loop daemon")\n  console.log(`project: ${project}`)\n  console.log(`every: ${every}`)\n  console.log(`maxRuns: ${maxRuns || "unlimited"}`)\n  console.log(`binary: ${opencodeBin} (override with OPENCODE_BIN)`)\n\n  let count = 0\n\n  if (sleepFirst && delay > 0) {\n    await sleep(delay)\n  }\n\n  while (true) {\n    count += 1\n\n    console.log("")\n    console.log(`[opencode-loopd] run #${count} ${new Date().toISOString()}`)\n\n    const runArgs = ["run", "--continue"]\n    if (model) runArgs.push("--model", model)\n    if (agent) runArgs.push("--agent", agent)\n    runArgs.push(prompt)\n    const code = await run(opencodeBin, runArgs, project)\n\n    if (code !== 0) {\n      console.log(`[opencode-loopd] ${opencodeBin} exited with code ${code}`)\n      if (delay === 0) {\n        await sleep(FAILED_RUN_RETRY_MS)\n      }\n    }\n\n    if (maxRuns > 0 && count >= maxRuns) {\n      console.log("[opencode-loopd] max runs reached")\n      return Number.isInteger(code) && code > 0 ? code : code < 0 ? 1 : 0\n    }\n\n    if (delay > 0) {\n      await sleep(delay)\n    }\n  }\n}\n\nfunction taskArtifacts(name) {\n  const id = createHash("sha256").update(String(name || "OpenCodeLoop")).digest("hex").slice(0, 16)\n  return {\n    config: path.join(TASK_ROOT, `${id}.json`),\n    launcher: path.join(TASK_ROOT, `${id}.cmd`),\n  }\n}\n\nfunction removeTaskArtifacts(artifacts) {\n  for (const target of [artifacts.launcher, artifacts.config]) {\n    try { fs.rmSync(target, { force: true }) } catch {}\n  }\n}\n\nasync function taskRun() {\n  const configFile = path.resolve(arg("--config"))\n  let config\n  try { config = JSON.parse(fs.readFileSync(configFile, "utf8")) } catch (error) { throw new Error(`Could not read task config ${configFile}: ${error.message}`) }\n  return await daemon(config)\n}\n\nfunction installTask() {\n  if (process.platform !== "win32") {\n    throw new Error("install-task is currently implemented for Windows Task Scheduler only. Use daemon mode on macOS/Linux.")\n  }\n\n  const project = path.resolve(arg("--project", process.cwd()))\n  validateProject(project)\n  const every = arg("--every", "10m")\n  const minutes = Math.max(1, Math.round(parseMs(every) / 60_000))\n  const name = arg("--name", "OpenCodeLoop")\n  const promptFile = arg("--prompt-file")\n  const promptArg = arg("--prompt")\n  const model = arg("--model")\n  const agent = arg("--agent")\n  const node = process.execPath\n  const script = fileURLToPath(import.meta.url)\n  const artifacts = taskArtifacts(name)\n  fs.mkdirSync(TASK_ROOT, { recursive: true })\n  const taskConfig = {\n    project,\n    every: "0s",\n    maxRuns: 1,\n    promptFile: promptFile ? path.resolve(project, promptFile) : undefined,\n    prompt: promptArg || undefined,\n    model: model || undefined,\n    agent: agent || undefined,\n    opencodeBin: OPENCODE_BIN,\n  }\n  fs.writeFileSync(artifacts.config, JSON.stringify(taskConfig, null, 2) + "\\n", "utf8")\n  const launcherCommand = [quoteWindowsArg(node), quoteWindowsArg(script), "task-run", "--config", quoteWindowsArg(artifacts.config)].join(" ")\n  fs.writeFileSync(artifacts.launcher, `@echo off\\r\\n${launcherCommand}\\r\\nexit /b %errorlevel%\\r\\n`, "utf8")\n  const taskCommand = `cmd.exe /d /s /c "${quoteWindowsArg(artifacts.launcher)}"`\n  if (taskCommand.length > 261) {\n    removeTaskArtifacts(artifacts)\n    throw new Error(`Task Scheduler command is still too long (${taskCommand.length} characters). Set OPENCODE2_CONFIG_TASK_DIR to a shorter directory.`)\n  }\n  const taskArgs = ["/Create", "/F", "/SC", "MINUTE", "/MO", String(minutes), "/TN", name, "/TR", taskCommand]\n\n  console.log([SCHTASKS_BIN, ...taskArgs.map((part) => JSON.stringify(part))].join(" "))\n  const result = runSync(SCHTASKS_BIN, taskArgs)\n  if (result.error) {\n    removeTaskArtifacts(artifacts)\n    console.error(`[opencode-loopd] failed to start ${SCHTASKS_BIN}: ${result.error.message}`)\n    return 1\n  }\n  const status = Number.isInteger(result.status) ? result.status : 1\n  if (status !== 0) removeTaskArtifacts(artifacts)\n  return status\n}\n\nfunction uninstallTask() {\n  if (process.platform !== "win32") {\n    throw new Error("uninstall-task is currently implemented for Windows Task Scheduler only.")\n  }\n\n  const name = arg("--name", "OpenCodeLoop")\n  const result = runSync(SCHTASKS_BIN, ["/Delete", "/F", "/TN", name])\n  if (result.error) {\n    console.error(`[opencode-loopd] failed to start ${SCHTASKS_BIN}: ${result.error.message}`)\n    return 1\n  }\n  const status = Number.isInteger(result.status) ? result.status : 1\n  if (status === 0) removeTaskArtifacts(taskArtifacts(name))\n  return status\n'... 1644 more characters,
+    expected: /OPENCODE_LOOPD_/,
+    operator: 'doesNotMatch',
+    diff: 'simple'
+  }
+
+test at scripts/identity-test.mjs:32:1
+✖ installer uses the new identity for its binary, plugin path, and diagnostics (0.285292ms)
+  AssertionError [ERR_ASSERTION]: The input was expected to not match the regular expression /opencode-loop(?:\.ts|\.js|\b)/. Input:
+  
+  '#!/usr/bin/env node\n' +
+    'import { copyFile, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises"\n' +
+    'import { homedir } from "node:os"\n' +
+    'import { dirname, join } from "node:path"\n' +
+    'import { fileURLToPath } from "node:url"\n' +
+    '\n' +
+    'const root = dirname(dirname(fileURLToPath(import.meta.url)))\n' +
+    'const config = process.env.OPENCODE_CONFIG_DIR || join(homedir(), ".config", "opencode")\n' +
+    'const pluginDir = join(config, "plugins")\n' +
+    'const commandDir = join(config, "commands")\n' +
+    'const agentDir = join(config, "agents")\n' +
+    'const packagePath = join(config, "package.json")\n' +
+    'const packageName = "@iamsterling/opencode2-config"\n' +
+    'const packageVersion = JSON.parse(await readFile(join(root, "package.json"), "utf8")).version\n' +
+    'const packageSpec = `${packageName}@${packageVersion}`\n' +
+    'const installerArgs = process.argv.slice(2)\n' +
+    '\n' +
+    'if (installerArgs.includes("--help") || installerArgs.includes("-h")) {\n' +
+    '  console.log(`OpenCode 2 Loop installer\n' +
+    '\n' +
+    'Usage:\n' +
+    '  opencode-loop\n' +
+    '  npx -y @iamsterling/opencode2-config@latest\n' +
+    '\n' +
+    'Installs the plugin commands and local command agent into OPENCODE_CONFIG_DIR\n' +
+    'or the default ~/.config/opencode directory for OpenCode 2 (opencode2).`)\n' +
+    '  process.exit(0)\n' +
+    '}\n' +
+    '\n' +
+    'if (installerArgs.includes("--version") || installerArgs.includes("-v")) {\n' +
+    '  console.log(packageVersion)\n' +
+    '  process.exit(0)\n' +
+    '}\n' +
+    '\n' +
+    'function stripJsonComments(input) {\n' +
+    '  let output = ""\n' +
+    '  let quote = ""\n' +
+    '  let escaped = false\n' +
+    '  let lineComment = false\n' +
+    '  let blockComment = false\n' +
+    '  for (let index = 0; index < input.length; index++) {\n' +
+    '    const char = input[index]\n' +
+    '    const next = input[index + 1]\n' +
+    '    if (lineComment) {\n' +
+    '      if (char === "\\n" || char === "\\r") { lineComment = false; output += char }\n' +
+    '      continue\n' +
+    '    }\n' +
+    '    if (blockComment) {\n' +
+    '      if (char === "*" && next === "/") { blockComment = false; index++ }\n' +
+    '      else if (char === "\\n" || char === "\\r") output += char\n' +
+    '      continue\n' +
+    '    }\n' +
+    '    if (quote) {\n' +
+    '      output += char\n' +
+    '      if (escaped) escaped = false\n' +
+    '      else if (char === "\\\\") escaped = true\n' +
+    '      else if (char === quote) quote = ""\n' +
+    '      continue\n' +
+    '    }\n' +
+    `    if (char === '"') { quote = char; output += char; continue }\n` +
+    '    if (char === "/" && next === "/") { lineComment = true; index++; continue }\n' +
+    '    if (char === "/" && next === "*") { blockComment = true; index++; continue }\n' +
+    '    output += char\n' +
+    '  }\n' +
+    '  return output\n' +
+    '}\n' +
+    '\n' +
+    'function stripTrailingCommas(input) {\n' +
+    '  let output = ""\n' +
+    '  let quote = ""\n' +
+    '  let escaped = false\n' +
+    '  for (let index = 0; index < input.length; index++) {\n' +
+    '    const char = input[index]\n' +
+    '    if (quote) {\n' +
+    '      output += char\n' +
+    '      if (escaped) escaped = false\n' +
+    '      else if (char === "\\\\") escaped = true\n' +
+    '      else if (char === quote) quote = ""\n' +
+    '      continue\n' +
+    '    }\n' +
+    `    if (char === '"') { quote = char; output += char; continue }\n` +
+    '    if (char === ",") {\n' +
+    '      let lookahead = index + 1\n' +
+    '      while (/\\s/.test(input[lookahead] || "")) lookahead++\n' +
+    '      if (input[lookahead] === "]" || input[lookahead] === "}") continue\n' +
+    '    }\n' +
+    '    output += char\n' +
+    '  }\n' +
+    '  return output\n' +
+    '}\n' +
+    '\n' +
+    'function parseJsonc(input) {\n' +
+    '  return JSON.parse(stripTrailingCommas(stripJsonComments(input)))\n' +
+    '}\n' +
+    '\n' +
+    'function isPackageSpec(value) {\n' +
+    '  const spec = String(value || "").trim()\n' +
+    '  return spec === packageName || spec.startsWith(`${packageName}@`)\n' +
+    '}\n' +
+    '\n' +
+    'async function configurePackagePlugin() {\n' +
+    '  let configured = false\n' +
+    '  const updatedFiles = []\n' +
+    '  for (const name of ["opencode.json", "opencode.jsonc", "config.json", "config.jsonc"]) {\n' +
+    '    try {\n' +
+    '      const target = join(config, name)\n' +
+    '      const source = await readFile(target, "utf8")\n' +
+    '      const parsed = parseJsonc(source)\n' +
+    '      // OpenCode 2 renames plugin to plugins; V1 config still loads in V2, so\n' +
+    '      // pin the package spec in whichever array (or both) actually exists.\n' +
+    '      const specs = [...new Set([\n' +
+    '        ...(Array.isArray(parsed?.plugin) ? parsed.plugin.filter(isPackageSpec) : []),\n' +
+    '        ...(Array.isArray(parsed?.plugins) ? parsed.plugins.filter(isPackageSpec) : []),\n' +
+    '      ])]\n' +
+    '      if (!specs.length) continue\n' +
+    '      configured = true\n' +
+    '\n' +
+    '      // OpenCode caches package plugins by the literal config spec. A bare\n' +
+    '      // package name or @latest can therefore keep loading an older cached\n' +
+    '      // release after npm installs a newer one. Pin the config entry to the\n' +
+    "      // installer package's exact version while preserving JSONC comments.\n" +
+    '      let updated = source\n' +
+    '      for (const spec of new Set(specs)) {\n' +
+    '        if (spec === packageSpec) continue\n' +
+    '        updated = updated.replaceAll(JSON.stringify(spec), JSON.stringify(packageSpec))\n' +
+    '      }\n' +
+    '      if (updated !== source) {\n' +
+    '        await writeFile(target, updated, "utf8")\n' +
+    '        updatedFiles.push(target)\n' +
+    '      }\n' +
+    '    } catch (error) {\n' +
+    '      if (error?.code !== "ENOENT") console.warn(`Could not inspect ${join(config, name)} for duplicate plugin entries: ${error.message}`)\n' +
+    '    }\n' +
+    '  }\n' +
+    '  return { configured, updatedFiles }\n' +
+    '}\n' +
+    '\n' +
+    'async function ensureDependency() {\n' +
+    '  let pkg = {}\n' +
+    '  try {\n' +
+    '    pkg = JSON.parse(await readFile(packagePath, "utf8"))\n' +
+    '  } catch (error) {\n' +
+    '    if (error?.code !== "ENOENT") {\n' +
+    '      console.warn(`Could not update ${packagePath}: ${error.message}`)\n' +
+    `      console.warn('Add "@opencode-ai/plugin": "next" to that package.json if OpenCode 2 cannot load the local plugin.')\n` +
+    '      return\n' +
+    '    }\n' +
+    '  }\n' +
+    '  if (!pkg || typeof pkg !== "object" || Array.isArray(pkg)) pkg = {}\n' +
+    '  pkg.dependencies = pkg.dependencies && typeof pkg.dependencies === "object" && !Array.isArray(pkg.dependencies) ? pkg.dependencies : {}\n' +
+    '  if (!pkg.dependencies["@opencode-ai/plugin"]) {\n' +
+    '    // The V2 plugin API is beta; match the @next channel used by opencode2.\n' +
+    '    pkg.dependencies["@opencode-ai/plugin"] = "next"\n' +
+    '    await writeFile(packagePath, JSON.stringify(pkg, null, 2) + "\\n", "utf8")\n' +
+    '  }\n' +
+    '}\n' +
+    '\n' +
+    'await mkdir(pluginDir, { recursive: true })\n' +
+    'await mkdir(commandDir, { recursive: true })\n' +
+    'await mkdir(agentDir, { recursive: true })\n' +
+    'const packageConfig = await configurePackagePlugin()\n' +
+    'const useConfiguredPackage = packageConfig.configured\n' +
+    'if (useConfiguredPackage) {\n' +
+    '  await rm(join(pluginDir, "opencode-loop.ts"), { force: true })\n' +
+    '  await rm(join(pluginDir, "opencode-loop.js"), { force: true })\n' +
+    '} else {\n' +
+    '  await ensureDependency()\n' +
+    '  await copyFile(join(root, "src", "index.js"), join(pluginDir, "opencode-loop.ts"))\n' +
+    '  await rm(join(pluginDir, "opencode-loop.js"), { force: true })\n' +
+    '}\n' +
+    '\n' +
+    'for (const name of await readdir(join(root, "commands"))) {\n' +
+    '  if (name.endsWith(".md")) {\n' +
+    '    await copyFile(join(root, "commands", name), join(commandDir, name))\n' +
+    '  }\n' +
+    '}\n' +
+    '\n' +
+    'for (const name of await readdir(join(root, "agents"))) {\n' +
+    '  if (name.endsWith(".md")) {\n' +
+    '    await copyFile(join(root, "agents", name), join(agentDir, name))\n' +
+    '  }\n' +
+    '}\n' +
+    '\n' +
+    'if (useConfiguredPackage) {\n' +
+    '  const pinResult = packageConfig.updatedFiles.length\n' +
+    '    ? `pinned the config entry to ${packageSpec}`\n' +
+    '    : `the config entry is already pinned to ${packageSpec}`\n' +
+    '  console.log(`OpenCode Loop is already configured as a package in ${config}; ${pinResult} and removed the duplicate local plugin copy.`)\n' +
+    '}\n' +
+    'else console.log(`Installed OpenCode Loop plugin to ${config}`)\n' +
+    'console.log(`Installed ${packageName} commands to ${commandDir}`)\n' +
+    'console.log(`Installed ${packageName} local command agent to ${agentDir}`)\n' +
+    `console.log('Run "bun install" (or npm install) in ' + config + ' so the local plugin can resolve @opencode-ai/plugin, then restart opencode2 and run: /loop-help')\n`
+  
+      at TestContext.<anonymous> (file:///Volumes/dev/opencode2-config/scripts/identity-test.mjs:33:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '#!/usr/bin/env node\nimport { copyFile, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises"\nimport { homedir } from "node:os"\nimport { dirname, join } from "node:path"\nimport { fileURLToPath } from "node:url"\n\nconst root = dirname(dirname(fileURLToPath(import.meta.url)))\nconst config = process.env.OPENCODE_CONFIG_DIR || join(homedir(), ".config", "opencode")\nconst pluginDir = join(config, "plugins")\nconst commandDir = join(config, "commands")\nconst agentDir = join(config, "agents")\nconst packagePath = join(config, "package.json")\nconst packageName = "@iamsterling/opencode2-config"\nconst packageVersion = JSON.parse(await readFile(join(root, "package.json"), "utf8")).version\nconst packageSpec = `${packageName}@${packageVersion}`\nconst installerArgs = process.argv.slice(2)\n\nif (installerArgs.includes("--help") || installerArgs.includes("-h")) {\n  console.log(`OpenCode 2 Loop installer\n\nUsage:\n  opencode-loop\n  npx -y @iamsterling/opencode2-config@latest\n\nInstalls the plugin commands and local command agent into OPENCODE_CONFIG_DIR\nor the default ~/.config/opencode directory for OpenCode 2 (opencode2).`)\n  process.exit(0)\n}\n\nif (installerArgs.includes("--version") || installerArgs.includes("-v")) {\n  console.log(packageVersion)\n  process.exit(0)\n}\n\nfunction stripJsonComments(input) {\n  let output = ""\n  let quote = ""\n  let escaped = false\n  let lineComment = false\n  let blockComment = false\n  for (let index = 0; index < input.length; index++) {\n    const char = input[index]\n    const next = input[index + 1]\n    if (lineComment) {\n      if (char === "\\n" || char === "\\r") { lineComment = false; output += char }\n      continue\n    }\n    if (blockComment) {\n      if (char === "*" && next === "/") { blockComment = false; index++ }\n      else if (char === "\\n" || char === "\\r") output += char\n      continue\n    }\n    if (quote) {\n      output += char\n      if (escaped) escaped = false\n      else if (char === "\\\\") escaped = true\n      else if (char === quote) quote = ""\n      continue\n    }\n    if (char === \'"\') { quote = char; output += char; continue }\n    if (char === "/" && next === "/") { lineComment = true; index++; continue }\n    if (char === "/" && next === "*") { blockComment = true; index++; continue }\n    output += char\n  }\n  return output\n}\n\nfunction stripTrailingCommas(input) {\n  let output = ""\n  let quote = ""\n  let escaped = false\n  for (let index = 0; index < input.length; index++) {\n    const char = input[index]\n    if (quote) {\n      output += char\n      if (escaped) escaped = false\n      else if (char === "\\\\") escaped = true\n      else if (char === quote) quote = ""\n      continue\n    }\n    if (char === \'"\') { quote = char; output += char; continue }\n    if (char === ",") {\n      let lookahead = index + 1\n      while (/\\s/.test(input[lookahead] || "")) lookahead++\n      if (input[lookahead] === "]" || input[lookahead] === "}") continue\n    }\n    output += char\n  }\n  return output\n}\n\nfunction parseJsonc(input) {\n  return JSON.parse(stripTrailingCommas(stripJsonComments(input)))\n}\n\nfunction isPackageSpec(value) {\n  const spec = String(value || "").trim()\n  return spec === packageName || spec.startsWith(`${packageName}@`)\n}\n\nasync function configurePackagePlugin() {\n  let configured = false\n  const updatedFiles = []\n  for (const name of ["opencode.json", "opencode.jsonc", "config.json", "config.jsonc"]) {\n    try {\n      const target = join(config, name)\n      const source = await readFile(target, "utf8")\n      const parsed = parseJsonc(source)\n      // OpenCode 2 renames plugin to plugins; V1 config still loads in V2, so\n      // pin the package spec in whichever array (or both) actually exists.\n      const specs = [...new Set([\n        ...(Array.isArray(parsed?.plugin) ? parsed.plugin.filter(isPackageSpec) : []),\n        ...(Array.isArray(parsed?.plugins) ? parsed.plugins.filter(isPackageSpec) : []),\n      ])]\n      if (!specs.length) continue\n      configured = true\n\n      // OpenCode caches package plugins by the literal config spec. A bare\n      // package name or @latest can therefore keep loading an older cached\n      // release after npm installs a newer one. Pin the config entry to the\n      // installer package\'s exact version while preserving JSONC comments.\n      let updated = source\n      for (const spec of new Set(specs)) {\n        if (spec === packageSpec) continue\n        updated = updated.replaceAll(JSON.stringify(spec), JSON.stringify(packageSpec))\n      }\n      if (updated !== source) {\n        await writeFile(target, updated, "utf8")\n        updatedFiles.push(target)\n      }\n    } catch (error) {\n      if (error?.code !== "ENOENT") console.warn(`Could not inspect ${join(config, name)} for duplicate plugin entries: ${error.message}`)\n    }\n  }\n  return { configured, updatedFiles }\n}\n\nasync function ensureDependency() {\n  let pkg = {}\n  try {\n    pkg = JSON.parse(await readFile(packagePath, "utf8"))\n  } catch (error) {\n    if (error?.code !== "ENOENT") {\n      console.warn(`Could not update ${packagePath}: ${error.message}`)\n      console.warn(\'Add "@opencode-ai/plugin": "next" to that package.json if OpenCode 2 cannot load the local plugin.\')\n      return\n    }\n  }\n  if (!pkg || typeof pkg !== "object" || Array.isArray(pkg)) pkg = {}\n  pkg.dependencies = pkg.dependencies && typeof pkg.dependencies === "object" && !Array.isArray(pkg.dependencies) ? pkg.dependencies : {}\n  if (!pkg.dependencies["@opencode-ai/plugin"]) {\n    // The V2 plugin API is beta; match the @next channel used by opencode2.\n    pkg.dependencies["@opencode-ai/plugin"] = "next"\n    await writeFile(packagePath, JSON.stringify(pkg, null, 2) + "\\n", "utf8")\n  }\n}\n\nawait mkdir(pluginDir, { recursive: true })\nawait mkdir(commandDir, { recursive: true })\nawait mkdir(agentDir, { recursive: true })\nconst packageConfig = await configurePackagePlugin()\nconst useConfiguredPackage = packageConfig.configured\nif (useConfiguredPackage) {\n  await rm(join(pluginDir, "opencode-loop.ts"), { force: true })\n  await rm(join(pluginDir, "opencode-loop.js"), { force: true })\n} else {\n  await ensureDependency()\n  await copyFile(join(root, "src", "index.js"), join(pluginDir, "opencode-loop.ts"))\n  await rm(join(pluginDir, "opencode-loop.js"), { force: true })\n}\n\nfor (const name of await readdir(join(root, "commands"))) {\n  if (name.endsWith(".md")) {\n    await copyFile(join(root, "commands", name), join(commandDir, name))\n  }\n}\n\nfor (const name of await readdir(join(root, "agents"))) {\n  if (name.endsWith(".md")) {\n    await copyFile(join(root, "agents", name), join(agentDir, name))\n  }\n}\n\nif (useConfiguredPackage) {\n  const pinResult = packageConfig.updatedFiles.length\n    ? `pinned the config entry to ${packageSpec}`\n    : `the config entry is already pinned to ${packageSpec}`\n  console.log(`OpenCode Loop is already configured as a package in ${config}; ${pinResult} and removed the duplicate local plugin copy.`)\n}\nelse console.log(`Installed OpenCode Loop plugin to ${config}`)\nconsole.log(`Installed ${packageName} commands to ${commandDir}`)\nconsole.log(`Installed ${packageName} local command agent to ${agentDir}`)\nconsole.log(\'Run "bun install" (or npm install) in \' + config + \' so the local plugin can resolve @opencode-ai/plugin, then restart opencode2 and run: /loop-help\')\n',
+    expected: /opencode-loop(?:\.ts|\.js|\b)/,
+    operator: 'doesNotMatch',
+    diff: 'simple'
+  }
+
+test at scripts/identity-test.mjs:38:1
+✖ third-party CI actions are pinned to immutable commit SHAs (0.101542ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /@[0-9a-f]{40}\s+#\s+v\d+(?:\.\d+(?:\.\d+)?)?$/. Input:
+  
+  '      - uses: actions/checkout@v6'
+  
+      at TestContext.<anonymous> (file:///Volumes/dev/opencode2-config/scripts/identity-test.mjs:40:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '      - uses: actions/checkout@v6',
+    expected: /@[0-9a-f]{40}\s+#\s+v\d+(?:\.\d+(?:\.\d+)?)?$/,
+    operator: 'match',
+    diff: 'simple'
+  }

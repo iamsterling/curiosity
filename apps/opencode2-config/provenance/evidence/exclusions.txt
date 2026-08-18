@@ -1,0 +1,10 @@
+Excluded from import and bootstrap:
+- source .git metadata
+- node_modules and generated caches
+- .opencode runtime state and logs
+- credentials, environment files, and global user configuration content
+- installed plugins/commands/agents (hash-only verification inputs)
+- Crafty application code, model routes, product policy, and repository process
+- OpenSpec and AI-DLC artifacts
+- rejected disposable benchmark harness; causal benchmarking remains deferred
+- npm publication, public release, Pages, installation cutover, state migration, and duplicate-load changes

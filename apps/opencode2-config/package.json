@@ -1,0 +1,89 @@
+{
+  "name": "@iamsterling/opencode2-config",
+  "version": "0.1.0",
+  "description": "Private first-class OpenCode 2 plugin platform.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "abi:check": "node tools/check-opencode-abi.mjs",
+    "abi:check-active": "node tools/check-opencode-abi.mjs --active",
+    "dev:reload": "bun run abi:check-active && bun run build && opencode2 service restart",
+    "prebuild": "bun run abi:check",
+    "typecheck": "tsc --noEmit",
+    "check-types": "bun run typecheck",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && node tools/write-build-provenance.mjs",
+    "test:unit": "node --test tests/unit/*.test.mjs",
+    "test:integration": "node --test tests/integration/*.test.mjs",
+    "test:characterization": "node --test tests/characterization/*.test.mjs tools/bundle-test.mjs && node tools/install-test.mjs",
+    "test:security": "node --test tests/security/*.test.mjs",
+    "test:real-host": "node tools/real-host-suite.mjs",
+    "test:release": "node tools/staged-release-test.mjs",
+    "search:smoke": "node tools/search-live-smoke.mjs",
+    "test": "bun run test:unit && bun run test:integration && bun run test:characterization",
+    "lint": "eslint src --max-warnings=0 && node tools/verify-architecture.mjs",
+    "format": "biome format --write src package.json tsconfig.json tsconfig.build.json biome.json assets/manifest.json",
+    "format:check": "biome format src package.json tsconfig.json tsconfig.build.json biome.json assets/manifest.json",
+    "assets:manifest": "node tools/generate-asset-manifest.mjs && biome format --write assets/manifest.json",
+    "artifact:verify": "node tools/verify-artifact.mjs",
+    "bundle:export": "node tools/bundle-assets.mjs export",
+    "bundle:doctor": "node tools/bundle-assets.mjs doctor",
+    "install:global": "node tools/install-node.mjs",
+    "provenance:verify": "node tools/verify-provenance.mjs && node tools/verify-relocations.mjs",
+    "secret:scan": "node tools/secret-scan.mjs",
+    "resources:size": "node tools/resource-size.mjs 74fe8c5",
+    "verify": "bun run abi:check && bun run assets:manifest && bun run typecheck && bun run lint && bun run format:check && bun run build && bun run test && bun run test:security && bun run test:real-host && bun run test:release && bun run resources:size && bun run artifact:verify && bun run provenance:verify && bun run secret:scan"
+  },
+  "keywords": [
+    "opencode",
+    "plugin-platform",
+    "orchestration",
+    "handoff",
+    "evidence",
+    "loop-compatibility"
+  ],
+  "author": "OpenCode Loop Contributors (implementation); iamsterling (private repository)",
+  "license": "MIT",
+  "homepage": "https://github.com/iamsterling/opencode2-config#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iamsterling/opencode2-config.git"
+  },
+  "bugs": {
+    "url": "https://github.com/iamsterling/opencode2-config/issues"
+  },
+  "bin": {
+    "opencode2-config": "tools/install-node.mjs"
+  },
+  "private": true,
+  "dependencies": {
+    "@opencode-ai/plugin": "0.0.0-beta-17519"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.8",
+    "@opencode-ai/cli": "0.0.0-beta-17519",
+    "@types/node": "^26.2.0",
+    "@typescript-eslint/parser": "^8.67.0",
+    "eslint": "9.39.2",
+    "eslint-import-resolver-typescript": "^4.4.5",
+    "eslint-plugin-import": "^2.32.0",
+    "typescript": "5.8.2"
+  },
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "assets",
+    "tools/install-node.mjs",
+    "README.md",
+    "LICENSE"
+  ]
+}

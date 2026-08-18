@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/iamsterling/opencode2-config/provenance/manifest.schema.json",
+  "title": "Imported source file manifest",
+  "type": "object",
+  "required": ["schemaVersion", "stage", "source", "files", "exclusions"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "stage": { "type": "string" },
+    "source": {
+      "type": "object",
+      "required": ["repository", "commit"],
+      "properties": {
+        "repository": { "type": "string" },
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "dirty": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["sourcePath", "repositoryPath", "sha256"],
+        "properties": {
+          "sourcePath": { "type": "string" },
+          "repositoryPath": { "type": "string" },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "exclusions": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": false
+}

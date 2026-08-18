@@ -1,0 +1,18 @@
+{
+  "host": { "apiVersion": "1" },
+  "defaultAgent": "orchestrator",
+  "enabledAgents": ["orchestrator", "generalist", "analyst", "implementer", "strategist", "reviewer", "researcher", "worker"],
+  "models": {
+    "orchestrator": "REQUIRED_PROVIDER/REQUIRED_MODEL",
+    "generalist": "REQUIRED_PROVIDER/REQUIRED_MODEL",
+    "analyst": "REQUIRED_PROVIDER/REQUIRED_MODEL",
+    "implementer": "REQUIRED_PROVIDER/REQUIRED_MODEL",
+    "strategist": "REQUIRED_PROVIDER/REQUIRED_MODEL",
+    "reviewer": "REQUIRED_PROVIDER/REQUIRED_MODEL",
+    "researcher": "REQUIRED_PROVIDER/REQUIRED_MODEL",
+    "worker": "REQUIRED_PROVIDER/REQUIRED_MODEL"
+  },
+  "permissions": [{ "action": "read", "resource": "*", "effect": "allow" }],
+  "plugins": ["REQUIRED_PLUGIN_SPEC"],
+  "experimental": { "subagent_depth": 3 }
+}

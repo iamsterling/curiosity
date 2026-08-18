@@ -1,0 +1,14 @@
+{
+  "decisions": { "state": "clear", "objective": "Reject invalid input deterministically." },
+  "authority": { "policyStatus": "allowed", "parallelAuthorized": false },
+  "contract": {
+    "schemaVersion": "handoff-contract/v1", "contractId": "bug-001", "revision": 2,
+    "taskClass": "behavioral", "objective": "Reject invalid input deterministically.", "invariant": "Invalid input never reaches mutation.",
+    "assumptions": ["The input is JSON-shaped."],
+    "units": [{ "id": "fix", "kind": "mutation", "objective": "Add strict rejection.", "writableArtifacts": ["src/reject.mjs", "test/reject.test.mjs"] }],
+    "criteria": [{ "id": "rejects", "observable": { "subject": "Invalid input", "expectedCondition": "Returns a stable diagnostic" }, "oracle": "test", "requiredEvidence": ["red", "green", "command-output"], "redEvidence": ["node --test test/reject.test.mjs before implementation"], "greenEvidence": ["node --test test/reject.test.mjs after implementation"] }],
+    "retry": { "failureClass": "failed-verification", "unchangedReplay": false, "diagnosis": "The focused assertion failed.", "preservedFacts": ["The decoder is the behavior owner."], "invalidatedAssumptions": ["Existing validation was sufficient."], "changedInstructions": ["Validate before nested traversal."] },
+    "handback": { "status": true, "resultArtifacts": true, "criterionEvidence": true, "rawOutputs": true, "invalidatedAssumptions": true },
+    "completionAuthority": "external-loop-evidence"
+  }
+}

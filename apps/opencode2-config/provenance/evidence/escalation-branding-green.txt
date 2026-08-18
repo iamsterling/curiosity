@@ -1,0 +1,15 @@
+✔ all tracked legacy identity occurrences are explicitly classified (57.213917ms)
+✔ package binaries use only the new identity (0.141375ms)
+✔ daemon has no legacy identity in environment, diagnostics, defaults, or help (38.78175ms)
+✔ installer uses the new identity for its binary, plugin path, and diagnostics (0.171917ms)
+✔ third-party CI actions are pinned to immutable commit SHAs (0.121375ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 139.529917
+
+exit=0

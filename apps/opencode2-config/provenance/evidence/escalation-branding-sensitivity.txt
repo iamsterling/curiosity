@@ -1,0 +1,22 @@
+✖ all tracked legacy identity occurrences are explicitly classified (55.381708ms)
+✔ package binaries use only the new identity (0.348458ms)
+✔ daemon has no legacy identity in environment, diagnostics, defaults, or help (36.117875ms)
+✔ installer uses the new identity for its binary, plugin path, and diagnostics (0.18125ms)
+✔ third-party CI actions are pinned to immutable commit SHAs (0.13175ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 134.764417
+
+✖ failing tests:
+
+test at scripts/identity-test.mjs:37:1
+✖ all tracked legacy identity occurrences are explicitly classified (55.381708ms)
+  AssertionError [ERR_ASSERTION]: Unclassified legacy identity occurrences:
+  scripts/install.sh:13: "OpenCode Loop"
+
+sensitivity_exit=1 (expected nonzero)

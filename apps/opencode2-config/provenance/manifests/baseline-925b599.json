@@ -1,0 +1,279 @@
+{
+  "schemaVersion": 1,
+  "stage": "committed-baseline-import",
+  "source": {
+    "repository": "https://github.com/ByBrawe/opencode-loop.git",
+    "commit": "925b599cfab213c1e5198046d468021137c8f9fe",
+    "dirty": false
+  },
+  "files": [
+    {
+      "sourcePath": ".github/workflows/ci.yml",
+      "repositoryPath": ".github/workflows/ci.yml",
+      "sha256": "41af84b7bcafc12c6aa336c3e703187036a274d048891c54021357c882cd6f56"
+    },
+    {
+      "sourcePath": ".github/workflows/publish-npm.yml",
+      "repositoryPath": ".github/workflows/publish-npm.yml",
+      "sha256": "e51f8fac86d182f95e9df96544552ff72070182d348be566a826020a1c01d094"
+    },
+    {
+      "sourcePath": ".github/workflows/release.yml",
+      "repositoryPath": ".github/workflows/release.yml",
+      "sha256": "6bfd6cb0c7834b2372af9ea6b83823febec695091799f96e657b0f1a60f62efc"
+    },
+    {
+      "sourcePath": ".gitignore",
+      "repositoryPath": ".gitignore",
+      "sha256": "89e584289f8f2400ece19830586c19a446fe9ab201322494e02a308642d637f1"
+    },
+    {
+      "sourcePath": "CHANGELOG.md",
+      "repositoryPath": "CHANGELOG.md",
+      "sha256": "20ea1538d1307accf1e4c4e872934d55d9d8af9e5e6ca3428b88e21ac37dbf28"
+    },
+    {
+      "sourcePath": "LICENSE",
+      "repositoryPath": "LICENSE",
+      "sha256": "8ae3cce6bd44d6ccaeda05e0c14fa5865ff25c4ea41d0dcc53769d7e0cb6e41c"
+    },
+    {
+      "sourcePath": "README.md",
+      "repositoryPath": "README.md",
+      "sha256": "0c3c607ebf7bbc8113699f902832d9d90ee13468f83acba32b4c1df3f65307d1"
+    },
+    {
+      "sourcePath": "agents/opencode-loop-local.md",
+      "repositoryPath": "agents/opencode-loop-local.md",
+      "sha256": "38815030f0dd9cc3f771adb7b677ffbbee5b6ae18e32f84ad10d1361d2efaafa"
+    },
+    {
+      "sourcePath": "commands/loop-ask.md",
+      "repositoryPath": "commands/loop-ask.md",
+      "sha256": "d61de83fad6e66a125fad767b416ea07c3a1dae2f6c62717d3772e85ddf5b5ac"
+    },
+    {
+      "sourcePath": "commands/loop-clear.md",
+      "repositoryPath": "commands/loop-clear.md",
+      "sha256": "df889498f8c61235d36757943ab4b55a87dddcd3e83584c909f3be16688f4f2f"
+    },
+    {
+      "sourcePath": "commands/loop-cmd.md",
+      "repositoryPath": "commands/loop-cmd.md",
+      "sha256": "7aeaab84c66134aea31b26fd5c1a973b040b8dbe353a110273caf55744e4f397"
+    },
+    {
+      "sourcePath": "commands/loop-command.md",
+      "repositoryPath": "commands/loop-command.md",
+      "sha256": "f2313725245d803fbdd4559ad8e7f54a3d26acd0736dc7456a5ec5f8f9a560d7"
+    },
+    {
+      "sourcePath": "commands/loop-compact.md",
+      "repositoryPath": "commands/loop-compact.md",
+      "sha256": "19e2a675e77566a6dab4db9f5363ef5de25be974170b3b372c5251643c2d574d"
+    },
+    {
+      "sourcePath": "commands/loop-dev.md",
+      "repositoryPath": "commands/loop-dev.md",
+      "sha256": "19e2a675e77566a6dab4db9f5363ef5de25be974170b3b372c5251643c2d574d"
+    },
+    {
+      "sourcePath": "commands/loop-doctor.md",
+      "repositoryPath": "commands/loop-doctor.md",
+      "sha256": "85dc70f805a4db0b6fa50f0fea1b22f60c16319073a07360841906481466c95d"
+    },
+    {
+      "sourcePath": "commands/loop-export.md",
+      "repositoryPath": "commands/loop-export.md",
+      "sha256": "ee3c5d31aafe876122e617e95d63059ec4fe94995b4d4048a74a401c39527db3"
+    },
+    {
+      "sourcePath": "commands/loop-goal-blocked.md",
+      "repositoryPath": "commands/loop-goal-blocked.md",
+      "sha256": "4e83e27d0e33f277b8239bda4645b98168573bb198b497342801478933133c44"
+    },
+    {
+      "sourcePath": "commands/loop-goal-clear.md",
+      "repositoryPath": "commands/loop-goal-clear.md",
+      "sha256": "f0d872213fe51c3f3bcf012ece4fecc7989c3b215222fd511ac122d4f5e58ef9"
+    },
+    {
+      "sourcePath": "commands/loop-goal-done.md",
+      "repositoryPath": "commands/loop-goal-done.md",
+      "sha256": "10b0096ef987404f733d564ef430b46b15d857d594fc67d189ecf91ae4e46556"
+    },
+    {
+      "sourcePath": "commands/loop-goal-pause.md",
+      "repositoryPath": "commands/loop-goal-pause.md",
+      "sha256": "638c12c23f29193f156678af653765ab9e4f914cb247333be341d3ec731dc884"
+    },
+    {
+      "sourcePath": "commands/loop-goal-resume.md",
+      "repositoryPath": "commands/loop-goal-resume.md",
+      "sha256": "1dd42e9e19f9cc6d4add26342ff4dd3f104197ec57cea8a6822f66bb10fda110"
+    },
+    {
+      "sourcePath": "commands/loop-goal-status.md",
+      "repositoryPath": "commands/loop-goal-status.md",
+      "sha256": "b185f43f24c414b2522ab68629921631564001d6ee7d0e749b6f6bab06b04064"
+    },
+    {
+      "sourcePath": "commands/loop-goal.md",
+      "repositoryPath": "commands/loop-goal.md",
+      "sha256": "982fd6ba7591048b6d8e2831d0e754e9172693a21c69616ff0b3b58290e43992"
+    },
+    {
+      "sourcePath": "commands/loop-help.md",
+      "repositoryPath": "commands/loop-help.md",
+      "sha256": "02a2d76e3f11fe665db22715627263bbe46c8ff597de61d97f91ca4658d0c647"
+    },
+    {
+      "sourcePath": "commands/loop-init.md",
+      "repositoryPath": "commands/loop-init.md",
+      "sha256": "298e57d6194719539d9f296b7f0cfe5f1e6be02fde310bb75c92fd1ec31d1abf"
+    },
+    {
+      "sourcePath": "commands/loop-logs.md",
+      "repositoryPath": "commands/loop-logs.md",
+      "sha256": "2cdd4157f814337aeb2b82cabb1959ce11228cab1121c4ea3dedd6d6be7e4587"
+    },
+    {
+      "sourcePath": "commands/loop-now.md",
+      "repositoryPath": "commands/loop-now.md",
+      "sha256": "3651f4f0a88bde40c30872a689d0b6023906d0053a935e9b53f02b22c7b3d091"
+    },
+    {
+      "sourcePath": "commands/loop-pause.md",
+      "repositoryPath": "commands/loop-pause.md",
+      "sha256": "7f87db61ae4d5c34424e5fa3cc963fcdae983a7529db40664b2449f1ebc4df86"
+    },
+    {
+      "sourcePath": "commands/loop-progress.md",
+      "repositoryPath": "commands/loop-progress.md",
+      "sha256": "19e2a675e77566a6dab4db9f5363ef5de25be974170b3b372c5251643c2d574d"
+    },
+    {
+      "sourcePath": "commands/loop-prompt.md",
+      "repositoryPath": "commands/loop-prompt.md",
+      "sha256": "c6ecbc0f64a64e7c0d681af383eb146d9129620a1f7038d42fb292685182ee7b"
+    },
+    {
+      "sourcePath": "commands/loop-remove.md",
+      "repositoryPath": "commands/loop-remove.md",
+      "sha256": "19e2a675e77566a6dab4db9f5363ef5de25be974170b3b372c5251643c2d574d"
+    },
+    {
+      "sourcePath": "commands/loop-resume.md",
+      "repositoryPath": "commands/loop-resume.md",
+      "sha256": "ce1b895050812ccd8b7ef2f56d3ce966522069a488b3e89f8bf0358f01678ba6"
+    },
+    {
+      "sourcePath": "commands/loop-safe-dev.md",
+      "repositoryPath": "commands/loop-safe-dev.md",
+      "sha256": "19e2a675e77566a6dab4db9f5363ef5de25be974170b3b372c5251643c2d574d"
+    },
+    {
+      "sourcePath": "commands/loop-shell.md",
+      "repositoryPath": "commands/loop-shell.md",
+      "sha256": "7652b41412f6bd70a41faf2f2288b3f037cdcf6e8930624530532eda5c6ad49e"
+    },
+    {
+      "sourcePath": "commands/loop-status.md",
+      "repositoryPath": "commands/loop-status.md",
+      "sha256": "a69af2485a4543244aaabadde542d20b9d193881993b24f79cb93b90aecd2db4"
+    },
+    {
+      "sourcePath": "commands/loop-stop.md",
+      "repositoryPath": "commands/loop-stop.md",
+      "sha256": "5a91dc12c78ddeb745d6665c46fc5020f208b427291c71fbe586c938f5d42ba3"
+    },
+    {
+      "sourcePath": "commands/loop-testfix.md",
+      "repositoryPath": "commands/loop-testfix.md",
+      "sha256": "19e2a675e77566a6dab4db9f5363ef5de25be974170b3b372c5251643c2d574d"
+    },
+    {
+      "sourcePath": "commands/loop.md",
+      "repositoryPath": "commands/loop.md",
+      "sha256": "70f035c9be60a380c9f89789ed1744aeaf3609daf5f0d0944174fe18c5a7e2d8"
+    },
+    {
+      "sourcePath": "examples/loop-prompt.md",
+      "repositoryPath": "examples/loop-prompt.md",
+      "sha256": "c57d12b4da218eda10ef5b705e7668f0fdde55cef35e8dd184651eec3206dcad"
+    },
+    {
+      "sourcePath": "examples/opencode.json",
+      "repositoryPath": "examples/opencode.json",
+      "sha256": "e44a7e3727bb2fcc57ca2ec08e6cdc01627687a8d2bb3b58a2e80bc923ec4090"
+    },
+    {
+      "sourcePath": "package-lock.json",
+      "repositoryPath": "package-lock.json",
+      "sha256": "1e68660ead635d6d03c86724ae6c6ff701fd6f357758177385c0574501f079a7"
+    },
+    {
+      "sourcePath": "package.json",
+      "repositoryPath": "package.json",
+      "sha256": "a8c159e4f0b1832ace6b6a12d9354a03af2377fff3a827474a827d24b304019c"
+    },
+    {
+      "sourcePath": "scripts/comprehensive-test.mjs",
+      "repositoryPath": "scripts/comprehensive-test.mjs",
+      "sha256": "56b9c95c45aefc0fe9d33f888f02304484c175be73ade47280d5cf5bace62b07"
+    },
+    {
+      "sourcePath": "scripts/install-node.mjs",
+      "repositoryPath": "scripts/install-node.mjs",
+      "sha256": "87a9d58d0860c44c5e0a7fb04be2ceb6d0eb3580456c6d4d6c1f32eee41aabec"
+    },
+    {
+      "sourcePath": "scripts/install-test.mjs",
+      "repositoryPath": "scripts/install-test.mjs",
+      "sha256": "696787eb507eb0bf2fbf0a2de91e1d65afef527ff0435e0914c5a7f2d4069a2b"
+    },
+    {
+      "sourcePath": "scripts/install.ps1",
+      "repositoryPath": "scripts/install.ps1",
+      "sha256": "9f1d43d561274b644dbcfc7a578b4049de7d6d623663b1fee1a3950929d8e53d"
+    },
+    {
+      "sourcePath": "scripts/install.sh",
+      "repositoryPath": "scripts/install.sh",
+      "sha256": "dc27f98a50113c73e6e8e9adc88fb3c0eedd727e7ac664c8e53226feafef0c2a"
+    },
+    {
+      "sourcePath": "scripts/loopd-test.mjs",
+      "repositoryPath": "scripts/loopd-test.mjs",
+      "sha256": "da12007dbc0d88b37da89de4ee82fff1dc1f2827c4e3798c2617daa9a7873ce4"
+    },
+    {
+      "sourcePath": "scripts/loopd.mjs",
+      "repositoryPath": "scripts/loopd.mjs",
+      "sha256": "1e889baba494d728587df5bb6776517194c30a874e7323e18979117a460bb66d"
+    },
+    {
+      "sourcePath": "scripts/make-zip.mjs",
+      "repositoryPath": "scripts/make-zip.mjs",
+      "sha256": "53939219d6260ff5a8e64365c0748ab0cbe58a2bf9c074d34813a8af123b3006"
+    },
+    {
+      "sourcePath": "scripts/smoke-test.mjs",
+      "repositoryPath": "scripts/smoke-test.mjs",
+      "sha256": "507dc0e808909c997b3b82d443833ab615db312fdd506fdd0c8313be110ab35a"
+    },
+    {
+      "sourcePath": "src/index.js",
+      "repositoryPath": "src/index.js",
+      "sha256": "512061b49077e93bce5a940d555d6a2a378e16b1c0920d46b990e40a42cd3ed4"
+    }
+  ],
+  "exclusions": [
+    ".git/",
+    "node_modules/",
+    ".opencode/ runtime state",
+    "generated caches",
+    "runtime logs",
+    "credentials"
+  ]
+}

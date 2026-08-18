@@ -1,0 +1,24 @@
+$ bun install --frozen-lockfile
+bun install v1.3.14 (0d9b296a)
+
+Done! Checked 107 packages (no changes) [31.00ms]
+$ bun run check
+$ node --check src/index.js && node --check scripts/install-node.mjs && node --check scripts/loopd.mjs && node --check scripts/install-test.mjs && node --check scripts/loopd-test.mjs && node --check scripts/smoke-test.mjs && node --check scripts/comprehensive-test.mjs && node --check scripts/bootstrap-test.mjs && node --check scripts/verify-provenance.mjs && node --check scripts/secret-scan.mjs
+$ bun run test
+$ node --test scripts/bootstrap-test.mjs && node scripts/install-test.mjs && node scripts/loopd-test.mjs && node scripts/smoke-test.mjs && node scripts/comprehensive-test.mjs
+✔ private package metadata uses the new identity and exact SDK pin (0.297416ms)
+✔ runtime uses the new plugin and state identities (0.112916ms)
+✔ command compatibility marker is retained independently of plugin identity (0.042ms)
+✔ all imported loop command templates are retained (8.005334ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 49.624125
+OpenCode Loop installer test passed
+OpenCode Loop daemon test passed
+OpenCode 2 Loop smoke test passed
+OpenCode 2 Loop comprehensive test passed

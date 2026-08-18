@@ -1,0 +1,199 @@
+{
+  "schemaVersion": 1,
+  "note": "Installed copies are hash-only verification inputs. Runtime state was not read.",
+  "runtimeStatePathObserved": "~/.opencode/opencode-loop (existence only; content not inspected)",
+  "files": [
+    {
+      "installedPath": "~/.config/opencode/agents/opencode-loop-local.md",
+      "sha256": "38815030f0dd9cc3f771adb7b677ffbbee5b6ae18e32f84ad10d1361d2efaafa",
+      "sourcePath": "agents/opencode-loop-local.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-ask.md",
+      "sha256": "0583d04de0d4d179b5abcee07b5510b3aefa99b1de25257e72f02dba759c5653",
+      "sourcePath": "commands/loop-ask.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-clear.md",
+      "sha256": "bb8ea046cc272c219479b09ed89273f46ef3ec4b114a37454a93ecfcd9ea08bb",
+      "sourcePath": "commands/loop-clear.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-cmd.md",
+      "sha256": "d62e4d71409e864822bf572997432c41c26591d9a883ca5d8efac4f9a359ec90",
+      "sourcePath": "commands/loop-cmd.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-command.md",
+      "sha256": "77bace70636904e60180c2e4063672a70bc46d0cc2d5e247363293ad3d935666",
+      "sourcePath": "commands/loop-command.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-compact.md",
+      "sha256": "33a1f6eb0d0105d2e93a340a3a317d84bddc22ce4ce9cb883873886b45d8a097",
+      "sourcePath": "commands/loop-compact.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-dev.md",
+      "sha256": "3ca5aa944ee5c79f1eef5735f33c5e5d7acd9d3130d9dbd85e61d11d8283dfc6",
+      "sourcePath": "commands/loop-dev.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-doctor.md",
+      "sha256": "a7072ba762d4487628fdf962986ee3185599aea59e246232f0a6062facf4dcf9",
+      "sourcePath": "commands/loop-doctor.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-export.md",
+      "sha256": "34cccb8da60f128be7be662f334fbb27776f58e7880054581159b537ac577107",
+      "sourcePath": "commands/loop-export.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-goal-blocked.md",
+      "sha256": "522eb67a2e235ebad4c74ccb7853fe94b26ad96536599e500a9d61144dcda3e1",
+      "sourcePath": "commands/loop-goal-blocked.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-goal-clear.md",
+      "sha256": "db89ef7e7f2de83c8574a6cce368958c019feb232c47985c3b36d964fb9ad671",
+      "sourcePath": "commands/loop-goal-clear.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-goal-done.md",
+      "sha256": "1d09b7492389a846e8e1560686b5856200dabea6c3c2cc20386bd8477aa5fa73",
+      "sourcePath": "commands/loop-goal-done.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-goal-pause.md",
+      "sha256": "bef02fc3e919d8b7c4c7be329ae2e1387d15f70f9010f86ccfc6bd180d814fc7",
+      "sourcePath": "commands/loop-goal-pause.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-goal-resume.md",
+      "sha256": "7a5eadd4d504aaefc791e46e58007b2863674399c4d44a297b4f9d2df9da1f2d",
+      "sourcePath": "commands/loop-goal-resume.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-goal-status.md",
+      "sha256": "a37ab77289f719e0dead8a91e4817ca7d9e678b61573f17daf65772d68779caa",
+      "sourcePath": "commands/loop-goal-status.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-goal.md",
+      "sha256": "e70240b2e3023544a072b9d7beae2822d96bfab54cdce27c56927ff515ce474e",
+      "sourcePath": "commands/loop-goal.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-help.md",
+      "sha256": "1b29ebbad18cf7d8c48b0919ff4e69b57e5e4d06264a1c94fe2eaa9b035d55c3",
+      "sourcePath": "commands/loop-help.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-init.md",
+      "sha256": "c2d9d81b8a857597f475a69d829db800c7d38b61e28eaf6b9aa59c11f10025c1",
+      "sourcePath": "commands/loop-init.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-logs.md",
+      "sha256": "e6834f3069ad94aca82042425447aca661dcdceca9b1334a4189ed546a7af712",
+      "sourcePath": "commands/loop-logs.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-now.md",
+      "sha256": "55d46579f336192f68b4a44f92a3c808c644cd2aa2d7bd32d92d757f4d6233f2",
+      "sourcePath": "commands/loop-now.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-pause.md",
+      "sha256": "01921e458a980e2b035d14455d9dcda47403ec17b02574a05735911f0c66a489",
+      "sourcePath": "commands/loop-pause.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-progress.md",
+      "sha256": "06ce3cb8b3fab09d4de521adc04cf9e13521ee8aaf0a10e92b258523f0d34ddf",
+      "sourcePath": "commands/loop-progress.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-prompt.md",
+      "sha256": "bb2db50e995242c29732241723c29633a2d6b92c59c6592c48de76159d087c5c",
+      "sourcePath": "commands/loop-prompt.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-remove.md",
+      "sha256": "8cd63d116f6ab95c97d45257793a09100e24042d8504a58253edf8cb5ce55432",
+      "sourcePath": "commands/loop-remove.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-resume.md",
+      "sha256": "19078c7d3f39d85df35d8a0672679a0cb0ac61d89134619d032beb33ab9b034b",
+      "sourcePath": "commands/loop-resume.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-safe-dev.md",
+      "sha256": "1a649f93939264ec57bc0d5904b763291b7d102be79e49fc017c7087ab9e3a91",
+      "sourcePath": "commands/loop-safe-dev.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-shell.md",
+      "sha256": "bd3eda47428c6026d1b6420517a590b3fb53584a0af4ab8c653284fb4707474c",
+      "sourcePath": "commands/loop-shell.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-status.md",
+      "sha256": "e387f83ccac9981de5fcfce21cf84c1e913bc33f88d08ecd851e0928cef1506a",
+      "sourcePath": "commands/loop-status.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-stop.md",
+      "sha256": "11895e8e2ef8e046c24efe1cd3f58458a16a3507843b7f9d67976d6a662a0a05",
+      "sourcePath": "commands/loop-stop.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop-testfix.md",
+      "sha256": "c9b77194bf5c87bb696ae27c46c19038a6b600f92fcc56ab10807746552dbba1",
+      "sourcePath": "commands/loop-testfix.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/commands/loop.md",
+      "sha256": "f5ed748d97f9277ad652b1a9d009077a1c2c56d6c53823510521bfb298490589",
+      "sourcePath": "commands/loop.md",
+      "matchesDirtySource": true
+    },
+    {
+      "installedPath": "~/.config/opencode/plugins/opencode-loop.ts",
+      "sha256": "5c45ab9205827fa4e4dc95e24488bf80a2a3bde2ff3f768d626f7d04eb9283d5",
+      "sourcePath": "src/index.js",
+      "matchesDirtySource": true
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+$ bun run check && bun run test && bun run provenance:verify && bun run secret:scan && bun -e "await import('./src/index.js')"
+$ node --check src/index.js && node --check scripts/install-node.mjs && node --check scripts/loopd.mjs && node --check scripts/install-test.mjs && node --check scripts/loopd-test.mjs && node --check scripts/smoke-test.mjs && node --check scripts/comprehensive-test.mjs && node --check scripts/bootstrap-test.mjs && node --check scripts/verify-provenance.mjs && node --check scripts/secret-scan.mjs
+$ node --test scripts/bootstrap-test.mjs scripts/identity-test.mjs && node scripts/install-test.mjs && node scripts/loopd-test.mjs && node scripts/smoke-test.mjs && node scripts/comprehensive-test.mjs
+✔ private package metadata uses the new identity and exact SDK pin (0.351833ms)
+✔ runtime uses the new plugin and state identities (0.110166ms)
+✔ daemon task storage uses the new namespace (0.045125ms)
+✔ command compatibility marker is retained independently of plugin identity (0.040583ms)
+✔ all imported loop command templates are retained (6.901083ms)
+✔ package binaries use only the new identity (0.473417ms)
+✔ daemon has no legacy identity in environment, diagnostics, defaults, or help (35.291084ms)
+✔ installer uses the new identity for its binary, plugin path, and diagnostics (0.276792ms)
+✔ third-party CI actions are pinned to immutable commit SHAs (0.143ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 77.531209
+OpenCode2Config installer test passed
+OpenCode2Config daemon test passed
+OpenCode2Config smoke test passed
+OpenCode2Config comprehensive test passed
+$ node scripts/verify-provenance.mjs
+Provenance manifests and dirty patch verified
+$ node scripts/secret-scan.mjs
+Secret scan passed (85 workspace files; lockfiles excluded from pattern scan)

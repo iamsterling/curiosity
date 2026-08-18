@@ -1,0 +1,33 @@
+{
+  "base": "B-behavioral-bug",
+  "scalarAndIdentity": [
+    { "name": "duplicate unit id", "operation": "push", "target": ["contract", "units"], "value": { "id": "fix", "kind": "read-only", "objective": "Read evidence.", "readOnlyLocators": ["source"] }, "code": "HANDOFF_SHAPE_INVALID", "path": "$.contract.units[1].id" },
+    { "name": "invalid task enum", "operation": "set", "target": ["contract", "taskClass"], "value": "magic", "code": "HANDOFF_SHAPE_INVALID", "path": "$.contract.taskClass" },
+    { "name": "empty objective", "operation": "set", "target": ["contract", "objective"], "value": "", "code": "HANDOFF_SHAPE_INVALID", "path": "$.contract.objective" },
+    { "name": "negative limit", "operation": "set", "target": ["contract", "revision"], "value": -1, "code": "HANDOFF_SHAPE_INVALID", "path": "$.contract.revision" },
+    { "name": "fractional limit", "operation": "set", "target": ["contract", "revision"], "value": 1.5, "code": "HANDOFF_SHAPE_INVALID", "path": "$.contract.revision" }
+  ],
+  "paths": [
+    { "name": "traversal", "operation": "set", "target": ["contract", "units", 0, "writableArtifacts", 0], "value": "../secret", "code": "HANDOFF_OWNERSHIP_CONFLICT", "path": "$.contract.units[0].writableArtifacts[0]" },
+    { "name": "backslash", "operation": "set", "target": ["contract", "units", 0, "writableArtifacts", 0], "value": "src\\secret", "code": "HANDOFF_OWNERSHIP_CONFLICT", "path": "$.contract.units[0].writableArtifacts[0]" },
+    { "name": "drive absolute", "operation": "set", "target": ["contract", "units", 0, "writableArtifacts", 0], "value": "C:/secret", "code": "HANDOFF_OWNERSHIP_CONFLICT", "path": "$.contract.units[0].writableArtifacts[0]" },
+    { "name": "drive relative", "operation": "set", "target": ["contract", "units", 0, "writableArtifacts", 0], "value": "C:x", "code": "HANDOFF_OWNERSHIP_CONFLICT", "path": "$.contract.units[0].writableArtifacts[0]" },
+    { "name": "scheme locator", "operation": "set", "target": ["contract", "units", 0, "writableArtifacts", 0], "value": "file:///secret", "code": "HANDOFF_OWNERSHIP_CONFLICT", "path": "$.contract.units[0].writableArtifacts[0]" },
+    { "name": "repeated separator", "operation": "set", "target": ["contract", "units", 0, "writableArtifacts", 0], "value": "src//secret", "code": "HANDOFF_OWNERSHIP_CONFLICT", "path": "$.contract.units[0].writableArtifacts[0]" },
+    { "name": "ancestor ownership", "operation": "push", "target": ["contract", "units"], "value": { "id": "other", "kind": "mutation", "objective": "Own ancestor.", "writableArtifacts": ["src"] }, "code": "HANDOFF_OWNERSHIP_CONFLICT", "path": "$.contract.units[1].writableArtifacts[0]" }
+  ],
+  "dependencies": [
+    { "name": "duplicate edge", "operation": "set", "target": ["contract", "dependencies"], "value": [{ "id": "one", "producer": "a", "consumer": "b", "status": "met" }, { "id": "two", "producer": "a", "consumer": "b", "status": "met" }], "code": "HANDOFF_DEPENDENCY_MISSING", "path": "$.contract.dependencies[1]" },
+    { "name": "hidden cycle", "operation": "set", "target": ["contract", "dependencies"], "value": [{ "id": "one", "producer": "fix", "consumer": "fix", "status": "unmet" }], "code": "HANDOFF_DEPENDENCY_MISSING", "path": "$.contract.dependencies[0]" }
+  ],
+  "criteria": [
+    { "name": "duplicate criterion", "operation": "push", "target": ["contract", "criteria"], "value": { "id": "rejects", "observable": { "subject": "Input", "expectedCondition": "Rejected" }, "oracle": "test", "requiredEvidence": ["red", "green"], "redEvidence": ["before"], "greenEvidence": ["after"] }, "code": "HANDOFF_CRITERION_UNVERIFIABLE", "path": "$.contract.criteria[1].id" },
+    { "name": "prose oracle", "operation": "set", "target": ["contract", "criteria", 0, "oracle"], "value": "trust me", "code": "HANDOFF_CRITERION_UNVERIFIABLE", "path": "$.contract.criteria[0].oracle" },
+    { "name": "inappropriate evidence", "operation": "set", "target": ["contract", "criteria", 0, "requiredEvidence", 0], "value": "approval", "code": "HANDOFF_EVIDENCE_KIND_MISMATCH", "path": "$.contract.criteria[0].requiredEvidence[0]" },
+    { "name": "identical green evidence", "operation": "set", "target": ["contract", "criteria", 0, "greenEvidence"], "value": ["node --test test/reject.test.mjs before implementation"], "code": "HANDOFF_EVIDENCE_KIND_MISMATCH", "path": "$.contract.criteria[0].redEvidence" }
+  ],
+  "retry": [
+    { "name": "unchanged non-transport", "operation": "set", "target": ["contract", "retry", "unchangedReplay"], "value": true, "code": "HANDOFF_SHAPE_INVALID", "path": "$.contract.retry.unchangedReplay" },
+    { "name": "missing diagnosis", "operation": "set", "target": ["contract", "retry", "diagnosis"], "value": "", "code": "HANDOFF_SHAPE_INVALID", "path": "$.contract.retry.diagnosis" }
+  ]
+}

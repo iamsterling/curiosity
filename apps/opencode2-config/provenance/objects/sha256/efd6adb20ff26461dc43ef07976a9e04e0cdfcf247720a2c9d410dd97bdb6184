@@ -1,0 +1,14 @@
+[
+  {
+    "decisions": { "state": "clear", "objective": "Canonicalize a contract." }, "authority": { "policyStatus": "allowed", "parallelAuthorized": false },
+    "contract": { "schemaVersion": "handoff-contract/v1", "contractId": "canonical-1", "revision": 1, "taskClass": "behavioral", "objective": "Canonicalize a contract.", "invariant": "Meaning controls digest.", "scope": ["z", "a"], "units": [{ "id": "work", "kind": "mutation", "objective": "Change code.", "writableArtifacts": ["z/file", "a/file"] }], "criteria": [{ "id": "proof", "observable": { "subject": "Contract", "expectedCondition": "Has deterministic digest" }, "oracle": "test", "requiredEvidence": ["green", "red"], "redEvidence": ["red-a", "red-b"], "greenEvidence": ["green-a", "green-b"] }], "handback": { "status": true, "resultArtifacts": true, "criterionEvidence": true }, "completionAuthority": "external-loop-evidence" }
+  },
+  {
+    "authority": { "parallelAuthorized": false, "policyStatus": "allowed" }, "decisions": { "objective": "Canonicalize a contract.", "state": "clear" },
+    "contract": { "completionAuthority": "external-loop-evidence", "handback": { "criterionEvidence": true, "resultArtifacts": true, "status": true }, "criteria": [{ "greenEvidence": ["green-a", "green-b"], "redEvidence": ["red-a", "red-b"], "requiredEvidence": ["red", "green"], "oracle": "test", "observable": { "expectedCondition": "Has deterministic digest", "subject": "Contract" }, "id": "proof" }], "units": [{ "writableArtifacts": ["a/file", "z/file"], "objective": "Change code.", "kind": "mutation", "id": "work" }], "scope": ["a", "z"], "invariant": "Meaning controls digest.", "objective": "Canonicalize a contract.", "taskClass": "behavioral", "revision": 1, "contractId": "canonical-1", "schemaVersion": "handoff-contract/v1" }
+  },
+  {
+    "decisions": { "state": "clear", "objective": "Canonicalize a contract." }, "authority": { "policyStatus": "allowed", "parallelAuthorized": false },
+    "contract": { "schemaVersion": "handoff-contract/v1", "contractId": "canonical-1", "revision": 1, "taskClass": "behavioral", "objective": "Canonicalize a contract.", "invariant": "Meaning controls digest.", "scope": ["z", "a"], "units": [{ "id": "work", "kind": "mutation", "objective": "Change code.", "writableArtifacts": ["z/file", "a/file"] }], "criteria": [{ "id": "proof", "observable": { "subject": "Contract", "expectedCondition": "Has deterministic digest" }, "oracle": "test", "requiredEvidence": ["red", "green"], "redEvidence": ["red-a", "red-b"], "greenEvidence": ["green-b", "green-a"] }], "handback": { "status": true, "resultArtifacts": true, "criterionEvidence": true }, "completionAuthority": "external-loop-evidence" }
+  }
+]

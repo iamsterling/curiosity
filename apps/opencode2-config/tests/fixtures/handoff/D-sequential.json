@@ -1,0 +1,17 @@
+{
+  "decisions": { "state": "clear", "objective": "Research before integration." },
+  "authority": { "policyStatus": "allowed", "parallelAuthorized": false },
+  "contract": {
+    "schemaVersion": "handoff-contract/v1", "contractId": "sequential-001", "revision": 1,
+    "taskClass": "integration", "objective": "Research before integration.", "invariant": "Integration consumes explicit research evidence.",
+    "units": [
+      { "id": "research", "kind": "read-only", "objective": "Produce evidence.", "readOnlyLocators": ["docs/source.md"] },
+      { "id": "integrate", "kind": "mutation", "objective": "Integrate evidence.", "writableArtifacts": ["docs/result.md"] }
+    ],
+    "dependencies": [{ "id": "research-before-integrate", "producer": "research", "consumer": "integrate", "status": "unmet" }],
+    "contexts": [{ "id": "source", "contextType": "artifact", "treatment": "reference", "sourceKind": "repository", "provenance": "direct", "locator": "docs/source.md", "freshness": "current", "trust": "trusted" }],
+    "criteria": [{ "id": "result", "observable": { "subject": "Integrated document", "expectedCondition": "Cites the research evidence" }, "oracle": "review", "requiredEvidence": ["review-report"] }],
+    "handback": { "status": true, "resultArtifacts": true, "criterionEvidence": true, "dependencies": true },
+    "completionAuthority": "external-loop-evidence"
+  }
+}

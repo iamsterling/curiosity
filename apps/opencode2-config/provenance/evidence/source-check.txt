@@ -1,0 +1,3 @@
+
+> @bybrawe/opencode-loop@0.6.0 check
+> node --check src/index.js && node --check scripts/install-node.mjs && node --check scripts/loopd.mjs && node --check scripts/install-test.mjs && node --check scripts/loopd-test.mjs && node --check scripts/smoke-test.mjs && node --check scripts/comprehensive-test.mjs

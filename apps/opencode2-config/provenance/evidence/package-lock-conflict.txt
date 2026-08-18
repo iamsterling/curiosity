@@ -1,0 +1,4 @@
+Dirty conversion source contained two lockfiles before normalization:
+- bun.lock SHA-256 e1817bdef1d9cbfbe10d10d9b22c162753f4c8fa3b91851f427f60e3d90b91c3; resolves @opencode-ai/plugin 0.0.0-next-17125 from requested next.
+- package-lock.json SHA-256 1e68660ead635d6d03c86724ae6c6ff701fd6f357758177385c0574501f079a7; baseline metadata resolves @opencode-ai/plugin 1.18.15 and does not describe the dirty package.json.
+Decision is deferred to the normalization commit, after isolated Bun verification.

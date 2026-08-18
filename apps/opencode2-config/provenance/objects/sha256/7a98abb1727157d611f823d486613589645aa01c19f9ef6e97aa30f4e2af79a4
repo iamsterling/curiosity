@@ -1,0 +1,16 @@
+{
+  "decisions": { "state": "clear", "objective": "Correct one documented setting.", "pathCasePolicy": "exact-case-sensitive" },
+  "authority": { "policyStatus": "allowed", "parallelAuthorized": false, "revalidations": [] },
+  "contract": {
+    "schemaVersion": "handoff-contract/v1", "contractId": "docs-001", "revision": 1,
+    "taskClass": "documentation", "objective": "Correct one documented setting.",
+    "invariant": "The documented value matches parsed configuration.",
+    "scope": ["docs/example.md"], "nonGoals": ["No runtime change."],
+    "units": [{ "id": "edit", "kind": "mutation", "objective": "Correct the example.", "writableArtifacts": ["docs/example.md", "skills/handoff-compiler/fixtures/docs-config.json"], "forbiddenSurfaces": ["src"] }],
+    "dependencies": [], "contexts": [],
+    "criteria": [{ "id": "parses", "observable": { "subject": "Example configuration", "expectedCondition": "Parses without error" }, "oracle": "parse", "requiredEvidence": ["parsed-output"] }],
+    "toolLimits": { "maxCalls": 8, "maxConcurrency": 1, "maxOutputBytes": 65536, "capabilities": ["read-repository", "write-owned-artifacts", "run-static-checks"] },
+    "handback": { "status": true, "resultArtifacts": true, "criterionEvidence": true },
+    "completionAuthority": "external-loop-evidence"
+  }
+}

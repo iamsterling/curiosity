@@ -1,0 +1,9 @@
+# ADR 0012 — Ledger authority and native loop product
+
+**Accepted, 2026-08-12.** Ledger v1 is the only canonical lifecycle authority. Its immutable hash-linked events replay into intent, criteria, work, claims, evidence, approval, reconciliation, archive, gap, and audit views. The Loop Engine owns only a claim-bound execution journal and issues deterministic same-root prompts through pinned OpenCode session primitives. Hooks own observation and bounded context injection; tools produce proposals and observations.
+
+This is a clean-room conceptual synthesis informed by OpenSpec v1.8.0 (MIT, spec/delta discipline), Beads v1.1.0 from `gastownhall/beads` with steveyegge module compatibility (MIT, dependency/readiness lessons), and loop-engineering commit `ca1263d...` (MIT, continuation lessons). No source or templates were copied. Plugin persistence is immutable files plus atomic temp/fsync/rename and repository lock/CAS. The store is tamper-evident, not privileged against same-UID workspace writers; doctor reports `DOCTOR_FILESYSTEM_AUTHORITY_BOUNDED`, and corruption/gaps block authoritative transitions.
+
+Root authority is explicitly `bounded-root-input`. Synthetic, worker, plugin, model, and tool actors cannot approve. Destructive/security/schema/irreversible work requires a pending approval ID correlated to root-session user input. Until the host supplies stronger actor attestation, strict approval remains bounded rather than cryptographically authenticated.
+
+Unknown versions and malformed state fail closed. Raw prompts/tool output are not persisted or injected; only bounded digests, locators, projections, and taint labels cross hooks. Native child lineage is unsupported by the pinned API and returns/diagnoses `DOCTOR_NATIVE_CHILD_LINEAGE_UNSUPPORTED` rather than being emulated.

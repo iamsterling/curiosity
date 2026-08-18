@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Generic OpenCode bundle overlay",
+  "type": "object",
+  "required": ["host", "defaultAgent", "enabledAgents", "models", "permissions", "plugins", "experimental"],
+  "properties": {
+    "host": { "type": "object", "required": ["apiVersion"], "properties": { "apiVersion": { "const": "1" } }, "additionalProperties": false },
+    "defaultAgent": { "type": "string", "minLength": 1 },
+    "enabledAgents": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["orchestrator", "generalist", "analyst", "implementer", "strategist", "reviewer", "researcher", "worker"] } },
+    "models": {
+      "type": "object",
+      "required": ["orchestrator", "generalist", "analyst", "implementer", "strategist", "reviewer", "researcher", "worker"],
+      "properties": {
+        "orchestrator": { "$ref": "#/$defs/modelRoute" }, "generalist": { "$ref": "#/$defs/modelRoute" }, "analyst": { "$ref": "#/$defs/modelRoute" }, "implementer": { "$ref": "#/$defs/modelRoute" }, "strategist": { "$ref": "#/$defs/modelRoute" }, "reviewer": { "$ref": "#/$defs/modelRoute" }, "researcher": { "$ref": "#/$defs/modelRoute" }, "worker": { "$ref": "#/$defs/modelRoute" }
+      }, "additionalProperties": false
+    },
+    "permissions": { "type": "array", "minItems": 1, "items": { "type": "object", "required": ["action", "resource", "effect"], "properties": { "action": { "type": "string" }, "resource": { "type": "string" }, "effect": { "enum": ["allow", "ask", "deny"] } }, "additionalProperties": false } },
+    "plugins": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+    "experimental": { "type": "object", "required": ["subagent_depth"], "properties": { "subagent_depth": { "type": "integer", "minimum": 0, "maximum": 3, "description": "Bounded recommendation is 3 for the four-level primary to lead to specialist/implementer to reviewer chain; lower values remain operator choices." } }, "additionalProperties": false }
+  },
+  "$defs": { "modelRoute": { "type": "string", "pattern": "^[^/[:space:]]+/[^/[:space:]]+$", "not": { "const": "provider/model" } } },
+  "additionalProperties": false
+}

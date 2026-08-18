@@ -1,0 +1,96 @@
+$ rg -n "opencode-loopd|OPENCODE_LOOPD|OpenCodeLoop|OPENCODE2_CONFIG_TASK_DIR" --glob "!provenance/**"
+./scripts/identity-test.mjs:22:  assert.doesNotMatch(daemonSource, /OPENCODE_LOOPD_/)
+./scripts/identity-test.mjs:23:  assert.doesNotMatch(daemonSource, /opencode-loopd/)
+./scripts/identity-test.mjs:24:  assert.doesNotMatch(daemonSource, /OpenCodeLoop/)
+./scripts/identity-test.mjs:29:  assert.doesNotMatch(stdout, /opencode-loopd|OpenCodeLoop/)
+./scripts/bootstrap-test.mjs:35:  assert.doesNotMatch(daemonSource, /OPENCODE_LOOPD_TASK_DIR/)
+
+$ rg -n "opencode-loop" --glob "!provenance/**"
+./src/index.js:10:const COMMAND_MARKER = "[opencode-loop:"
+./src/index.js:27:const LOCAL_COMMAND_AGENT = "opencode-loop-local"
+./src/index.js:2514:// to a "[opencode-loop:<name>] <args>" line, the plugin handles the command,
+./src/index.js:2515:// and the tool-denied opencode-loop-local agent keeps the acknowledgement turn
+./src/index.js:2525:  const match = text.match(/^\[opencode-loop:([\w-]+)\]\s*([\s\S]*)$/)
+./commands/loop-safe-dev.md:3:agent: opencode-loop-local
+./commands/loop-safe-dev.md:5:[opencode-loop:loop-safe-dev] $ARGUMENTS
+./commands/loop-goal-clear.md:3:agent: opencode-loop-local
+./commands/loop-goal-clear.md:5:[opencode-loop:loop-goal-clear] $ARGUMENTS
+./commands/loop-pause.md:3:agent: opencode-loop-local
+./commands/loop-pause.md:5:[opencode-loop:loop-pause] $ARGUMENTS
+./commands/loop-export.md:3:agent: opencode-loop-local
+./commands/loop-export.md:5:[opencode-loop:loop-export] $ARGUMENTS
+./commands/loop-dev.md:3:agent: opencode-loop-local
+./commands/loop-dev.md:5:[opencode-loop:loop-dev] $ARGUMENTS
+./commands/loop-goal.md:3:agent: opencode-loop-local
+./commands/loop-goal.md:5:[opencode-loop:loop-goal] $ARGUMENTS
+./commands/loop-help.md:3:agent: opencode-loop-local
+./commands/loop-help.md:5:[opencode-loop:loop-help] $ARGUMENTS
+./commands/loop-remove.md:3:agent: opencode-loop-local
+./commands/loop-remove.md:5:[opencode-loop:loop-remove] $ARGUMENTS
+./commands/loop-init.md:3:agent: opencode-loop-local
+./commands/loop-init.md:5:[opencode-loop:loop-init] $ARGUMENTS
+./commands/loop-resume.md:3:agent: opencode-loop-local
+./commands/loop-resume.md:5:[opencode-loop:loop-resume] $ARGUMENTS
+./commands/loop-testfix.md:3:agent: opencode-loop-local
+./commands/loop-testfix.md:5:[opencode-loop:loop-testfix] $ARGUMENTS
+./commands/loop-goal-status.md:3:agent: opencode-loop-local
+./commands/loop-goal-status.md:5:[opencode-loop:loop-goal-status] $ARGUMENTS
+./commands/loop-logs.md:3:agent: opencode-loop-local
+./commands/loop-logs.md:5:[opencode-loop:loop-logs] $ARGUMENTS
+./commands/loop-goal-done.md:3:agent: opencode-loop-local
+./commands/loop-goal-done.md:5:[opencode-loop:loop-goal-done] $ARGUMENTS
+./commands/loop-clear.md:3:agent: opencode-loop-local
+./commands/loop-clear.md:5:[opencode-loop:loop-clear] $ARGUMENTS
+./commands/loop-doctor.md:3:agent: opencode-loop-local
+./commands/loop-doctor.md:5:[opencode-loop:loop-doctor] $ARGUMENTS
+./commands/loop-goal-pause.md:3:agent: opencode-loop-local
+./commands/loop-goal-pause.md:5:[opencode-loop:loop-goal-pause] $ARGUMENTS
+./commands/loop-command.md:3:agent: opencode-loop-local
+./commands/loop-command.md:5:[opencode-loop:loop-command] $ARGUMENTS
+./commands/loop-ask.md:3:agent: opencode-loop-local
+./commands/loop-ask.md:5:[opencode-loop:loop-ask] $ARGUMENTS
+./commands/loop-status.md:3:agent: opencode-loop-local
+./commands/loop-status.md:5:[opencode-loop:loop-status] $ARGUMENTS
+./commands/loop-prompt.md:3:agent: opencode-loop-local
+./commands/loop-prompt.md:5:[opencode-loop:loop-prompt] $ARGUMENTS
+./commands/loop-stop.md:3:agent: opencode-loop-local
+./commands/loop-stop.md:5:[opencode-loop:loop-stop] $ARGUMENTS
+./commands/loop-progress.md:3:agent: opencode-loop-local
+./commands/loop-progress.md:5:[opencode-loop:loop-progress] $ARGUMENTS
+./commands/loop-goal-resume.md:3:agent: opencode-loop-local
+./commands/loop-goal-resume.md:5:[opencode-loop:loop-goal-resume] $ARGUMENTS
+./commands/loop-now.md:3:agent: opencode-loop-local
+./commands/loop-now.md:5:[opencode-loop:loop-now] $ARGUMENTS
+./commands/loop-compact.md:3:agent: opencode-loop-local
+./commands/loop-compact.md:5:[opencode-loop:loop-compact] $ARGUMENTS
+./commands/loop.md:3:agent: opencode-loop-local
+./commands/loop.md:5:[opencode-loop:loop] $ARGUMENTS
+./commands/loop-shell.md:3:agent: opencode-loop-local
+./commands/loop-shell.md:5:[opencode-loop:loop-shell] $ARGUMENTS
+./commands/loop-goal-blocked.md:3:agent: opencode-loop-local
+./commands/loop-goal-blocked.md:5:[opencode-loop:loop-goal-blocked] $ARGUMENTS
+./commands/loop-cmd.md:3:agent: opencode-loop-local
+./commands/loop-cmd.md:5:[opencode-loop:loop-cmd] $ARGUMENTS
+./scripts/install-test.mjs:59:  assert.equal(await exists(path.join(local, "agents", "opencode-loop-local.md")), true)
+./scripts/install-test.mjs:74:  assert.equal(await exists(path.join(configured, "agents", "opencode-loop-local.md")), true)
+./scripts/bootstrap-test.mjs:28:  assert.doesNotMatch(source, /bybrawe\.opencode-loop/)
+./scripts/bootstrap-test.mjs:39:  assert.match(source, /const COMMAND_MARKER = "\[opencode-loop:"/)
+./scripts/bootstrap-test.mjs:48:    assert.match(template, new RegExp(`\\[opencode-loop:${command}\\]`))
+./scripts/smoke-test.mjs:23:    input: { type: "user", data: { text: `[opencode-loop:${name}] ${args}` }, delivery: "steer" },
+./scripts/identity-test.mjs:23:  assert.doesNotMatch(daemonSource, /opencode-loopd/)
+./scripts/identity-test.mjs:29:  assert.doesNotMatch(stdout, /opencode-loopd|OpenCodeLoop/)
+./scripts/identity-test.mjs:33:  assert.doesNotMatch(installerSource, /opencode-loop(?:\.ts|\.js|\b)/)
+./README.md:13:- Command compatibility marker: `[opencode-loop:<command>]`
+./README.md:18:The `opencode-loop` command marker and local acknowledgement-agent name are temporarily retained as command-protocol compatibility identifiers. They are not the plugin runtime identity.
+./README.md:28:The plugin does not read or write old `.opencode/opencode-loop/` state as native state. That directory is future explicit one-time migration input only. No migration tool exists in this bootstrap, and installed behavior remains untouched.
+./docs/installation-architecture.md:5:A future reviewed installer must define artifact integrity, atomic placement, duplicate-load prevention, rollback, and explicit one-time import from old `.opencode/opencode-loop/` state. Until then:
+./scripts/verify-provenance.mjs:8:  ["chore: import opencode-loop baseline at 925b599", "provenance/manifests/baseline-925b599.json"],
+./scripts/comprehensive-test.mjs:89:      await dispatchEvent(client, admittedUserInput(sessionID, `inp_${command}_${Date.now()}_${Math.random()}`, `[opencode-loop:${command}] ${argumentsText}`))
+./scripts/comprehensive-test.mjs:235:    await h.event({ type: "session.input.admitted", data: { sessionID: h.sessionID, inputID: "inp_dup", input: { type: "user", data: { text: "[opencode-loop:loop-status] " } } } })
+./scripts/comprehensive-test.mjs:236:    await h.event({ type: "session.input.admitted", data: { sessionID: h.sessionID, inputID: "inp_dup", input: { type: "user", data: { text: "[opencode-loop:loop-status] " } } } })
+./scripts/comprehensive-test.mjs:506:    // opencode-loop-local agent; its agent.selected event must not become the
+./scripts/comprehensive-test.mjs:508:    await h.event({ type: "session.agent.selected", data: { sessionID: h.sessionID, agent: "opencode-loop-local" } })
+./scripts/comprehensive-test.mjs:529:    const loopOwned = { type: "session.input.admitted", location: { directory: h.directory }, data: { sessionID: h.sessionID, inputID: "inp_loop_owned", input: { type: "user", data: { text: "[opencode-loop:loop-goal] --no-now Keep working until the objective is complete" } } } }
+./docs/decisions/0001-brand-new-identity-and-state.md:9:Retain `[opencode-loop:<command>]` and the local command-agent name temporarily as an internal command compatibility protocol, not runtime identity. Old `.opencode/opencode-loop/` data is future explicit migration input only and is never silently treated as native state.
+./docs/provenance.md:5:The implementation source is the MIT-licensed `ByBrawe/opencode-loop` repository. The preserved license states `Copyright (c) 2026 OpenCode Loop Contributors`.
+./docs/provenance.md:13:The imported upstream changelog is retained as historical source material at `provenance/history/opencode-loop-CHANGELOG.md`; it does not describe this package's current identity or release channel.

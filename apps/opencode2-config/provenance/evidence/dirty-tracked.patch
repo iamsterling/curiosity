@@ -1,0 +1,2396 @@
+diff --git a/README.md b/README.md
+index 5c492b4..3f3bbab 100644
+--- a/README.md
++++ b/README.md
+@@ -1,14 +1,28 @@
+ # OpenCode Loop
+ 
+-**Claude Code style auto-continue + persistent Goal Mode for OpenCode.**
++**Claude Code style auto-continue + persistent Goal Mode for OpenCode 2.**
+ 
+ OpenCode Loop adds a practical `/loop` command and `opencode-loopd` daemon to OpenCode so an agent can keep working after each idle turn instead of waiting for you to type “continue” again. It also includes experimental `/loop-goal` for outcome-driven work that keeps pursuing a goal across idle turns until it is proven complete, blocked, paused, or stopped by safety limits.
+ 
+-It is useful for long coding sessions, `progress.md` workflows, TODO automation, test-fix loops, periodic `/compact`, checkpoints, safe autonomous development, persistent goals, and background OpenCode continuation jobs.
++It is useful for long coding sessions, `progress.md` workflows, TODO automation, test-fix loops, checkpoints, safe autonomous development, persistent goals, and background OpenCode continuation jobs.
+ 
+ Repository: **ByBrawe/opencode-loop**  
+ NPM package name: **@bybrawe/opencode-loop**
+ 
++## OpenCode 2 compatibility
++
++This release is a port of the plugin to the **OpenCode 2 (beta) plugin API** and runs on the `opencode2` binary. The V1 plugin API (client + directory arguments, `command.execute.before`/`event` hooks, `client.tui.*` and `client.app.log`) does not exist in V2, so the plugin was re-ported to the V2 surface: `Plugin.define`, `ctx.session.*` actions, `ctx.tool.transform` for the goal tools, `ctx.tool.hook` for tool lifecycle and `ctx.event.subscribe` for the event stream.
++
++Slash commands are intercepted differently in V2: command markdown templates render to a `[opencode-loop:<name>] <args>` line, the plugin handles the command when the rendered input is admitted, and the tool-denied `opencode-loop-local` agent keeps the acknowledgement turn cheap.
++
++Because the V2 plugin API is still beta, a few V1 capabilities degrade explicitly (never silently):
++
++- **Scheduled compaction** (`/loop-compact`, `/loop 200m /compact`, `--compact-every`) cannot run: V2 does not expose `session.compact`, `session.summarize` or a TUI command channel to plugins, and `compact` is not a registry command. Compact loops pause with `compact_failed` and the reason is written to `.opencode/opencode-loop/loop.log`. OpenCode 2's **automatic context-window compaction** remains enabled by default, which covers the main need.
++- **Per-run `--agent` / `--model`** on prompt loops is not exposed by the V2 plugin API; loop prompts run on the session's current agent/model. Use `opencode-loopd --agent/--model` for explicit selection.
++- **Toasts and `app.log`** do not exist in V2; diagnostics and notices go to `.opencode/opencode-loop/loop.log` (visible with `/loop-logs`).
++- **`session.shell` loop actions** run the command directly and log the result when the host does not expose `session.shell`.
++- **Session history reads** are not exposed, so stale-busy recovery uses `session.step.*`/`session.execution.*` events instead of message tails; in-flight work is never force-finalized.
++
+ ## Goal Mode: pursue an outcome, not a timer
+ 
+ Normal loops answer “what should run again?” **Goal Mode answers “what result should the agent keep pursuing until it is actually done?”**
+@@ -36,6 +50,8 @@ v0.5.11 includes a referenced heartbeat scheduler. This is important in OpenCode
+ 
+ ## Current status
+ 
++**v0.6.0 is the OpenCode 2 (beta) port.** The plugin now targets the V2 plugin API and the `opencode2` binary: `Plugin.define`, `ctx.session.*`, `ctx.tool.transform`/`ctx.tool.hook`, `ctx.event.subscribe` and admitted-input command interception via `[opencode-loop:<name>]` command templates. Scheduled compaction, per-run agent/model on prompt loops and TUI toasts degrade explicitly (see [OpenCode 2 compatibility](#opencode-2-compatibility)); OpenCode 2's automatic compaction stays on. The daemon defaults to `opencode2` and the installer pins `plugins` entries and `@opencode-ai/plugin@next`.
++
+ **v0.5.24 uses OpenCode's native compaction lifecycle, serializes compact-before-run work, fixes current headless summarize payloads, and validates stale `busy` recovery against a genuinely completed assistant tail.** **v0.5.23 adds immediate, token-safe recovery when a scheduler prompt/shell dispatch is rejected, without automatically replaying the prompt.** **v0.5.22 adds forward-compatible OpenCode command handling plus Bun and peer-range compatibility CI.** **v0.5.21 targets current OpenCode 1.18.x compatibility and safer releases.** Server-plugin control commands keep their locked-down acknowledgement prompt instead of creating an empty command message, `/compact` prefers the current `session.compact` TUI command, and CI now covers Ubuntu and Windows before publishing. **v0.5.20 fixes Windows TUI state writes.** Session job state is written through the OS temp directory with rename plus copy/unlink fallback and short retries, so antivirus locks and OpenCode snapshots no longer drop `/loop` jobs with `EPERM` on rename. **v0.5.19** hardens Goal Mode, package updates, and the background daemon: package installs are pinned to the installed version so OpenCode cannot keep loading an older cached release, scheduler-created goal messages no longer self-interrupt on delayed updates, finite daemon failures return nonzero, model/agent selection is supported, Windows scheduled tasks use a short launcher that stays below the `/TR` limit, and asynchronous release verification is reliable under load.
+ 
+ The known update-related symptoms from older builds are fixed:
+@@ -198,7 +214,7 @@ macOS / Linux target paths:
+ ~/.config/opencode/agents/opencode-loop-local.md
+ ```
+ 
+-Then fully restart OpenCode and run:
++Then fully restart opencode2 and run:
+ 
+ ```text
+ /loop-help
+@@ -213,24 +229,24 @@ opencode-loopd --help
+ 
+ ### Why `npx` is the recommended npm install
+ 
+-OpenCode can load npm plugins from the `plugin` array in `opencode.json`, but OpenCode slash commands are discovered from command definitions such as markdown files in a `commands/` directory or command entries in config.
++OpenCode 2 can load npm plugins from the `plugins` array in `opencode.json` (V1 `plugin` entries still load in V2), but OpenCode slash commands are discovered from command definitions such as markdown files in a `commands/` directory or command entries in config.
+ 
+ The `npx` installer installs both parts:
+ 
+-- the OpenCode plugin file
++- the OpenCode 2 plugin file
+ - the `/loop-*` command markdown files
+ - the tool-denied `opencode-loop-local` acknowledgement agent
+ 
+ The installer automatically avoids loading both the package entry and a local plugin copy. It can therefore be rerun safely after switching installation styles.
+ 
+-### Optional: OpenCode config package entry
++### Optional: OpenCode 2 config package entry
+ 
+-If you want OpenCode to load the npm plugin package directly, add the scoped package name to your OpenCode config:
++If you want OpenCode 2 to load the npm plugin package directly, add the scoped package name to your OpenCode config:
+ 
+ ```json
+ {
+   "$schema": "https://opencode.ai/config.json",
+-  "plugin": ["@bybrawe/opencode-loop"]
++  "plugins": ["@bybrawe/opencode-loop"]
+ }
+ ```
+ 
+@@ -244,7 +260,7 @@ If `/loop` does not appear after using only the config method, run the installer
+ npx -y @bybrawe/opencode-loop
+ ```
+ 
+-If you later remove `@bybrawe/opencode-loop` from the `plugin` array, rerun the installer so it restores the local plugin copy.
++If you later remove `@bybrawe/opencode-loop` from the `plugins` array, rerun the installer so it restores the local plugin copy.
+ 
+ ### Install from GitHub
+ 
+@@ -536,7 +552,7 @@ The `/loop` command is session-bound. It works while OpenCode is open and the cu
+ 
+ If you close OpenCode, restart the terminal, lose connection, or your PC sleeps, the TUI loop will not keep running.
+ 
+-For long-running loops, use the daemon:
++For long-running loops, use the daemon. It spawns the `opencode2` CLI headlessly (override with `OPENCODE_BIN`):
+ 
+ ```bash
+ opencode-loopd --project . --every 5m --prompt-file loop-prompt.md
+@@ -1155,6 +1171,15 @@ Improve the application in small safe steps.
+ 
+ ## Changelog highlights
+ 
++### v0.6.0
++
++- **OpenCode 2 (beta) port.** The plugin targets the V2 plugin API and the `opencode2` binary: `Plugin.define` default export, `ctx.session.*` actions, `ctx.tool.transform` for the goal tools, `ctx.tool.hook` for tool lifecycle, `ctx.event.subscribe` for the event stream, and admitted-input command interception via `[opencode-loop:<name>]` command markdown templates.
++- The V1 plugin API (`command.execute.before`/`event` hooks, `client.tui.*`, `client.app.log`, SDK arg shapes) is gone; all call sites use the V2 shapes.
++- V2 limitations degrade explicitly: scheduled compaction (`compact` is not a registry command and `session.compact` is not exposed to plugins), per-run agent/model on prompt loops, toasts and `app.log` (now loop.log lines), and `session.shell` actions (direct execution with logged results). OpenCode 2 automatic compaction stays enabled.
++- Stale-`busy` recovery uses `session.step.*`/`session.execution.*` events instead of message-history reads; in-flight steps are never force-finalized.
++- The daemon defaults to `opencode2` (override with `OPENCODE_BIN`); the installer pins `plugins` array entries and writes `@opencode-ai/plugin@next`.
++- Tests rewritten against the V2 surface and verified end-to-end against the real `opencode2` runtime (TUI `/loop` interception, job creation, scheduling and dispatch).
++
+ ### v0.5.20
+ 
+ - Fixed Windows `EPERM` / `EEXIST` failures when rewriting `.opencode/opencode-loop/ses_*.json` during heartbeat and due-timer updates.
+@@ -1247,7 +1272,9 @@ Improve the application in small safe steps.
+ - The TUI plugin is idle-driven. It does not run a background daemon while OpenCode is busy.
+ - The TUI `/loop` command stops when OpenCode closes, the terminal closes, the machine sleeps, or the session stops emitting idle events.
+ - For long-running work outside the TUI, use `opencode-loopd`.
+-- `--timeout` is best-effort and relies on OpenCode's abort API.
++- On OpenCode 2 (beta): scheduled compaction, per-run agent/model on prompt loops, toasts and `app.log` are not available through the plugin API and degrade explicitly — see [OpenCode 2 compatibility](#opencode-2-compatibility).
++- A one-shot `opencode2 run "[opencode-loop:...] ..."` prompt can race plugin startup (the input is admitted before the plugin's event subscription starts); use the TUI or the daemon for automated sessions.
++- `--timeout` is best-effort and relies on OpenCode's interrupt API.
+ - `--verify`, `--preflight`, `--postrun`, and `--notify` run shell commands, so configure OpenCode permissions carefully.
+ - `--until` scans common state files and a limited number of markdown/text/json/yaml files to avoid walking huge projects.
+ - `--safe` reduces risk but does not replace careful OpenCode permissions.
+diff --git a/commands/loop-ask.md b/commands/loop-ask.md
+index 533c732..5063b4c 100644
+--- a/commands/loop-ask.md
++++ b/commands/loop-ask.md
+@@ -2,5 +2,4 @@
+ description: Schedule a recurring prompt/question. Usage: /loop-ask 1h did you run tests?
+ agent: opencode-loop-local
+ ---
+-
+-OpenCode Loop ask scheduler handled locally. Reply exactly: OK.
++[opencode-loop:loop-ask] $ARGUMENTS
+diff --git a/commands/loop-clear.md b/commands/loop-clear.md
+index 166b1a2..392235f 100644
+--- a/commands/loop-clear.md
++++ b/commands/loop-clear.md
+@@ -2,5 +2,4 @@
+ description: Clear all OpenCode Loop jobs for this session.
+ agent: opencode-loop-local
+ ---
+-
+-OpenCode Loop clear command handled locally. Reply exactly: OK.
++[opencode-loop:loop-clear] $ARGUMENTS
+diff --git a/commands/loop-cmd.md b/commands/loop-cmd.md
+index 667c27e..c2147b0 100644
+--- a/commands/loop-cmd.md
++++ b/commands/loop-cmd.md
+@@ -2,5 +2,4 @@
+ description: Alias for /loop-command. Usage: /loop-cmd 200m /compact
+ agent: opencode-loop-local
+ ---
+-
+-OpenCode Loop command scheduler handled locally. Reply exactly: OK.
++[opencode-loop:loop-cmd] $ARGUMENTS
+diff --git a/commands/loop-command.md b/commands/loop-command.md
+index 7dabb97..d961291 100644
+--- a/commands/loop-command.md
++++ b/commands/loop-command.md
+@@ -2,5 +2,4 @@
+ description: Schedule an OpenCode slash command loop. Usage: /loop-command 200m /compact
+ agent: opencode-loop-local
+ ---
+-
+-OpenCode Loop command scheduler handled locally. Reply exactly: OK.
++[opencode-loop:loop-command] $ARGUMENTS
+diff --git a/commands/loop-compact.md b/commands/loop-compact.md
+index 076877a..c2df348 100644
+--- a/commands/loop-compact.md
++++ b/commands/loop-compact.md
+@@ -2,5 +2,4 @@
+ description: OpenCode Loop plugin command.
+ agent: opencode-loop-local
+ ---
+-
+-Loop command received. The OpenCode Loop plugin handles this command. Do not explain this command, do not search the web, do not create scheduler files, and do not run extra shell commands because of this command.
++[opencode-loop:loop-compact] $ARGUMENTS
+diff --git a/commands/loop-dev.md b/commands/loop-dev.md
+index 076877a..c58878e 100644
+--- a/commands/loop-dev.md
++++ b/commands/loop-dev.md
+@@ -2,5 +2,4 @@
+ description: OpenCode Loop plugin command.
+ agent: opencode-loop-local
+ ---
+-
+-Loop command received. The OpenCode Loop plugin handles this command. Do not explain this command, do not search the web, do not create scheduler files, and do not run extra shell commands because of this command.
++[opencode-loop:loop-dev] $ARGUMENTS
+diff --git a/commands/loop-doctor.md b/commands/loop-doctor.md
+index 4e856b1..6e1758f 100644
+--- a/commands/loop-doctor.md
++++ b/commands/loop-doctor.md
+@@ -2,5 +2,4 @@
+ description: Run OpenCode Loop diagnostics.
+ agent: opencode-loop-local
+ ---
+-
+-OpenCode Loop doctor command handled locally. Reply exactly: OK.
++[opencode-loop:loop-doctor] $ARGUMENTS
+diff --git a/commands/loop-export.md b/commands/loop-export.md
+index dff554d..53e0938 100644
+--- a/commands/loop-export.md
++++ b/commands/loop-export.md
+@@ -2,5 +2,4 @@
+ description: Export OpenCode Loop state.
+ agent: opencode-loop-local
+ ---
+-
+-OpenCode Loop export command handled locally. Reply exactly: OK.
++[opencode-loop:loop-export] $ARGUMENTS
+diff --git a/commands/loop-goal-blocked.md b/commands/loop-goal-blocked.md
+index f78dd9b..0b0c174 100644
+--- a/commands/loop-goal-blocked.md
++++ b/commands/loop-goal-blocked.md
+@@ -2,5 +2,4 @@
+ description: Mark experimental goal blocked.
+ agent: opencode-loop-local
+ ---
+-
+-OpenCode Loop experimental goal blocked command handled locally. Reply exactly: OK.
++[opencode-loop:loop-goal-blocked] $ARGUMENTS
+diff --git a/commands/loop-goal-clear.md b/commands/loop-goal-clear.md
+index fe994e8..fc42df8 100644
+--- a/commands/loop-goal-clear.md
++++ b/commands/loop-goal-clear.md
+@@ -2,5 +2,4 @@
+ description: Clear experimental goal jobs.
+ agent: opencode-loop-local
+ ---
+-
+-OpenCode Loop experimental goal clear command handled locally. Reply exactly: OK.
++[opencode-loop:loop-goal-clear] $ARGUMENTS
+diff --git a/commands/loop-goal-done.md b/commands/loop-goal-done.md
+index 91d4451..459e8f6 100644
+--- a/commands/loop-goal-done.md
++++ b/commands/loop-goal-done.md
+@@ -2,5 +2,4 @@
+ description: Mark experimental goal done.
+ agent: opencode-loop-local
+ ---
+-
+-OpenCode Loop experimental goal done command handled locally. Reply exactly: OK.
++[opencode-loop:loop-goal-done] $ARGUMENTS
+diff --git a/commands/loop-goal-pause.md b/commands/loop-goal-pause.md
+index 06177a3..e32a79e 100644
+--- a/commands/loop-goal-pause.md
++++ b/commands/loop-goal-pause.md
+@@ -2,5 +2,4 @@
+ description: Pause experimental goal jobs.
+ agent: opencode-loop-local
+ ---
+-
+-OpenCode Loop experimental goal pause command handled locally. Reply exactly: OK.
++[opencode-loop:loop-goal-pause] $ARGUMENTS
+diff --git a/commands/loop-goal-resume.md b/commands/loop-goal-resume.md
+index f27e64a..c6eb56d 100644
+--- a/commands/loop-goal-resume.md
++++ b/commands/loop-goal-resume.md
+@@ -2,5 +2,4 @@
+ description: Resume experimental goal jobs.
+ agent: opencode-loop-local
+ ---
+-
+-OpenCode Loop experimental goal resume command handled locally. Reply exactly: OK.
++[opencode-loop:loop-goal-resume] $ARGUMENTS
+diff --git a/commands/loop-goal-status.md b/commands/loop-goal-status.md
+index ef44836..b387810 100644
+--- a/commands/loop-goal-status.md
++++ b/commands/loop-goal-status.md
+@@ -2,5 +2,4 @@
+ description: Show experimental goal status.
+ agent: opencode-loop-local
+ ---
+-
+-OpenCode Loop experimental goal status command handled locally. Reply exactly: OK.
++[opencode-loop:loop-goal-status] $ARGUMENTS
+diff --git a/commands/loop-goal.md b/commands/loop-goal.md
+index c866c6d..1c9f380 100644
+--- a/commands/loop-goal.md
++++ b/commands/loop-goal.md
+@@ -2,5 +2,4 @@
+ description: Experimental persistent goal mode. Usage: /loop-goal finish the feature and keep tests green
+ agent: opencode-loop-local
+ ---
+-
+-OpenCode Loop experimental goal command handled locally. Reply exactly: OK.
++[opencode-loop:loop-goal] $ARGUMENTS
+diff --git a/commands/loop-help.md b/commands/loop-help.md
+index 666f928..46d9d32 100644
+--- a/commands/loop-help.md
++++ b/commands/loop-help.md
+@@ -2,5 +2,4 @@
+ description: Show OpenCode Loop help.
+ agent: opencode-loop-local
+ ---
+-
+-OpenCode Loop help command handled locally. Reply exactly: OK.
++[opencode-loop:loop-help] $ARGUMENTS
+diff --git a/commands/loop-init.md b/commands/loop-init.md
+index c92fd3d..cc47187 100644
+--- a/commands/loop-init.md
++++ b/commands/loop-init.md
+@@ -2,5 +2,4 @@
+ description: Create a starter progress.md file.
+ agent: opencode-loop-local
+ ---
+-
+-OpenCode Loop init command handled locally. Reply exactly: OK.
++[opencode-loop:loop-init] $ARGUMENTS
+diff --git a/commands/loop-logs.md b/commands/loop-logs.md
+index 7d016da..ae7ba99 100644
+--- a/commands/loop-logs.md
++++ b/commands/loop-logs.md
+@@ -2,5 +2,4 @@
+ description: Show OpenCode Loop logs.
+ agent: opencode-loop-local
+ ---
+-
+-OpenCode Loop logs command handled locally. Reply exactly: OK.
++[opencode-loop:loop-logs] $ARGUMENTS
+diff --git a/commands/loop-now.md b/commands/loop-now.md
+index 09364a0..c2db7ce 100644
+--- a/commands/loop-now.md
++++ b/commands/loop-now.md
+@@ -2,5 +2,4 @@
+ description: Run due OpenCode Loop jobs now when idle.
+ agent: opencode-loop-local
+ ---
+-
+-OpenCode Loop run-now command handled locally. Reply exactly: OK.
++[opencode-loop:loop-now] $ARGUMENTS
+diff --git a/commands/loop-pause.md b/commands/loop-pause.md
+index 351e18f..9da8c6e 100644
+--- a/commands/loop-pause.md
++++ b/commands/loop-pause.md
+@@ -2,5 +2,4 @@
+ description: Pause OpenCode Loop jobs.
+ agent: opencode-loop-local
+ ---
+-
+-OpenCode Loop pause command handled locally. Reply exactly: OK.
++[opencode-loop:loop-pause] $ARGUMENTS
+diff --git a/commands/loop-progress.md b/commands/loop-progress.md
+index 076877a..26a7ccb 100644
+--- a/commands/loop-progress.md
++++ b/commands/loop-progress.md
+@@ -2,5 +2,4 @@
+ description: OpenCode Loop plugin command.
+ agent: opencode-loop-local
+ ---
+-
+-Loop command received. The OpenCode Loop plugin handles this command. Do not explain this command, do not search the web, do not create scheduler files, and do not run extra shell commands because of this command.
++[opencode-loop:loop-progress] $ARGUMENTS
+diff --git a/commands/loop-prompt.md b/commands/loop-prompt.md
+index e5425d1..00cf65d 100644
+--- a/commands/loop-prompt.md
++++ b/commands/loop-prompt.md
+@@ -2,5 +2,4 @@
+ description: Schedule a recurring prompt loop. Usage: /loop-prompt 1h continue the project
+ agent: opencode-loop-local
+ ---
+-
+-Loop prompt scheduler received. The OpenCode Loop plugin handles this recurring prompt locally. Do not explain this command, do not search the web, do not create scheduler files, and do not run extra shell commands because of this command.
++[opencode-loop:loop-prompt] $ARGUMENTS
+diff --git a/commands/loop-remove.md b/commands/loop-remove.md
+index 076877a..f6eb1ca 100644
+--- a/commands/loop-remove.md
++++ b/commands/loop-remove.md
+@@ -2,5 +2,4 @@
+ description: OpenCode Loop plugin command.
+ agent: opencode-loop-local
+ ---
+-
+-Loop command received. The OpenCode Loop plugin handles this command. Do not explain this command, do not search the web, do not create scheduler files, and do not run extra shell commands because of this command.
++[opencode-loop:loop-remove] $ARGUMENTS
+diff --git a/commands/loop-resume.md b/commands/loop-resume.md
+index 5f76211..9f7ff60 100644
+--- a/commands/loop-resume.md
++++ b/commands/loop-resume.md
+@@ -2,5 +2,4 @@
+ description: Resume OpenCode Loop jobs.
+ agent: opencode-loop-local
+ ---
+-
+-OpenCode Loop resume command handled locally. Reply exactly: OK.
++[opencode-loop:loop-resume] $ARGUMENTS
+diff --git a/commands/loop-safe-dev.md b/commands/loop-safe-dev.md
+index 076877a..fec01bc 100644
+--- a/commands/loop-safe-dev.md
++++ b/commands/loop-safe-dev.md
+@@ -2,5 +2,4 @@
+ description: OpenCode Loop plugin command.
+ agent: opencode-loop-local
+ ---
+-
+-Loop command received. The OpenCode Loop plugin handles this command. Do not explain this command, do not search the web, do not create scheduler files, and do not run extra shell commands because of this command.
++[opencode-loop:loop-safe-dev] $ARGUMENTS
+diff --git a/commands/loop-shell.md b/commands/loop-shell.md
+index c215c2b..350bef0 100644
+--- a/commands/loop-shell.md
++++ b/commands/loop-shell.md
+@@ -2,5 +2,4 @@
+ description: Schedule a recurring shell command. Usage: /loop-shell 10m npm test
+ agent: opencode-loop-local
+ ---
+-
+-OpenCode Loop shell scheduler handled locally. Reply exactly: OK.
++[opencode-loop:loop-shell] $ARGUMENTS
+diff --git a/commands/loop-status.md b/commands/loop-status.md
+index b9b259b..6d368a6 100644
+--- a/commands/loop-status.md
++++ b/commands/loop-status.md
+@@ -2,5 +2,4 @@
+ description: Show OpenCode Loop status.
+ agent: opencode-loop-local
+ ---
+-
+-OpenCode Loop status command handled locally. Reply exactly: OK.
++[opencode-loop:loop-status] $ARGUMENTS
+diff --git a/commands/loop-stop.md b/commands/loop-stop.md
+index 6cd2c84..0f4b413 100644
+--- a/commands/loop-stop.md
++++ b/commands/loop-stop.md
+@@ -2,5 +2,4 @@
+ description: Stop OpenCode Loop jobs.
+ agent: opencode-loop-local
+ ---
+-
+-OpenCode Loop stop command handled locally. Reply exactly: OK.
++[opencode-loop:loop-stop] $ARGUMENTS
+diff --git a/commands/loop-testfix.md b/commands/loop-testfix.md
+index 076877a..be87354 100644
+--- a/commands/loop-testfix.md
++++ b/commands/loop-testfix.md
+@@ -2,5 +2,4 @@
+ description: OpenCode Loop plugin command.
+ agent: opencode-loop-local
+ ---
+-
+-Loop command received. The OpenCode Loop plugin handles this command. Do not explain this command, do not search the web, do not create scheduler files, and do not run extra shell commands because of this command.
++[opencode-loop:loop-testfix] $ARGUMENTS
+diff --git a/commands/loop.md b/commands/loop.md
+index c6daa25..5172e14 100644
+--- a/commands/loop.md
++++ b/commands/loop.md
+@@ -2,5 +2,4 @@
+ description: Start an OpenCode auto-continue loop. Usage: /loop 5m <task>
+ agent: opencode-loop-local
+ ---
+-
+-OpenCode Loop local command handled. Reply exactly: OK.
++[opencode-loop:loop] $ARGUMENTS
+diff --git a/package.json b/package.json
+index 1b8a14f..cc80a6b 100644
+--- a/package.json
++++ b/package.json
+@@ -1,7 +1,7 @@
+ {
+   "name": "@bybrawe/opencode-loop",
+-  "version": "0.5.24",
+-  "description": "Claude Code/Codex style /loop and experimental goal mode for OpenCode: heartbeat scheduler, idle-safe loops, scheduled commands, compact scheduling, verification, checkpoints, and persistent coding goals.",
++  "version": "0.6.0",
++  "description": "Claude Code/Codex style /loop and experimental goal mode for OpenCode 2 (beta): idle-safe loops, scheduled prompts, checkpoints, and persistent coding goals.",
+   "type": "module",
+   "main": "src/index.js",
+   "exports": {
+@@ -54,10 +54,10 @@
+     "url": "https://github.com/ByBrawe/opencode-loop/issues"
+   },
+   "peerDependencies": {
+-    "@opencode-ai/plugin": ">=1.4.0"
++    "@opencode-ai/plugin": "next"
+   },
+   "devDependencies": {
+-    "@opencode-ai/plugin": "^1.18.15"
++    "@opencode-ai/plugin": "next"
+   },
+   "bin": {
+     "opencode-loop": "scripts/install-node.mjs",
+diff --git a/scripts/comprehensive-test.mjs b/scripts/comprehensive-test.mjs
+index 4118223..ba2a5f9 100644
+--- a/scripts/comprehensive-test.mjs
++++ b/scripts/comprehensive-test.mjs
+@@ -3,137 +3,98 @@ import { promises as fs } from "node:fs"
+ import os from "node:os"
+ import path from "node:path"
+ 
+-import OpenCodeLoopPlugin from "../src/index.js"
++import OpenCodeLoopPlugin, { dispatchEvent, makeClient } from "../src/index.js"
+ 
+ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+ let harnessNumber = 0
+ 
++function admittedUserInput(sessionID, inputID, text) {
++  return {
++    type: "session.input.admitted",
++    location: { directory: sessionDirectories.get(sessionID) },
++    data: {
++      sessionID,
++      inputID,
++      input: { type: "user", data: { text }, delivery: "steer" },
++    },
++  }
++}
++
++// Tests run against one directory per harness; the plugin resolves the
++// project directory from event locations, so remember the mapping the same
++// way the plugin does (defaultDirectory is module-global and last-write-wins).
++const sessionDirectories = new Map()
++
+ async function createHarness(options = {}) {
+   harnessNumber++
+   const directory = await fs.mkdtemp(path.join(os.tmpdir(), `opencode-loop-comprehensive-${harnessNumber}-`))
+   const sessionID = `ses_comprehensive_${harnessNumber}`
++  sessionDirectories.set(sessionID, directory)
+   const records = {
+     aborts: [],
+     commands: [],
+-    logs: [],
++    interrupts: [],
+     prompts: [],
+-    shells: [],
+-    summaries: [],
+-    messageReads: [],
+-    toasts: [],
+-    tuiCommands: [],
++    synthetics: [],
+   }
+   const statuses = new Map([[sessionID, "idle"]])
+-  const messageHistory = Array.isArray(options.messages) ? structuredClone(options.messages) : []
+-
+-  const client = {
+-    app: {
+-      log: async (args) => {
+-        assert.ok(args?.body, "app.log must use the SDK body shape")
+-        records.logs.push(args.body)
+-        return { data: true }
+-      },
+-    },
+-    tui: {
+-      executeCommand: async (args) => {
+-        assert.ok(args?.body?.command, "tui.executeCommand must use the SDK body shape")
+-        records.tuiCommands.push(args.body.command)
+-        if (options.failCompact || options.failTuiCompact) throw new Error("simulated TUI compact failure")
+-        return { data: true }
+-      },
+-      showToast: async (args) => {
+-        assert.ok(args?.body?.message, "tui.showToast must use the SDK body shape")
+-        records.toasts.push(args.body)
+-        return { data: true }
+-      },
+-    },
++  const ctx = {
++    app: { name: "cli", version: "0.0.0-test", channel: "next" },
++    options: {},
+     session: {
+-      list: async (args) => {
+-        assert.equal(args?.query?.directory, directory)
+-        return {
+-          data: [...statuses.keys()].map((id) => ({
+-            id,
+-            directory,
+-            projectID: "comprehensive",
+-            title: id,
+-            version: "test",
+-            time: { created: Date.now(), updated: Date.now() },
+-          })),
+-        }
+-      },
+-      get: async (args) => {
+-        assert.equal(args?.path?.id, sessionID)
+-        return { data: { id: sessionID, agent: "build", model: { id: "test-model", providerID: "test-provider" } } }
+-      },
+-      abort: async (args) => {
+-        records.aborts.push(args?.path?.id)
+-        return { data: true }
+-      },
+-      command: async (args) => {
+-        assert.equal(args?.path?.id, sessionID)
+-        records.commands.push(args.body)
+-        return { data: true }
+-      },
++      get: async (args) => ({ id: args.sessionID, agent: "build", model: { id: "test-model", providerID: "test-provider" }, location: { directory } }),
+       prompt: async (args) => {
+-        assert.equal(args?.path?.id, sessionID)
+-        const text = args.body.parts.map((part) => part.text || "").join("\n")
+-        records.prompts.push({ text, noReply: args.body.noReply === true, agent: args.body.agent, model: args.body.model })
++        records.prompts.push({ text: args.text, sessionID: args.sessionID })
+         if (options.failPrompt) {
+           await delay(options.promptFailureDelayMs ?? 20)
+           throw new Error(options.promptFailureMessage || "simulated prompt dispatch failure")
+         }
+-        return { data: true }
++        return { id: `msg_${Date.now()}`, sessionID, timeCreated: Date.now(), type: "user", data: { text: args.text }, delivery: "steer" }
+       },
+-      shell: async (args) => {
+-        assert.equal(args?.path?.id, sessionID)
+-        records.shells.push(args.body)
+-        return { data: true }
++      synthetic: async (args) => {
++        records.synthetics.push({ text: args.text, sessionID: args.sessionID })
++        return { id: `msg_${Date.now()}`, sessionID, timeCreated: Date.now(), type: "synthetic", data: { text: args.text }, delivery: "steer" }
+       },
+-      status: async (args) => {
+-        assert.equal(args?.query?.directory, directory)
+-        // Current OpenCode omits idle sessions from this response.
+-        return {
+-          data: Object.fromEntries(
+-            [...statuses].filter(([, type]) => type !== "idle").map(([id, type]) => [id, { type }]),
+-          ),
+-        }
+-      },
+-      messages: async (args) => {
+-        assert.equal(args?.path?.id, sessionID)
+-        assert.equal(args?.query?.directory, directory)
+-        records.messageReads.push(args)
+-        return { data: structuredClone(messageHistory) }
+-      },
+-      summarize: async (args) => {
+-        assert.equal(args?.path?.id, sessionID)
+-        records.summaries.push(args?.body)
+-        if (options.failCompact) throw new Error("simulated summarize failure")
+-        return { data: true }
++      command: async (args) => {
++        if (args.command === "compact" || args.command === "summarize") throw new Error("Command not found: " + args.command)
++        records.commands.push(args)
++        return { id: `msg_${Date.now()}`, sessionID, timeCreated: Date.now(), type: "user", data: { text: "" }, delivery: "steer" }
+       },
++      interrupt: async (args) => { records.interrupts.push(args.sessionID) },
++      generate: async (args) => ({ text: "" }),
++    },
++    tool: {
++      transform: async (fn) => { await fn({ add: (tool) => records.tools.push(tool) }) },
++      hook: async (name, fn) => { records.toolHooks[name] = fn },
++    },
++    event: {
++      subscribe: async function* () { yield* [] },
+     },
+   }
++  records.tools = []
++  records.toolHooks = {}
+ 
+-  const hooks = await OpenCodeLoopPlugin({ client, directory })
++  const client = makeClient(ctx)
++  const cleanup = await OpenCodeLoopPlugin.setup(ctx)
+   const stateFile = path.join(directory, ".opencode", "opencode-loop", `${sessionID}.json`)
+   return {
+     client,
++    ctx,
+     directory,
+-    hooks,
+     records,
+     sessionID,
+     stateFile,
+     statuses,
+-    messageHistory,
+-    async command(command, argumentsText = "", output = { parts: [] }) {
+-      await hooks["command.execute.before"]({ command, sessionID, arguments: argumentsText }, output)
+-      return output
++    async command(command, argumentsText = "") {
++      await dispatchEvent(client, admittedUserInput(sessionID, `inp_${command}_${Date.now()}_${Math.random()}`, `[opencode-loop:${command}] ${argumentsText}`))
+     },
+-    async commandEvent(command, argumentsText = "", messageID = `msg_${Date.now()}_${Math.random()}`) {
+-      await hooks.event({ event: { type: "command.executed", properties: { name: command, sessionID, arguments: argumentsText, messageID } } })
++    async event(event) {
++      if (!event.location) event.location = { directory }
++      await dispatchEvent(client, event)
+     },
+     async idle() {
+       statuses.set(sessionID, "idle")
+-      await hooks.event({ event: { type: "session.idle", properties: { sessionID } } })
++      await dispatchEvent(client, { type: "session.idle", location: { directory }, data: { sessionID } })
+     },
+     async readState() {
+       try {
+@@ -144,14 +105,22 @@ async function createHarness(options = {}) {
+       }
+     },
+     reportTexts() {
+-      return records.prompts.filter((item) => item.noReply).map((item) => item.text)
++      return records.synthetics.map((item) => item.text)
+     },
+     actionTexts() {
+-      return records.prompts.filter((item) => !item.noReply).map((item) => item.text)
++      return records.prompts.map((item) => item.text)
++    },
++    async loopLogText() {
++      try {
++        return await fs.readFile(path.join(directory, ".opencode", "opencode-loop", "loop.log"), "utf8")
++      } catch {
++        return ""
++      }
+     },
+     async cleanup() {
+-      await hooks.dispose?.()
++      await cleanup?.()
+       await fs.rm(directory, { recursive: true, force: true })
++      sessionDirectories.delete(sessionID)
+     },
+   }
+ }
+@@ -228,17 +197,16 @@ async function testParserAndPresets() {
+     assert.equal(preset.verifyCommand, "npm run ci")
+     assert.match(preset.action, /Test command hint: npm run ci/)
+ 
+-    const toastCount = h.records.toasts.length
++    const toastCount = (await (await h.loopLogText()).match(/"line":"toast"/g) || []).length
+     await h.command("loop", "nonsense")
+     await h.command("loop", "5m")
+-    assert.equal(h.records.toasts.length, toastCount + 2)
+-    assert.ok(h.records.toasts.slice(-2).every((item) => item.variant === "warning"))
++    assert.equal((await (await h.loopLogText()).match(/"line":"toast"/g) || []).length, toastCount + 2, "invalid loops must still produce diagnostics")
+   } finally {
+     await h.cleanup()
+   }
+ }
+ 
+-async function testLifecycleAndCommandDedupe() {
++async function testLifecycleAndCommandHandling() {
+   const h = await createHarness()
+   try {
+     await h.command("loop", "10m --no-now --name same first action")
+@@ -259,18 +227,14 @@ async function testLifecycleAndCommandDedupe() {
+     assert.equal(state.jobs.find((item) => item.name === "same").paused, false)
+ 
+     const beforeReports = h.reportTexts().length
+-    const statusOutput = { parts: [{ type: "text", text: "OpenCode Loop status command handled locally. Reply exactly: OK." }] }
+-    await h.command("loop-status", "", statusOutput)
+-    assert.equal(statusOutput.parts.length, 1, "handled commands must keep a valid acknowledgement prompt")
+-    assert.match(statusOutput.parts[0].text, /Reply exactly: OK/)
+-    await h.commandEvent("loop-status", "", "msg_status_1")
+-    assert.equal(h.reportTexts().length, beforeReports + 1, "command.executed must not duplicate the before hook")
+     await h.command("loop-status")
+-    await h.commandEvent("loop-status", "", "msg_status_2")
++    assert.equal(h.reportTexts().length, beforeReports + 1, "an admitted command must produce one report")
++    await h.command("loop-status")
+     assert.equal(h.reportTexts().length, beforeReports + 2, "an intentional repeated command must not be swallowed")
+-    await h.commandEvent("loop-status", "", "msg_event_only")
+-    await h.commandEvent("loop-status", "", "msg_event_only")
+-    assert.equal(h.reportTexts().length, beforeReports + 3, "the same event message must only be handled once")
++
++    await h.event({ type: "session.input.admitted", data: { sessionID: h.sessionID, inputID: "inp_dup", input: { type: "user", data: { text: "[opencode-loop:loop-status] " } } } })
++    await h.event({ type: "session.input.admitted", data: { sessionID: h.sessionID, inputID: "inp_dup", input: { type: "user", data: { text: "[opencode-loop:loop-status] " } } } })
++    assert.equal(h.reportTexts().length, beforeReports + 3, "the same admitted input must only be handled once")
+ 
+     await h.command("loop-stop", "same")
+     state = await h.readState()
+@@ -310,9 +274,6 @@ async function testWatchScheduling() {
+     await delay(1_500)
+     assert.equal(h.actionTexts().length, 1, "watch loop must run after a watched file changes")
+     assert.match(h.actionTexts()[0], /react to watched file/)
+-    const actionPrompt = h.records.prompts.find((item) => !item.noReply)
+-    assert.equal(actionPrompt.agent, "build", "scheduled work must restore the normal coding agent")
+-    assert.deepEqual(actionPrompt.model, { providerID: "test-provider", modelID: "test-model" })
+   } finally {
+     await h.cleanup()
+   }
+@@ -323,9 +284,10 @@ async function testActionRoutingAndSafety() {
+   try {
+     await h.command("loop-shell", "0s --safe npm run format")
+     await h.command("loop-now", "shell")
+-    await delay(25)
+-    assert.equal(h.records.shells.length, 1)
+-    assert.equal(h.records.shells[0].command, "npm run format", "safe mode must allow a harmless format script")
++    await delay(50)
++    // The V2 plugin API exposes no session.shell; the command runs directly
++    // and the attempt is recorded in the loop log.
++    assert.match(await h.loopLogText(), /shell-direct/)
+   } finally {
+     await h.cleanup()
+   }
+@@ -334,8 +296,7 @@ async function testActionRoutingAndSafety() {
+   try {
+     await h.command("loop-shell", "0s --safe Remove-Item -Recurse ./important")
+     await h.command("loop-now", "shell")
+-    await delay(25)
+-    assert.equal(h.records.shells.length, 0)
++    await delay(50)
+     const state = await h.readState()
+     assert.equal(state.jobs[0].paused, true, "a blocked synchronous action must pause instead of retrying forever")
+     assert.equal(state.jobs[0].failureCount, 1)
+@@ -345,7 +306,6 @@ async function testActionRoutingAndSafety() {
+     await h.command("loop-shell", "0s --safe rm -r -f ./important")
+     await h.command("loop-now", "shell")
+     const separateFlagsState = await h.readState()
+-    assert.equal(h.records.shells.length, 0)
+     assert.equal(separateFlagsState.jobs[0].lastFailureReason, "safe_shell_blocked", "separate rm -r -f flags must be blocked")
+   } finally {
+     await h.cleanup()
+@@ -363,13 +323,16 @@ async function testActionRoutingAndSafety() {
+     await h.cleanup()
+   }
+ 
+-  h = await createHarness({ failCompact: true })
++  h = await createHarness()
+   try {
++    // The OpenCode 2 plugin API does not expose session.compact and "compact"
++    // is not a registry command, so compact loops pause with a diagnostic.
+     await h.command("loop-compact", "0s")
+     await h.command("loop-now", "compact")
+     const state = await h.readState()
+     assert.equal(state.jobs[0].paused, true)
+     assert.equal(state.jobs[0].lastFailureReason, "compact_failed")
++    assert.match(await h.loopLogText(), /compact-unavailable/)
+   } finally {
+     await h.cleanup()
+   }
+@@ -379,40 +342,19 @@ async function testActionRoutingAndSafety() {
+     await h.command("loop-command", "0s /custom-command alpha beta")
+     await h.command("loop-now", "command")
+     await delay(25)
+-    assert.deepEqual(h.records.commands[0], {
+-      command: "custom-command",
+-      arguments: "alpha beta",
+-      agent: "build",
+-      model: "test-provider/test-model",
+-    })
++    const dispatched = h.records.commands[0]
++    assert.equal(dispatched.command, "custom-command")
++    assert.equal(dispatched.arguments, "alpha beta")
++    assert.equal(dispatched.agent, "build")
++    assert.deepEqual(dispatched.model, { id: "test-model", providerID: "test-provider" })
++    assert.equal(dispatched.sessionID, h.sessionID)
+   } finally {
+     await h.cleanup()
+   }
+ }
+ 
+-async function testNativeCompactionLifecycleAndFallback() {
+-  let h = await createHarness({ failTuiCompact: true })
+-  try {
+-    await h.command("loop-compact", "0s --no-now")
+-    await h.command("loop-now", "compact")
+-    assert.deepEqual(h.records.summaries[0], {
+-      providerID: "test-provider",
+-      modelID: "test-model",
+-      auto: false,
+-    }, "headless compact fallback must satisfy the current OpenCode summarize payload")
+-    assert.equal(typeof h.hooks["experimental.session.compacting"], "function")
+-    const compactOutput = { context: [], prompt: undefined }
+-    await h.hooks["experimental.session.compacting"]({ sessionID: h.sessionID }, compactOutput)
+-    assert.deepEqual(compactOutput, { context: [], prompt: undefined }, "loop lifecycle tracking must not rewrite OpenCode's compaction prompt")
+-    await h.hooks.event({ event: { type: "session.compacted", properties: { sessionID: h.sessionID } } })
+-    await delay(20)
+-    const state = await h.readState()
+-    assert.ok(state.jobs[0].lastFinishedAt > 0, "session.compacted must finalize an explicit compact job without waiting for stale status recovery")
+-  } finally {
+-    await h.cleanup()
+-  }
+-
+-  h = await createHarness()
++async function testCompactDegradationAndEvents() {
++  const h = await createHarness()
+   try {
+     await h.command("loop", "5m --no-now --name compact-chain --compact-every 1 --verify 'node -e process.exitCode=7' --pause-on-verify-fail continue after compaction")
+     const seeded = await h.readState()
+@@ -421,52 +363,36 @@ async function testNativeCompactionLifecycleAndFallback() {
+     await fs.writeFile(h.stateFile, JSON.stringify(seeded, null, 2), "utf8")
+ 
+     await h.command("loop-now", "compact-chain")
+-    assert.equal(h.records.tuiCommands.length, 1, "compact-every must start compaction")
+-    assert.equal(h.actionTexts().length, 0, "the scheduled action must not overlap a pending compaction")
+-    assert.equal((await h.readState()).jobs[0].runCount, 1, "compaction-only phase must not count as a normal loop run")
+-
+-    await h.hooks["experimental.session.compacting"]({ sessionID: h.sessionID }, { context: [], prompt: undefined })
+-    await h.hooks.event({ event: { type: "session.compacted", properties: { sessionID: h.sessionID } } })
+-    await delay(20)
+-    assert.equal((await h.readState()).jobs[0].runCount, 1, "native compaction completion must only release the deferred action")
+-  } finally {
+-    await h.cleanup()
+-  }
+-
+-  h = await createHarness()
+-  try {
+-    await h.command("loop", "5m --no-now --name compact-idle-fallback --compact-every 1 --verify 'node -e process.exitCode=7' --pause-on-verify-fail continue after fallback compaction")
+-    const seeded = await h.readState()
+-    seeded.jobs[0].runCount = 1
+-    seeded.jobs[0].lastRunAt = 0
+-    await fs.writeFile(h.stateFile, JSON.stringify(seeded, null, 2), "utf8")
+-    await h.command("loop-now", "compact-idle-fallback")
+-    assert.equal(h.actionTexts().length, 0)
+-    h.statuses.set(h.sessionID, "idle")
+-    await h.command("loop-now", "compact-idle-fallback")
+-    const fallbackState = await h.readState()
+-    assert.equal(fallbackState.jobs[0].failureCount || 0, 0, "idle-only compaction fallback must not run normal verify logic")
+-    assert.equal(fallbackState.jobs[0].paused, false, "idle-only compaction fallback must not pause the job through normal run finalization")
++    const state = await h.readState()
++    assert.equal(state.jobs[0].runCount, 2, "a failed compact-every attempt degrades to the normal action, matching V1 semantics")
++    assert.equal(state.jobs[0].paused, false, "compact-every failure must not pause; V2 automatic compaction covers context pressure")
++    assert.match(await h.loopLogText(), /compact-unavailable/)
++
++    // The compaction lifecycle events remain wired for auto-compaction: a
++    // started/ended pair without a pending loop request must not crash the
++    // dispatcher (there is no pending request after the failed attempt, so
++    // no compact-event log is expected).
++    await h.event({ type: "session.compaction.started", data: { sessionID: h.sessionID } })
++    await h.event({ type: "session.compaction.ended", data: { sessionID: h.sessionID } })
++    assert.doesNotMatch(await h.loopLogText(), /compact-event/, "no pending loop compaction request after the degraded attempt")
+   } finally {
+     await h.cleanup()
+   }
+ }
+ 
+-async function testStaleBusyUsesCompletedAssistantTail() {
++async function testStaleBusyUsesCompletedExecutionTail() {
+   let h = await createHarness()
+   try {
+     await h.command("loop", "5m --no-now --name stale-complete continue safely")
+     await h.command("loop-now", "stale-complete")
+     h.statuses.set(h.sessionID, "busy")
+     const completedAt = Date.now() + 5
+-    h.messageHistory.splice(0, h.messageHistory.length,
+-      { info: { id: "usr_tail", sessionID: h.sessionID, role: "user", time: { created: completedAt - 2 } }, parts: [] },
+-      { info: { id: "asst_tail", sessionID: h.sessionID, role: "assistant", time: { created: completedAt - 1, completed: completedAt } }, parts: [] },
+-    )
++    await h.event({ type: "session.step.started", created: completedAt - 1, data: { sessionID: h.sessionID, assistantMessageID: "asst_tail", agent: "build", model: { id: "m", providerID: "p" } } })
++    await h.event({ type: "session.step.ended", created: completedAt, data: { sessionID: h.sessionID, assistantMessageID: "asst_tail", finish: "stop", cost: 0, tokens: { input: 0, output: 0, reasoning: 0, cache: { read: 0, write: 0 } } } })
++    await h.event({ type: "session.execution.succeeded", created: completedAt, data: { sessionID: h.sessionID } })
+     await h.command("loop-now", "stale-complete")
+     const state = await h.readState()
+-    assert.ok(state.jobs[0].lastFinishedAt > 0, "a completed assistant tail must override a stale busy status")
+-    assert.ok(h.records.messageReads.length > 0, "busy recovery must cross-check message history")
++    assert.ok(state.jobs[0].lastFinishedAt > 0, "a completed execution tail must override a stale busy status")
+   } finally {
+     await h.cleanup()
+   }
+@@ -481,13 +407,10 @@ async function testStaleBusyUsesCompletedAssistantTail() {
+     await delay(10)
+     h.statuses.set(h.sessionID, "busy")
+     const createdAt = Date.now()
+-    h.messageHistory.splice(0, h.messageHistory.length,
+-      { info: { id: "usr_running", sessionID: h.sessionID, role: "user", time: { created: createdAt - 1 } }, parts: [] },
+-      { info: { id: "asst_running", sessionID: h.sessionID, role: "assistant", time: { created: createdAt } }, parts: [] },
+-    )
++    await h.event({ type: "session.step.started", created: createdAt, data: { sessionID: h.sessionID, assistantMessageID: "asst_running", agent: "build", model: { id: "m", providerID: "p" } } })
+     await h.command("loop-now", "stale-incomplete")
+     const state = await h.readState()
+-    assert.equal(state.jobs[0].lastFinishedAt, undefined, "an unfinished assistant tail must never be force-finalized just because the active-run timeout elapsed")
++    assert.equal(state.jobs[0].lastFinishedAt, undefined, "an in-flight step must never be force-finalized just because the active-run timeout elapsed")
+     assert.equal(h.actionTexts().length, 1, "unfinished work must not be overlapped by a replacement prompt")
+   } finally {
+     await h.cleanup()
+@@ -514,7 +437,7 @@ async function testPromptDispatchFailureRecovery() {
+     assert.match(job.lastDispatchFailure, /simulated prompt dispatch failure/)
+     assert.ok(job.lastDispatchFailureAt > 0)
+     assert.equal(h.actionTexts().length, 1, "dispatch recovery must never replay the prompt automatically")
+-    assert.ok(h.records.logs.some((entry) => entry.message === "session.prompt failed"), "the SDK rejection must remain observable")
++    assert.match(await h.loopLogText(), /session\.prompt failed/, "the SDK rejection must remain observable")
+   } finally {
+     await h.cleanup()
+   }
+@@ -549,18 +472,19 @@ async function testStopsPreflightAndGoalLifecycle() {
+     await h.command("loop-now", "goal")
+     await delay(25)
+     assert.match(h.actionTexts()[0], /Goal objective:\nShip the feature/)
+-    const progress = await h.hooks.tool.opencode_loop_goal_progress.execute(
++    const goalTools = Object.fromEntries(h.records.tools.map((tool) => [tool.name, tool]))
++    const progress = await goalTools.opencode_loop_goal_progress.execute(
+       { summary: "Implemented the first part", next: "Run verification" },
+-      { directory: h.directory, sessionID: h.sessionID },
++      { sessionID: h.sessionID },
+     )
+-    assert.equal(progress.title, "Goal progress")
++    assert.match(progress.content, /Goal progress/)
+     let state = await h.readState()
+     assert.equal(state.jobs[0].goalProgress.length, 1)
+-    const blocked = await h.hooks.tool.opencode_loop_goal_blocked.execute(
++    const blocked = await goalTools.opencode_loop_goal_blocked.execute(
+       { reason: "Credential is missing", needed: "Provide a test credential" },
+-      { directory: h.directory, sessionID: h.sessionID },
++      { sessionID: h.sessionID },
+     )
+-    assert.equal(blocked.title, "Goal blocked")
++    assert.match(blocked.content, /Goal blocked/)
+     state = await h.readState()
+     assert.equal(state.jobs[0].goalStatus, "blocked")
+     assert.equal(state.jobs[0].paused, true)
+@@ -575,30 +499,43 @@ async function testStopsPreflightAndGoalLifecycle() {
+   }
+ }
+ 
+-async function testLoopOwnedGoalMessageUpdatesDoNotSelfInterrupt() {
++async function testAckAgentDoesNotStick() {
++  const h = await createHarness()
++  try {
++    // The /loop command's acknowledgement turn runs under the tool-denied
++    // opencode-loop-local agent; its agent.selected event must not become the
++    // agent of subsequent scheduled iterations (v0.5.17 regression class).
++    await h.event({ type: "session.agent.selected", data: { sessionID: h.sessionID, agent: "opencode-loop-local" } })
++    await h.command("loop", "0s --max-runs 1 continue safely")
++    await h.command("loop-now")
++    await delay(50)
++    assert.equal(h.actionTexts().length, 1, "the loop must run")
++    await h.event({ type: "session.agent.selected", data: { sessionID: h.sessionID, agent: "build" } })
++    await h.command("loop-clear")
++    assert.equal((await h.readState()).jobs.length, 0)
++  } finally {
++    await h.cleanup()
++  }
++}
++
++async function testLoopOwnedGoalInputsDoNotSelfInterrupt() {
+   const h = await createHarness()
+   const originalDateNow = Date.now
+   let fakeNow = originalDateNow()
+   Date.now = () => fakeNow
+   try {
+     await h.command("loop-goal", "--no-now Keep working until the objective is complete")
+-    const synthetic = {
+-      type: "message.updated",
+-      properties: { info: { id: "msg_loop_owned", sessionID: h.sessionID, role: "user" } },
+-    }
+-    await h.hooks.event({ event: synthetic })
+-
++    // A delayed duplicate of the loop-owned command input must stay ignored.
++    const loopOwned = { type: "session.input.admitted", location: { directory: h.directory }, data: { sessionID: h.sessionID, inputID: "inp_loop_owned", input: { type: "user", data: { text: "[opencode-loop:loop-goal] --no-now Keep working until the objective is complete" } } } }
++    await h.event(loopOwned)
+     fakeNow += 60_000
+-    await h.hooks.event({ event: synthetic })
++    await h.event(loopOwned)
+     let state = await h.readState()
+-    assert.equal(state.jobs[0].paused, false, "a delayed update for the same loop-owned user message must remain ignored")
++    assert.equal(state.jobs[0].paused, false, "a delayed duplicate of the same loop-owned input must remain ignored")
+ 
+-    await h.hooks.event({ event: {
+-      type: "message.updated",
+-      properties: { info: { id: "msg_real_user", sessionID: h.sessionID, role: "user" } },
+-    } })
++    await h.event({ type: "session.input.admitted", location: { directory: h.directory }, data: { sessionID: h.sessionID, inputID: "inp_real_user", input: { type: "user", data: { text: "user typed a real message" } } } })
+     state = await h.readState()
+-    assert.equal(state.jobs[0].paused, true, "a distinct real user message must still pause an active goal")
++    assert.equal(state.jobs[0].paused, true, "a distinct real user input must still pause an active goal")
+   } finally {
+     Date.now = originalDateNow
+     await h.cleanup()
+@@ -608,18 +545,20 @@ async function testLoopOwnedGoalMessageUpdatesDoNotSelfInterrupt() {
+ async function testInitializationDoesNotWaitForLocalApi() {
+   const directory = await fs.mkdtemp(path.join(os.tmpdir(), "opencode-loop-init-deadlock-"))
+   const never = new Promise(() => {})
+-  const client = {
+-    app: { log: async () => never },
+-    tui: { showToast: async () => ({ data: true }) },
+-    session: { list: async () => never },
++  const ctx = {
++    app: { name: "cli", version: "test", channel: "next" },
++    options: {},
++    session: { get: async () => never, prompt: async () => never, synthetic: async () => never, command: async () => never, interrupt: async () => {}, generate: async () => ({ text: "" }) },
++    tool: { transform: async (fn) => { await fn({ add: () => {} }) }, hook: async () => {} },
++    event: { subscribe: async function* () { yield* [] } },
+   }
+   try {
+-    const hooks = await Promise.race([
+-      OpenCodeLoopPlugin({ client, directory }),
++    const cleanup = await Promise.race([
++      OpenCodeLoopPlugin.setup(ctx),
+       delay(500).then(() => { throw new Error("plugin initialization waited for the local OpenCode API") }),
+     ])
+-    assert.equal(typeof hooks.event, "function")
+-    await hooks.dispose?.()
++    assert.equal(typeof cleanup, "function")
++    await cleanup()
+   } finally {
+     await fs.rm(directory, { recursive: true, force: true })
+   }
+@@ -698,7 +637,7 @@ async function testStateReadRetriesTransientPartialJson() {
+     }
+     await h.command("loop-status")
+     assert.equal(partialReads, 3, "partial JSON should be retried before treating state as corrupt")
+-    assert.equal(h.records.toasts.at(-1)?.message, "1 loop job(s).")
++    assert.match(await h.loopLogText(), /toast.*1 loop job\(s\)/)
+   } finally {
+     fs.readFile = originalReadFile
+     await h.cleanup()
+@@ -706,17 +645,21 @@ async function testStateReadRetriesTransientPartialJson() {
+ }
+ 
+ await testParserAndPresets()
+-await testLifecycleAndCommandDedupe()
++await testLifecycleAndCommandHandling()
+ await testWatchScheduling()
+ await testActionRoutingAndSafety()
+-await testNativeCompactionLifecycleAndFallback()
+-await testStaleBusyUsesCompletedAssistantTail()
++await testCompactDegradationAndEvents()
++await testStaleBusyUsesCompletedExecutionTail()
+ await testPromptDispatchFailureRecovery()
+ await testStopsPreflightAndGoalLifecycle()
+-await testLoopOwnedGoalMessageUpdatesDoNotSelfInterrupt()
++await testAckAgentDoesNotStick()
++await testLoopOwnedGoalInputsDoNotSelfInterrupt()
+ await testInitializationDoesNotWaitForLocalApi()
+ await testWindowsSafeStatePersistence()
+ await testWindowsStateRenameRetriesBeforeFallback()
+ await testStateReadRetriesTransientPartialJson()
+ 
+-console.log("OpenCode Loop comprehensive test passed")
++console.log("OpenCode 2 Loop comprehensive test passed")
++// Importing @opencode-ai/plugin leaves a dangling socket in plain Node; the
++// opencode2 host owns the runtime, so tests exit explicitly.
++process.exit(0)
+diff --git a/scripts/install-node.mjs b/scripts/install-node.mjs
+index 0dc759b..6ddccb9 100644
+--- a/scripts/install-node.mjs
++++ b/scripts/install-node.mjs
+@@ -16,14 +16,14 @@ const packageSpec = `${packageName}@${packageVersion}`
+ const installerArgs = process.argv.slice(2)
+ 
+ if (installerArgs.includes("--help") || installerArgs.includes("-h")) {
+-  console.log(`OpenCode Loop installer
++  console.log(`OpenCode 2 Loop installer
+ 
+ Usage:
+   opencode-loop
+   npx -y @bybrawe/opencode-loop@latest
+ 
+ Installs the plugin commands and local command agent into OPENCODE_CONFIG_DIR
+-or the default ~/.config/opencode directory.`)
++or the default ~/.config/opencode directory for OpenCode 2 (opencode2).`)
+   process.exit(0)
+ }
+ 
+@@ -106,7 +106,12 @@ async function configurePackagePlugin() {
+       const target = join(config, name)
+       const source = await readFile(target, "utf8")
+       const parsed = parseJsonc(source)
+-      const specs = Array.isArray(parsed?.plugin) ? parsed.plugin.filter(isPackageSpec) : []
++      // OpenCode 2 renames plugin to plugins; V1 config still loads in V2, so
++      // pin the package spec in whichever array (or both) actually exists.
++      const specs = [...new Set([
++        ...(Array.isArray(parsed?.plugin) ? parsed.plugin.filter(isPackageSpec) : []),
++        ...(Array.isArray(parsed?.plugins) ? parsed.plugins.filter(isPackageSpec) : []),
++      ])]
+       if (!specs.length) continue
+       configured = true
+ 
+@@ -137,14 +142,15 @@ async function ensureDependency() {
+   } catch (error) {
+     if (error?.code !== "ENOENT") {
+       console.warn(`Could not update ${packagePath}: ${error.message}`)
+-      console.warn('Add "@opencode-ai/plugin": ">=1.4.0" to that package.json if OpenCode cannot load the local plugin.')
++      console.warn('Add "@opencode-ai/plugin": "next" to that package.json if OpenCode 2 cannot load the local plugin.')
+       return
+     }
+   }
+   if (!pkg || typeof pkg !== "object" || Array.isArray(pkg)) pkg = {}
+   pkg.dependencies = pkg.dependencies && typeof pkg.dependencies === "object" && !Array.isArray(pkg.dependencies) ? pkg.dependencies : {}
+   if (!pkg.dependencies["@opencode-ai/plugin"]) {
+-    pkg.dependencies["@opencode-ai/plugin"] = ">=1.4.0"
++    // The V2 plugin API is beta; match the @next channel used by opencode2.
++    pkg.dependencies["@opencode-ai/plugin"] = "next"
+     await writeFile(packagePath, JSON.stringify(pkg, null, 2) + "\n", "utf8")
+   }
+ }
+@@ -184,4 +190,4 @@ if (useConfiguredPackage) {
+ else console.log(`Installed OpenCode Loop plugin to ${config}`)
+ console.log(`Installed ${packageName} commands to ${commandDir}`)
+ console.log(`Installed ${packageName} local command agent to ${agentDir}`)
+-console.log("Restart OpenCode, then run: /loop-help")
++console.log('Run "bun install" (or npm install) in ' + config + ' so the local plugin can resolve @opencode-ai/plugin, then restart opencode2 and run: /loop-help')
+diff --git a/scripts/install-test.mjs b/scripts/install-test.mjs
+index 173ea7a..dd22bd5 100644
+--- a/scripts/install-test.mjs
++++ b/scripts/install-test.mjs
+@@ -43,7 +43,7 @@ try {
+   const helpConfig = path.join(temporaryRoot, "help-must-not-install")
+   const helpResult = await runInstaller(helpConfig, ["--help"])
+   assert.equal(helpResult.code, 0, helpResult.stderr)
+-  assert.match(helpResult.stdout, /OpenCode Loop installer/)
++  assert.match(helpResult.stdout, /OpenCode 2 Loop installer/)
+   assert.equal(await exists(helpConfig), false, "--help must not mutate the OpenCode config directory")
+ 
+   const versionResult = await runInstaller(helpConfig, ["--version"])
+@@ -58,7 +58,7 @@ try {
+   assert.equal(await commandCount(local), 30)
+   assert.equal(await exists(path.join(local, "agents", "opencode-loop-local.md")), true)
+   const localPackage = JSON.parse(await fs.readFile(path.join(local, "package.json"), "utf8"))
+-  assert.equal(localPackage.dependencies["@opencode-ai/plugin"], ">=1.4.0")
++  assert.equal(localPackage.dependencies["@opencode-ai/plugin"], "next")
+ 
+   const configured = path.join(temporaryRoot, "configured")
+   await fs.mkdir(path.join(configured, "plugins"), { recursive: true })
+diff --git a/scripts/loopd-test.mjs b/scripts/loopd-test.mjs
+index 4c75134..7304d2a 100644
+--- a/scripts/loopd-test.mjs
++++ b/scripts/loopd-test.mjs
+@@ -84,7 +84,9 @@ try {
+   assert.equal(result.code, 0, result.stderr)
+   let calls = await readLog(fakeOpenCode.log)
+   assert.equal(calls.length, 1)
+-  assert.equal(path.resolve(calls[0].cwd), path.resolve(project))
++  // macOS resolves /var -> /private/var in the child's process.cwd(); compare
++  // through realpath so the check is symlink-agnostic.
++  assert.equal(await fs.realpath(calls[0].cwd), await fs.realpath(project))
+   assert.deepEqual(calls[0].args, [
+     "run", "--continue",
+     "--model", "opencode/nemotron-3-ultra-free",
+diff --git a/scripts/loopd.mjs b/scripts/loopd.mjs
+index 38a518d..0bcbfde 100644
+--- a/scripts/loopd.mjs
++++ b/scripts/loopd.mjs
+@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url"
+ const args = process.argv.slice(2)
+ const configuredRetryMs = Number(process.env.OPENCODE_LOOPD_FAILED_RUN_RETRY_MS)
+ const FAILED_RUN_RETRY_MS = Number.isFinite(configuredRetryMs) && configuredRetryMs >= 0 ? configuredRetryMs : 5_000
+-const OPENCODE_BIN = process.env.OPENCODE_BIN || "opencode"
++const OPENCODE_BIN = process.env.OPENCODE_BIN || "opencode2"
+ const SCHTASKS_BIN = process.env.SCHTASKS_BIN || "schtasks"
+ const TASK_ROOT = process.env.OPENCODE_LOOPD_TASK_DIR || path.join(process.env.LOCALAPPDATA || path.join(homedir(), "AppData", "Local"), "opencode-loop", "tasks")
+ 
+@@ -151,10 +151,11 @@ async function daemon(options = {}) {
+   const agent = options.agent ?? arg("--agent")
+   const opencodeBin = options.opencodeBin || OPENCODE_BIN
+ 
+-  console.log("OpenCode Loop daemon")
++  console.log("OpenCode 2 Loop daemon")
+   console.log(`project: ${project}`)
+   console.log(`every: ${every}`)
+   console.log(`maxRuns: ${maxRuns || "unlimited"}`)
++  console.log(`binary: ${opencodeBin} (override with OPENCODE_BIN)`)
+ 
+   let count = 0
+ 
+@@ -175,7 +176,7 @@ async function daemon(options = {}) {
+     const code = await run(opencodeBin, runArgs, project)
+ 
+     if (code !== 0) {
+-      console.log(`[opencode-loopd] opencode exited with code ${code}`)
++      console.log(`[opencode-loopd] ${opencodeBin} exited with code ${code}`)
+       if (delay === 0) {
+         await sleep(FAILED_RUN_RETRY_MS)
+       }
+@@ -281,7 +282,7 @@ function uninstallTask() {
+ 
+ function help() {
+   console.log(`
+-OpenCode Loop daemon
++OpenCode 2 Loop daemon
+ 
+ Usage:
+   opencode-loopd --project . --every 5m --prompt-file loop-prompt.md
+@@ -289,12 +290,16 @@ Usage:
+   opencode-loopd install-task --project . --every 10m --prompt-file loop-prompt.md --name OpenCodeLoop
+   opencode-loopd uninstall-task --name OpenCodeLoop
+ 
++Runs the opencode2 CLI (override with OPENCODE_BIN) headlessly against the
++project: opencode2 run --continue [--model <provider/model#variant>]
++[--agent <name>] <prompt>.
++
+ Options:
+   --project <path>       Project directory
+   --every <duration>     0s, 5m, 1h, etc.
+   --prompt <text>        Prompt text
+   --prompt-file <file>   Read prompt from file relative to the project
+-  --model <provider/id>  OpenCode model used for each run
++  --model <provider/id>  OpenCode model used for each run (provider/model#variant)
+   --agent <name>         OpenCode agent used for each run
+   --max-runs <n>         Stop after n runs
+   --sleep-first          Wait before first run
+diff --git a/scripts/smoke-test.mjs b/scripts/smoke-test.mjs
+index f45bffc..b7c8ab9 100644
+--- a/scripts/smoke-test.mjs
++++ b/scripts/smoke-test.mjs
+@@ -3,14 +3,26 @@ import { promises as fs } from "node:fs"
+ import os from "node:os"
+ import path from "node:path"
+ 
+-import OpenCodeLoopPlugin from "../src/index.js"
++import OpenCodeLoopPlugin, { dispatchEvent, makeClient } from "../src/index.js"
+ 
+ const directory = await fs.mkdtemp(path.join(os.tmpdir(), "opencode-loop-smoke-"))
+ const sessionID = "ses_smoke_goal"
+-const attempts = { log: 0, prompt: 0, status: 0, toast: 0 }
+ const prompts = []
+-const liveStatuses = new Map([[sessionID, "idle"]])
+-let hooks
++const toolHooks = {}
++let tools = []
++let cleanup
++
++function event(type, data = {}, extra = {}) {
++  return { type, location: { directory }, data, ...extra }
++}
++
++async function command(name, args) {
++  await dispatchEvent(client, event("session.input.admitted", {
++    sessionID,
++    inputID: `inp_${name}_${Date.now()}_${Math.random()}`,
++    input: { type: "user", data: { text: `[opencode-loop:${name}] ${args}` }, delivery: "steer" },
++  }))
++}
+ 
+ async function waitFor(predicate, timeoutMs = 2_000) {
+   const deadline = Date.now() + timeoutMs
+@@ -21,82 +33,46 @@ async function waitFor(predicate, timeoutMs = 2_000) {
+   return true
+ }
+ 
+-function legacyBody(name) {
+-  return async (args) => {
+-    attempts[name]++
+-    assert.ok(args?.body, `${name} must use the plugin SDK body shape first`)
+-    return { data: true }
+-  }
+-}
+-
+-const client = {
+-  app: {
+-    log: legacyBody("log"),
+-  },
+-  tui: {
+-    executeCommand: async (args) => {
+-      assert.ok(args?.body?.command)
+-      return { data: true }
+-    },
+-    showToast: legacyBody("toast"),
+-  },
++const ctx = {
++  app: { name: "cli", version: "0.0.0-test", channel: "next" },
++  options: {},
+   session: {
+-    list: async (args) => {
+-      assert.equal(args?.query?.directory, directory)
+-      return { data: [{ id: sessionID, directory, projectID: "project", title: "smoke", version: "test", time: { created: Date.now(), updated: Date.now() } }] }
+-    },
+-    abort: async (args) => {
+-      assert.equal(args?.path?.id, sessionID)
+-      return { data: true }
+-    },
+-    command: async (args) => {
+-      assert.equal(args?.path?.id, sessionID)
+-      assert.ok(args?.body?.command)
+-      return { data: true }
+-    },
++    get: async (args) => ({ id: args.sessionID, agent: "build", model: { id: "test-model", providerID: "test-provider" }, location: { directory } }),
+     prompt: async (args) => {
+-      attempts.prompt++
+-      assert.equal(args?.path?.id, sessionID, "session.prompt must use path.id first")
+-      assert.ok(Array.isArray(args?.body?.parts))
+-      prompts.push(args.body.parts.map((part) => part.text || "").join("\n"))
+-      return { data: true }
+-    },
+-    shell: async (args) => {
+-      assert.equal(args?.path?.id, sessionID)
+-      assert.ok(args?.body?.command)
+-      return { data: true }
++      prompts.push(args.text)
++      return { id: `msg_${Date.now()}`, sessionID, timeCreated: Date.now(), type: "user", data: { text: args.text }, delivery: "steer" }
+     },
+-    status: async (args) => {
+-      attempts.status++
+-      assert.equal(args?.query?.directory, directory, "session.status must use query.directory first")
+-      return { data: Object.fromEntries([...liveStatuses].filter(([, type]) => type !== "idle").map(([id, type]) => [id, { type }])) }
+-    },
+-    summarize: async (args) => {
+-      assert.equal(args?.path?.id, sessionID)
+-      return { data: true }
++    synthetic: async (args) => ({ id: `msg_${Date.now()}`, sessionID, timeCreated: Date.now(), type: "synthetic", data: { text: args.text }, delivery: "steer" }),
++    command: async (args) => {
++      assert.ok(args.command)
++      return { id: `msg_${Date.now()}`, sessionID, timeCreated: Date.now(), type: "user", data: { text: "" }, delivery: "steer" }
+     },
++    interrupt: async () => {},
++    generate: async (args) => ({ text: "" }),
++  },
++  tool: {
++    transform: async (fn) => { await fn({ add: (tool) => tools.push(tool) }) },
++    hook: async (name, fn) => { toolHooks[name] = fn },
++  },
++  event: {
++    subscribe: async function* () { yield* [] },
+   },
+ }
+ 
++const client = makeClient(ctx)
++
+ try {
+-  hooks = await OpenCodeLoopPlugin({ client, directory })
+-  assert.deepEqual(Object.keys(hooks.tool).sort(), [
++  cleanup = await OpenCodeLoopPlugin.setup(ctx)
++  const goalTools = Object.fromEntries(tools.map((tool) => [tool.name, tool]))
++  assert.deepEqual(Object.keys(goalTools).sort(), [
+     "opencode_loop_goal_blocked",
+     "opencode_loop_goal_complete",
+     "opencode_loop_goal_progress",
+   ])
+ 
+-  const output = { parts: [{ type: "text", text: "original command body" }] }
+-  await hooks["command.execute.before"]({
+-    command: "loop-goal",
+-    sessionID,
+-    arguments: "Create proof.txt and verify it --max-turns 3",
+-  }, output)
+-  assert.equal(output.parts.length, 1, "a locally handled slash command must keep a valid acknowledgement prompt")
+-  assert.equal(output.parts[0].text, "original command body")
+-  assert.equal(output.noReply, true, "handled commands should request noReply for compatible OpenCode hosts")
++  await command("loop-goal", "Create proof.txt and verify it --max-turns 3")
+ 
+-  await hooks["command.execute.before"]({ command: "loop-now", sessionID, arguments: "goal" }, { parts: [] })
++  await command("loop-now", "goal")
+   assert.equal(
+     await waitFor(() => prompts.some((prompt) => prompt.includes(path.resolve(directory)))),
+     true,
+@@ -108,37 +84,33 @@ try {
+   const activeState = JSON.parse(await fs.readFile(stateFile, "utf8"))
+   assert.equal(activeState.jobs[0].activeRecoveryMs, 180_000)
+ 
+-  const rejected = await hooks.tool.opencode_loop_goal_complete.execute({ summary: "Done", evidence: "done" }, { directory, sessionID })
+-  assert.equal(rejected.title, "Goal completion rejected")
++  const rejected = await goalTools.opencode_loop_goal_complete.execute({ summary: "Done", evidence: "done" }, { sessionID })
++  assert.match(rejected.content, /rejected/)
+ 
+-  const completed = await hooks.tool.opencode_loop_goal_complete.execute({
++  const completed = await goalTools.opencode_loop_goal_complete.execute({
+     summary: "Created and verified proof.txt",
+     evidence: "Created proof.txt and read the file back; its exact content matched the requested value.",
+-  }, { directory, sessionID })
+-  assert.equal(completed.title, "Goal completed")
++  }, { sessionID })
++  assert.match(completed.content, /Goal completed/)
+ 
+   const completedState = JSON.parse(await fs.readFile(stateFile, "utf8"))
+   assert.equal(completedState.jobs[0].goalStatus, "completed")
+   assert.equal(completedState.jobs[0].paused, true)
+   assert.equal(completedState.jobs[0].enabled, false)
+ 
+-  await hooks.event({ event: { type: "session.idle", properties: { sessionID } } })
+-  await hooks["command.execute.before"]({ command: "loop-clear", sessionID, arguments: "" }, { parts: [] })
++  await dispatchEvent(client, event("session.idle", { sessionID }))
++  await command("loop-clear")
+ 
+   const promptCountBeforeAutoGoal = prompts.length
+-  await hooks["command.execute.before"]({
+-    command: "loop-goal",
+-    sessionID,
+-    arguments: "--no-now --check \"node -e process.exitCode=0\" --complete-when-checks-pass make the configured checks pass",
+-  }, { parts: [] })
+-  await hooks["command.execute.before"]({ command: "loop-now", sessionID, arguments: "goal" }, { parts: [] })
++  await command("loop-goal", "--no-now --check \"node -e process.exitCode=0\" --complete-when-checks-pass make the configured checks pass")
++  await command("loop-now", "goal")
+   assert.equal(
+     await waitFor(() => prompts.length === promptCountBeforeAutoGoal + 1),
+     true,
+     "a Goal Mode check-gated run must start when forced",
+   )
+   await new Promise((resolve) => setTimeout(resolve, 25))
+-  await hooks.event({ event: { type: "session.idle", properties: { sessionID } } })
++  await dispatchEvent(client, event("session.idle", { sessionID }))
+   let autoCompletedState
+   for (let attempt = 0; attempt < 400; attempt++) {
+     autoCompletedState = JSON.parse(await fs.readFile(stateFile, "utf8"))
+@@ -150,57 +122,47 @@ try {
+   assert.equal(autoCompletedState.jobs[0].enabled, false)
+   assert.ok(autoCompletedState.jobs[0].lastGoalChecks?.every((item) => item.code === 0), "auto-completed Goal Mode must persist passing check evidence")
+ 
+-  await hooks["command.execute.before"]({ command: "loop-clear", sessionID, arguments: "" }, { parts: [] })
++  await command("loop-clear")
+ 
+   const promptCountBeforeBackgroundTool = prompts.length
+-  await hooks["tool.execute.before"]({ tool: "bash", sessionID, callID: "call_background" }, { args: {} })
+-  await hooks["command.execute.before"]({
+-    command: "loop",
+-    sessionID,
+-    arguments: "0s --max-runs 1 continue after the background task",
+-  }, { parts: [] })
++  toolHooks["execute.before"]({ tool: "bash", sessionID, id: "call_background", input: {} })
++  await command("loop", "0s --max-runs 1 continue after the background task")
+   await new Promise((resolve) => setTimeout(resolve, 1_400))
+-  assert.equal(prompts.length, promptCountBeforeBackgroundTool, "an active tool call must keep the loop busy even when session.status says idle")
++  assert.equal(prompts.length, promptCountBeforeBackgroundTool, "an active tool call must keep the loop busy even when the session says idle")
+ 
+-  await hooks["tool.execute.after"]({ tool: "bash", sessionID, callID: "call_background", args: {} }, { title: "done", output: "", metadata: {} })
+-  await hooks.event({ event: { type: "session.idle", properties: { sessionID } } })
++  toolHooks["execute.after"]({ tool: "bash", sessionID, id: "call_background", input: {}, status: "completed", result: { content: "done" } })
++  await dispatchEvent(client, event("session.idle", { sessionID }))
+   assert.equal(
+     await waitFor(() => prompts.length === promptCountBeforeBackgroundTool + 1, 5_000),
+     true,
+     "the due loop must resume after the active tool finishes and the session becomes idle",
+   )
+ 
+-  await hooks["command.execute.before"]({ command: "loop-clear", sessionID, arguments: "" }, { parts: [] })
++  await command("loop-clear")
+ 
+   const childSessionID = "ses_background_child"
+-  liveStatuses.set(childSessionID, "busy")
+-  await hooks.event({ event: { type: "session.created", properties: { info: { id: childSessionID, parentID: sessionID } } } })
+-  await hooks.event({ event: { type: "session.status", properties: { sessionID: childSessionID, status: { type: "busy" } } } })
++  await dispatchEvent(client, event("session.created", { sessionID: childSessionID, parentID: sessionID, location: { directory } }))
++  await dispatchEvent(client, event("session.status", { sessionID: childSessionID, status: { type: "busy" } }))
+   const promptCountBeforeBackgroundChild = prompts.length
+-  await hooks["command.execute.before"]({
+-    command: "loop",
+-    sessionID,
+-    arguments: "0s --max-runs 1 continue after the background subtask",
+-  }, { parts: [] })
++  await command("loop", "0s --max-runs 1 continue after the background subtask")
+   await new Promise((resolve) => setTimeout(resolve, 2_700))
+   assert.equal(prompts.length, promptCountBeforeBackgroundChild, "a running background child session must keep its parent loop busy")
+ 
+-  liveStatuses.set(childSessionID, "idle")
+-  await hooks.event({ event: { type: "session.status", properties: { sessionID: childSessionID, status: { type: "idle" } } } })
+-  await hooks.event({ event: { type: "session.idle", properties: { sessionID } } })
++  await dispatchEvent(client, event("session.status", { sessionID: childSessionID, status: { type: "idle" } }))
++  await dispatchEvent(client, event("session.idle", { sessionID }))
+   assert.equal(
+     await waitFor(() => prompts.length === promptCountBeforeBackgroundChild + 1, 5_000),
+     true,
+     "the parent loop must resume after its background child becomes idle",
+   )
+ 
+-  await hooks["command.execute.before"]({ command: "loop-clear", sessionID, arguments: "" }, { parts: [] })
+-  assert.equal(attempts.log, 1)
+-  assert.ok(attempts.prompt >= 1)
+-  assert.ok(attempts.status >= 1)
+-  assert.ok(attempts.toast >= 1)
+-  console.log("OpenCode Loop smoke test passed")
++  await command("loop-clear")
++  assert.ok(prompts.length >= 1)
++  console.log("OpenCode 2 Loop smoke test passed")
+ } finally {
+-  await hooks?.dispose?.()
++  await cleanup?.()
+   await fs.rm(directory, { recursive: true, force: true })
+ }
++// Importing @opencode-ai/plugin leaves a dangling socket in plain Node; the
++// opencode2 host owns the runtime, so tests exit explicitly.
++process.exit(0)
+diff --git a/src/index.js b/src/index.js
+index 3f0acce..a45f260 100644
+--- a/src/index.js
++++ b/src/index.js
+@@ -2,10 +2,12 @@ import { promises as fs } from "node:fs"
+ import os from "node:os"
+ import path from "node:path"
+ import { spawn } from "node:child_process"
+-import { tool } from "@opencode-ai/plugin/tool"
++import { Plugin } from "@opencode-ai/plugin"
+ 
+ const SERVICE = "opencode-loop"
++const PLUGIN_ID = "bybrawe.opencode-loop"
+ const STATE_DIR = ".opencode/opencode-loop"
++const COMMAND_MARKER = "[opencode-loop:"
+ const DEFAULT_ACTIVE_GUARD_MS = 45_000
+ const STALE_ACTIVE_RECOVERY_MS = 45_000
+ const IDLE_DEBOUNCE_MS = 1_200
+@@ -40,7 +42,10 @@ const sessionParents = new Map()
+ let heartbeatTimer
+ const sessionStatuses = new Map()
+ const sessionStatusSeenAt = new Map()
++const sessionExecutionCompletions = new Map()
++const sessionStepBounds = new Map()
+ const loopCompactionRequests = new Map()
++let defaultDirectory = null
+ 
+ const DEFAULT_PROGRESS_MD = `# Progress
+ 
+@@ -494,152 +499,105 @@ function sdkErrorMessage(error) {
+   return String(error)
+ }
+ 
+-async function sdkCall(method, ...argsList) {
++async function sdkCall(method, args) {
+   let firstError
+-  for (const args of argsList) {
+-    if (args === undefined) continue
+-    try {
+-      const result = await method(args)
+-      const error = sdkError(result)
+-      if (!error) return sdkData(result)
+-      firstError = firstError || new Error(sdkErrorMessage(error))
+-    } catch (error) {
+-      firstError = firstError || error
+-    }
++  try {
++    const result = await method(args)
++    const error = sdkError(result)
++    if (!error) return sdkData(result)
++    firstError = new Error(sdkErrorMessage(error))
++  } catch (error) {
++    firstError = firstError || error
+   }
+-  throw firstError || new Error("SDK call failed without arguments")
++  throw firstError || new Error("SDK call failed")
+ }
+ 
+-function fireSdk(client, label, method, ...argsList) {
+-  const pending = Promise.resolve().then(() => sdkCall(method, ...argsList))
++function fireSdk(client, label, method, args) {
++  const pending = Promise.resolve().then(() => sdkCall(method, args))
+   void pending.catch((error) => {
+     log(client, "warn", `${label} failed`, { error: sdkErrorMessage(error) }).catch(() => {})
+   })
+   return pending
+ }
+ 
+-async function executeTuiCommand(client, command) {
+-  if (!client?.tui?.executeCommand) throw new Error("client.tui.executeCommand is not available")
+-  return await sdkCall(
+-    client.tui.executeCommand.bind(client.tui),
+-    { body: { command } },
+-    { command },
+-  )
++// OpenCode 2 (beta) plugin context adapter. The V2 plugin API exposes a subset
++// of the server client: session.create/get/prompt/generate/command/synthetic/
++// interrupt plus the event stream and tool transforms. Every helper below
++// speaks the V2 method shapes so the rest of this file keeps its structure.
++export function makeClient(ctx) {
++  const client = {
++    app: { name: ctx.app?.name, version: ctx.app?.version, channel: ctx.app?.channel },
++    session: {
++      get: (args) => ctx.session.get({ sessionID: args.sessionID }),
++      prompt: async (args) => {
++        const input = { sessionID: args.sessionID, text: args.text }
++        if (args.id) input.id = args.id
++        if (args.metadata) input.metadata = args.metadata
++        return await ctx.session.prompt(input)
++      },
++      command: (args) => ctx.session.command({
++        sessionID: args.sessionID,
++        command: args.command,
++        arguments: args.arguments,
++        agent: args.agent || undefined,
++        model: args.model ? { id: args.model.modelID, providerID: args.model.providerID } : undefined,
++      }),
++      synthetic: (args) => ctx.session.synthetic({ sessionID: args.sessionID, text: args.text }),
++      abort: (args) => ctx.session.interrupt({ sessionID: args.sessionID }),
++      compact: async () => { throw new Error("session.compact is not exposed by the OpenCode 2 plugin API") },
++      shell: typeof ctx.session.shell === "function"
++        ? (args) => ctx.session.shell({ sessionID: args.sessionID, command: args.command })
++        : undefined,
++      events: () => ctx.event.subscribe(),
++    },
++  }
++  return client
+ }
+ 
+-function compactTuiCommandName(command = "compact") {
+-  const normalized = String(command || "compact").replace(/^\/+/, "").trim().toLowerCase()
+-  if (normalized === "compact" || normalized === "summarize") return "session_compact"
+-  return undefined
++async function sessionDirectory(client, sessionID, eventLocation) {
++  if (eventLocation?.directory) defaultDirectory = eventLocation.directory
++  if (defaultDirectory) return defaultDirectory
++  if (sessionID && client?.session?.get) {
++    try {
++      const info = await sdkCall(client.session.get.bind(client.session), { sessionID })
++      if (info?.location?.directory) {
++        defaultDirectory = info.location.directory
++        return defaultDirectory
++      }
++    } catch {}
++  }
++  return defaultDirectory || process.cwd()
+ }
+ 
+-async function readRecentSessionMessages(client, sessionID, directory, limit = 20) {
+-  if (!client?.session?.messages) return undefined
+-  const query = { limit }
+-  if (directory) query.directory = directory
+-  try {
+-    const messages = await sdkCall(
+-      client.session.messages.bind(client.session),
+-      { path: { id: sessionID }, query },
+-      { path: { sessionID }, query },
+-      { sessionID, ...query },
+-    )
+-    return Array.isArray(messages) ? messages : undefined
+-  } catch {
+-    return undefined
+-  }
++// The OpenCode 2 plugin API exposes no app log and no TUI toast channel, so
++// diagnostics and user-facing notices both land in the per-project loop.log.
++// keep it stable: level/variant are recorded so existing call sites read the
++// same as before.
++async function log(client, level, message, extra) {
++  const directory = defaultDirectory || process.cwd()
++  await appendLoopLog(directory, level === "error" ? "log-error" : level === "warn" ? "log-warn" : "log-info", { message, ...(extra || {}) })
+ }
+ 
+-function orderedSessionMessages(messages) {
+-  return (messages || [])
+-    .map((message, index) => {
+-      const info = message?.info || message || {}
+-      const created = Number(info?.time?.created || 0)
+-      return { message, index, created: Number.isFinite(created) ? created : 0 }
+-    })
+-    .sort((a, b) => a.created - b.created || a.index - b.index)
+-    .map((entry) => entry.message)
+-}
+-
+-async function activeRunCompletionFromMessages(directory, client, sessionID, active) {
+-  const messages = await readRecentSessionMessages(client, sessionID, directory)
+-  if (!messages) return "unknown"
+-  const tail = orderedSessionMessages(messages).at(-1)
+-  const info = tail?.info || tail
+-  if (!info || info.role !== "assistant") return "incomplete"
+-  const completed = Number(info?.time?.completed || 0)
+-  const created = Number(info?.time?.created || 0)
+-  if (!Number.isFinite(completed) || completed <= 0) return "incomplete"
+-  const startedAt = Number(active?.startedAt || 0)
+-  if (startedAt > 0 && completed < startedAt && (!Number.isFinite(created) || created < startedAt)) return "incomplete"
+-  return "completed"
+-}
+-
+-async function resolveCompactionModel(directory, client, sessionID, preferredModel) {
+-  const preferred = normalizedModelRef(preferredModel)
+-  if (preferred) return preferred
+-  const cached = normalizedModelRef(sessionExecutionContexts.get(sessionID)?.model)
+-  if (cached) return cached
+-  const captured = await captureSessionExecutionContext(client, sessionID)
+-  const capturedModel = normalizedModelRef(captured?.model)
+-  if (capturedModel) return capturedModel
+-  const messages = await readRecentSessionMessages(client, sessionID, directory)
+-  for (const message of orderedSessionMessages(messages).reverse()) {
+-    const info = message?.info || message
+-    const model = normalizedModelRef(info?.model) || normalizedModelRef(info)
+-    if (!model) continue
+-    const previous = sessionExecutionContexts.get(sessionID) || {}
+-    sessionExecutionContexts.set(sessionID, { ...previous, model })
+-    return model
+-  }
+-  return undefined
++async function toast(client, message, variant = "info") {
++  const directory = defaultDirectory || process.cwd()
++  await appendLoopLog(directory, "toast", { message, variant })
+ }
+ 
+ async function compactSession(directory, client, sessionID, preferredModel) {
+-  // Prefer the native TUI command when a TUI is present. Headless/server hosts
+-  // fall back to session.summarize, whose current API requires an explicit
+-  // provider/model pair.
+-  for (const command of ["session.compact", "session_compact"]) {
+-    try {
+-      await executeTuiCommand(client, command)
+-      return true
+-    } catch (error) {
+-      await log(client, "warn", `tui ${command} failed`, { error: sdkErrorMessage(error) })
+-    }
+-  }
++  // OpenCode 2 (beta) does not expose session.compact, session.summarize or a
++  // TUI command channel to plugins, and "compact" is not a registry command.
++  // Automatic compaction is enabled by default in V2, so scheduled compact
++  // loops fail loud instead of pretending to compact.
+   try {
+-    if (!client?.session?.summarize) throw new Error("client.session.summarize is not available")
+-    const model = await resolveCompactionModel(directory, client, sessionID, preferredModel)
+-    if (!model) throw new Error("could not resolve a provider/model for session.summarize")
+-    const body = { providerID: model.providerID, modelID: model.modelID, auto: false }
+-    await sdkCall(
+-      client.session.summarize.bind(client.session),
+-      { path: { id: sessionID }, body },
+-      { path: { sessionID }, body },
+-      { sessionID, ...body },
+-    )
++    await sdkCall(client.session.command.bind(client.session), { sessionID, command: "compact", arguments: "" })
+     return true
+   } catch (error) {
+-    await log(client, "warn", "session.summarize fallback failed", { error: sdkErrorMessage(error) })
++    await log(client, "warn", "session.compact unavailable in the OpenCode 2 plugin API", { error: sdkErrorMessage(error) })
+   }
+-  await toast(client, "Could not run /compact from loop. Check OpenCode version and active session model.", "error")
++  await appendLoopLog(directory, "compact-unavailable", { sessionID, note: "OpenCode 2 plugin API does not expose session.compact; automatic compaction covers context pressure" })
+   return false
+ }
+ 
+-async function log(client, level, message, extra) {
+-  try {
+-    await sdkCall(
+-      client.app.log.bind(client.app),
+-      { body: extra === undefined ? { service: SERVICE, level, message } : { service: SERVICE, level, message, extra } },
+-      extra === undefined ? { service: SERVICE, level, message } : { service: SERVICE, level, message, extra },
+-    )
+-  } catch {}
+-}
+-
+-async function toast(client, message, variant = "info") {
+-  try { await sdkCall(client.tui.showToast.bind(client.tui), { body: { message, variant } }, { message, variant }) } catch {}
+-}
+-
+ function guardLoopOwnedUserMessage(sessionID) {
+   if (!sessionID) return
+   const current = loopOwnedUserMessageGuards.get(sessionID) || { pending: 0, until: 0, messageIDs: new Map() }
+@@ -673,10 +631,8 @@ async function say(client, sessionID, text) {
+   guardLoopOwnedUserMessage(sessionID)
+   try {
+     await sdkCall(
+-      client.session.prompt.bind(client.session),
+-      { path: { id: sessionID }, body: { noReply: true, parts: [{ type: "text", text }] } },
+-      { path: { sessionID }, body: { noReply: true, parts: [{ type: "text", text }] } },
+-      { sessionID, noReply: true, parts: [{ type: "text", text }] },
++      client.session.synthetic.bind(client.session),
++      { sessionID, text },
+     )
+   } catch {}
+ }
+@@ -765,8 +721,6 @@ async function captureSessionExecutionContext(client, sessionID) {
+     try {
+       const info = await sdkCall(
+         client.session.get.bind(client.session),
+-        { path: { id: sessionID } },
+-        { path: { sessionID } },
+         { sessionID },
+       )
+       updateSessionExecutionContext(info)
+@@ -813,8 +767,30 @@ function updateSessionRelationship(info, removed = false) {
+ }
+ 
+ function updateSessionRelationshipFromEvent(event) {
+-  if (!["session.created", "session.updated", "session.deleted"].includes(event?.type)) return
+-  updateSessionRelationship(event?.properties?.info, event.type === "session.deleted")
++  if (event?.type === "session.created") {
++    const data = event?.data || {}
++    updateSessionRelationship({ id: data.sessionID, parentID: data.parentID, agent: data.agent, model: data.model })
++    return
++  }
++  if (event?.type === "session.deleted") {
++    updateSessionRelationship({ id: event?.data?.sessionID }, true)
++    return
++  }
++  if (event?.type === "session.agent.selected") {
++    const data = event?.data || {}
++    const previous = sessionExecutionContexts.get(data.sessionID) || {}
++    // Never let the tool-denied local command agent stick on the session
++    // context: its acknowledgement turn for a /loop command would otherwise
++    // become the agent of every scheduled iteration (see v0.5.17).
++    const agent = data.agent !== LOCAL_COMMAND_AGENT ? data.agent : previous.agent
++    sessionExecutionContexts.set(data.sessionID, { ...previous, agent })
++    return
++  }
++  if (event?.type === "session.model.selected") {
++    const data = event?.data || {}
++    const previous = sessionExecutionContexts.get(data.sessionID) || {}
++    sessionExecutionContexts.set(data.sessionID, { ...previous, model: normalizedModelRef(data.model) || previous.model })
++  }
+ }
+ 
+ function isDescendantSession(sessionID, ancestorID) {
+@@ -837,41 +813,19 @@ function hasBusyDescendant(sessionID) {
+   return false
+ }
+ 
+-async function refreshSessionRelationships(client, directory) {
+-  if (!client?.session?.list) return
+-  try {
+-    const sessions = await sdkCall(
+-      client.session.list.bind(client.session),
+-      { query: { directory } },
+-      { directory },
+-      {},
+-    )
+-    if (Array.isArray(sessions)) for (const info of sessions) updateSessionRelationship(info)
+-  } catch {}
+-}
++// The OpenCode 2 plugin API exposes session.get but no session.list, so
++// session relationships are built from session.created/session.deleted events
++// in updateSessionRelationshipFromEvent instead of an initial sweep.
+ 
+ function updateToolActivityFromEvent(event) {
+-  const props = event?.properties || {}
+-  if (event?.type === "message.part.updated") {
+-    const part = props.part
+-    if (part?.type !== "tool") return
+-    const sessionID = part.sessionID || props.sessionID
+-    if (["pending", "running"].includes(part.state?.status)) {
+-      markToolCallActive({ sessionID, callID: part.callID })
+-    }
+-    if (["completed", "error"].includes(part.state?.status)) {
+-      // Task/subagent hooks have used the part id as their hook call id in some
+-      // OpenCode versions, while normal tools use part.callID. Clear either.
+-      const identifiers = [...new Set([part.callID, part.id].filter((value) => typeof value === "string"))]
+-      for (const callID of identifiers) markToolCallFinished({ sessionID, callID })
+-    }
+-    return
+-  }
+-
+-  const started = ["session.next.shell.started", "session.next.tool.called"].includes(event?.type)
+-  const finished = ["session.next.shell.ended", "session.next.tool.success", "session.next.tool.failed"].includes(event?.type)
+-  if (started) markToolCallActive(props)
+-  if (finished) markToolCallFinished(props)
++  const data = event?.data || {}
++  const started = ["session.tool.called", "session.shell.started"].includes(event?.type)
++  const finished = ["session.tool.success", "session.tool.failed", "session.shell.ended"].includes(event?.type)
++  if (event?.type === "session.tool.called") markToolCallActive({ sessionID: data.sessionID, callID: data.id })
++  else if (event?.type === "session.shell.started") markToolCallActive({ sessionID: data.sessionID, callID: data.shell?.id })
++  else if (event?.type === "session.tool.success" || event?.type === "session.tool.failed") markToolCallFinished({ sessionID: data.sessionID, callID: data.id })
++  else if (event?.type === "session.shell.ended") markToolCallFinished({ sessionID: data.sessionID, callID: data.shell?.id })
++  else if (started || finished) markToolCallActive(data)
+ }
+ 
+ function startHeartbeat() {
+@@ -916,6 +870,8 @@ function disposeRuntime(directory, client) {
+     sessionStatuses.delete(sessionID)
+     sessionStatusSeenAt.delete(sessionID)
+     sessionExecutionContexts.delete(sessionID)
++    sessionExecutionCompletions.delete(sessionID)
++    sessionStepBounds.delete(sessionID)
+     loopCompactionRequests.delete(sessionID)
+     for (const key of handledCommands.keys()) if (key.startsWith(`${sessionID}:`)) handledCommands.delete(key)
+     for (const key of handledCommandEvents.keys()) if (key.startsWith(`${sessionID}:`)) handledCommandEvents.delete(key)
+@@ -1231,7 +1187,7 @@ async function createCheckpoint(directory, sessionID, job, client) {
+ }
+ 
+ function updateSessionStatusFromEvent(event) {
+-  const sessionID = event?.properties?.sessionID
++  const sessionID = event?.data?.sessionID
+   if (typeof sessionID !== "string") return undefined
+   if (event?.type === "session.idle") {
+     sessionStatuses.set(sessionID, "idle")
+@@ -1239,7 +1195,7 @@ function updateSessionStatusFromEvent(event) {
+     return { sessionID, idle: true }
+   }
+   if (event?.type === "session.status") {
+-    const status = event?.properties?.status
++    const status = event?.data?.status
+     const type = status && typeof status === "object" ? status.type : undefined
+     if (typeof type === "string") {
+       sessionStatuses.set(sessionID, type)
+@@ -1247,17 +1203,50 @@ function updateSessionStatusFromEvent(event) {
+     }
+     return { sessionID, idle: type === "idle" }
+   }
++  if (event?.type === "session.execution.started" || event?.type === "session.step.started") {
++    if (event?.type === "session.step.started") {
++      const previous = sessionStepBounds.get(sessionID) || {}
++      sessionStepBounds.set(sessionID, { ...previous, lastStartedAt: Number(event?.created) || now() })
++    }
++    sessionStatuses.set(sessionID, "busy")
++    sessionStatusSeenAt.set(sessionID, now())
++    return { sessionID, idle: false }
++  }
++  if (event?.type === "session.step.ended") {
++    const previous = sessionStepBounds.get(sessionID) || {}
++    sessionStepBounds.set(sessionID, { ...previous, lastEndedAt: Number(event?.created) || now() })
++    return undefined
++  }
++  if (event?.type === "session.execution.succeeded" || event?.type === "session.execution.failed" || event?.type === "session.execution.interrupted") {
++    sessionExecutionCompletions.set(sessionID, Number(event?.created) || now())
++    sessionStatuses.set(sessionID, "idle")
++    sessionStatusSeenAt.set(sessionID, now())
++    return { sessionID, idle: true }
++  }
+   return undefined
+ }
+ 
++// The OpenCode 2 plugin API exposes no session message history, so stale-run
++// recovery uses the execution/step lifecycle events instead: an execution that
++// succeeded after the run started is the definitive completion signal, and an
++// in-flight step (started but not ended) is the definitive still-running
++// signal that must never be force-finalized by a stale recovery.
++function activeRunCompletion(sessionID, active) {
++  const startedAt = Number(active?.startedAt || 0)
++  const lastCompletedAt = sessionExecutionCompletions.get(sessionID)
++  if (Number.isFinite(lastCompletedAt) && lastCompletedAt >= startedAt) return "completed"
++  const steps = sessionStepBounds.get(sessionID)
++  if (steps && steps.lastStartedAt > startedAt && steps.lastStartedAt > (steps.lastEndedAt || 0)) return "incomplete"
++  return "unknown"
++}
++
+ function userInterruptSessionFromEvent(event) {
+-  if (!["message.updated", "message.created"].includes(String(event?.type || ""))) return undefined
+-  const props = event?.properties || {}
+-  const info = props.info || props.message || props
+-  const role = info?.role
+-  const sessionID = info?.sessionID || props.sessionID
+-  const messageID = info?.id || props.messageID
+-  if (role !== "user" || typeof sessionID !== "string") return undefined
++  if (event?.type !== "session.input.admitted") return undefined
++  const data = event?.data || {}
++  const input = data.input
++  const sessionID = data.sessionID
++  if (input?.type !== "user" || typeof sessionID !== "string") return undefined
++  const messageID = data.inputID
+   if (loopOwnedUserMessageGuardActive(sessionID, messageID)) return undefined
+   return sessionID
+ }
+@@ -1298,7 +1287,7 @@ async function canFinalizeActiveRun(directory, client, sessionID, active, option
+   if (!options.requireIdle && !options.forceStale) return true
+ 
+   const completion = options.forceStale
+-    ? await activeRunCompletionFromMessages(directory, client, sessionID, active)
++    ? activeRunCompletion(sessionID, active)
+     : undefined
+   if (completion === "completed") return true
+   if (!options.requireIdle) return completion === "unknown" && staleActiveRun(sessionID)
+@@ -1317,37 +1306,12 @@ async function canFinalizeActiveRun(directory, client, sessionID, active, option
+ }
+ 
+ async function readLiveSessionStatus(client, sessionID, directory) {
+-  const argsList = []
+-  if (directory) argsList.push({ query: { directory } }, { directory }, { workspace: directory })
+-  argsList.push({})
+-  for (const args of argsList) {
+-    try {
+-      const result = await client.session.status(args)
+-      const error = sdkError(result)
+-      if (error) continue
+-      const data = sdkData(result)
+-      if (!data || typeof data !== "object" || Array.isArray(data)) continue
+-      const observedAt = now()
+-      for (const [observedSessionID, observedStatus] of Object.entries(data)) {
+-        const observedType = observedStatus && typeof observedStatus === "object" ? observedStatus.type : undefined
+-        if (typeof observedType !== "string") continue
+-        sessionStatuses.set(observedSessionID, observedType)
+-        sessionStatusSeenAt.set(observedSessionID, observedAt)
+-      }
+-      // OpenCode's status list contains active sessions; idle sessions are
+-      // normally omitted. Clear a completed descendant that was previously busy.
+-      for (const childID of sessionParents.keys()) {
+-        if (!isDescendantSession(childID, sessionID) || data[childID]) continue
+-        sessionStatuses.set(childID, "idle")
+-        sessionStatusSeenAt.set(childID, observedAt)
+-      }
+-      if (hasBusyDescendant(sessionID)) return { type: "busy", source: "descendant" }
+-      const status = data?.[sessionID]
+-      const type = status && typeof status === "object" ? status.type : undefined
+-      if (typeof type === "string") return { type, source: "sdk" }
+-      return { type: "idle", source: "sdk" }
+-    } catch {}
+-  }
++  // The OpenCode 2 plugin API exposes no session status probe (no
++  // session.status/list/active). Status is tracked from the event stream in
++  // sessionStatuses; return the freshest cached view.
++  const cached = sessionStatuses.get(sessionID)
++  const seenAt = sessionStatusSeenAt.get(sessionID) || 0
++  if (cached && now() - seenAt < SESSION_STATUS_CACHE_MS) return { type: cached, source: "cache" }
+   return undefined
+ }
+ 
+@@ -1374,18 +1338,16 @@ async function sessionStatusType(client, sessionID, directory, options = {}) {
+ 
+   const live = await readLiveSessionStatus(client, sessionID, directory)
+   if (live?.type) {
+-    // Some OpenCode 1.15.x TUI builds can leave session.status at busy after a
+-    // plugin-injected turn until the next user command touches the session.
+     // When the only reason we still think the session is busy is our own stale
+     // active-run guard, recover instead of waiting for another manual command.
+     if ((live.type === "busy" || live.type === "retry") && options.recoverStaleActive !== false) {
+       const active = activeRuns.get(sessionID)
+       if (active) {
+-        const completion = await activeRunCompletionFromMessages(directory, client, sessionID, active)
++        const completion = activeRunCompletion(sessionID, active)
+         if (completion === "completed" || (completion === "unknown" && staleActiveRun(sessionID))) {
+           sessionStatuses.set(sessionID, "idle")
+           sessionStatusSeenAt.set(sessionID, now())
+-          await appendLoopLog(directory, completion === "completed" ? "status-message-complete-recovery" : "status-stale-recovery", {
++          await appendLoopLog(directory, completion === "completed" ? "status-execution-complete-recovery" : "status-stale-recovery", {
+             sessionID,
+             job: active.job?.name || active.jobId,
+             startedAt: active.startedAt,
+@@ -1941,8 +1903,7 @@ async function fireAction(directory, client, sessionID, job) {
+       await toast(client, "Loop command action is empty. Example: /loop-command 200m /compact", "warning")
+       return { startsAssistantTurn: false, pause: true, reason: "empty_command" }
+     }
+-    const tuiCommand = compactTuiCommandName(command)
+-    if (tuiCommand) {
++    if (command === "compact" || command === "summarize") {
+       guardLoopOwnedUserMessage(sessionID)
+       beginLoopCompaction(sessionID, job.id, false)
+       const ok = await compactSession(directory, client, sessionID, model)
+@@ -1950,15 +1911,13 @@ async function fireAction(directory, client, sessionID, job) {
+       return { startsAssistantTurn: ok, pause: !ok, reason: "compact_failed", compaction: ok }
+     }
+     guardLoopOwnedUserMessage(sessionID)
+-    const commandBody = { command, arguments: argumentsText, agent }
+-    if (model) commandBody.model = `${model.providerID}/${model.modelID}`
+-    await sdkCall(
++    const dispatch = fireSdk(
++      client,
++      "session.command",
+       client.session.command.bind(client.session),
+-      { path: { id: sessionID }, body: commandBody },
+-      { path: { sessionID }, body: commandBody },
+-      { sessionID, ...commandBody },
++      { sessionID, command, arguments: argumentsText, agent, model },
+     )
+-    return { startsAssistantTurn: true }
++    return { startsAssistantTurn: true, dispatch }
+   }
+   if (kind === "shell") {
+     const command = action.replace(/^[!$]\s*/, "").trim()
+@@ -1968,17 +1927,28 @@ async function fireAction(directory, client, sessionID, job) {
+       return { startsAssistantTurn: false, pause: true, reason: "safe_shell_blocked" }
+     }
+     guardLoopOwnedUserMessage(sessionID)
+-    const shellBody = { command, agent }
+-    if (model) shellBody.model = model
+-    const dispatch = fireSdk(
+-      client,
+-      "session.shell",
+-      client.session.shell.bind(client.session),
+-      { path: { id: sessionID }, body: shellBody },
+-      { path: { sessionID }, body: shellBody },
+-      { sessionID, ...shellBody },
+-    )
+-    return { startsAssistantTurn: true, dispatch }
++    if (client.session.shell) {
++      const dispatch = fireSdk(
++        client,
++        "session.shell",
++        client.session.shell.bind(client.session),
++        { sessionID, command },
++      )
++      return { startsAssistantTurn: true, dispatch }
++    }
++    // The OpenCode 2 plugin API does not expose session.shell; run the command
++    // directly. The result is logged and surfaced to the next loop prompt via
++    // the failure counters rather than becoming a model-visible shell turn.
++    const shellResult = await runShellCommand(command, directory, job.timeoutMs || 120_000)
++    await appendLoopLog(directory, "shell-direct", { sessionID, job: job.name || job.id, command, code: shellResult.code })
++    if (shellResult.code !== 0) {
++      job.failureCount = (job.failureCount || 0) + 1
++      job.lastShellFailure = (command + "\nexit=" + shellResult.code + "\n" + shellResult.stdout + "\n" + shellResult.stderr).slice(0, 4000)
++      const shellState = await readState(directory, sessionID)
++      shellState.jobs = (shellState.jobs || []).map((candidate) => candidate.id === job.id ? job : candidate)
++      await writeState(directory, sessionID, shellState)
++    }
++    return { startsAssistantTurn: false }
+   }
+   const prompt = await buildPrompt(directory, job)
+   const prefix = kind === "goal"
+@@ -1988,15 +1958,11 @@ async function fireAction(directory, client, sessionID, job) {
+ 
+ ${prompt}`
+   guardLoopOwnedUserMessage(sessionID)
+-  const promptBody = { agent, parts: [{ type: "text", text: promptText }] }
+-  if (model) promptBody.model = model
+   const dispatch = fireSdk(
+     client,
+     "session.prompt",
+     client.session.prompt.bind(client.session),
+-    { path: { id: sessionID }, body: promptBody },
+-    { path: { sessionID }, body: promptBody },
+-    { sessionID, ...promptBody },
++    { sessionID, text: promptText },
+   )
+   return { startsAssistantTurn: true, dispatch }
+ }
+@@ -2097,7 +2063,7 @@ async function maybeRunDueJobs(directory, client, sessionID, options = {}) {
+       state.jobs = (state.jobs || []).map((candidate) => candidate.id === job.id ? job : candidate)
+       await writeState(directory, sessionID, state)
+       let timer
+-      if (job.timeoutMs > 0) timer = setTimeout(() => { fireSdk(client, "session.abort", client.session.abort.bind(client.session), { path: { id: sessionID }, body: {} }, { path: { sessionID }, body: {} }, { sessionID }); toast(client, `Loop compact timeout fired: ${job.name || job.id}`, "warning").catch(() => {}) }, job.timeoutMs)
++      if (job.timeoutMs > 0) timer = setTimeout(() => { fireSdk(client, "session.interrupt", client.session.abort.bind(client.session), { sessionID }); toast(client, `Loop compact timeout fired: ${job.name || job.id}`, "warning").catch(() => {}) }, job.timeoutMs)
+       const runToken = `${job.id}:compact:${now().toString(36)}:${Math.random().toString(16).slice(2)}`
+       activeRuns.set(sessionID, { jobId: job.id, job, startedAt: now(), timer, runToken, compactionOnly: true })
+       const pending = loopCompactionRequests.get(sessionID)
+@@ -2140,7 +2106,7 @@ async function maybeRunDueJobs(directory, client, sessionID, options = {}) {
+         return
+       }
+       let timer
+-      if (job.timeoutMs > 0) timer = setTimeout(() => { fireSdk(client, "session.abort", client.session.abort.bind(client.session), { path: { id: sessionID }, body: {} }, { path: { sessionID }, body: {} }, { sessionID }); toast(client, `Loop timeout fired: ${job.name || job.id}`, "warning").catch(() => {}) }, job.timeoutMs)
++      if (job.timeoutMs > 0) timer = setTimeout(() => { fireSdk(client, "session.interrupt", client.session.abort.bind(client.session), { sessionID }); toast(client, `Loop timeout fired: ${job.name || job.id}`, "warning").catch(() => {}) }, job.timeoutMs)
+       const runToken = `${job.id}:${now().toString(36)}:${Math.random().toString(16).slice(2)}`
+       activeRuns.set(sessionID, { jobId: job.id, job, startedAt: now(), timer, runToken, compactionAction: result.compaction === true })
+       if (result.compaction) {
+@@ -2388,12 +2354,15 @@ async function runNow(directory, client, sessionID, args) {
+ 
+ async function doctorLoop(directory, client, sessionID) {
+   const state = await readState(directory, sessionID)
++  const appVersion = client?.app?.version ? ` (${client.app.version}${client.app.channel ? " " + client.app.channel : ""})` : ""
+   await say(client, sessionID, [
+     "OpenCode Loop doctor:",
+-    `- plugin: ${SERVICE}`,
++    `- plugin: ${SERVICE} (OpenCode 2 plugin API)`,
++    `- host: ${client?.app?.name || "unknown"}${appVersion}`,
+     `- project directory: ${directory}`,
+     `- state directory: ${stateDir(directory)}`,
+     `- active jobs: ${(state.jobs || []).length}`,
++    "- V2 plugin API limits: session.compact, session shell execution, per-run agent/model and toasts are not exposed; compact loops and --agent/--model fall back to loop.log diagnostics",
+     `- node: ${process.version}`,
+     `- platform: ${process.platform}`,
+     "- smoke test: /loop 0s --max-runs 1 --dry-run continue from progress.md",
+@@ -2468,79 +2437,155 @@ async function handleCommand(directory, client, input, fallbackName, fallbackArg
+   return false
+ }
+ 
+-function goalTools(defaultDirectory) {
+-  return {
+-    opencode_loop_goal_complete: tool({
++function goalTools(client) {
++  return [
++    {
++      name: "opencode_loop_goal_complete",
+       description: "Mark the current OpenCode Loop experimental goal as completed. Use only after acceptance criteria are satisfied and you have evidence from tests, typecheck, build, or code inspection.",
+-      args: {
+-        summary: tool.schema.string().describe("Short human-readable summary of what was completed."),
+-        evidence: tool.schema.string().describe("Concrete evidence that the goal is complete, such as commands run, passing checks, files changed, and important results."),
++      input: {
++        type: "object",
++        properties: {
++          summary: { type: "string", description: "Short human-readable summary of what was completed." },
++          evidence: { type: "string", description: "Concrete evidence that the goal is complete, such as commands run, passing checks, files changed, and important results." },
++        },
++        required: ["summary", "evidence"],
++        additionalProperties: false,
+       },
+       execute: async (args, context) => {
+-        const result = await setGoalComplete(context.directory || defaultDirectory, context.sessionID, args)
+-        return { title: result.ok ? "Goal completed" : result.rejected ? "Goal completion rejected" : "Goal not found", output: result.message }
++        const directory = await sessionDirectory(client, context?.sessionID)
++        const result = await setGoalComplete(directory, context?.sessionID, args)
++        return {
++          content: result.message,
++          metadata: { title: result.ok ? "Goal completed" : result.rejected ? "Goal completion rejected" : "Goal not found" },
++        }
+       },
+-    }),
+-    opencode_loop_goal_blocked: tool({
++    },
++    {
++      name: "opencode_loop_goal_blocked",
+       description: "Mark the current OpenCode Loop experimental goal as blocked when user input or manual intervention is required.",
+-      args: {
+-        reason: tool.schema.string().describe("Why the goal is blocked."),
+-        needed: tool.schema.string().describe("What user input, credential, decision, or manual action is needed to continue."),
++      input: {
++        type: "object",
++        properties: {
++          reason: { type: "string", description: "Why the goal is blocked." },
++          needed: { type: "string", description: "What user input, credential, decision, or manual action is needed to continue." },
++        },
++        required: ["reason", "needed"],
++        additionalProperties: false,
+       },
+       execute: async (args, context) => {
+-        const result = await setGoalBlocked(context.directory || defaultDirectory, context.sessionID, args)
+-        return { title: result.ok ? "Goal blocked" : "Goal not found", output: result.message }
++        const directory = await sessionDirectory(client, context?.sessionID)
++        const result = await setGoalBlocked(directory, context?.sessionID, args)
++        return {
++          content: result.message,
++          metadata: { title: result.ok ? "Goal blocked" : "Goal not found" },
++        }
+       },
+-    }),
+-    opencode_loop_goal_progress: tool({
++    },
++    {
++      name: "opencode_loop_goal_progress",
+       description: "Record meaningful progress on the current OpenCode Loop experimental goal without completing it.",
+-      args: {
+-        summary: tool.schema.string().describe("What useful progress was made."),
+-        next: tool.schema.string().describe("The next step toward completing the goal."),
++      input: {
++        type: "object",
++        properties: {
++          summary: { type: "string", description: "What useful progress was made." },
++          next: { type: "string", description: "The next step toward completing the goal." },
++        },
++        required: ["summary", "next"],
++        additionalProperties: false,
+       },
+       execute: async (args, context) => {
+-        const result = await setGoalProgress(context.directory || defaultDirectory, context.sessionID, args)
+-        return { title: result.ok ? "Goal progress" : "Goal not found", output: result.message }
++        const directory = await sessionDirectory(client, context?.sessionID)
++        const result = await setGoalProgress(directory, context?.sessionID, args)
++        return {
++          content: result.message,
++          metadata: { title: result.ok ? "Goal progress" : "Goal not found" },
++        }
+       },
+-    }),
+-  }
+-}
+-
+-export const OpenCodeLoopPlugin = async ({ client, directory }) => {
+-  // OpenCode's local SDK can be slow or unavailable while a project instance
+-  // is still waiting for its plugins to return their hooks. Defer bootstrap
+-  // calls so headless/server sessions cannot deadlock during plugin loading.
+-  const bootstrap = setTimeout(() => {
+-    log(client, "info", "Plugin initialized", { directory }).catch(() => {})
+-    refreshSessionRelationships(client, directory).catch(() => {})
+-  }, 0)
+-  bootstrap.unref?.()
+-  return {
+-    dispose: async () => { disposeRuntime(directory, client) },
+-    tool: goalTools(directory),
+-    "command.execute.before": async (input, output) => { await handleCommand(directory, client, input, undefined, undefined, output) },
+-    "tool.execute.before": async (input) => { markToolCallActive(input) },
+-    "tool.execute.after": async (input) => { markToolCallFinished(input) },
+-    "experimental.session.compacting": async (input) => { await noteLoopCompactionStarted(directory, input?.sessionID) },
+-    event: async ({ event }) => {
+-      if (event.type === "session.compacted") await noteLoopCompactionCompleted(directory, client, event?.properties?.sessionID)
+-      updateSessionRelationshipFromEvent(event)
+-      if (event.type === "message.updated") updateSessionExecutionContext(event?.properties?.info)
+-      updateToolActivityFromEvent(event)
+-      if (event.type === "command.executed") {
+-        const props = event.properties || {}
+-        await handleCommand(directory, client, props, props.name, props.arguments, undefined, "event")
+-      }
+-      const interruptedSessionID = userInterruptSessionFromEvent(event)
+-      if (interruptedSessionID) {
+-        rememberSession(directory, client, interruptedSessionID)
+-        await pauseGoalsForUserInterrupt(directory, client, interruptedSessionID)
+-      }
+-      const statusUpdate = updateSessionStatusFromEvent(event)
+-      if (statusUpdate?.sessionID) rememberSession(directory, client, statusUpdate.sessionID)
+-      if (statusUpdate?.idle) scheduleIdleWork(directory, client, statusUpdate.sessionID)
+     },
+-  }
+-}
++  ]
++}
++
++// OpenCode 2 (beta) plugin entrypoint. The V1 plugin API (client + directory
++// arguments, command.execute.before / tool hooks) does not exist in V2; this
++// port uses the V2 plugin API surface: Plugin.define, ctx.session.* actions,
++// ctx.tool.transform for the goal tools, ctx.tool.hook for tool lifecycle and
++// ctx.event.subscribe for the event stream. Slash commands are intercepted
++// through session.input.admitted events: the command markdown templates render
++// to a "[opencode-loop:<name>] <args>" line, the plugin handles the command,
++// and the tool-denied opencode-loop-local agent keeps the acknowledgement turn
++// cheap. The V2 plugin context exposes no toast/app.log/session status or
++// history reads, so diagnostics and notices go to .opencode/opencode-loop/
++// loop.log instead.
++function commandFromAdmittedInput(event) {
++  if (event?.type !== "session.input.admitted") return undefined
++  const data = event?.data || {}
++  const input = data.input
++  const text = input?.type === "user" ? String(input?.data?.text || "") : ""
++  if (!text.startsWith(COMMAND_MARKER)) return undefined
++  const match = text.match(/^\[opencode-loop:([\w-]+)\]\s*([\s\S]*)$/)
++  if (!match) return undefined
++  return { sessionID: data.sessionID, name: match[1], args: (match[2] || "").trim(), inputID: data.inputID }
++}
++
++// The single event-dispatch path shared by the live event subscription and the
++// tests. Loop commands are handled before the user-interrupt check so the
++// plugin's own guard marks their acknowledgement turns as loop-owned input.
++export async function dispatchEvent(client, event) {
++  if (!event || typeof event !== "object") return
++  const directory = await sessionDirectory(client, event?.data?.sessionID, event?.location)
++  if (event.type === "session.compaction.ended") {
++    await noteLoopCompactionCompleted(directory, client, event?.data?.sessionID)
++  }
++  if (event.type === "session.compaction.started") {
++    await noteLoopCompactionStarted(directory, event?.data?.sessionID)
++  }
++  updateSessionRelationshipFromEvent(event)
++  updateToolActivityFromEvent(event)
++
++  const admittedCommand = commandFromAdmittedInput(event)
++  if (admittedCommand?.sessionID && isLoopCommandName(admittedCommand.name)) {
++    await handleCommand(directory, client, { sessionID: admittedCommand.sessionID, command: admittedCommand.name, arguments: admittedCommand.args, messageID: admittedCommand.inputID }, undefined, undefined, undefined, "event")
++  }
++
++  const interruptedSessionID = userInterruptSessionFromEvent(event)
++  if (interruptedSessionID) {
++    rememberSession(directory, client, interruptedSessionID)
++    await pauseGoalsForUserInterrupt(directory, client, interruptedSessionID)
++  }
++
++  const statusUpdate = updateSessionStatusFromEvent(event)
++  if (statusUpdate?.sessionID) rememberSession(directory, client, statusUpdate.sessionID)
++  if (statusUpdate?.idle) scheduleIdleWork(directory, client, statusUpdate.sessionID)
++}
++
++export default Plugin.define({
++  id: PLUGIN_ID,
++  setup: async (ctx) => {
++    const client = makeClient(ctx)
++    const abort = new AbortController()
++
++    await ctx.tool.transform((tools) => {
++      for (const tool of goalTools(client)) tools.add(tool)
++    })
++    await ctx.tool.hook("execute.before", (input) => { markToolCallActive({ sessionID: input?.sessionID, callID: input?.id }) })
++    await ctx.tool.hook("execute.after", (input) => { markToolCallFinished({ sessionID: input?.sessionID, callID: input?.id }) })
++
++    const eventLoop = (async () => {
++      for await (const event of ctx.event.subscribe({ signal: abort.signal })) {
++        try {
++          await dispatchEvent(client, event)
++        } catch (error) {
++          await appendLoopLog(defaultDirectory || process.cwd(), "event-error", { type: event?.type, error: sdkErrorMessage(error) }).catch(() => {})
++        }
++      }
++    })()
++
++    log(client, "info", `Plugin initialized (OpenCode 2 plugin API, ${ctx.app?.version || "unknown"})`, {}).catch(() => {})
+ 
+-export default OpenCodeLoopPlugin
++    return async () => {
++      abort.abort()
++      try { await eventLoop } catch {}
++      disposeRuntime(defaultDirectory || process.cwd(), client)
++    }
++  },
++})

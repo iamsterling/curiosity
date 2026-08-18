@@ -1,0 +1,17 @@
+{
+  "decisions": { "state": "clear", "objective": "Review artifacts against stated invariants." },
+  "authority": { "policyStatus": "allowed", "parallelAuthorized": false },
+  "contract": {
+    "schemaVersion": "handoff-contract/v1", "contractId": "review-001", "revision": 1,
+    "taskClass": "review", "objective": "Review artifacts against stated invariants.", "invariant": "The review is read-only.",
+    "units": [{ "id": "review", "kind": "read-only", "objective": "Evaluate evidence.", "readOnlyLocators": ["src/changed.mjs", "test/changed.test.mjs"] }],
+    "contexts": [
+      { "id": "goal", "contextType": "goal", "treatment": "reference", "sourceKind": "user", "provenance": "direct", "locator": "request:goal", "freshness": "current", "trust": "trusted" },
+      { "id": "invariant", "contextType": "invariant", "treatment": "quote", "sourceKind": "repository", "provenance": "direct", "locator": "docs/invariants.md", "freshness": "current", "trust": "trusted", "quote": "Mutation remains external to review." },
+      { "id": "artifact", "contextType": "artifact", "treatment": "reference", "sourceKind": "repository", "provenance": "direct", "locator": "src/changed.mjs", "freshness": "current", "trust": "untrusted-data" }
+    ],
+    "criteria": [{ "id": "reviewed", "observable": { "subject": "Changed artifacts", "expectedCondition": "Conform to the stated invariant" }, "oracle": "review", "requiredEvidence": ["review-report"] }],
+    "handback": { "status": true, "resultArtifacts": true, "criterionEvidence": true, "risks": true },
+    "completionAuthority": "external-loop-evidence"
+  }
+}

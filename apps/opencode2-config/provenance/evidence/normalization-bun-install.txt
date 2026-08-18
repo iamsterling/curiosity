@@ -1,0 +1,6 @@
+bun install v1.3.14 (0d9b296a)
+Saved lockfile
+
++ @opencode-ai/plugin@0.0.0-next-17125
+
+101 packages installed [1.86s]

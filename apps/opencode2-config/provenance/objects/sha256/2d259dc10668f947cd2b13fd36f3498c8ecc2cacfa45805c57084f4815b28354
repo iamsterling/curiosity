@@ -1,0 +1,69 @@
+{
+  "name": "@bybrawe/opencode-loop",
+  "version": "0.6.0",
+  "description": "Claude Code/Codex style /loop and experimental goal mode for OpenCode 2 (beta): idle-safe loops, scheduled prompts, checkpoints, and persistent coding goals.",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "src",
+    "commands",
+    "agents",
+    "scripts",
+    "examples",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "check": "node --check src/index.js && node --check scripts/install-node.mjs && node --check scripts/loopd.mjs && node --check scripts/install-test.mjs && node --check scripts/loopd-test.mjs && node --check scripts/smoke-test.mjs && node --check scripts/comprehensive-test.mjs",
+    "test": "node scripts/install-test.mjs && node scripts/loopd-test.mjs && node scripts/smoke-test.mjs && node scripts/comprehensive-test.mjs",
+    "install:global": "node scripts/install-node.mjs",
+    "pack:zip": "node scripts/make-zip.mjs"
+  },
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "opencode-loop",
+    "claude-code",
+    "claude-code-loop",
+    "loop",
+    "auto-continue",
+    "autonomous-coding",
+    "ai-coding-agent",
+    "compact",
+    "checkpoint",
+    "scheduler",
+    "progress-md",
+    "todo-automation",
+    "ralph-loop",
+    "daemon",
+    "background-runner",
+    "windows-task-scheduler"
+  ],
+  "author": "ByBrawe",
+  "license": "MIT",
+  "homepage": "https://github.com/ByBrawe/opencode-loop#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ByBrawe/opencode-loop.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ByBrawe/opencode-loop/issues"
+  },
+  "peerDependencies": {
+    "@opencode-ai/plugin": "next"
+  },
+  "devDependencies": {
+    "@opencode-ai/plugin": "next"
+  },
+  "bin": {
+    "opencode-loop": "scripts/install-node.mjs",
+    "opencode-loopd": "scripts/loopd.mjs"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

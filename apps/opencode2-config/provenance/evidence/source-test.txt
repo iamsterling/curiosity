@@ -1,0 +1,8 @@
+
+> @bybrawe/opencode-loop@0.6.0 test
+> node scripts/install-test.mjs && node scripts/loopd-test.mjs && node scripts/smoke-test.mjs && node scripts/comprehensive-test.mjs
+
+OpenCode Loop installer test passed
+OpenCode Loop daemon test passed
+OpenCode 2 Loop smoke test passed
+OpenCode 2 Loop comprehensive test passed
