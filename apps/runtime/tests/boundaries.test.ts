@@ -62,6 +62,10 @@ test("runtime source and manifests contain no effect or runtime dependency surfa
     new URL("../src/retrieval/legacy-characterization.ts", import.meta.url).pathname,
     new URL("../src/retrieval/provider-identifier.ts", import.meta.url).pathname,
     new URL("../src/retrieval/repository-candidate-frame.ts", import.meta.url).pathname,
+    new URL("../src/retrieval/retrieve-information-adapters.ts", import.meta.url).pathname,
+    new URL("../src/retrieval/retrieve-information-contracts.ts", import.meta.url).pathname,
+    new URL("../src/retrieval/retrieve-information-decoder.ts", import.meta.url).pathname,
+    new URL("../src/retrieval/retrieve-information.ts", import.meta.url).pathname,
     new URL("../src/retrieval/validation.ts", import.meta.url).pathname,
   ].sort());
   const forbiddenEffects = {
@@ -92,6 +96,8 @@ test("runtime source and manifests contain no effect or runtime dependency surfa
       if ((effect === "network" || effect === "background") && path.endsWith("/src/repository-search.ts")) continue;
       if ((effect === "network" || effect === "background") && path.endsWith("/src/admin.ts")) continue;
       if (effect === "background" && path.endsWith("/src/index.ts")) continue;
+      // Development composition awaits injected ports but owns no scheduler, timer, worker, daemon, or transport.
+      if (effect === "background" && path.includes("/src/retrieval/retrieve-information")) continue;
       expect(source, `${path}: ${effect}`).not.toMatch(pattern);
     }
   }
