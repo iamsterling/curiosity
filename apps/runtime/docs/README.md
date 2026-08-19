@@ -28,6 +28,13 @@
 - **Proposed:** [ADR 0021: stage an owned public-web search plane](decisions/0021-owned-public-web-search.md)
 - **Proposed:** [ADR 0022: installable local-first search runtime](decisions/0022-installable-search-runtime.md)
 - **Accepted (design only; not implementation authority):** [ADR 0041: unified retrieval and validated memory evidence substrate](decisions/0041-unified-retrieval-memory-evidence-substrate.md)
+- **Proposed:** [ADR 0043: Curiosity Retrieval bounded contexts and contracts](decisions/0043-curiosity-retrieval-bounded-contexts-and-contracts.md)
+- **Proposed:** [ADR 0044: source surfaces, connectors, and retrieval modes](decisions/0044-source-surfaces-connectors-and-retrieval-modes.md)
+- **Proposed:** [ADR 0045: epistemic records and bitemporal memory](decisions/0045-epistemic-records-and-bitemporal-memory.md)
+- **Proposed:** [ADR 0046: retrieval authority, security, and MCP boundary](decisions/0046-retrieval-authority-security-and-mcp-boundary.md)
+- **Proposed:** [ADR 0047: investigation, ranking, and stopping semantics](decisions/0047-investigation-ranking-and-stopping-semantics.md)
+- **Proposed:** [ADR 0048: retrieval migration, topology, and qualification](decisions/0048-retrieval-migration-topology-and-qualification.md)
+- **Accepted (narrow reversible internal-contract implementation only; production NO-GO):** [ADR 0049: reversible Curiosity Retrieval contract tranche](decisions/0049-reversible-retrieval-contract-tranche.md)
 - **Moved / Accepted at canonical location:** [ADR 0024: durable Ledger v2 and
   capture authority](../../plugin/opencode2/docs/decisions/0024-durable-ledger-v2-and-capture-authority.md)
   ([provenance stub](decisions/moved-durable-ledger-v2-and-capture-authority.md))
@@ -48,7 +55,8 @@ public deployment, M5-live, M6-crawl, generic fetch/public crawl, publication,
 signing, notarization, and all other platforms remain NO-GO.
 ADR 0041 and canonical plugin ADR 0024 add accepted unified-substrate and Ledger
 durability designs only; they do not widen those implementation or production
-authorities.
+authorities. ADR 0049 authorizes only its enumerated internal contract/fixture
+tranche and does not accept ADRs 0043–0048 generally.
 
 ## Research
 

@@ -55,6 +55,14 @@ test("runtime source and manifests contain no effect or runtime dependency surfa
     new URL("../src/query.d.ts", import.meta.url).pathname,
     new URL("../src/query.ts", import.meta.url).pathname,
     new URL("../src/repository-search.ts", import.meta.url).pathname,
+    new URL("../src/retrieval/contracts.ts", import.meta.url).pathname,
+    new URL("../src/retrieval/decoders.ts", import.meta.url).pathname,
+    new URL("../src/retrieval/extension-decoder.ts", import.meta.url).pathname,
+    new URL("../src/retrieval/index.ts", import.meta.url).pathname,
+    new URL("../src/retrieval/legacy-characterization.ts", import.meta.url).pathname,
+    new URL("../src/retrieval/provider-identifier.ts", import.meta.url).pathname,
+    new URL("../src/retrieval/repository-candidate-frame.ts", import.meta.url).pathname,
+    new URL("../src/retrieval/validation.ts", import.meta.url).pathname,
   ].sort());
   const forbiddenEffects = {
     network: new RegExp(`${networkModules.source}|std::net|\\bfetch\\s*\\(|WebSocket|TcpStream|UdpSocket|Bun\\.(?:serve|connect|listen|udpSocket)|connect\\s*\\(|listen\\s*\\(`),

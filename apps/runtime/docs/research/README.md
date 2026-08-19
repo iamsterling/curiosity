@@ -22,6 +22,10 @@ dates, methods, and uncertainty.
 
 ## Current dossier
 
+- [Existing retrieval and memory systems: reverse-engineering record
+  (2026-08-18)](reverse-engineering-retrieval-memory-systems-2026-08-18.md)
+  maps the current runtime, capture, Ledger, evidence, and reasoning-adjacent
+  boundaries without authorizing implementation or production persistence.
 - [DeepSeek Harness lessons for a complementary runtime
   (2026-08-17)](deepseek-harness-companion-runtime-boundary-2026-08-17.md)
   identifies the official developer-preview artifact and `rc.7` release, then
