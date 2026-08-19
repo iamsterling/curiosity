@@ -1,0 +1,6 @@
+capture_digest=ba65eaf3c1d8b3d0502daf5a301a89f7a7e2e88a6c5cae0b4964b928d4c3b45d
+receipt_id=fixture-receipt-plain-v1
+anchor_ref=fixture-anchor-plain-v1
+authority_ref=plugin-adr0024-fixture-authority-v1
+nonce=fixture-nonce-plain-v1
+proof_digest=a6acd087d63feda695b09f695e0bf97a6aeec33063b9745aced7b9afd666f5ca

@@ -59,8 +59,9 @@ fixture, or black-box compatibility experiment was run.
 ### 1.2 Evidence baseline
 
 - The latest published rustdoc visible on the access date was **Tantivy 0.26.1,
-  released 2026-07-10**, at tag commit
-  `0093923d94157d9f1f63a292bb504bb8db401f2a` [S3][S4].
+  released 2026-07-10**. Annotated tag object
+  `0093923d94157d9f1f63a292bb504bb8db401f2a` peels to release commit
+  `d8f4c0b703120ed98f06297724dc1522df6019b9` [S3][S4].
 - The official `main` branch inspected clean-room was commit
   `039a72958e8a2803cd30ad9ab71da990bf121833`; its manifest says `0.27.0`, so it
   is treated as **unreleased forward evidence**, not as 0.26.1 behavior [S5].
@@ -125,14 +126,14 @@ facet, bytes, and JSON [S8].
 
 For one logical value, the flags select different physical products:
 
-| Choice | Physical/use consequence |
-| --- | --- |
-| Indexed | Term dictionary + postings; searchable without scanning all rows. |
-| `Basic` | Doc IDs only; enough for membership/filtering, not term-frequency scoring. |
-| `WithFreqs` | Adds per-document term frequency; supports BM25 term saturation. |
-| `WithFreqsAndPositions` | Adds positions; enables phrase/proximity behavior at extra space/I/O cost. |
-| Stored | Value enters the compressed row store and can be reconstructed after selection. |
-| Fast | Value enters columnar random-access storage for sort, scoring features, aggregation, facets, and some filters. |
+| Choice                  | Physical/use consequence                                                                                       |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Indexed                 | Term dictionary + postings; searchable without scanning all rows.                                              |
+| `Basic`                 | Doc IDs only; enough for membership/filtering, not term-frequency scoring.                                     |
+| `WithFreqs`             | Adds per-document term frequency; supports BM25 term saturation.                                               |
+| `WithFreqsAndPositions` | Adds positions; enables phrase/proximity behavior at extra space/I/O cost.                                     |
+| Stored                  | Value enters the compressed row store and can be reconstructed after selection.                                |
+| Fast                    | Value enters columnar random-access storage for sort, scoring features, aggregation, facets, and some filters. |
 
 **FACT (high):** `STORED` does not make a field searchable, and `FAST` is not an
 inverted index. The docs warn that some queries can scan an unindexed fast field,
@@ -187,15 +188,15 @@ search fields from one immutable capture, each with derivation provenance [S6].
 **FACT (high):** a segment is independently searchable and identified by UUID.
 Current **MAIN** source maps built-in components to separate files [S11]:
 
-| Component | Suffix | Purpose |
-| --- | --- | --- |
-| Terms | `.term` | Per-field dictionary from serialized term to `TermInfo`. |
-| Postings | `.idx` | Sorted doc-ID lists and optional term frequencies/skip data. |
-| Positions | `.pos` | Optional term-position deltas. |
-| Fast fields | `.fast` | Column-oriented random access. |
-| Field norms | `.fieldnorm` | Compressed field lengths used by scoring. |
-| Store | `.store` | Compressed row-oriented stored fields. |
-| Delete generation | `.<opstamp>.del` | Alive-doc bitset for a segment generation. |
+| Component         | Suffix           | Purpose                                                      |
+| ----------------- | ---------------- | ------------------------------------------------------------ |
+| Terms             | `.term`          | Per-field dictionary from serialized term to `TermInfo`.     |
+| Postings          | `.idx`           | Sorted doc-ID lists and optional term frequencies/skip data. |
+| Positions         | `.pos`           | Optional term-position deltas.                               |
+| Fast fields       | `.fast`          | Column-oriented random access.                               |
+| Field norms       | `.fieldnorm`     | Compressed field lengths used by scoring.                    |
+| Store             | `.store`         | Compressed row-oriented stored fields.                       |
+| Delete generation | `.<opstamp>.del` | Alive-doc bitset for a segment generation.                   |
 
 The segment-local `DocId` is a compact `u32` assigned in ingestion order unless
 index sorting/merge mapping intervenes; an index-level `DocAddress` is segment
@@ -549,25 +550,25 @@ long-term provenance store.
 
 ## 10. Curiosity decision ledger
 
-| Concept | Verdict | Curiosity adaptation |
-| --- | --- | --- |
-| Strict, typed field schema | **ADOPT** | Version schema as a physical build contract; separate exact, analyzed, temporal, provenance, and policy fields. |
-| Named analyzer registry only | **ADAPT** | Persist content-addressed analyzer definitions and migration lineage, not mutable names alone. |
-| Immutable independent segments | **ADOPT** | Build immutable, checksummed lexical components from a durable document/version log. |
-| Small atomic manifest | **ADOPT** | Manifest includes snapshot, source watermark, schema/analyzer/ranker versions, checksums, and rollback parent. |
-| Segment-local compact IDs | **ADOPT internally** | Never expose them as document/citation IDs. |
-| Indexed/stored/fast separation | **ADOPT** | Postings for candidate generation, columns for selected features, bounded serving projection for result hydration. |
-| Optional freqs/positions | **ADOPT** | Enable by evaluated field/query class; preserve an exact-field lane. |
-| Query/Weight/Scorer/Collector split | **ADAPT** | Separate query-global statistics, segment-local cursors, and bounded result reducers with traceable plans. |
-| Fixed Tantivy BM25 | **ADAPT** | Begin with independently specified deterministic BM25; version parameters/statistics and test deletion/merge effects. |
-| Block-max dynamic pruning | **DEFER** | Add only after exhaustive-equivalence tests and profiling show top-K value. |
-| One writer, many snapshot readers | **ADOPT** | Single publication authority per shard; lock-free/low-lock immutable readers with snapshot IDs and leases. |
-| Commit-gated visibility | **ADOPT** | Make durable publication and reader-observed watermark explicit; supply read-after-commit waiting. |
-| Term tombstones/alive bitsets | **ADAPT** | Stable-ID and policy tombstone overlay with immediate serving exclusion; compact later. |
-| Similar-size background merge | **ADAPT** | Tune from Curiosity workload and disk/latency gates; do not copy defaults. |
-| Search store as source of truth | **REJECT** | Captures and extracted versions remain authoritative outside the reconstructable index. |
-| Tantivy crate in owned core | **REJECT** under ADR 0021 | May remain an external benchmark oracle only on approved fixtures. |
-| Tantivy file-format compatibility | **REJECT/DEFER** | No requirement or clean-room value established. |
+| Concept                             | Verdict                   | Curiosity adaptation                                                                                                  |
+| ----------------------------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Strict, typed field schema          | **ADOPT**                 | Version schema as a physical build contract; separate exact, analyzed, temporal, provenance, and policy fields.       |
+| Named analyzer registry only        | **ADAPT**                 | Persist content-addressed analyzer definitions and migration lineage, not mutable names alone.                        |
+| Immutable independent segments      | **ADOPT**                 | Build immutable, checksummed lexical components from a durable document/version log.                                  |
+| Small atomic manifest               | **ADOPT**                 | Manifest includes snapshot, source watermark, schema/analyzer/ranker versions, checksums, and rollback parent.        |
+| Segment-local compact IDs           | **ADOPT internally**      | Never expose them as document/citation IDs.                                                                           |
+| Indexed/stored/fast separation      | **ADOPT**                 | Postings for candidate generation, columns for selected features, bounded serving projection for result hydration.    |
+| Optional freqs/positions            | **ADOPT**                 | Enable by evaluated field/query class; preserve an exact-field lane.                                                  |
+| Query/Weight/Scorer/Collector split | **ADAPT**                 | Separate query-global statistics, segment-local cursors, and bounded result reducers with traceable plans.            |
+| Fixed Tantivy BM25                  | **ADAPT**                 | Begin with independently specified deterministic BM25; version parameters/statistics and test deletion/merge effects. |
+| Block-max dynamic pruning           | **DEFER**                 | Add only after exhaustive-equivalence tests and profiling show top-K value.                                           |
+| One writer, many snapshot readers   | **ADOPT**                 | Single publication authority per shard; lock-free/low-lock immutable readers with snapshot IDs and leases.            |
+| Commit-gated visibility             | **ADOPT**                 | Make durable publication and reader-observed watermark explicit; supply read-after-commit waiting.                    |
+| Term tombstones/alive bitsets       | **ADAPT**                 | Stable-ID and policy tombstone overlay with immediate serving exclusion; compact later.                               |
+| Similar-size background merge       | **ADAPT**                 | Tune from Curiosity workload and disk/latency gates; do not copy defaults.                                            |
+| Search store as source of truth     | **REJECT**                | Captures and extracted versions remain authoritative outside the reconstructable index.                               |
+| Tantivy crate in owned core         | **REJECT** under ADR 0021 | Research comparison only; any executable comparison or oracle use requires a later ADR.                               |
+| Tantivy file-format compatibility   | **REJECT/DEFER**          | No requirement or clean-room value established.                                                                       |
 
 ## 11. Required checks before design approval
 
@@ -623,14 +624,14 @@ After synthesis, in-frame gaps were scored 1–5 (higher is more) on relevance
 `R`, decision value `V`, novelty `N`, and investigation cost `C`; priority was
 `R + V + N - C`.
 
-| Thread | R/V/N/C | Score | Action/result |
-| --- | --- | ---: | --- |
-| Do deleted docs affect default BM25 statistics before merge? | 5/5/5/1 | 14 | **Pursued.** Confirmed in 0.26.1 source: `max_doc` and raw doc frequency feed BM25, unlike live `num_docs` [S19][S21]. Material Curiosity rank-versioning implication. |
-| Does current store really lack a decompressed-block cache? | 3/3/4/1 | 9 | **Pursued.** Found stale-doc contradiction: current reader has configurable LRU/default 100 blocks [S15][S17]. |
-| Are all top-K boolean queries Block-WAND optimized? | 4/4/3/2 | 9 | **Pursued.** No; eligibility depends on term scorers, frequencies, combiner, and pruning collector [S23]. |
-| Reproduce Tantivy binary format with fixtures | 2/1/2/5 | 0 | **CURIOSITY_NO_GO:** no interoperability requirement; contamination and cost outweigh value. |
-| Run Tantivy versus Lucene/owned prototype benchmark | 4/4/2/5 | 5 | **CURIOSITY_NO_GO:** no approved representative corpus/prototype; would not resolve present architecture decision. |
-| Audit every dependency/patent | 3/4/2/5 | 4 | **CURIOSITY_NO_GO:** requires legal/dependency-review authority and matters only if adoption is reopened. |
+| Thread                                                       | R/V/N/C | Score | Action/result                                                                                                                                                          |
+| ------------------------------------------------------------ | ------- | ----: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Do deleted docs affect default BM25 statistics before merge? | 5/5/5/1 |    14 | **Pursued.** Confirmed in 0.26.1 source: `max_doc` and raw doc frequency feed BM25, unlike live `num_docs` [S19][S21]. Material Curiosity rank-versioning implication. |
+| Does current store really lack a decompressed-block cache?   | 3/3/4/1 |     9 | **Pursued.** Found stale-doc contradiction: current reader has configurable LRU/default 100 blocks [S15][S17].                                                         |
+| Are all top-K boolean queries Block-WAND optimized?          | 4/4/3/2 |     9 | **Pursued.** No; eligibility depends on term scorers, frequencies, combiner, and pruning collector [S23].                                                              |
+| Reproduce Tantivy binary format with fixtures                | 2/1/2/5 |     0 | **CURIOSITY_NO_GO:** no interoperability requirement; contamination and cost outweigh value.                                                                           |
+| Run Tantivy versus Lucene/owned prototype benchmark          | 4/4/2/5 |     5 | **CURIOSITY_NO_GO:** no approved representative corpus/prototype; would not resolve present architecture decision.                                                     |
+| Audit every dependency/patent                                | 3/4/2/5 |     4 | **CURIOSITY_NO_GO:** requires legal/dependency-review authority and matters only if adoption is reopened.                                                              |
 
 Stop condition: **coverage and saturation**. The three pursued contradictions
 changed or sharpened the decision; remaining threads require implementation,
@@ -643,13 +644,13 @@ All web sources accessed 2026-08-17. GitHub source links are pinned.
 - **[S1]** Curiosity, [ADR 0021: stage an owned public-web search plane](../../decisions/0021-owned-public-web-search.md).
 - **[S2]** Curiosity, [owned public-web search dossier, clean-room boundary](../owned-public-web-search-architecture-2026-08-17.md#4-clean-room--from-scratch-boundary).
 - **[S3]** Tantivy 0.26.1 rustdoc, [crate overview and architecture](https://docs.rs/tantivy/0.26.1/tantivy/).
-- **[S4]** Tantivy official source, [0.26.1 tag](https://github.com/quickwit-oss/tantivy/tree/0093923d94157d9f1f63a292bb504bb8db401f2a).
+- **[S4]** Tantivy official source, [0.26.1 peeled release commit](https://github.com/quickwit-oss/tantivy/tree/d8f4c0b703120ed98f06297724dc1522df6019b9); annotated tag object `0093923d94157d9f1f63a292bb504bb8db401f2a`.
 - **[S5]** Tantivy official source, [`Cargo.toml` at inspected `main`](https://github.com/quickwit-oss/tantivy/blob/039a72958e8a2803cd30ad9ab71da990bf121833/Cargo.toml).
 - **[S6]** Tantivy official source, [architecture note](https://github.com/quickwit-oss/tantivy/blob/039a72958e8a2803cd30ad9ab71da990bf121833/ARCHITECTURE.md).
-- **[S7]** Tantivy official repository, [README: scope, features, benchmarks, non-features](https://github.com/quickwit-oss/tantivy/blob/0093923d94157d9f1f63a292bb504bb8db401f2a/README.md).
+- **[S7]** Tantivy official repository, [README: scope, features, benchmarks, non-features](https://github.com/quickwit-oss/tantivy/blob/d8f4c0b703120ed98f06297724dc1522df6019b9/README.md).
 - **[S8]** Tantivy 0.26.1 rustdoc, [schema](https://docs.rs/tantivy/0.26.1/tantivy/schema/index.html) and [`IndexRecordOption`](https://docs.rs/tantivy/0.26.1/tantivy/schema/enum.IndexRecordOption.html).
 - **[S9]** Tantivy 0.26.1 rustdoc, [tokenizers and custom analyzers](https://docs.rs/tantivy/0.26.1/tantivy/tokenizer/index.html).
-- **[S10]** Tantivy 0.26.1 source, [`QueryParser` analyzer lookup](https://github.com/quickwit-oss/tantivy/blob/0093923d94157d9f1f63a292bb504bb8db401f2a/src/query/query_parser/query_parser.rs).
+- **[S10]** Tantivy 0.26.1 source, [`QueryParser` analyzer lookup](https://github.com/quickwit-oss/tantivy/blob/d8f4c0b703120ed98f06297724dc1522df6019b9/src/query/query_parser/query_parser.rs).
 - **[S11]** Tantivy source **MAIN**, [segment component contract](https://github.com/quickwit-oss/tantivy/blob/039a72958e8a2803cd30ad9ab71da990bf121833/src/index/segment_component.rs).
 - **[S12]** Tantivy source **MAIN**, [inverted-index serializer ordering and component split](https://github.com/quickwit-oss/tantivy/blob/039a72958e8a2803cd30ad9ab71da990bf121833/src/postings/serializer.rs).
 - **[S13]** Tantivy source **MAIN**, [posting compression](https://github.com/quickwit-oss/tantivy/tree/039a72958e8a2803cd30ad9ab71da990bf121833/src/postings) and [skip/block-max metadata](https://github.com/quickwit-oss/tantivy/blob/039a72958e8a2803cd30ad9ab71da990bf121833/src/postings/skip.rs).
@@ -658,9 +659,9 @@ All web sources accessed 2026-08-17. GitHub source links are pinned.
 - **[S16]** Tantivy source **MAIN**, [fast-field contract](https://github.com/quickwit-oss/tantivy/blob/039a72958e8a2803cd30ad9ab71da990bf121833/src/fastfield/mod.rs) and [`tantivy-columnar`](https://github.com/quickwit-oss/tantivy/blob/039a72958e8a2803cd30ad9ab71da990bf121833/columnar/src/lib.rs).
 - **[S17]** Tantivy source **MAIN**, [reader builder, reload, warming, cache default, atomic searcher swap](https://github.com/quickwit-oss/tantivy/blob/039a72958e8a2803cd30ad9ab71da990bf121833/src/reader/mod.rs) and [directory/GC contract](https://github.com/quickwit-oss/tantivy/blob/039a72958e8a2803cd30ad9ab71da990bf121833/src/directory/mod.rs).
 - **[S18]** `tantivy-columnar` official source **MAIN**, [column/cardinality model](https://github.com/quickwit-oss/tantivy/blob/039a72958e8a2803cd30ad9ab71da990bf121833/columnar/src/lib.rs).
-- **[S19]** Tantivy 0.26.1 source, [BM25 implementation and default statistics](https://github.com/quickwit-oss/tantivy/blob/0093923d94157d9f1f63a292bb504bb8db401f2a/src/query/bm25.rs).
+- **[S19]** Tantivy 0.26.1 source, [BM25 implementation and default statistics](https://github.com/quickwit-oss/tantivy/blob/d8f4c0b703120ed98f06297724dc1522df6019b9/src/query/bm25.rs).
 - **[S20]** Tantivy 0.26.1 rustdoc, [`Query`](https://docs.rs/tantivy/0.26.1/tantivy/query/trait.Query.html), [`Bm25StatisticsProvider`](https://docs.rs/tantivy/0.26.1/tantivy/query/trait.Bm25StatisticsProvider.html), and [`EnableScoring`](https://docs.rs/tantivy/0.26.1/tantivy/query/enum.EnableScoring.html).
-- **[S21]** Tantivy 0.26.1 source, [`Searcher::num_docs` versus `doc_freq`](https://github.com/quickwit-oss/tantivy/blob/0093923d94157d9f1f63a292bb504bb8db401f2a/src/core/searcher.rs).
+- **[S21]** Tantivy 0.26.1 source, [`Searcher::num_docs` versus `doc_freq`](https://github.com/quickwit-oss/tantivy/blob/d8f4c0b703120ed98f06297724dc1522df6019b9/src/core/searcher.rs).
 - **[S22]** Tantivy 0.26.1 rustdoc, [`Searcher` execution and segment-parallel caveat](https://docs.rs/tantivy/0.26.1/tantivy/struct.Searcher.html).
 - **[S23]** Tantivy source **MAIN**, [boolean scorer specialization](https://github.com/quickwit-oss/tantivy/blob/039a72958e8a2803cd30ad9ab71da990bf121833/src/query/boolean_query/boolean_weight.rs), [Block-WAND union](https://github.com/quickwit-oss/tantivy/blob/039a72958e8a2803cd30ad9ab71da990bf121833/src/query/boolean_query/block_wand_union.rs), and [pruning threshold API](https://github.com/quickwit-oss/tantivy/blob/039a72958e8a2803cd30ad9ab71da990bf121833/src/query/weight.rs).
 - **[S24]** Tantivy source **MAIN**, [`IndexWriter` lock, queue, workers, and memory arenas](https://github.com/quickwit-oss/tantivy/blob/039a72958e8a2803cd30ad9ab71da990bf121833/src/indexer/index_writer.rs).
@@ -671,4 +672,4 @@ All web sources accessed 2026-08-17. GitHub source links are pinned.
 - **[S29]** Tantivy source **MAIN**, [`LogMergePolicy`](https://github.com/quickwit-oss/tantivy/blob/039a72958e8a2803cd30ad9ab71da990bf121833/src/indexer/log_merge_policy.rs).
 - **[S30]** Tantivy source **MAIN**, [merge rewrite/doc-ID mapping](https://github.com/quickwit-oss/tantivy/blob/039a72958e8a2803cd30ad9ab71da990bf121833/src/indexer/merger.rs) and [merge catch-up/publication](https://github.com/quickwit-oss/tantivy/blob/039a72958e8a2803cd30ad9ab71da990bf121833/src/indexer/segment_updater.rs).
 - **[S31]** Tantivy source **MAIN**, [format version constants](https://github.com/quickwit-oss/tantivy/blob/039a72958e8a2803cd30ad9ab71da990bf121833/src/lib.rs), [CRC/version footer](https://github.com/quickwit-oss/tantivy/blob/039a72958e8a2803cd30ad9ab71da990bf121833/src/directory/footer.rs), and [checksum validation](https://github.com/quickwit-oss/tantivy/blob/039a72958e8a2803cd30ad9ab71da990bf121833/src/index/index.rs).
-- **[S32]** Tantivy official source, [MIT license](https://github.com/quickwit-oss/tantivy/blob/0093923d94157d9f1f63a292bb504bb8db401f2a/LICENSE).
+- **[S32]** Tantivy official source, [MIT license](https://github.com/quickwit-oss/tantivy/blob/d8f4c0b703120ed98f06297724dc1522df6019b9/LICENSE).

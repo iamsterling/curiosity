@@ -1,0 +1,27 @@
+{
+  "schema": "curiosity-owned-lexical-fixture-receipt/v1",
+  "specification": "docs/specifications/owned-lexical-reader-format-v1.md",
+  "process": "hand-assembled from the normative golden-three-v1 table; no production builder or upstream oracle",
+  "files": {
+    "manifest.json": {
+      "length": 692,
+      "sha256": "dc29ca679d27e94477888639190194565e319625602a5b2f108a5fd47acba987"
+    },
+    "passages.colr": {
+      "length": 1001,
+      "sha256": "d689b22f8b355d55b17e32d1e28f33519eb5de26436cc32c5691cd03153e720c"
+    },
+    "postings.colr": {
+      "length": 96,
+      "sha256": "8f940d48ec89ebc6b765c614bd144b243288a4ce053dd7829780122fbd157e88"
+    },
+    "source-manifest.json": {
+      "length": 29,
+      "sha256": "aded5d41b2172574277755ce240a0febd1124bf38a0fc1806901b625b0d3f6c2"
+    },
+    "terms.colr": {
+      "length": 196,
+      "sha256": "0547ac1154a7ba7cf7f10897988f652ef52aec90eb11f3baca1d2304949cd00e"
+    }
+  }
+}

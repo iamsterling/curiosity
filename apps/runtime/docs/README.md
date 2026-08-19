@@ -35,6 +35,11 @@
 - **Proposed:** [ADR 0047: investigation, ranking, and stopping semantics](decisions/0047-investigation-ranking-and-stopping-semantics.md)
 - **Proposed:** [ADR 0048: retrieval migration, topology, and qualification](decisions/0048-retrieval-migration-topology-and-qualification.md)
 - **Accepted (narrow reversible internal-contract implementation only; production NO-GO):** [ADR 0049: reversible Curiosity Retrieval contract tranche](decisions/0049-reversible-retrieval-contract-tranche.md)
+- **Accepted (removable development composition only; production NO-GO):** [ADR 0050: development-only RetrieveInformation composition](decisions/0050-development-retrieve-information-composition.md)
+- **Accepted (reversible Retrieval v3 development tranche only; crawl/persistence/cutover NO-GO):** [ADR 0051: reversible Retrieval v3 development tranche](decisions/0051-reversible-retrieval-v3-development-tranche.md)
+- **Accepted (architecture/specification only; implementation/dependency/crawl/persistence/cutover/production NO-GO):** [ADR 0052: next retrieval source and owned-web specification program](decisions/0052-next-retrieval-source-and-owned-web-specification-program.md)
+- **Conditionally accepted (fixture-only removable qualification under a trusted stable operator-root precondition; advisory cleanliness unresolved; no live fetch, canonical Ledger implementation, index, release, or production authority):** [ADR 0053: fixture-only owned-web SQLite qualification](decisions/0053-fixture-only-owned-web-sqlite-qualification.md)
+- **Accepted (reader-only clean-room lexical qualification; no builder, publication, serving, dependency, corpus, release, or production authority):** [ADR 0054: clean-room owned lexical reader qualification](decisions/0054-clean-room-owned-lexical-reader-qualification.md)
 - **Moved / Accepted at canonical location:** [ADR 0024: durable Ledger v2 and
   capture authority](../../plugin/opencode2/docs/decisions/0024-durable-ledger-v2-and-capture-authority.md)
   ([provenance stub](decisions/moved-durable-ledger-v2-and-capture-authority.md))
@@ -55,8 +60,30 @@ public deployment, M5-live, M6-crawl, generic fetch/public crawl, publication,
 signing, notarization, and all other platforms remain NO-GO.
 ADR 0041 and canonical plugin ADR 0024 add accepted unified-substrate and Ledger
 durability designs only; they do not widen those implementation or production
-authorities. ADR 0049 authorizes only its enumerated internal contract/fixture
-tranche and does not accept ADRs 0043–0048 generally.
+authorities. ADRs 0049–0051 authorize only their enumerated removable development
+tranches and do not accept ADRs 0043–0048 generally. ADR 0052 accepts only its
+architecture and native specification program; it grants no implementation,
+dependency, live-fetch, persistence, deployment, cutover, or production authority.
+ADR 0053 conditionally adds only a network-denied, project-fixture qualification
+simulation under its trusted stable operator-root precondition; its pinned proof
+adapter observes no real Ledger and grants no canonical authority.
+ADR 0054 supersedes only ADR 0052's Tantivy implementation choice. It preserves
+the projection/governance contract and authorizes only a dependency-free,
+internal reader qualification over hand-authored immutable fixtures.
+
+## Specifications
+
+- [Curiosity Retrieval internal contracts v3](specifications/curiosity-retrieval-contracts-v3.md)
+- [Retrieval source access v1](specifications/retrieval-source-access-v1.md)
+- [Owned-web control, capture, and extraction v1](specifications/owned-web-control-capture-extraction-v1.md)
+- [Owned-web lexical index and query v1](specifications/owned-web-lexical-query-v1.md)
+- [Curiosity-owned lexical reader format and query v1](specifications/owned-lexical-reader-format-v1.md)
+- [Retrieval corpus governance and admission v1](specifications/retrieval-corpus-governance-v1.md)
+- [Retrieval evaluation and SearXNG cutover v1](specifications/retrieval-evaluation-searxng-cutover-v1.md)
+
+The ADR/specification set is the repository-native workflow. OpenSpec is not used.
+Normative requirements constrain later proposals and do not grant implementation
+or production authority.
 
 ## Research
 

@@ -22,6 +22,22 @@ dates, methods, and uncertainty.
 
 ## Current dossier
 
+- [Curiosity-owned lexical reader research synthesis
+  (2026-08-19)](owned-lexical-reader-synthesis-2026-08-19.md) separates primary
+  IR and exact pinned-upstream facts from Curiosity inferences and unknowns, and
+  records the clean-room boundary for the reader-only tranche.
+- [Next Retrieval phase six-track research compendium
+  (2026-08-19)](next-retrieval-phase-compendium-2026-08-19.md) indexes the
+  source-access, acquisition-control, fetch/capture/extraction, lexical,
+  corpus-governance, and SearXNG evaluation tracks while preserving facts,
+  inferences, unknowns, and primary citations. It is research, not authority.
+- [Retrieval v3 owned-web architecture decision evidence
+  (2026-08-19)](retrieval-v3-owned-web-decision-2026-08-19.md) separates primary
+  discovery-protocol facts from the bounded M6 anti-corruption decision.
+- [OpenCode MCP call-scoped host-capability requirement
+  (2026-08-19)](opencode-mcp-host-capability-requirement-2026-08-19.md) records
+  the inspected hook gap and the upstream receipt API requirement without
+  claiming MCP execution.
 - [Existing retrieval and memory systems: reverse-engineering record
   (2026-08-18)](reverse-engineering-retrieval-memory-systems-2026-08-18.md)
   maps the current runtime, capture, Ledger, evidence, and reasoning-adjacent

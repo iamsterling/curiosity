@@ -12,12 +12,27 @@ test("runtime Turbo build caches the development native library alongside inheri
 });
 
 test("supported M7 entrypoints prepare release-native and plugin artifacts through Turbo package tasks", () => {
-  expect(packageJson.scripts["build:native"]).toBe("cargo build --manifest-path native/Cargo.toml --locked");
+  expect(packageJson.scripts["build:native"]).toBe(
+    "cargo build --manifest-path native/Cargo.toml --locked",
+  );
   expect(packageJson.scripts["build:native:release"]).toBe(
     "cargo build --manifest-path native/Cargo.toml --release --locked --no-default-features",
   );
-  expect(packageJson.scripts["m7:test"]).toBe("turbo run m7:test:run --filter=@curiosity/runtime");
-  expect(packageJson.scripts.verify).toBe("turbo run verify:run --filter=@curiosity/runtime");
+  expect(packageJson.scripts["m7:test"]).toBe(
+    "turbo run m7:test:run --filter=@curiosity/runtime",
+  );
+  expect(packageJson.scripts.verify).toBe(
+    "turbo run verify:run --filter=@curiosity/runtime",
+  );
+  expect(packageJson.scripts["verify:owned-web-qualification"]).toBe(
+    "node tools/verify-owned-web-qualification.mjs",
+  );
+  expect(packageJson.scripts["check:owned-web-receipt"]).toBe(
+    "node tools/owned-web-receipt.mjs --check",
+  );
+  expect(packageJson.scripts["verify:owned-lexical-reader-qualification"]).toBe(
+    "node tools/verify-owned-lexical-reader-qualification.mjs",
+  );
   expect(runtimeTurbo.tasks["m7:test:run"].dependsOn).toEqual(["m7:prepare"]);
   expect(runtimeTurbo.tasks["verify:run"].dependsOn).toEqual(["m7:prepare"]);
   expect(runtimeTurbo.tasks["m7:prepare"].dependsOn).toEqual([
