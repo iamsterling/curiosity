@@ -56,8 +56,9 @@ test("runtime source and manifests contain only the exact feature-gated qualific
     ([path, source]) =>
       [
         path,
-        path.endsWith("/native/src/owned_web/tests.rs") ||
-        path.endsWith("/native/src/owned_lexical/tests.rs")
+         path.endsWith("/native/src/owned_web/tests.rs") ||
+        path.endsWith("/native/src/owned_lexical/tests.rs") ||
+        path.endsWith("/native/src/owned_lexical/builder/tests.rs")
           ? ""
           : path.endsWith(".rs")
             ? source.split("#[cfg(test)]", 1)[0]!
@@ -82,8 +83,17 @@ test("runtime source and manifests contain only the exact feature-gated qualific
       new URL("../native/src/corpus.rs", import.meta.url).pathname,
       new URL("../native/src/jobs.rs", import.meta.url).pathname,
       new URL("../native/src/lib.rs", import.meta.url).pathname,
-      new URL("../native/src/owned_lexical/analyzer.rs", import.meta.url)
-        .pathname,
+       new URL("../native/src/owned_lexical/analyzer.rs", import.meta.url)
+         .pathname,
+      new URL("../native/src/owned_lexical/builder/canonical.rs", import.meta.url).pathname,
+      new URL("../native/src/owned_lexical/builder/canonical_records.rs", import.meta.url).pathname,
+      new URL("../native/src/owned_lexical/builder/encoding.rs", import.meta.url).pathname,
+      new URL("../native/src/owned_lexical/builder/model.rs", import.meta.url).pathname,
+      new URL("../native/src/owned_lexical/builder/mod.rs", import.meta.url).pathname,
+      new URL("../native/src/owned_lexical/builder/publication.rs", import.meta.url).pathname,
+      new URL("../native/src/owned_lexical/builder/publication_fs.rs", import.meta.url).pathname,
+      new URL("../native/src/owned_lexical/builder/publication_inventory.rs", import.meta.url).pathname,
+      new URL("../native/src/owned_lexical/builder/tests.rs", import.meta.url).pathname,
       new URL("../native/src/owned_lexical/mod.rs", import.meta.url).pathname,
       new URL("../native/src/owned_lexical/model.rs", import.meta.url).pathname,
       new URL("../native/src/owned_lexical/parser.rs", import.meta.url)
@@ -181,7 +191,9 @@ test("runtime source and manifests contain only the exact feature-gated qualific
       "/native/src/owned_web/admission.rs",
       "/native/src/owned_web/mod.rs",
       "/native/src/owned_web/root.rs",
-      "/native/src/owned_web/tests.rs",
+       "/native/src/owned_web/tests.rs",
+      "/native/src/owned_lexical/builder/publication.rs",
+      "/native/src/owned_lexical/builder/publication_fs.rs",
       "/src/admin.ts",
       "/src/owned-query.ts",
     ]),
@@ -236,7 +248,8 @@ test("runtime source and manifests contain only the exact feature-gated qualific
       'default = ["admin"]',
       "admin = []",
       'owned-web-qualification = ["dep:rusqlite", "dep:scraper"]',
-      "owned-lexical-reader-qualification = []",
+       "owned-lexical-reader-qualification = []",
+      'owned-lexical-builder-qualification = ["owned-lexical-reader-qualification"]',
     ].join("\n"),
   );
   expect(

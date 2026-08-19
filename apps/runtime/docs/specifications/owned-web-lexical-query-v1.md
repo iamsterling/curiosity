@@ -1,19 +1,22 @@
 # Owned-web lexical index and query specification v1
 
-**Status:** engine-neutral target contract under ADRs 0052 and 0054. ADR 0054
+**Status:** engine-neutral target contract under ADRs 0052, 0054, and 0055. ADR 0054
 supersedes only ADR 0052's Tantivy implementation choice and authorizes only the
-reader qualification identified below. This target does not itself authorize a
-builder, publication, serving, corpus, dependency, or production use.
+reader qualification identified below. This target does not independently
+authorize implementation; ADR 0055 grants only the exact builder/publication
+qualification identified below.
 
 ## Authority layers
 
 This document is the **target contract** for a future owned-web lexical
 projection. Its generation, governance, ranking, and delivery requirements
-continue to constrain later proposals. The narrower **current implementation
-authority** is [owned lexical reader format/query v1](owned-lexical-reader-format-v1.md):
-defensive reads of hand-authored immutable fixtures through an internal seam.
-Where this target discusses build, activation, rollback, hydration, or serving,
-it is a requirement for future authority, not permission to implement it now.
+continue to constrain later proposals. Current implementation authority is the
+[reader v1](owned-lexical-reader-format-v1.md) qualification plus ADR 0055's
+[builder/publication v1](owned-lexical-builder-publication-v1.md) qualification.
+ADR 0055 authorizes exactly the private builder, immutable persistence, atomic
+selection, recovery, rollback, and tests in that contract. Hydration, serving,
+operations beyond operator-invoked qualification, dependencies,
+`OwnedSnapshotPort`, and retrieval integration remain unauthorized.
 
 The lexical engine and format are Curiosity-owned, clean-room, in-repository,
 and replaceable behind a Curiosity projection port. Reader v1 has no third-party
@@ -43,6 +46,10 @@ the manifest does not point to mutable process or lifecycle state. `STAGED`,
 fields mutated inside an immutable generation. Manifests and artifacts are
 strictly validated before use. A future publisher MUST atomically select a
 complete generation; failed activation leaves the previous generation selected.
+For builder v1, `sourceManifestDigest` hashes a canonical source record containing
+neither itself nor any output/receipt/selector field. The canonical output
+manifest is then hashed as its physical generation address; its logical
+`generationId` is deterministic but is not that self-address.
 
 Readers pin one selected immutable generation for a request. Rollback means
 atomically selecting a retained, already-qualified generation whose authority
@@ -146,15 +153,16 @@ A future end-to-end implementation MUST prove:
 6. every delivered selector/digest reproduces against its named capture; and
 7. any future shard loss is explicit partial/failure, never hidden fallback.
 
-The only presently authorized acceptance suite is the reader-only suite in the
-reader-v1 specification.
+The presently authorized suites are the reader-only suite in reader v1 and the
+separate exact builder/publication qualification suite under ADR 0055.
 
 ## Deferrals
 
-Builder and publication, production corpus, live fetch, package/public ABI,
-Retrieval v3 serving, phrase/proximity and positional postings, compression,
-memory mapping, merges, sharding, SearXNG change, vector/hybrid retrieval,
-learned ranking, production thresholds, and production authority are deferred.
+Builder/publication behavior beyond the exact ADR 0055 qualification, production
+corpus, live fetch, package/public ABI, Retrieval v3 serving, phrase/proximity and
+positional postings, compression, memory mapping, merges, sharding, SearXNG
+change, vector/hybrid retrieval, learned ranking, production thresholds, and
+production authority are deferred.
 Snippet policy, broader language support, generation retention, storage budgets,
 performance SLOs, and representative quality judgments also require named owner
 approval. None is implied by this target contract.
@@ -165,6 +173,8 @@ approval. None is implied by this target contract.
 [0046](../decisions/0046-retrieval-authority-security-and-mcp-boundary.md),
 [0047](../decisions/0047-investigation-ranking-and-stopping-semantics.md),
 [0052](../decisions/0052-next-retrieval-source-and-owned-web-specification-program.md),
-and [0054](../decisions/0054-clean-room-owned-lexical-reader-qualification.md);
+[0054](../decisions/0054-clean-room-owned-lexical-reader-qualification.md),
+and [0055](../decisions/0055-owned-lexical-builder-and-atomic-publication.md);
 [Contracts v3](curiosity-retrieval-contracts-v3.md); and the
+[builder/publication v1 contract](owned-lexical-builder-publication-v1.md),
 [2026-08-19 reader synthesis](../research/owned-lexical-reader-synthesis-2026-08-19.md).

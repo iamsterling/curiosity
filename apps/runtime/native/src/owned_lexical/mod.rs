@@ -15,5 +15,8 @@ mod query;
 mod sha256;
 mod source;
 
+#[cfg(feature = "owned-lexical-builder-qualification")]
+mod builder;
+
 #[cfg(test)]
 mod tests;

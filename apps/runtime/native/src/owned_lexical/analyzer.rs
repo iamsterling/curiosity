@@ -13,6 +13,16 @@ pub(super) fn analyze_count(value: &str) -> Result<usize, TokenTooLong> {
     Ok(count)
 }
 
+pub(super) fn analyze_metrics(value: &str) -> Result<(u64, u64), TokenTooLong> {
+    let mut count = Some(0u64);
+    let mut bytes = Some(0u64);
+    visit(value, |token| {
+        count = count.and_then(|value| value.checked_add(1));
+        bytes = bytes.and_then(|value| value.checked_add(token.len() as u64));
+    })?;
+    Ok((count.ok_or(TokenTooLong)?, bytes.ok_or(TokenTooLong)?))
+}
+
 pub(super) fn is_single_token(value: &str, expected: &[u8]) -> Result<bool, TokenTooLong> {
     let mut count = 0usize;
     let mut equal = false;

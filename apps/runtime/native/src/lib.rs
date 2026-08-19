@@ -7,7 +7,10 @@ mod corpus;
 pub use corpus::*;
 #[cfg(feature = "admin")]
 mod jobs;
-#[cfg(feature = "owned-lexical-reader-qualification")]
+#[cfg(any(
+    feature = "owned-lexical-reader-qualification",
+    feature = "owned-lexical-builder-qualification"
+))]
 #[allow(dead_code)]
 mod owned_lexical;
 #[cfg(feature = "owned-web-qualification")]

@@ -12,6 +12,7 @@ default = ["admin"]
 admin = []
 owned-web-qualification = ["dep:rusqlite", "dep:scraper"]
 owned-lexical-reader-qualification = []
+owned-lexical-builder-qualification = ["owned-lexical-reader-qualification"]
 
 [dependencies]
 rusqlite = { version = "=0.40.2", optional = true, default-features = false, features = ["bundled"] }

@@ -56,6 +56,10 @@ serving, phrase/proximity queries or positions, compression, memory mapping,
 merges, sharding, SearXNG change, deployment, release, or production use. It
 does not authorize importing upstream indexes or using Tantivy/Lucene as a test
 oracle. Each excluded capability requires a later ADR and qualification plan.
+ADR 0055 later authorizes its separate exact removable builder/publication
+qualification implementation; it does not change this reader's bytes/semantics
+or authorize `OwnedSnapshotPort` integration. The hand-authored fixture remains
+the reader's independent oracle and is not builder output.
 
 ## Binary acceptance and stop conditions
 
@@ -90,5 +94,6 @@ owned-web generation.
 
 [ADR 0052](0052-next-retrieval-source-and-owned-web-specification-program.md),
 [ADR 0053](0053-fixture-only-owned-web-sqlite-qualification.md),
+[ADR 0055](0055-owned-lexical-builder-and-atomic-publication.md),
 [lexical target contract](../specifications/owned-web-lexical-query-v1.md), and
 [reader-v1 format/query specification](../specifications/owned-lexical-reader-format-v1.md).

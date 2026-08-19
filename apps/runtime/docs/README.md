@@ -40,6 +40,7 @@
 - **Accepted (architecture/specification only; implementation/dependency/crawl/persistence/cutover/production NO-GO):** [ADR 0052: next retrieval source and owned-web specification program](decisions/0052-next-retrieval-source-and-owned-web-specification-program.md)
 - **Conditionally accepted (fixture-only removable qualification under a trusted stable operator-root precondition; advisory cleanliness unresolved; no live fetch, canonical Ledger implementation, index, release, or production authority):** [ADR 0053: fixture-only owned-web SQLite qualification](decisions/0053-fixture-only-owned-web-sqlite-qualification.md)
 - **Accepted (reader-only clean-room lexical qualification; no builder, publication, serving, dependency, corpus, release, or production authority):** [ADR 0054: clean-room owned lexical reader qualification](decisions/0054-clean-room-owned-lexical-reader-qualification.md)
+- **Accepted (exact removable private lexical builder/publication qualification implementation GO; no dependency, integration, serving, release, live/production input, or production authority):** [ADR 0055: owned lexical builder and atomic publication contract](decisions/0055-owned-lexical-builder-and-atomic-publication.md)
 - **Moved / Accepted at canonical location:** [ADR 0024: durable Ledger v2 and
   capture authority](../../plugin/opencode2/docs/decisions/0024-durable-ledger-v2-and-capture-authority.md)
   ([provenance stub](decisions/moved-durable-ledger-v2-and-capture-authority.md))
@@ -56,8 +57,9 @@ local project-CA synthetic cell. ADRs 0039/0040 close M7 only for the immutable
 private Darwin arm64 archive bound to source commit `0dfc71d`; ADR 0040 is a
 later documentation commit, not the artifact source. Thus M1–M7 repository or
 exact private-profile work is complete only within those scopes. Production and
-public deployment, M5-live, M6-crawl, generic fetch/public crawl, publication,
-signing, notarization, and all other platforms remain NO-GO.
+public deployment, M5-live, M6-crawl, generic fetch/public crawl, package/public
+publication, signing, notarization, and all other platforms remain NO-GO. ADR
+0055's internal qualification-generation publication is the narrow exception.
 ADR 0041 and canonical plugin ADR 0024 add accepted unified-substrate and Ledger
 durability designs only; they do not widen those implementation or production
 authorities. ADRs 0049–0051 authorize only their enumerated removable development
@@ -70,6 +72,10 @@ adapter observes no real Ledger and grants no canonical authority.
 ADR 0054 supersedes only ADR 0052's Tantivy implementation choice. It preserves
 the projection/governance contract and authorizes only a dependency-free,
 internal reader qualification over hand-authored immutable fixtures.
+ADR 0055 authorizes implementation only of its exact removable private,
+project-authored builder and atomic publication qualification. It does not
+authorize dependencies, acquisition/Ledger integration, `OwnedSnapshotPort`,
+serving, live/production inputs, fallback, deployment, or production claims.
 
 ## Specifications
 
@@ -78,12 +84,13 @@ internal reader qualification over hand-authored immutable fixtures.
 - [Owned-web control, capture, and extraction v1](specifications/owned-web-control-capture-extraction-v1.md)
 - [Owned-web lexical index and query v1](specifications/owned-web-lexical-query-v1.md)
 - [Curiosity-owned lexical reader format and query v1](specifications/owned-lexical-reader-format-v1.md)
+- [Curiosity-owned lexical builder and publication v1](specifications/owned-lexical-builder-publication-v1.md)
 - [Retrieval corpus governance and admission v1](specifications/retrieval-corpus-governance-v1.md)
 - [Retrieval evaluation and SearXNG cutover v1](specifications/retrieval-evaluation-searxng-cutover-v1.md)
 
 The ADR/specification set is the repository-native workflow. OpenSpec is not used.
-Normative requirements constrain later proposals and do not grant implementation
-or production authority.
+Normative requirements constrain later proposals and grant implementation only
+where an accepted ADR explicitly says so; they never imply production authority.
 
 ## Research
 

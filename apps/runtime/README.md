@@ -39,8 +39,10 @@ Any `products.zip` archive is excluded from the canonical inventory; the live
 ADR status is per document. ADRs 0020 and 0023–0041 are **Accepted** for their
 stated bounds, except that ADRs 0021 and 0022 remain **Proposed**. M5 authorizes
 one fixed repository adapter in source; production provider use remains NO-GO.
-Nothing authorizes generic/public crawling, generic fetch, publication, or
-production deployment. ADRs 0034–0038 authorize only the fixed local project-CA
+Nothing authorizes generic/public crawling, generic fetch, package/public
+publication, or production deployment. ADR 0055 separately authorizes only its
+internal qualification-generation builder/publication implementation, with no
+serving or production authority. ADRs 0034–0038 authorize only the fixed local project-CA
 M6 cell; ADR 0039 authorizes only a private, single-machine Darwin arm64 archive
 profile; ADR 0040 records GO for the archive from source commit `0dfc71d` with
 SHA-256 `3aa8e5ba6660cafefb3d3121ba1e652346f4019a78922a0ec689b04b32e06642`.

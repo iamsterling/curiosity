@@ -33,6 +33,9 @@ test("supported M7 entrypoints prepare release-native and plugin artifacts throu
   expect(packageJson.scripts["verify:owned-lexical-reader-qualification"]).toBe(
     "node tools/verify-owned-lexical-reader-qualification.mjs",
   );
+  expect(packageJson.scripts["verify:owned-lexical-builder-qualification"]).toBe(
+    "node tools/verify-owned-lexical-builder-qualification.mjs",
+  );
   expect(runtimeTurbo.tasks["m7:test:run"].dependsOn).toEqual(["m7:prepare"]);
   expect(runtimeTurbo.tasks["verify:run"].dependsOn).toEqual(["m7:prepare"]);
   expect(runtimeTurbo.tasks["m7:prepare"].dependsOn).toEqual([

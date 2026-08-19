@@ -2,6 +2,9 @@
 
 **Status:** normative for the reader-only qualification authorized by ADR 0054.
 It is not builder, publication, serving, corpus, package, or production authority.
+ADR 0055's separately authorized builder/publication qualification implementation
+does not change any `COLR/1` byte, validation order, query semantic, failure,
+limit, or fixture.
 
 ## 1. Conformance and clean-room boundary
 
@@ -69,6 +72,10 @@ future target `ProjectionGenerationV1`; for hand-authored qualification fixtures
 it binds a canonical project-authored source record. A build receipt may record
 toolchain, operator, inputs, and process observations, but is evidence about a
 build, not a substitute for this manifest and not an eligibility grant.
+For the separately specified private builder contract, it is the digest of a
+canonical source record that contains no output manifest, generation address,
+artifact digest, receipt, or self-digest; this avoids a digest cycle without
+changing the reader field or its interpretation as an opaque 32-byte binding.
 
 SHA-256 is as specified by NIST FIPS 180-4 and covers each complete artifact.
 Any implementation not supplied by a language standard library must be
@@ -608,5 +615,7 @@ explicitly deferred.
 ## 12. Traceability
 
 [ADR 0054](../decisions/0054-clean-room-owned-lexical-reader-qualification.md),
+[ADR 0055](../decisions/0055-owned-lexical-builder-and-atomic-publication.md),
+[builder/publication v1](owned-lexical-builder-publication-v1.md),
 [engine-neutral target contract](owned-web-lexical-query-v1.md), and
 [research synthesis](../research/owned-lexical-reader-synthesis-2026-08-19.md).

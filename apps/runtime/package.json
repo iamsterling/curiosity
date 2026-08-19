@@ -27,6 +27,7 @@
     "test:owned-web-qualification": "cargo build --manifest-path native/Cargo.toml --locked --all-features && CURIOSITY_OWNED_WEB_QUALIFICATION=1 sandbox-exec -p '(version 1)(allow default)(deny network*)' bun test tests/owned-web-qualification.test.ts",
     "verify:owned-web-qualification": "node tools/verify-owned-web-qualification.mjs",
     "verify:owned-lexical-reader-qualification": "node tools/verify-owned-lexical-reader-qualification.mjs",
+    "verify:owned-lexical-builder-qualification": "node tools/verify-owned-lexical-builder-qualification.mjs",
     "check:owned-web-receipt": "node tools/owned-web-receipt.mjs --check",
     "test:characterization": "bun test tests/characterization/*.test.ts",
     "search:smoke": "bun tools/repository-live-smoke.ts",
