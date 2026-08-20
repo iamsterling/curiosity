@@ -1,0 +1,1 @@
+[{"id":"ledger-valid","operation":"inspectLedger","root":"ledger-valid"},{"id":"capture-valid","operation":"inspectEventCapture","root":"capture-valid"},{"id":"ledger-invalid","operation":"inspectLedger","root":"ledger-invalid","code":"LEDGER_CORRUPT"}]

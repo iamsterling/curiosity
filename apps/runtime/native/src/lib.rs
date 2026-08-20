@@ -7,6 +7,9 @@ mod corpus;
 pub use corpus::*;
 #[cfg(feature = "admin")]
 mod jobs;
+#[cfg(feature = "legacy-memory-parity")]
+#[allow(dead_code)]
+mod legacy_memory;
 #[cfg(any(
     feature = "owned-lexical-reader-qualification",
     feature = "owned-lexical-builder-qualification"

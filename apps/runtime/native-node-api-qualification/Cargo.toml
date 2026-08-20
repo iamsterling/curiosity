@@ -1,0 +1,19 @@
+[package]
+name = "curiosity-native-node-api-qualification"
+version = "0.0.0"
+edition = "2024"
+publish = false
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+napi-sys = { version = "=3.3.0", default-features = false, features = ["napi4"] }
+ryu-js = "=1.0.3"
+
+[profile.release]
+panic = "unwind"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(sdk_probe, values("panic", "allocation_failure", "queue_failure"))'] }

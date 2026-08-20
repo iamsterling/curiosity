@@ -56,9 +56,10 @@ test("runtime source and manifests contain only the exact feature-gated qualific
     ([path, source]) =>
       [
         path,
-         path.endsWith("/native/src/owned_web/tests.rs") ||
+        path.endsWith("/native/src/owned_web/tests.rs") ||
         path.endsWith("/native/src/owned_lexical/tests.rs") ||
-        path.endsWith("/native/src/owned_lexical/builder/tests.rs")
+        path.endsWith("/native/src/owned_lexical/builder/tests.rs") ||
+        path.endsWith("/native/src/legacy_memory/tests.rs")
           ? ""
           : path.endsWith(".rs")
             ? source.split("#[cfg(test)]", 1)[0]!
@@ -83,17 +84,58 @@ test("runtime source and manifests contain only the exact feature-gated qualific
       new URL("../native/src/corpus.rs", import.meta.url).pathname,
       new URL("../native/src/jobs.rs", import.meta.url).pathname,
       new URL("../native/src/lib.rs", import.meta.url).pathname,
-       new URL("../native/src/owned_lexical/analyzer.rs", import.meta.url)
-         .pathname,
-      new URL("../native/src/owned_lexical/builder/canonical.rs", import.meta.url).pathname,
-      new URL("../native/src/owned_lexical/builder/canonical_records.rs", import.meta.url).pathname,
-      new URL("../native/src/owned_lexical/builder/encoding.rs", import.meta.url).pathname,
-      new URL("../native/src/owned_lexical/builder/model.rs", import.meta.url).pathname,
-      new URL("../native/src/owned_lexical/builder/mod.rs", import.meta.url).pathname,
-      new URL("../native/src/owned_lexical/builder/publication.rs", import.meta.url).pathname,
-      new URL("../native/src/owned_lexical/builder/publication_fs.rs", import.meta.url).pathname,
-      new URL("../native/src/owned_lexical/builder/publication_inventory.rs", import.meta.url).pathname,
-      new URL("../native/src/owned_lexical/builder/tests.rs", import.meta.url).pathname,
+      new URL(
+        "../native/src/bin/legacy_memory_parity_adapter.rs",
+        import.meta.url,
+      ).pathname,
+      new URL("../native/src/legacy_memory/canonical.rs", import.meta.url)
+        .pathname,
+      new URL("../native/src/legacy_memory/diagnostic.rs", import.meta.url)
+        .pathname,
+      new URL("../native/src/legacy_memory/entity.rs", import.meta.url)
+        .pathname,
+      new URL("../native/src/legacy_memory/event.rs", import.meta.url).pathname,
+      new URL("../native/src/legacy_memory/inspector.rs", import.meta.url)
+        .pathname,
+      new URL("../native/src/legacy_memory/json.rs", import.meta.url).pathname,
+      new URL("../native/src/legacy_memory/mod.rs", import.meta.url).pathname,
+      new URL("../native/src/legacy_memory/protocol.rs", import.meta.url)
+        .pathname,
+      new URL("../native/src/legacy_memory/replay.rs", import.meta.url)
+        .pathname,
+      new URL("../native/src/legacy_memory/tests.rs", import.meta.url).pathname,
+      new URL("../native/src/owned_lexical/analyzer.rs", import.meta.url)
+        .pathname,
+      new URL(
+        "../native/src/owned_lexical/builder/canonical.rs",
+        import.meta.url,
+      ).pathname,
+      new URL(
+        "../native/src/owned_lexical/builder/canonical_records.rs",
+        import.meta.url,
+      ).pathname,
+      new URL(
+        "../native/src/owned_lexical/builder/encoding.rs",
+        import.meta.url,
+      ).pathname,
+      new URL("../native/src/owned_lexical/builder/model.rs", import.meta.url)
+        .pathname,
+      new URL("../native/src/owned_lexical/builder/mod.rs", import.meta.url)
+        .pathname,
+      new URL(
+        "../native/src/owned_lexical/builder/publication.rs",
+        import.meta.url,
+      ).pathname,
+      new URL(
+        "../native/src/owned_lexical/builder/publication_fs.rs",
+        import.meta.url,
+      ).pathname,
+      new URL(
+        "../native/src/owned_lexical/builder/publication_inventory.rs",
+        import.meta.url,
+      ).pathname,
+      new URL("../native/src/owned_lexical/builder/tests.rs", import.meta.url)
+        .pathname,
       new URL("../native/src/owned_lexical/mod.rs", import.meta.url).pathname,
       new URL("../native/src/owned_lexical/model.rs", import.meta.url).pathname,
       new URL("../native/src/owned_lexical/parser.rs", import.meta.url)
@@ -191,9 +233,11 @@ test("runtime source and manifests contain only the exact feature-gated qualific
       "/native/src/owned_web/admission.rs",
       "/native/src/owned_web/mod.rs",
       "/native/src/owned_web/root.rs",
-       "/native/src/owned_web/tests.rs",
+      "/native/src/owned_web/tests.rs",
       "/native/src/owned_lexical/builder/publication.rs",
       "/native/src/owned_lexical/builder/publication_fs.rs",
+      "/native/src/legacy_memory/inspector.rs",
+      "/native/src/bin/legacy_memory_parity_adapter.rs",
       "/src/admin.ts",
       "/src/owned-query.ts",
     ]),
@@ -201,6 +245,7 @@ test("runtime source and manifests contain only the exact feature-gated qualific
       "/native/src/owned_web/admission.rs",
       "/native/src/owned_web/root.rs",
       "/native/src/owned_web/tests.rs",
+      "/native/src/legacy_memory/inspector.rs",
     ]),
     network: new Set(["/src/admin.ts", "/src/repository-search.ts"]),
     background: new Set([
@@ -248,8 +293,9 @@ test("runtime source and manifests contain only the exact feature-gated qualific
       'default = ["admin"]',
       "admin = []",
       'owned-web-qualification = ["dep:rusqlite", "dep:scraper"]',
-       "owned-lexical-reader-qualification = []",
+      "owned-lexical-reader-qualification = []",
       'owned-lexical-builder-qualification = ["owned-lexical-reader-qualification"]',
+      'legacy-memory-parity = ["dep:ryu-js"]',
     ].join("\n"),
   );
   expect(
@@ -260,11 +306,12 @@ test("runtime source and manifests contain only the exact feature-gated qualific
     [
       'rusqlite = { version = "=0.40.2", optional = true, default-features = false, features = ["bundled"] }',
       'scraper = { version = "=0.27.0", optional = true, default-features = false }',
+      'ryu-js = { version = "=1.0.3", optional = true }',
     ].join("\n"),
   );
   expect(cargo).not.toContain("tantivy");
   expect(createHash("sha256").update(cargoLock).digest("hex")).toBe(
-    "7f4d94576c860811baa0b9873db8015a23df5a4fd9d83d8283f618a8ad7caf4a",
+    "546440f8c8a3d4789dd21d85f3c92dbc7350669b68636a3e32a23473076eff32",
   );
   expect(cargoLock.toString()).not.toContain('name = "tantivy"');
   expect(packageManifest.dependencies).toBeUndefined();

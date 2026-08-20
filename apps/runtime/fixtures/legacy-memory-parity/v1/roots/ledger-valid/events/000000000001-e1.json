@@ -1,0 +1,1 @@
+{"schemaVersion":1,"id":"e1","sequence":1,"aggregate":"i1","type":"intent.captured","at":"2026-01-01T00:00:00.000Z","actor":{"kind":"model","sessionID":"s1"},"data":{"id":"i1","objective":"o","invariant":"i","scope":[],"nonGoals":[],"rigor":"mechanical","revision":0},"previousDigest":"GENESIS","digest":"sha256:015c0f9834edf3935485072385526acf618534794bc9203268e39cf81bc8a0fb"}

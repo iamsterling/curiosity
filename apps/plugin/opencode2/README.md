@@ -48,6 +48,20 @@ active session model.
   is the canonical Ledger v2/capture-authority design. Its acceptance is design
   approval only: implementation and production authority/persistence remain
   blocked on its gates, and it introduces no OpenSpec assets.
+- **Accepted private parity companion:** [ADR 0026](docs/decisions/0026-rust-native-legacy-memory-parity-companion.md)
+  permits only an independent JavaScript oracle and private Rust differential
+  test seam. Ledger v1 remains sole lifecycle authority, EventCapture remains
+  observation-only, Ledger alone makes evidence metadata authoritative, and the
+  development evidence slice remains uncomposed/non-authoritative. Disabled
+  persistence is unchanged; there is no integration, migration, Node-API/export,
+  or cutover.
+- **Accepted test-only Node-API qualification:** [ADR 0027](docs/decisions/0027-private-node-api-sdk-qualification-companion.md)
+  permits only a removable shim under plugin tests on pinned Darwin arm64, Bun
+  1.3.14, and lock-resolved OpenCode beta-17595. One verifier-temp,
+  empty-registration test plugin may load and execute once. It does not permit
+  normal plugin composition, add package files/exports/assets/dist, transfer
+  authority, or alter M2/M6; any later composition proposal requires a plugin
+  authority decision first.
 - **Ledger Authority v1:** immutable event authority for intent, capability/delta framing, criteria, work, claims, typed evidence, approvals, reconciliation, archive lineage, facts, audit and capture gaps.
 - **Native Loop Engine:** same-root-session execution journal using native prompt/interrupt/event primitives only.
 - **Hook foundation:** durable event envelopes, bounded provenance-labelled context, tool observations and compaction/event capture.

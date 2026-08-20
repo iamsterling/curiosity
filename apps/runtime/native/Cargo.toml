@@ -7,13 +7,20 @@ publish = false
 [lib]
 crate-type = ["cdylib", "rlib"]
 
+[[bin]]
+name = "legacy_memory_parity_adapter"
+path = "src/bin/legacy_memory_parity_adapter.rs"
+required-features = ["legacy-memory-parity"]
+
 [features]
 default = ["admin"]
 admin = []
 owned-web-qualification = ["dep:rusqlite", "dep:scraper"]
 owned-lexical-reader-qualification = []
 owned-lexical-builder-qualification = ["owned-lexical-reader-qualification"]
+legacy-memory-parity = ["dep:ryu-js"]
 
 [dependencies]
 rusqlite = { version = "=0.40.2", optional = true, default-features = false, features = ["bundled"] }
 scraper = { version = "=0.27.0", optional = true, default-features = false }
+ryu-js = { version = "=1.0.3", optional = true }

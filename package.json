@@ -6,7 +6,9 @@
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo run check-types"
+    "check-types": "turbo run check-types",
+    "verify:legacy-memory-parity": "node apps/plugin/opencode2/tools/verify-legacy-memory-native-parity.mjs --verify-dependency-receipt && bun run --cwd apps/plugin/opencode2 build && node apps/plugin/opencode2/tools/verify-legacy-memory-native-parity.mjs --verify-baseline-blobs && node apps/plugin/opencode2/tools/verify-legacy-memory-native-parity.mjs",
+    "verify:legacy-memory-node-api-sdk": "bun apps/plugin/opencode2/tests/qualification/verify-legacy-memory-node-api-sdk.mjs"
   },
   "devDependencies": {
     "prettier": "^3.7.4",

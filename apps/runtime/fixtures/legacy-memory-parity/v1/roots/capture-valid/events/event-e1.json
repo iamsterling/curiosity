@@ -1,0 +1,1 @@
+{"schemaVersion":1,"id":"e1","aggregate":"a1","sequence":1,"type":"observed","payloadDigest":"sha256:fixture","taint":"untrusted-source","pluginVersion":"0.1.0","hostVersion":"pinned","watermark":1}

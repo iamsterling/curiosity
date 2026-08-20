@@ -41,6 +41,8 @@
 - **Conditionally accepted (fixture-only removable qualification under a trusted stable operator-root precondition; advisory cleanliness unresolved; no live fetch, canonical Ledger implementation, index, release, or production authority):** [ADR 0053: fixture-only owned-web SQLite qualification](decisions/0053-fixture-only-owned-web-sqlite-qualification.md)
 - **Accepted (reader-only clean-room lexical qualification; no builder, publication, serving, dependency, corpus, release, or production authority):** [ADR 0054: clean-room owned lexical reader qualification](decisions/0054-clean-room-owned-lexical-reader-qualification.md)
 - **Accepted (exact removable private lexical builder/publication qualification implementation GO; no dependency, integration, serving, release, live/production input, or production authority):** [ADR 0055: owned lexical builder and atomic publication contract](decisions/0055-owned-lexical-builder-and-atomic-publication.md)
+- **Accepted (removable private legacy-parity implementation only; plugin authority/persistence/integration/cutover/production unchanged):** [ADR 0056: Rust-native legacy memory parity tranche](decisions/0056-rust-native-legacy-memory-parity.md)
+- **Accepted (exact private Darwin/Bun/OpenCode test-only Node-API qualification with one verifier-temp empty-registration test plugin; no normal plugin composition, package surface, authority transfer, release, or production):** [ADR 0057: private Node-API SDK qualification](decisions/0057-private-node-api-sdk-qualification.md)
 - **Moved / Accepted at canonical location:** [ADR 0024: durable Ledger v2 and
   capture authority](../../plugin/opencode2/docs/decisions/0024-durable-ledger-v2-and-capture-authority.md)
   ([provenance stub](decisions/moved-durable-ledger-v2-and-capture-authority.md))
@@ -76,6 +78,18 @@ ADR 0055 authorizes implementation only of its exact removable private,
 project-authored builder and atomic publication qualification. It does not
 authorize dependencies, acquisition/Ledger integration, `OwnedSnapshotPort`,
 serving, live/production inputs, fallback, deployment, or production claims.
+ADR 0056 separately authorizes only side-effect-free Rust parity against the
+plugin's unchanged JavaScript oracle. Ledger v1 remains sole lifecycle
+authority; EventCapture is observation-only; evidence metadata is authoritative
+only through Ledger; and the development evidence slice remains uncomposed and
+non-authoritative. Persistence, integration, migration, v2 activation,
+Node-API/export, M2/M6 authority change, and production remain NO-GO.
+ADR 0057 is the only Node-API exception: a separate test-only crate and plugin
+test shim may qualify unchanged ADR 0056 protocol bytes on pinned Darwin arm64,
+Bun 1.3.14, and lock-resolved OpenCode beta-17595. Exactly one verifier-temp,
+empty-registration OpenCode test plugin may load and execute once; it grants no
+normal plugin composition or authority. Any later composition decision must be
+plugin-first.
 
 ## Specifications
 
@@ -85,6 +99,8 @@ serving, live/production inputs, fallback, deployment, or production claims.
 - [Owned-web lexical index and query v1](specifications/owned-web-lexical-query-v1.md)
 - [Curiosity-owned lexical reader format and query v1](specifications/owned-lexical-reader-format-v1.md)
 - [Curiosity-owned lexical builder and publication v1](specifications/owned-lexical-builder-publication-v1.md)
+- [Legacy memory parity v1](specifications/legacy-memory-parity-v1.md)
+- [Legacy memory Node-API SDK v1](specifications/legacy-memory-node-api-sdk-v1.md)
 - [Retrieval corpus governance and admission v1](specifications/retrieval-corpus-governance-v1.md)
 - [Retrieval evaluation and SearXNG cutover v1](specifications/retrieval-evaluation-searxng-cutover-v1.md)
 
