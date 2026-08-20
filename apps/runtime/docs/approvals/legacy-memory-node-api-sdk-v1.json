@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 2,
+  "qualification": "legacy-memory-node-api-sdk-v1",
+  "decision": "approve-candidate-for-clean-acceptance",
+  "candidate": {
+    "sourceCommit": "12ac2c4ca06d0f6ccfc479249a53aad977b70322",
+    "sourceTreeSha256": "eebb6f7edd269895df94fc6f36d72d0356f8ccea6aa3f0be77ab2dd1a117cb8d",
+    "manifestSha256": "ba5bb8c5039985388aaee50b735a43d9142af1d748ce89becfaf6ed1c0ca87e1",
+    "lockfileSha256": "0dcab1171b1a04620c0c72c9e6eb8e343b15a9896544fa71f08c4719a5467d28",
+    "dependencyReceiptSha256": "d524889507ca9324584ae086366a862628df475e52c301e3e30e81a055b29335",
+    "humanLicenseReceiptSha256": "e3ee9e5c1a3a1850b9a8f634a769a015129708cdafefaf6367e0720708a8935b",
+    "abiReceiptSha256": "bc339ca4654676c002a72177273099f8afbd89bf303da8b734c9d276f144a096",
+    "undefinedImportsSha256": "3af0067e25448ce0750a9c8e139914fa1e66a19f15354861d66a63f0e20183f0",
+    "normalArtifactSha256": "b10d4f390b7c28afac22d7fa2b6d271505e19d63f162713a540145ddaf916a67",
+    "panicArtifactSha256": "4d18c088e4be89513aec5bce13e047216e7415479064b5db79f03702f2523be4",
+    "allocationFailureArtifactSha256": "ea2ba01e68f7b491e0abf2bb8efffe78fb04d89cce72952bf6d773dce37c627d",
+    "queueFailureArtifactSha256": "12e8386a8b29925502ed072f56e8b36b65f50ecba89f00c9a5ad39ad393acaef",
+    "normalArtifactReceiptSha256": "82c966f5a1df58ee1b1141f1a25806d213008fc1cec3a002273d05a17864ba7d",
+    "panicArtifactReceiptSha256": "7fc100696bfce3d145c7edc9637dc8ca96bed6f3838ba2ee2e08816f927351cd",
+    "allocationFailureArtifactReceiptSha256": "0558830abe7b78e1f37188256f643d89baf4f2d874391d5bd6419da301b3acb0",
+    "queueFailureArtifactReceiptSha256": "9e4946311319f73d60d0660ee46353ba7f35a1f2e6cc9b9b098dd72d42511709"
+  },
+  "dependencyPolicy": {
+    "normalizedGraphSha256": "ea8e433d78669a9ea4246ccafdd7d46ab39eaf338e1a31f688e72bbfed66f3e7",
+    "directDependencies": [
+      {
+        "name": "napi-sys",
+        "version": "3.3.0",
+        "checksum": "85fbf1fa9f1babfe396d74bbbf52b3643770243e8f5b0b46715d4caf7f0dfc9a",
+        "selectedLicense": "MIT",
+        "defaultFeatures": false,
+        "features": [
+          "napi4"
+        ],
+        "authorizedUse": "raw-node-api-declarations"
+      },
+      {
+        "name": "ryu-js",
+        "version": "1.0.3",
+        "checksum": "04d056b875a9d2e6cb9a61d127afee9ac5999b9f87bcb32079d1318e505be714",
+        "selectedLicense": "Apache-2.0",
+        "defaultFeatures": true,
+        "features": [],
+        "authorizedUse": "shared-adr-0056-dispatcher-only"
+      }
+    ],
+    "forbiddenPackages": [
+      "napi",
+      "napi-derive",
+      "napi-build"
+    ],
+    "approvedSpdx": [
+      "MIT",
+      "ISC",
+      "Apache-2.0"
+    ]
+  },
+  "linkerPolicy": {
+    "rustflags": [
+      "-C",
+      "link-arg=-Wl,-dead_strip_dylibs"
+    ],
+    "panicStrategy": "unwind",
+    "loadDylibs": [
+      "/usr/lib/libSystem.B.dylib"
+    ],
+    "rpaths": [],
+    "definedGlobals": [
+      "napi_register_module_v1"
+    ]
+  },
+  "approval": {
+    "approvalCommitParent": "025e01aa518c7bc4287f5be2972f40426ce4da76",
+    "approvedAt": "2026-08-20T15:08:37.143Z",
+    "sessionReference": "ses_fe92c4500ffe4zZT0sS78DAk4U/msg_01fb76d0c001mkQTF4HW2ZjGBo",
+    "rootUserApprovalStatementSha256": "52785bdadec1ac6ce65a8b1b27a5f52cacb402d3be45c8082d3fe955b38ff630"
+  }
+}
