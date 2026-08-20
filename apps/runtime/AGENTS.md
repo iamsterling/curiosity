@@ -14,6 +14,10 @@ only a separate test-only Node-API qualification on pinned Darwin arm64, Bun
 one verifier-temp, empty-registration test plugin that loads and executes once;
 it grants no normal plugin composition, package surface, authority transfer,
 M2/M6 change, release, or production use.
+ADR 0058 narrowly supersedes ADR 0057's four-artifact/schema-sameness rule for a
+fifth request-scoped control-flow observation artifact. It is isolated-Bun-only,
+never an OpenCode/package/release input, and requires a new v2 candidate and
+approval; the v1 approval remains immutable and insufficient.
 
 - Preserve attribution and transfer history in `provenance/`.
 - Keep provider-neutral contracts separate from provider adapters and operations.

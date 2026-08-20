@@ -105,7 +105,12 @@ decision. Canonical plugin ADR 0024 and all of its gates remain unchanged.
 
 ## References
 
+Plugin ADR 0028 narrowly supersedes this decision's four-artifact and
+same-qualification-schema assumptions. All other boundaries remain in force,
+and the v1 approval cannot approve v2.
+
 [Runtime ADR 0057](../../../../runtime/docs/decisions/0057-private-node-api-sdk-qualification.md),
+[plugin ADR 0028](0028-fifth-node-api-control-flow-observation-companion.md),
 [runtime ADR 0056](../../../../runtime/docs/decisions/0056-rust-native-legacy-memory-parity.md),
 [plugin ADR 0026](0026-rust-native-legacy-memory-parity-companion.md), and
 [plugin ADR 0024](0024-durable-ledger-v2-and-capture-authority.md).

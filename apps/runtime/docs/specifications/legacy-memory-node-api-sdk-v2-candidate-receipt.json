@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 3,
+  "qualification": "legacy-memory-node-api-sdk-v2",
+  "receiptKind": "candidate",
+  "dependencyReceiptSha256": "0144a4b1c7c1e81beb5be10d64562eed6a7156ae1c52d1d02183d03e92f9f302",
+  "humanLicenseReceiptSha256": "4af7d0971ae690dbe8fb9619e441ecbe4c35ad96eddc4655da998cfd76b7d375",
+  "abiReceiptSha256": "de0e2924745426144890fe03ed6c58a7aa6792685941eaffd5308d2aa7df2b86",
+  "undefinedImportsSha256": "3af0067e25448ce0750a9c8e139914fa1e66a19f15354861d66a63f0e20183f0",
+  "schemas": {
+    "qualificationInfoSchemaSha256": "67d2021acbe4601213196c9d1733a5ed4c637d4f662920075b147f16902301fe",
+    "executeSchemaSha256": "8f2dbf7beceb9f3681da2f86d1dc8818af14e263dabdb58e61a10f5191527961",
+    "paritySchemaSha256": "a7750765c7803e7bc64d55b2e3775dcc05cb488b86e5607c72c47c6ceccfe817",
+    "observationHeaderSchemaSha256": "d499430628d46cb351c7d04b6d0b00aa5814fbc88d7c53f4527fe83850140d30",
+    "envelopeGrammarSha256": "3b4adf2b512cb3555c399f52a557dc5ff022c5d5f0694418c710e5b96b62ffc4"
+  },
+  "controlFlow": {
+    "counterSchema": "legacy-memory-node-api-control-flow-counters-v1",
+    "orderedCounterNames": [
+      "inputCopyOperations",
+      "inputBytesCopied",
+      "asyncWorkCreateAttempts",
+      "asyncWorkCreateSuccesses",
+      "asyncWorkQueueAttempts",
+      "asyncWorkQueueSuccesses",
+      "workerCallbackEntries",
+      "dispatcherInvocations",
+      "completionCallbackEntries",
+      "settlementAttempts"
+    ],
+    "counterMutationSitesSha256": "553af1c8fc96201d3c28c3eccce804240d976f051ca8d1d6f003d91265d8f51f",
+    "recorderCallSitesSha256": "38153c9cbc4a273c1749a54cfab5644b5152b167cd12816de73aee604d56eb34",
+    "phaseCoreCallSitesSha256": "a99c09efa42209f1eaf39053602f8fbe72e8363cb24216f0d1af189ab72b0fbf",
+    "rawSettlementCallSiteSha256": "cc180c9d5987ff7d72102205842d1e83454ab9493d042840e86895bddf8cefac",
+    "fakeAdapterVectorsSha256": "9132ced077accac01f8f5df7567651eef8e798f34581851638a570c67e741faa"
+  },
+  "verificationTools": {
+    "astScannerVersion": "curiosity-rust-site-scanner-v1/syn-2.0.119",
+    "astScannerSourceSha256": "01676a0005b24d7be4fc528f5b7f047e49aeb6b352ed1d6910e90e490cd89e05",
+    "astScannerManifestSha256": "38d3f576d44ad30ed8030a3fe1de49796e195d40bd6293da32cada952c44b5ca",
+    "astScannerLockfileSha256": "d4923840938305ce216b7933146790755ebd9c771dbcdeb9e398c2d6376d40fa",
+    "astScannerDependencyReceiptSha256": "95610888641cb448efc1e1a82b56b5701d446d9e6b3ec6e60577148419ff4566",
+    "astNormalizationSha256": "d67a9cf464a719b1e9c331f5bbfe87ca904b90e2e297a3a3558a3cc6fdd43838",
+    "astOutputSha256": "be0ead17777005975fcb69ad94e7dd0ca87696deee7379b68a51b52f9980cd18",
+    "guardSourceSha256": "c111825344ffedfdcd7b5bebecfd8f8b1f59c1eab464868f52c09544ddc28968",
+    "guardBuildRecipeSha256": "c00d5118352346f83a3659f4d70de5326adf7ff14ea2222b015143ea05278cd6",
+    "guardCompilerSha256": "5839b06c4259d9b391fe22277ec00329ef8b55918a5f5743cd1427a262bc7f63",
+    "guardArtifactSha256": "7d085c093c6288ecda129c6022f2ab95c852ab74d8f60e082e2aa4dc3fc9d1d6",
+    "guardImportsSha256": "54cee81a3daae7ab09672a7742591205b15616e6336ee6a228e510c862119956",
+    "guardExportsSha256": "0bc2a6d78f0dd93e5b8e490a959e7fb5c75d22c6a91911e7169fc454fe791460",
+    "fakeAdapterBuildRecipeSha256": "7bb3d5613134b1eceb6d710aad6c736e06e2e6d3c733fce4dbc03985ee410cf5",
+    "fakeAdapterArtifactSha256": "ed9c0d889b9337201306a8efa3e456fb1c6482fe340569c0a26f29664565412b",
+    "phaseFixtureSourceSha256": "b58743eb1393f059276a06c06aa38e0d21e262c7fa6878f09e525d3ccedfb917",
+    "phaseFixtureBuildRecipeSha256": "c72aa6c715bcb0bb0ef43922e560972afb70d4347e6b6d4d029a8d5c64d9da18",
+    "phaseFixtureArtifactSha256": "69f285e2987eaa975d9db96508b6a9711c60e388704727358c5def80c9ca402a",
+    "phaseFixtureTranscriptSchemaSha256": "2660f866907fa43a50edb257268324b087fe32f4fc3f3b165af33d63e4917f33"
+  },
+  "profiles": [
+    {
+      "profile": "normal",
+      "receiptPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-normal-receipt.json",
+      "receiptSha256": "7c51cdb482e76f1e0cbeb65dad8bc6ce552a3008986601ea2c9bb2c94c60c49f",
+      "sidecarPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-normal-receipt.sha256",
+      "artifactSha256": "ced6f2ef07502695c1bdbce5b634e704568740e831130d5c6d2d290483d982c9"
+    },
+    {
+      "profile": "panic",
+      "receiptPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-panic-receipt.json",
+      "receiptSha256": "7263798ba88b5908962b8cb2ad38fc1332c564aed8aa1840868fffa767c006f6",
+      "sidecarPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-panic-receipt.sha256",
+      "artifactSha256": "d2bdfadc40d6964aaa75a3087f095780287d8946bda5ce67ed04abb88d58ae75"
+    },
+    {
+      "profile": "allocationFailure",
+      "receiptPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-allocation-failure-receipt.json",
+      "receiptSha256": "4865dd93e0c54bbf8a78063bff33bfb1228830bab3a01abc0a4d0e2b586d7e12",
+      "sidecarPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-allocation-failure-receipt.sha256",
+      "artifactSha256": "7e1716ab2c181bbc561db875af5dbc6406599ffa6e9a27b2b3afea539e684191"
+    },
+    {
+      "profile": "queueFailure",
+      "receiptPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-queue-failure-receipt.json",
+      "receiptSha256": "23866392daa62e9ddc86886242004a1200dcdc68760dd27d6ee2b7b040c47b9e",
+      "sidecarPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-queue-failure-receipt.sha256",
+      "artifactSha256": "9649c69be974d45f85b53c3aea3e9fd92b9d0e4bf3c85beb919f9d2ff24c704e"
+    },
+    {
+      "profile": "controlFlowObservation",
+      "receiptPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-control-flow-observation-receipt.json",
+      "receiptSha256": "f2d87a0fe9c40dcb02af1eee939fd3c3dd19499ddc003d6cff5b93f9cbc08dcb",
+      "sidecarPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-control-flow-observation-receipt.sha256",
+      "artifactSha256": "02c2d608cc8c5798d7cb50de3a034586d3a4810f3581336b4fcd9bfc24013e5a"
+    }
+  ],
+  "candidateStaticVerdicts": {
+    "allProfileReceiptsClosed": true,
+    "allTenArtifactHashPairsUnequal": true,
+    "normalObservationStringsAbsent": true,
+    "soleRawSettlementCallSiteInAdapter": true,
+    "counterMutationSitesClosed": true,
+    "recorderCallSitesClosed": true,
+    "phaseCoreCallSitesClosed": true,
+    "phaseFixtureStandalone": true,
+    "phaseFixtureCoordinationClosed": true,
+    "dependencyClosureApproved": true,
+    "abiAndImportsClosed": true
+  }
+}

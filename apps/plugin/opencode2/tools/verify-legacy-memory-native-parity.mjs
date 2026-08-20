@@ -208,6 +208,61 @@ if (process.argv.includes("--verify-dependency-receipt")) {
   process.exit(0);
 }
 
+const emitSdkVectorsIndex = process.argv.indexOf("--emit-sdk-vectors");
+if (emitSdkVectorsIndex >= 0) {
+  const destination = process.argv[emitSdkVectorsIndex + 1];
+  assert.ok(destination, "SDK_VECTOR_DESTINATION_REQUIRED");
+  const structuredRequests = [
+    "canonical-vectors.json",
+    "entity-vectors.json",
+    "event-vectors.json",
+    "replay-vectors.json",
+  ]
+    .flatMap((name) => JSON.parse(readFileSync(path.join(fixture, name))))
+    .map(({ request }) => Buffer.from(`${JSON.stringify(request)}\n`));
+  const structuredVectors = structuredRequests.map((requestBytes) => {
+    const oracleResult = spawnSync(process.execPath, [oracle], {
+      input: requestBytes,
+      encoding: null,
+      env: { ...process.env, CURIOSITY_PARITY_FIXTURE_ROOT: "" },
+    });
+    assert.equal(oracleResult.status, 0, oracleResult.stderr.toString("utf8"));
+    assert.match(oracleResult.stdout.toString("utf8"), /^\{.*\}\n$/s);
+    return {
+      requestBase64: requestBytes.toString("base64"),
+      responseBase64: oracleResult.stdout.toString("base64"),
+    };
+  });
+  const adapterVectors = JSON.parse(
+    readFileSync(path.join(fixture, "adapter-vectors.json")),
+  ).map(({ raw, code, path: diagnosticPath = null }) => {
+    let requestId = null;
+    try {
+      requestId = JSON.parse(raw).requestId ?? null;
+    } catch {}
+    const response = {
+      protocolVersion: 1,
+      requestId,
+      status: "error",
+      diagnostic: { code, path: diagnosticPath },
+    };
+    return {
+      requestBase64: Buffer.from(raw).toString("base64"),
+      responseBase64: Buffer.from(`${JSON.stringify(response)}\n`).toString(
+        "base64",
+      ),
+    };
+  });
+  const sdkVectors = [...structuredVectors, ...adapterVectors];
+  writeFileSync(destination, `${JSON.stringify(sdkVectors)}\n`, {
+    mode: 0o600,
+  });
+  process.stdout.write(
+    `${JSON.stringify({ status: "sdk-vectors-emitted", count: sdkVectors.length })}\n`,
+  );
+  process.exit(0);
+}
+
 run("cargo", [
   "build",
   "--manifest-path",

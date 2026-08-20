@@ -1,0 +1,427 @@
+{
+  "schemaVersion": 3,
+  "qualification": "legacy-memory-node-api-sdk-v2",
+  "bridge": "raw-napi-sys-control-flow-observation",
+  "status": "candidate/not-qualified",
+  "target": "aarch64-apple-darwin",
+  "napiMinimum": 4,
+  "javascriptExports": [
+    "qualificationInfo",
+    "execute"
+  ],
+  "artifactProfiles": [
+    "normal",
+    "panic",
+    "allocationFailure",
+    "queueFailure",
+    "controlFlowObservation"
+  ],
+  "permittedNativeCallbackRoles": [
+    "module-registration",
+    "export-callbacks-two",
+    "async-execute",
+    "async-complete"
+  ],
+  "linker": {
+    "rustflags": [
+      "-C",
+      "link-arg=-Wl,-dead_strip_dylibs"
+    ],
+    "panicStrategy": "unwind",
+    "dynamicLookup": false,
+    "bundleLoaderSha256": "e0c90ec15d33363e6b70713d56bc3b2c7585c17f40a0fe0f8fd9305901d4e233"
+  },
+  "dylibs": [
+    "/usr/lib/libSystem.B.dylib"
+  ],
+  "rpaths": [],
+  "definedGlobals": [
+    "napi_register_module_v1"
+  ],
+  "undefinedImports": [
+    {
+      "symbol": "_Unwind_Backtrace",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "_Unwind_DeleteException",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "_Unwind_GetDataRelBase",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "_Unwind_GetIP",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "_Unwind_GetIPInfo",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "_Unwind_GetLanguageSpecificData",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "_Unwind_GetRegionStart",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "_Unwind_GetTextRelBase",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "_Unwind_RaiseException",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "_Unwind_Resume",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "_Unwind_SetGR",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "_Unwind_SetIP",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "__error",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "_dyld_get_image_header",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "_dyld_get_image_name",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "_dyld_get_image_vmaddr_slide",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "_dyld_image_count",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "_tlv_atexit",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "_tlv_bootstrap",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "abort",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "bzero",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "calloc",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "close",
+      "category": "shared-dispatcher-read-only-filesystem",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "closedir",
+      "category": "shared-dispatcher-read-only-filesystem",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "dirfd",
+      "category": "shared-dispatcher-read-only-filesystem",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "dispatch_release",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "dispatch_semaphore_create",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "dispatch_semaphore_signal",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "dispatch_semaphore_wait",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "free",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "fstat",
+      "category": "shared-dispatcher-read-only-filesystem",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "getcwd",
+      "category": "shared-dispatcher-read-only-filesystem",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "getenv",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "lstat",
+      "category": "shared-dispatcher-read-only-filesystem",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "malloc",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "memcmp",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "memcpy",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "memmove",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "memset",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "mmap",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "munmap",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "napi_create_arraybuffer",
+      "category": "node-api-v4",
+      "napiIntroduced": 1
+    },
+    {
+      "symbol": "napi_create_async_work",
+      "category": "node-api-v4",
+      "napiIntroduced": 1
+    },
+    {
+      "symbol": "napi_create_error",
+      "category": "node-api-v4",
+      "napiIntroduced": 1
+    },
+    {
+      "symbol": "napi_create_promise",
+      "category": "node-api-v4",
+      "napiIntroduced": 1
+    },
+    {
+      "symbol": "napi_create_string_utf8",
+      "category": "node-api-v4",
+      "napiIntroduced": 1
+    },
+    {
+      "symbol": "napi_create_typedarray",
+      "category": "node-api-v4",
+      "napiIntroduced": 1
+    },
+    {
+      "symbol": "napi_define_properties",
+      "category": "node-api-v4",
+      "napiIntroduced": 1
+    },
+    {
+      "symbol": "napi_delete_async_work",
+      "category": "node-api-v4",
+      "napiIntroduced": 1
+    },
+    {
+      "symbol": "napi_get_cb_info",
+      "category": "node-api-v4",
+      "napiIntroduced": 1
+    },
+    {
+      "symbol": "napi_get_typedarray_info",
+      "category": "node-api-v4",
+      "napiIntroduced": 1
+    },
+    {
+      "symbol": "napi_get_version",
+      "category": "node-api-v4",
+      "napiIntroduced": 1
+    },
+    {
+      "symbol": "napi_is_typedarray",
+      "category": "node-api-v4",
+      "napiIntroduced": 1
+    },
+    {
+      "symbol": "napi_queue_async_work",
+      "category": "node-api-v4",
+      "napiIntroduced": 1
+    },
+    {
+      "symbol": "napi_reject_deferred",
+      "category": "node-api-v4",
+      "napiIntroduced": 1
+    },
+    {
+      "symbol": "napi_resolve_deferred",
+      "category": "node-api-v4",
+      "napiIntroduced": 1
+    },
+    {
+      "symbol": "open",
+      "category": "shared-dispatcher-read-only-filesystem",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "opendir",
+      "category": "shared-dispatcher-read-only-filesystem",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "posix_memalign",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "pthread_mutex_destroy",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "pthread_mutex_init",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "pthread_mutex_lock",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "pthread_mutex_trylock",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "pthread_mutex_unlock",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "pthread_mutexattr_destroy",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "pthread_mutexattr_init",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "pthread_mutexattr_settype",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "pthread_threadid_np",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "read",
+      "category": "shared-dispatcher-read-only-filesystem",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "readdir_r",
+      "category": "shared-dispatcher-read-only-filesystem",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "realloc",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "strerror_r",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "strlen",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "write",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    },
+    {
+      "symbol": "writev",
+      "category": "rust-runtime-allocator-unwind",
+      "napiIntroduced": null
+    }
+  ],
+  "forbiddenCapabilitiesAbsent": true,
+  "identicalFiveProfileClosure": true,
+  "artifactInspection": {
+    "file": "<candidate-artifact>: Mach-O 64-bit bundle arm64",
+    "archs": "arm64",
+    "header": "<candidate-artifact>:\nMach header\n      magic  cputype cpusubtype  caps    filetype ncmds sizeofcmds      flags\nMH_MAGIC_64    ARM64        ALL  0x00      BUNDLE    15       1800   NOUNDEFS DYLDLINK TWOLEVEL MH_HAS_TLV_DESCRIPTORS\n",
+    "loadCommands": "<candidate-artifact>:\nLoad command 0\n      cmd LC_SEGMENT_64\n  cmdsize 632\n  segname __TEXT\n   vmaddr 0x0000000000000000\n   vmsize 0x0000000000070000\n  fileoff 0\n filesize 458752\n  maxprot 0x00000005\n initprot 0x00000005\n   nsects 7\n    flags 0x0\nSection\n  sectname __text\n   segname __TEXT\n      addr 0x0000000000000748\n      size 0x0000000000053b6c\n    offset 1864\n     align 2^2 (4)\n    reloff 0\n    nreloc 0\n     flags 0x80000400\n reserved1 0\n reserved2 0\nSection\n  sectname __stubs\n   segname __TEXT\n      addr 0x00000000000542b4\n      size 0x0000000000000378\n    offset 344756\n     align 2^2 (4)\n    reloff 0\n    nreloc 0\n     flags 0x80000408\n reserved1 0 (index into indirect symbol table)\n reserved2 12 (size of stubs)\nSection\n  sectname __gcc_except_tab\n   segname __TEXT\n      addr 0x000000000005462c\n      size 0x00000000000023c0\n    offset 345644\n     align 2^2 (4)\n    reloff 0\n    nreloc 0\n     flags 0x00000000\n reserved1 0\n reserved2 0\nSection\n  sectname __const\n   segname __TEXT\n      addr 0x00000000000569f0\n      size 0x000000000000a124\n    offset 354800\n     align 2^4 (16)\n    reloff 0\n    nreloc 0\n     flags 0x00000000\n reserved1 0\n reserved2 0\nSection\n  sectname __cstring\n   segname __TEXT\n      addr 0x0000000000060b14\n      size 0x0000000000001a13\n    offset 396052\n     align 2^0 (1)\n    reloff 0\n    nreloc 0\n     flags 0x00000002\n reserved1 0\n reserved2 0\nSection\n  sectname __unwind_info\n   segname __TEXT\n      addr 0x0000000000062528\n      size 0x0000000000001b70\n    offset 402728\n     align 2^2 (4)\n    reloff 0\n    nreloc 0\n     flags 0x00000000\n reserved1 0\n reserved2 0\nSection\n  sectname __eh_frame\n   segname __TEXT\n      addr 0x0000000000064098\n      size 0x000000000000a21c\n    offset 409752\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x6800000b\n reserved1 0\n reserved2 0\nLoad command 1\n      cmd LC_SEGMENT_64\n  cmdsize 232\n  segname __DATA_CONST\n   vmaddr 0x0000000000070000\n   vmsize 0x0000000000004000\n  fileoff 458752\n filesize 16384\n  maxprot 0x00000003\n initprot 0x00000003\n   nsects 2\n    flags 0x10\nSection\n  sectname __const\n   segname __DATA_CONST\n      addr 0x0000000000070000\n      size 0x00000000000032e0\n    offset 458752\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x00000000\n reserved1 0\n reserved2 0\nSection\n  sectname __got\n   segname __DATA_CONST\n      addr 0x00000000000732e0\n      size 0x0000000000000258\n    offset 471776\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x00000006\n reserved1 74 (index into indirect symbol table)\n reserved2 0\nLoad command 2\n      cmd LC_SEGMENT_64\n  cmdsize 552\n  segname __DATA\n   vmaddr 0x0000000000074000\n   vmsize 0x0000000000004000\n  fileoff 475136\n filesize 16384\n  maxprot 0x00000003\n initprot 0x00000003\n   nsects 6\n    flags 0x0\nSection\n  sectname __data\n   segname __DATA\n      addr 0x0000000000074000\n      size 0x0000000000000968\n    offset 475136\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x00000000\n reserved1 0\n reserved2 0\nSection\n  sectname __thread_vars\n   segname __DATA\n      addr 0x0000000000074968\n      size 0x0000000000000090\n    offset 477544\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x00000013\n reserved1 0\n reserved2 0\nSection\n  sectname __thread_data\n   segname __DATA\n      addr 0x00000000000749f8\n      size 0x0000000000000020\n    offset 477688\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x00000011\n reserved1 0\n reserved2 0\nSection\n  sectname __thread_bss\n   segname __DATA\n      addr 0x0000000000074a18\n      size 0x0000000000000038\n    offset 0\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x00000012\n reserved1 0\n reserved2 0\nSection\n  sectname __common\n   segname __DATA\n      addr 0x0000000000074a50\n      size 0x0000000000000028\n    offset 0\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x00000001\n reserved1 0\n reserved2 0\nSection\n  sectname __bss\n   segname __DATA\n      addr 0x0000000000074a78\n      size 0x0000000000000088\n    offset 0\n     align 2^3 (8)\n    reloff 0\n    nreloc 0\n     flags 0x00000001\n reserved1 0\n reserved2 0\nLoad command 3\n      cmd LC_SEGMENT_64\n  cmdsize 72\n  segname __LINKEDIT\n   vmaddr 0x0000000000078000\n   vmsize 0x0000000000024000\n  fileoff 491520\n filesize 142160\n  maxprot 0x00000001\n initprot 0x00000001\n   nsects 0\n    flags 0x0\nLoad command 4\n      cmd LC_DYLD_CHAINED_FIXUPS\n  cmdsize 16\n  dataoff 491520\n datasize 1664\nLoad command 5\n      cmd LC_DYLD_EXPORTS_TRIE\n  cmdsize 16\n  dataoff 493184\n datasize 40\nLoad command 6\n     cmd LC_SYMTAB\n cmdsize 24\n  symoff 494496\n   nsyms 1284\n  stroff 515636\n strsize 112936\nLoad command 7\n            cmd LC_DYSYMTAB\n        cmdsize 80\n      ilocalsym 0\n      nlocalsym 1208\n     iextdefsym 1208\n     nextdefsym 1\n      iundefsym 1209\n      nundefsym 75\n         tocoff 0\n           ntoc 0\n      modtaboff 0\n        nmodtab 0\n   extrefsymoff 0\n    nextrefsyms 0\n indirectsymoff 515040\n  nindirectsyms 149\n      extreloff 0\n        nextrel 0\n      locreloff 0\n        nlocrel 0\nLoad command 8\n     cmd LC_UUID\n cmdsize 24\n    uuid AC7D69FB-B16D-3976-8C1C-B55E34610377\nLoad command 9\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform 1\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool 3\n  version 27031.0\nLoad command 10\n      cmd LC_SOURCE_VERSION\n  cmdsize 16\n  version 0.0\nLoad command 11\n          cmd LC_LOAD_DYLIB\n      cmdsize 56\n         name /usr/lib/libSystem.B.dylib (offset 24)\n   time stamp 2 Wed Dec 31 18:00:02 1969\n      current version 1359.0.0\ncompatibility version 1.0.0\nLoad command 12\n      cmd LC_FUNCTION_STARTS\n  cmdsize 16\n  dataoff 493224\n datasize 1272\nLoad command 13\n      cmd LC_DATA_IN_CODE\n  cmdsize 16\n  dataoff 494496\n datasize 0\nLoad command 14\n      cmd LC_CODE_SIGNATURE\n  cmdsize 16\n  dataoff 628576\n datasize 5104\n",
+    "embeddedPaths": []
+  }
+}

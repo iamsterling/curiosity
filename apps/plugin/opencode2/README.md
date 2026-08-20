@@ -62,6 +62,13 @@ active session model.
   normal plugin composition, add package files/exports/assets/dist, transfer
   authority, or alter M2/M6; any later composition proposal requires a plugin
   authority decision first.
+- **Accepted fifth-artifact documentation authority:** [ADR 0028](docs/decisions/0028-fifth-node-api-control-flow-observation-companion.md)
+  permits one request-scoped observation artifact only in isolated Bun
+  qualification children. It is never an OpenCode, package, release, or normal
+  composition input and requires a new v2 candidate and approval-only commit.
+  separates actual-addon request-isolation evidence from standalone controlled
+  shared-core interleaving evidence. The fixture is Phase-C-executed only, is not
+  an addon or sixth artifact, and is absent from plugin/package/release surfaces.
 - **Ledger Authority v1:** immutable event authority for intent, capability/delta framing, criteria, work, claims, typed evidence, approvals, reconciliation, archive lineage, facts, audit and capture gaps.
 - **Native Loop Engine:** same-root-session execution journal using native prompt/interrupt/event primitives only.
 - **Hook foundation:** durable event envelopes, bounded provenance-labelled context, tool observations and compaction/event capture.

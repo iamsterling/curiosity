@@ -60,6 +60,14 @@ const manifestWithoutReceiptScript = (source, expectedScript) => {
     );
     delete value.scripts["verify:legacy-memory-node-api-sdk"];
   }
+  if (value.scripts?.["verify:legacy-memory-node-api-sdk-v2"] !== undefined) {
+    assert.equal(
+      value.scripts["verify:legacy-memory-node-api-sdk-v2"],
+      "bun apps/plugin/opencode2/tests/qualification/verify-legacy-memory-node-api-sdk-v2.mjs",
+      "DEPENDENCY_NODE_API_V2_SCRIPT_INVALID",
+    );
+    delete value.scripts["verify:legacy-memory-node-api-sdk-v2"];
+  }
   return value;
 };
 

@@ -8,6 +8,9 @@ normal plugin composition, package surface, persistence, authority transfer,
 M2/M6 change, release, or production use. Its sole composition exception is one
 verifier-temp, empty-registration test plugin that loads and executes once; any
 later composition authority is plugin-first and requires a new decision.
+ADR 0028 narrowly permits a fifth request-scoped observation artifact only in
+isolated Bun qualification children. It is forbidden from OpenCode probes,
+normal composition, packages, and releases and requires a new v2 approval.
 
 - Preserve source attribution and reproducible manifests in `provenance/`.
 - Runtime identity is `iamsterling.opencode2-config`; state belongs under `.opencode/opencode2-config/`.

@@ -9,9 +9,19 @@ use napi_sys::{
     napi_create_arraybuffer, napi_create_async_work, napi_create_error, napi_create_promise,
     napi_create_string_utf8, napi_create_typedarray, napi_deferred, napi_define_properties,
     napi_delete_async_work, napi_env, napi_get_cb_info, napi_get_typedarray_info, napi_get_version,
-    napi_is_typedarray, napi_property_descriptor, napi_queue_async_work, napi_reject_deferred,
-    napi_resolve_deferred, napi_status, napi_value,
+    napi_is_typedarray, napi_property_descriptor, napi_queue_async_work, napi_status, napi_value,
 };
+
+mod control_flow;
+mod phase_counter_core;
+mod settlement;
+mod settlement_core;
+
+use control_flow::ControlFlowCounters;
+use phase_counter_core::{
+    NoopPhaseController, record_completion_phase, record_entry_phase, record_worker_phase,
+};
+use settlement::{DeferredSettlement, SettlementKind, settle_deferred};
 
 #[path = "../../native/src/legacy_memory/mod.rs"]
 mod legacy_memory;
@@ -58,7 +68,8 @@ enum WorkResult {
 struct RequestState {
     request: Vec<u8>,
     result: WorkResult,
-    deferred: napi_deferred,
+    settlement: DeferredSettlement,
+    counters: ControlFlowCounters,
     work: napi_async_work,
 }
 
@@ -76,12 +87,13 @@ fn ok(status: napi_status) -> Result<(), TransportFailure> {
     }
 }
 
-fn execute_owned(request: Vec<u8>) -> Vec<u8> {
+fn execute_owned(request: Vec<u8>, counters: &mut ControlFlowCounters) -> Vec<u8> {
     let panic_id = panic_request_id(&request);
     contained(|| {
         if panic_id.is_some() {
             inject_panic_probe();
         }
+        counters.record_dispatcher_invocation();
         Ok(legacy_memory::protocol::dispatch_bytes(&request).bytes)
     })
     .unwrap_or_else(|_| internal_failure_bytes(panic_id))
@@ -204,30 +216,41 @@ fn create_error(env: napi_env, rejection: RejectionCode) -> Result<napi_value, T
 
 fn reject(
     env: napi_env,
-    deferred: napi_deferred,
+    settlement: &DeferredSettlement,
+    counters: &mut ControlFlowCounters,
     rejection: RejectionCode,
 ) -> Result<(), TransportFailure> {
-    let error = create_error(env, rejection)?;
-    reject_value(env, deferred, error)
-}
-
-fn reject_value(
-    env: napi_env,
-    deferred: napi_deferred,
-    error: napi_value,
-) -> Result<(), TransportFailure> {
-    // SAFETY: `deferred` belongs to the current execute request and `error` is local.
-    ok(unsafe { napi_reject_deferred(env, deferred, error) })
+    let _ = settle_deferred(env, settlement, counters, SettlementKind::Reject, |_| {
+        create_error(env, rejection)
+    })?;
+    Ok(())
 }
 
 fn resolve_bytes(
     env: napi_env,
-    deferred: napi_deferred,
+    settlement: &DeferredSettlement,
+    counters: &mut ControlFlowCounters,
     bytes: &[u8],
 ) -> Result<(), TransportFailure> {
-    let value = create_bytes(env, bytes)?;
-    // SAFETY: `deferred` is unsettled and `value` is a live local value.
-    ok(unsafe { napi_resolve_deferred(env, deferred, value) })
+    let _ = settle_deferred(
+        env,
+        settlement,
+        counters,
+        SettlementKind::Resolve,
+        |_observed| {
+            #[cfg(sdk_probe = "control_flow_observation")]
+            let output = _observed
+                .envelope(bytes)
+                .ok_or(TransportFailure::Allocation)?;
+            #[cfg(not(sdk_probe = "control_flow_observation"))]
+            let output = bytes;
+            #[cfg(sdk_probe = "control_flow_observation")]
+            return create_bytes(env, &output);
+            #[cfg(not(sdk_probe = "control_flow_observation"))]
+            create_bytes(env, output)
+        },
+    )?;
+    Ok(())
 }
 
 fn qualification_info_inner(env: napi_env) -> Result<napi_value, TransportFailure> {
@@ -237,13 +260,15 @@ fn qualification_info_inner(env: napi_env) -> Result<napi_value, TransportFailur
     if host_maximum < 4 {
         return Err(TransportFailure::NodeApi);
     }
-    create_bytes(
-        env,
-        format!(
-            "{{\"schemaVersion\":1,\"protocol\":\"legacy-memory-parity-v1\",\"protocolVersion\":1,\"transport\":\"node-api-bytes-v1\",\"target\":\"aarch64-apple-darwin\",\"napiMinimum\":4,\"napiHostMaximum\":{host_maximum},\"napiSys\":\"3.3.0\",\"ryuJs\":\"1.0.3\"}}\n"
-        )
-        .as_bytes(),
-    )
+    #[cfg(sdk_probe = "control_flow_observation")]
+    let info = format!(
+        "{{\"schemaVersion\":2,\"protocol\":\"legacy-memory-parity-v1\",\"protocolVersion\":1,\"transport\":\"node-api-bytes-v1\",\"artifactProfile\":\"control_flow_observation\",\"executeEnvelope\":\"header-json LF exact-parity-bytes\",\"counterSchema\":\"legacy-memory-node-api-control-flow-counters-v1\",\"target\":\"aarch64-apple-darwin\",\"napiMinimum\":4,\"napiHostMaximum\":{host_maximum},\"napiSys\":\"3.3.0\",\"ryuJs\":\"1.0.3\"}}\n"
+    );
+    #[cfg(not(sdk_probe = "control_flow_observation"))]
+    let info = format!(
+        "{{\"schemaVersion\":1,\"protocol\":\"legacy-memory-parity-v1\",\"protocolVersion\":1,\"transport\":\"node-api-bytes-v1\",\"target\":\"aarch64-apple-darwin\",\"napiMinimum\":4,\"napiHostMaximum\":{host_maximum},\"napiSys\":\"3.3.0\",\"ryuJs\":\"1.0.3\"}}\n"
+    );
+    create_bytes(env, info.as_bytes())
 }
 
 unsafe extern "C" fn qualification_info(env: napi_env, _: napi_callback_info) -> napi_value {
@@ -345,12 +370,16 @@ fn inject_owned_input_allocation_failure() -> TransportFailure {
 
 fn settle_allocation_failure_probe(
     env: napi_env,
-    deferred: napi_deferred,
+    settlement: &DeferredSettlement,
+    counters: &mut ControlFlowCounters,
 ) -> Result<(), TransportFailure> {
     let rejection = create_error(env, RejectionCode::TransportFailed)?;
     let failure = inject_owned_input_allocation_failure();
     debug_assert_eq!(failure, TransportFailure::Allocation);
-    let _settlement_status = reject_value(env, deferred, rejection);
+    let _settlement_status =
+        settle_deferred(env, settlement, counters, SettlementKind::Reject, |_| {
+            Ok(rejection)
+        });
     Ok(())
 }
 
@@ -375,8 +404,9 @@ fn create_async_work(env: napi_env, state: &mut RequestState) -> Result<(), Tran
             &mut resource_name,
         )
     })?;
+    state.counters.record_async_work_create_attempt();
     // SAFETY: `state` remains boxed and stable through work creation/queue transfer.
-    ok(unsafe {
+    let status = ok(unsafe {
         napi_create_async_work(
             env,
             null_mut(),
@@ -386,57 +416,95 @@ fn create_async_work(env: napi_env, state: &mut RequestState) -> Result<(), Tran
             (state as *mut RequestState).cast::<c_void>(),
             &mut state.work,
         )
-    })
+    });
+    if status.is_ok() {
+        state.counters.record_async_work_create_success();
+    }
+    status
 }
 
 fn admit_execute(
     env: napi_env,
     info: napi_callback_info,
-    deferred: napi_deferred,
+    settlement: &mut Option<DeferredSettlement>,
+    counters: &mut Option<ControlFlowCounters>,
 ) -> Result<(), TransportFailure> {
+    let gate = settlement.as_ref().ok_or(TransportFailure::NodeApi)?;
+    let observed = counters.as_mut().ok_or(TransportFailure::NodeApi)?;
     let metadata = input_metadata(env, info)?;
     if metadata.length > INPUT_LIMIT {
-        resolve_bytes(env, deferred, TOO_LARGE)?;
+        resolve_bytes(env, gate, observed, TOO_LARGE)?;
         return Ok(());
     }
     let input = borrowed_input(&metadata)?;
     if allocation_fails(input) {
-        return settle_allocation_failure_probe(env, deferred);
+        return settle_allocation_failure_probe(env, gate, observed);
     }
     let request = owned_input(input)?;
+    record_entry_phase(observed, 0, input.len(), &NoopPhaseController);
     let mut state = Box::new(RequestState {
         request,
         result: WorkResult::Pending,
-        deferred,
+        settlement: settlement.take().ok_or(TransportFailure::NodeApi)?,
+        counters: counters.take().ok_or(TransportFailure::NodeApi)?,
         work: null_mut(),
     });
-    create_async_work(env, &mut state)?;
+    if create_async_work(env, &mut state).is_err() {
+        let _ = reject(
+            env,
+            &state.settlement,
+            &mut state.counters,
+            RejectionCode::TransportFailed,
+        );
+        return Ok(());
+    }
+    state.counters.record_async_work_queue_attempt();
     if queue_fails(&state.request) {
         // SAFETY: Work was created but never queued and remains owned locally.
         let _ = unsafe { napi_delete_async_work(env, state.work) };
-        return Err(TransportFailure::Queue);
+        let _ = reject(
+            env,
+            &state.settlement,
+            &mut state.counters,
+            RejectionCode::TransportFailed,
+        );
+        return Ok(());
     }
     let state_pointer = Box::into_raw(state);
     // SAFETY: The host owns the stable data pointer after successful queueing.
     if unsafe { napi_queue_async_work(env, (*state_pointer).work) } != Status::napi_ok {
         // SAFETY: Queueing failed, so callbacks cannot observe the pointer; reclaim exactly once.
-        let state = unsafe { Box::from_raw(state_pointer) };
+        let mut state = unsafe { Box::from_raw(state_pointer) };
         // SAFETY: The unqueued work remains deletable on this thread.
         let _ = unsafe { napi_delete_async_work(env, state.work) };
-        return Err(TransportFailure::Queue);
+        let _ = reject(
+            env,
+            &state.settlement,
+            &mut state.counters,
+            RejectionCode::TransportFailed,
+        );
+        return Ok(());
     }
+    // SAFETY: Successful queueing leaves the host as the unique state owner.
+    unsafe { (*state_pointer).counters.record_async_work_queue_success() };
     Ok(())
 }
 
 fn execute_inner(env: napi_env, info: napi_callback_info) -> Result<napi_value, TransportFailure> {
     let (deferred, promise) = create_promise(env)?;
-    if let Err(failure) = contained(|| admit_execute(env, info, deferred)) {
+    let mut settlement = Some(DeferredSettlement::new(deferred));
+    let mut counters = Some(ControlFlowCounters::default());
+    if let Err(failure) = contained(|| admit_execute(env, info, &mut settlement, &mut counters)) {
         let rejection = if failure == TransportFailure::InvalidInput {
             RejectionCode::InputTypeInvalid
         } else {
             RejectionCode::TransportFailed
         };
-        let _ = reject(env, deferred, rejection);
+        if let (Some(gate), Some(observed)) = (&settlement, &mut counters)
+            && !gate.attempted()
+        {
+            let _ = reject(env, gate, observed, rejection);
+        }
     }
     Ok(promise)
 }
@@ -452,8 +520,9 @@ unsafe extern "C" fn execute_work(_: napi_env, data: *mut c_void) {
         }
         // SAFETY: The host passes back the unique boxed RequestState pointer.
         let state = unsafe { &mut *data.cast::<RequestState>() };
+        record_worker_phase(&mut state.counters, 0, &NoopPhaseController);
         let request = std::mem::take(&mut state.request);
-        state.result = WorkResult::Bytes(execute_owned(request));
+        state.result = WorkResult::Bytes(execute_owned(request, &mut state.counters));
     }));
     if !data.is_null() {
         // SAFETY: Same host-owned state; write only a closed failure after a caught panic.
@@ -471,6 +540,7 @@ unsafe extern "C" fn complete_work(env: napi_env, status: napi_status, data: *mu
         }
         // SAFETY: Completion is the unique terminal owner of this boxed state.
         let mut state = unsafe { Box::from_raw(data.cast::<RequestState>()) };
+        record_completion_phase(&mut state.counters, 0, &NoopPhaseController);
         // SAFETY: Completion owns the work handle and deletes it exactly once.
         if unsafe { napi_delete_async_work(env, state.work) } != Status::napi_ok {
             state.result = WorkResult::Failure(TransportFailure::NodeApi);
@@ -478,19 +548,21 @@ unsafe extern "C" fn complete_work(env: napi_env, status: napi_status, data: *mu
         if status != Status::napi_ok {
             state.result = WorkResult::Failure(TransportFailure::Queue);
         }
-        let _settlement_status = settle_once(env, state.deferred, &state.result);
+        let _settlement_status =
+            settle_once(env, &state.settlement, &mut state.counters, &state.result);
     }));
 }
 
 fn settle_once(
     env: napi_env,
-    deferred: napi_deferred,
+    settlement: &DeferredSettlement,
+    counters: &mut ControlFlowCounters,
     result: &WorkResult,
 ) -> Result<(), TransportFailure> {
     match result {
-        WorkResult::Bytes(bytes) => resolve_bytes(env, deferred, bytes),
+        WorkResult::Bytes(bytes) => resolve_bytes(env, settlement, counters, bytes),
         WorkResult::Pending | WorkResult::Failure(_) => {
-            reject(env, deferred, RejectionCode::TransportFailed)
+            reject(env, settlement, counters, RejectionCode::TransportFailed)
         }
     }
 }
@@ -544,7 +616,9 @@ mod tests {
     #[test]
     fn pure_dispatch_preserves_exact_protocol_bytes() {
         let request = b"{\"protocolVersion\":1,\"requestId\":\"sdk-pure\",\"operation\":\"canonicalize\",\"input\":{\"value\":{\"kind\":\"json\",\"value\":null}}}\n";
-        assert_eq!(execute_owned(request.to_vec()), b"{\"protocolVersion\":1,\"requestId\":\"sdk-pure\",\"status\":\"ok\",\"result\":{\"bytesBase64\":\"bnVsbA==\",\"byteLength\":4}}\n");
+        let mut counters = ControlFlowCounters::default();
+        assert_eq!(execute_owned(request.to_vec(), &mut counters), b"{\"protocolVersion\":1,\"requestId\":\"sdk-pure\",\"status\":\"ok\",\"result\":{\"bytesBase64\":\"bnVsbA==\",\"byteLength\":4}}\n");
+        assert_eq!(counters.checked().unwrap().dispatcher_invocations, 1);
     }
 
     #[test]
@@ -622,9 +696,49 @@ mod tests {
             .find("inject_owned_input_allocation_failure()")
             .expect("allocation failure injection");
         let settle = source
-            .find("reject_value(env, deferred, rejection)")
+            .find("settle_deferred(")
             .expect("single deferred settlement");
         assert!(create < inject && inject < settle);
+    }
+
+    #[test]
+    fn settlement_source_has_one_private_raw_adapter_invocation() {
+        let source = include_str!("settlement.rs");
+        assert_eq!(
+            source
+                .matches("raw_settlement(env, settlement.deferred, value)")
+                .count(),
+            1
+        );
+        assert_eq!(
+            include_str!("settlement_core.rs")
+                .matches("compare_exchange(")
+                .count(),
+            1
+        );
+        let production = include_str!("lib.rs").split("#[cfg(test)]").next().unwrap();
+        assert!(!production.contains(&["napi_resolve", "_deferred"].concat()));
+        assert!(!production.contains(&["napi_reject", "_deferred"].concat()));
+    }
+
+    #[cfg(sdk_probe = "control_flow_observation")]
+    #[test]
+    fn observation_envelope_has_exact_counter_order_and_parity_suffix() {
+        let mut counters = ControlFlowCounters::default();
+        counters.record_input_copy(7);
+        counters.record_async_work_create_attempt();
+        counters.record_async_work_create_success();
+        counters.record_async_work_queue_attempt();
+        counters.record_async_work_queue_success();
+        counters.record_worker_callback_entry();
+        counters.record_dispatcher_invocation();
+        counters.record_completion_callback_entry();
+        counters.record_settlement_attempt();
+        let parity = b"{\"status\":\"ok\"}\n";
+        let bytes = counters.envelope(parity).unwrap();
+        assert!(bytes.ends_with(parity));
+        assert_eq!(bytes.iter().filter(|byte| **byte == b'\n').count(), 2);
+        assert!(String::from_utf8(bytes).unwrap().starts_with("{\"schemaVersion\":1,\"kind\":\"control_flow_observation\",\"counters\":{\"inputCopyOperations\":1,\"inputBytesCopied\":7,\"asyncWorkCreateAttempts\":1,\"asyncWorkCreateSuccesses\":1,\"asyncWorkQueueAttempts\":1,\"asyncWorkQueueSuccesses\":1,\"workerCallbackEntries\":1,\"dispatcherInvocations\":1,\"completionCallbackEntries\":1,\"settlementAttempts\":1}}\n"));
     }
 
     #[test]

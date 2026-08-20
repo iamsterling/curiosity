@@ -139,7 +139,13 @@ transform exposure, or composition path still triggers this stop condition.
 
 ## References
 
+ADR 0058 narrowly supersedes this decision's four-artifact and
+same-qualification-schema requirements. This decision is otherwise preserved;
+its v1 approval remains immutable historical evidence and is insufficient for a
+v2 candidate.
+
 [Runtime ADR 0056](0056-rust-native-legacy-memory-parity.md),
+[runtime ADR 0058](0058-fifth-node-api-control-flow-observation-artifact.md),
 [plugin ADR 0027](../../../plugin/opencode2/docs/decisions/0027-private-node-api-sdk-qualification-companion.md),
 [legacy memory parity v1](../specifications/legacy-memory-parity-v1.md), and
 [plugin ADR 0024](../../../plugin/opencode2/docs/decisions/0024-durable-ledger-v2-and-capture-authority.md).

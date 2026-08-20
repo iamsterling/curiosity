@@ -43,6 +43,8 @@
 - **Accepted (exact removable private lexical builder/publication qualification implementation GO; no dependency, integration, serving, release, live/production input, or production authority):** [ADR 0055: owned lexical builder and atomic publication contract](decisions/0055-owned-lexical-builder-and-atomic-publication.md)
 - **Accepted (removable private legacy-parity implementation only; plugin authority/persistence/integration/cutover/production unchanged):** [ADR 0056: Rust-native legacy memory parity tranche](decisions/0056-rust-native-legacy-memory-parity.md)
 - **Accepted (exact private Darwin/Bun/OpenCode test-only Node-API qualification with one verifier-temp empty-registration test plugin; no normal plugin composition, package surface, authority transfer, release, or production):** [ADR 0057: private Node-API SDK qualification](decisions/0057-private-node-api-sdk-qualification.md)
+- **Accepted (documentation authority for a fifth isolated control-flow observation artifact and a new v2 candidate/approval only):** [ADR 0058: fifth Node-API control-flow observation artifact](decisions/0058-fifth-node-api-control-flow-observation-artifact.md)
+- **Accepted (documentation authority for separate actual-addon isolation and controlled shared-core interleaving evidence in a replacement schema-v3 SDK-v2 candidate only):** [ADR 0059: controlled phase-core concurrency evidence](decisions/0059-controlled-phase-core-concurrency-evidence.md)
 - **Moved / Accepted at canonical location:** [ADR 0024: durable Ledger v2 and
   capture authority](../../plugin/opencode2/docs/decisions/0024-durable-ledger-v2-and-capture-authority.md)
   ([provenance stub](decisions/moved-durable-ledger-v2-and-capture-authority.md))
@@ -90,6 +92,13 @@ Bun 1.3.14, and lock-resolved OpenCode beta-17595. Exactly one verifier-temp,
 empty-registration OpenCode test plugin may load and execute once; it grants no
 normal plugin composition or authority. Any later composition decision must be
 plugin-first.
+ADR 0058 narrowly replaces its four-artifact/schema-sameness rule with one fifth
+request-scoped observation artifact. That artifact is Bun-child-only, never
+OpenCode/package/release input, and requires a new v2 candidate and approval.
+ADR 0059 narrows concurrency claims: actual-addon widths prove request-local
+isolation only, while a non-addon standalone fixture may prove prescribed
+shared-core schedules only in Phase C. The two verdicts remain independent; the
+fixture is absent from all package and release surfaces.
 
 ## Specifications
 
@@ -101,6 +110,7 @@ plugin-first.
 - [Curiosity-owned lexical builder and publication v1](specifications/owned-lexical-builder-publication-v1.md)
 - [Legacy memory parity v1](specifications/legacy-memory-parity-v1.md)
 - [Legacy memory Node-API SDK v1](specifications/legacy-memory-node-api-sdk-v1.md)
+- [Legacy memory Node-API SDK v2](specifications/legacy-memory-node-api-sdk-v2.md)
 - [Retrieval corpus governance and admission v1](specifications/retrieval-corpus-governance-v1.md)
 - [Retrieval evaluation and SearXNG cutover v1](specifications/retrieval-evaluation-searxng-cutover-v1.md)
 

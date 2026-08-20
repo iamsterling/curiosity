@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 3,
+  "qualification": "legacy-memory-node-api-sdk-v2",
+  "receiptKind": "candidate-profile",
+  "profile": "panic",
+  "exclusiveCfg": "sdk_probe=\"panic\"",
+  "triggerSha256": "3bcce6806b79333580d3ea5838fa96a8fa5ce1c85b71b3501a9ad9928f137cb6",
+  "artifactSha256": "d2bdfadc40d6964aaa75a3087f095780287d8946bda5ce67ed04abb88d58ae75",
+  "source": {
+    "sourceCommit": "36f8a647addb403d0f21a9cca13772b6b8423395",
+    "sourceTreeSha256": "cc5671ed09d9f5fc21f9b3353989e71b7689d61d9852d5bdd919fcb91dd0f921",
+    "manifestSha256": "f2085f8ae2dd865809a6e5a10dd90225a74d9cc4f6245c726c350352c7ee5cf6",
+    "lockfileSha256": "0dcab1171b1a04620c0c72c9e6eb8e343b15a9896544fa71f08c4719a5467d28",
+    "sharedDispatcherSha256": "8e411d0c15d155dad57aa289a6d3f2f30f4bb7f7598ac02e2addad4691b1c73b",
+    "counterSourceSha256": "08d1b54e79422edea9089b49dd5fd8768072282d1f000ab2366734809ca10e5d",
+    "phaseCounterCoreSha256": "50e679056fd366b622a85f96f0c33d7666ee0cb06d42a4e177771d4e54226f7f",
+    "settlementGateSourceSha256": "3379be2cd1c26fbcb129f7a1ccad69d80a7a7e00da8c43da2c3c028f04a3dffd",
+    "settlementAdapterSourceSha256": "3379be2cd1c26fbcb129f7a1ccad69d80a7a7e00da8c43da2c3c028f04a3dffd",
+    "settlementCoreSourceSha256": "eb46c863d91ec7fdcdb20906fd4834668cb2669fd8e78b5ea4c67bfb72331260",
+    "fakeAdapterSourceSha256": "bb31b653c87a72622bae034e6509823c44b016f94c0cb1c683f000bc93f4663f"
+  },
+  "schemas": {
+    "qualificationInfoSchemaSha256": "67d2021acbe4601213196c9d1733a5ed4c637d4f662920075b147f16902301fe",
+    "executeSchemaSha256": "8f2dbf7beceb9f3681da2f86d1dc8818af14e263dabdb58e61a10f5191527961",
+    "paritySchemaSha256": "a7750765c7803e7bc64d55b2e3775dcc05cb488b86e5607c72c47c6ceccfe817",
+    "observationHeaderSchemaSha256": "d499430628d46cb351c7d04b6d0b00aa5814fbc88d7c53f4527fe83850140d30",
+    "envelopeGrammarSha256": "3b4adf2b512cb3555c399f52a557dc5ff022c5d5f0694418c710e5b96b62ffc4"
+  },
+  "controlFlow": {
+    "counterSchema": "legacy-memory-node-api-control-flow-counters-v1",
+    "orderedCounterNames": [
+      "inputCopyOperations",
+      "inputBytesCopied",
+      "asyncWorkCreateAttempts",
+      "asyncWorkCreateSuccesses",
+      "asyncWorkQueueAttempts",
+      "asyncWorkQueueSuccesses",
+      "workerCallbackEntries",
+      "dispatcherInvocations",
+      "completionCallbackEntries",
+      "settlementAttempts"
+    ],
+    "counterMutationSitesSha256": "553af1c8fc96201d3c28c3eccce804240d976f051ca8d1d6f003d91265d8f51f",
+    "recorderCallSitesSha256": "38153c9cbc4a273c1749a54cfab5644b5152b167cd12816de73aee604d56eb34",
+    "phaseCoreCallSitesSha256": "a99c09efa42209f1eaf39053602f8fbe72e8363cb24216f0d1af189ab72b0fbf",
+    "rawSettlementCallSiteSha256": "cc180c9d5987ff7d72102205842d1e83454ab9493d042840e86895bddf8cefac",
+    "fakeAdapterVectorsSha256": "9132ced077accac01f8f5df7567651eef8e798f34581851638a570c67e741faa"
+  },
+  "verificationTools": {
+    "astScannerVersion": "curiosity-rust-site-scanner-v1/syn-2.0.119",
+    "astScannerSourceSha256": "01676a0005b24d7be4fc528f5b7f047e49aeb6b352ed1d6910e90e490cd89e05",
+    "astScannerManifestSha256": "38d3f576d44ad30ed8030a3fe1de49796e195d40bd6293da32cada952c44b5ca",
+    "astScannerLockfileSha256": "d4923840938305ce216b7933146790755ebd9c771dbcdeb9e398c2d6376d40fa",
+    "astScannerDependencyReceiptSha256": "95610888641cb448efc1e1a82b56b5701d446d9e6b3ec6e60577148419ff4566",
+    "astNormalizationSha256": "d67a9cf464a719b1e9c331f5bbfe87ca904b90e2e297a3a3558a3cc6fdd43838",
+    "astOutputSha256": "be0ead17777005975fcb69ad94e7dd0ca87696deee7379b68a51b52f9980cd18",
+    "guardSourceSha256": "c111825344ffedfdcd7b5bebecfd8f8b1f59c1eab464868f52c09544ddc28968",
+    "guardBuildRecipeSha256": "c00d5118352346f83a3659f4d70de5326adf7ff14ea2222b015143ea05278cd6",
+    "guardCompilerSha256": "5839b06c4259d9b391fe22277ec00329ef8b55918a5f5743cd1427a262bc7f63",
+    "guardArtifactSha256": "7d085c093c6288ecda129c6022f2ab95c852ab74d8f60e082e2aa4dc3fc9d1d6",
+    "guardImportsSha256": "54cee81a3daae7ab09672a7742591205b15616e6336ee6a228e510c862119956",
+    "guardExportsSha256": "0bc2a6d78f0dd93e5b8e490a959e7fb5c75d22c6a91911e7169fc454fe791460",
+    "fakeAdapterBuildRecipeSha256": "7bb3d5613134b1eceb6d710aad6c736e06e2e6d3c733fce4dbc03985ee410cf5",
+    "fakeAdapterArtifactSha256": "ed9c0d889b9337201306a8efa3e456fb1c6482fe340569c0a26f29664565412b",
+    "phaseFixtureSourceSha256": "b58743eb1393f059276a06c06aa38e0d21e262c7fa6878f09e525d3ccedfb917",
+    "phaseFixtureBuildRecipeSha256": "c72aa6c715bcb0bb0ef43922e560972afb70d4347e6b6d4d029a8d5c64d9da18",
+    "phaseFixtureArtifactSha256": "69f285e2987eaa975d9db96508b6a9711c60e388704727358c5def80c9ca402a",
+    "phaseFixtureTranscriptSchemaSha256": "2660f866907fa43a50edb257268324b087fe32f4fc3f3b165af33d63e4917f33"
+  },
+  "compiler": {
+    "rustcVersion": "rustc 1.97.1 (8bab26f4f 2026-07-14)\nbinary: rustc\ncommit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452\ncommit-date: 2026-07-14\nhost: aarch64-apple-darwin\nrelease: 1.97.1\nLLVM version: 22.1.6",
+    "cargoVersion": "cargo 1.97.1 (c980f4866 2026-06-30)\nrelease: 1.97.1\ncommit-hash: c980f4866141969fab6254a680546a277789d6f0\ncommit-date: 2026-06-30\nhost: aarch64-apple-darwin\nlibgit2: 1.9.2 (sys:0.20.4 vendored)\nlibcurl: 8.7.1 (sys:0.4.88+curl-8.20.0 system ssl:(SecureTransport) LibreSSL/3.3.6)\nssl: OpenSSL 3.6.2 7 Apr 2026\nos: Mac OS 27.0.0 [64-bit]",
+    "target": "aarch64-apple-darwin",
+    "profile": "release",
+    "panicStrategy": "unwind",
+    "rustflags": "-C link-arg=-Wl,-dead_strip_dylibs",
+    "linkerArguments": [
+      "-Wl,-dead_strip_dylibs",
+      "-Wl,-bundle"
+    ],
+    "macosDeploymentTarget": "15.0"
+  },
+  "environment": {
+    "normalizedNamesSha256": "57d13dc8dce5c313570f4394b4be5fae67ce18fef50fdb12d50d7b12fbf93604",
+    "normalizedNameValueSha256": "7b1445c456783f623ed609a389fb0e19bc91a5c30d60d3e447bfb18263df7d91"
+  },
+  "imports": {
+    "abiReceiptSha256": "de0e2924745426144890fe03ed6c58a7aa6792685941eaffd5308d2aa7df2b86",
+    "undefinedImportsSha256": "3af0067e25448ce0750a9c8e139914fa1e66a19f15354861d66a63f0e20183f0",
+    "symbolClassificationsSha256": "92d8595bc1e8fd059a55893e55da6bcee696f6042eb27db6df16267c2859c7ca",
+    "loadCommandsSha256": "86bf767eeffe3e6cc01ce6c397e866cd2cb08154e8d06b33eadb2ee605c9210b",
+    "loadDylibs": [
+      "/usr/lib/libSystem.B.dylib"
+    ],
+    "rpaths": [],
+    "definedGlobals": [
+      "napi_register_module_v1"
+    ],
+    "napiMinimum": 4,
+    "napiHostMaximum": null
+  },
+  "loaderClass": "isolated-bun-fault-child",
+  "staticVerdicts": {
+    "machOClosure": true,
+    "twoExportsOnly": true,
+    "importsClosed": true,
+    "soleRawSettlementCallSiteInAdapter": true,
+    "counterMutationSitesClosed": true,
+    "recorderCallSitesClosed": true,
+    "phaseCoreCallSitesClosed": true,
+    "phaseFixtureStandalone": true,
+    "phaseFixtureCoordinationClosed": true,
+    "normalObservationStringsAbsent": true
+  }
+}

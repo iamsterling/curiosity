@@ -16,4 +16,4 @@ ryu-js = "=1.0.3"
 panic = "unwind"
 
 [lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(sdk_probe, values("panic", "allocation_failure", "queue_failure"))'] }
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(sdk_probe, values("panic", "allocation_failure", "queue_failure", "control_flow_observation"))', 'cfg(phase_fixture)'] }
