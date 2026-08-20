@@ -5,7 +5,7 @@
   "manifestSha256": "f2085f8ae2dd865809a6e5a10dd90225a74d9cc4f6245c726c350352c7ee5cf6",
   "lockfileSha256": "0dcab1171b1a04620c0c72c9e6eb8e343b15a9896544fa71f08c4719a5467d28",
   "normalizedGraphSha256": "ea8e433d78669a9ea4246ccafdd7d46ab39eaf338e1a31f688e72bbfed66f3e7",
-  "approvedArchiveInventorySha256": "9819e32c68f443b13c7b1475bd3895584edf9445e6c0664048220eb10600e5c8",
+  "approvedArchiveInventorySha256": "9f6df277a42e9cfd6c0b8818e2851e7ebce2427c7de98526a612db6883ea6faa",
   "humanReceiptSha256": "a193272b436d4246446be9466cfdbc95ddc8a2b453a3709b595a1f0a71052267",
   "rootDependencies": [
     {

@@ -334,7 +334,7 @@ Each per-profile receipt is closed JSON. Top-level keys occur in exactly this
 order, with no additional keys:
 
 ```text
-schemaVersion, qualification, receiptKind, profile, exclusiveCfg, triggerSha256, artifactSha256, source, schemas, controlFlow, verificationTools, compiler, environment, imports, loaderClass, staticVerdicts
+schemaVersion, qualification, receiptKind, profile, exclusiveCfg, triggerSha256, artifactSha256, source, schemas, controlFlow, verificationTools, toolPolicy, compiler, environment, imports, loaderClass, staticVerdicts
 ```
 
 Their values are constrained as follows:
@@ -372,10 +372,12 @@ Their values are constrained as follows:
   `phaseFixtureArtifactSha256`, `phaseFixtureTranscriptSchemaSha256`;
 - `compiler` key order is `rustcVersion`, `cargoVersion`, `target`, `profile`,
   `panicStrategy`, `rustflags`, `linkerArguments`, `macosDeploymentTarget`;
-- `environment` key order is `normalizedNamesSha256`,
-  `normalizedNameValueSha256`; normalization is sorted UTF-8
-  `<name>=<value>\n`, with the approved isolated environment's complete names
-  and values bound but secret-bearing ambient variables forbidden;
+- `toolPolicy` binds schema version, the closed ordered absolute tool receipts,
+  the environment policy, and its canonical policy digest; OpenCode additionally
+  binds package path/hash and exact beta-17595 version;
+- `environment` is byte-identical to `toolPolicy.environment`; its key order is
+  `schemaVersion`, `allowlistedNames`, `normalizedValues`,
+  `normalizedNamesSha256`, `normalizedNameValueSha256`, `policySha256`;
 - `imports` key order is `abiReceiptSha256`, `undefinedImportsSha256`,
   `symbolClassificationsSha256`, `loadCommandsSha256`, `loadDylibs`, `rpaths`,
   `definedGlobals`, `napiMinimum`, `napiHostMaximum`;
@@ -447,7 +449,7 @@ apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-candidate-receipt
 Its closed top-level key order is exactly:
 
 ```text
-schemaVersion, qualification, receiptKind, dependencyReceiptSha256, humanLicenseReceiptSha256, abiReceiptSha256, undefinedImportsSha256, schemas, controlFlow, verificationTools, profiles, candidateStaticVerdicts
+schemaVersion, qualification, receiptKind, dependencyReceiptSha256, humanLicenseReceiptSha256, abiReceiptSha256, undefinedImportsSha256, schemas, controlFlow, verificationTools, toolPolicy, profiles, candidateStaticVerdicts
 ```
 
 `schemaVersion` is `3`; `receiptKind` is `candidate`; `schemas`, `controlFlow`, and `verificationTools`
@@ -488,7 +490,7 @@ $RUN_ROOT/acceptance/legacy-memory-node-api-sdk-v2-acceptance-receipt.json
 Its closed top-level key order is exactly:
 
 ```text
-schemaVersion, qualification, receiptKind, candidate, approval, reproduction, executableVerdicts
+schemaVersion, qualification, receiptKind, candidate, approval, toolPolicy, ambientOpenCode, reproduction, executableVerdicts
 ```
 
 `receiptKind` is `acceptance`. `candidate` key order is `path`, `sha256` and
@@ -553,8 +555,8 @@ writes mirrors beneath its proposed-checkin temp root and never writes the
 repository paths directly:
 
 ```text
-apps/runtime/docs/licenses/legacy-memory-node-api-sdk-v2.md
 apps/runtime/docs/licenses/legacy-memory-node-api-sdk-v2.json
+apps/runtime/docs/licenses/legacy-memory-node-api-sdk-v2.md
 apps/runtime/docs/licenses/legacy-memory-node-api-sdk-v2.sha256
 apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-abi.json
 apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-abi.sha256
@@ -587,30 +589,49 @@ Only a new explicit root-user statement approving the presented v2 digests may
 create:
 
 ```text
-apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2.json
+apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2-r2.json
 ```
 
-The closed approval record has top-level keys in exact order `schemaVersion`,
-`qualification`, `decision`, `candidate`, `profiles`, `dependencyPolicy`,
-`schemas`, `controlFlow`, `verificationTools`, `compilerPolicy`, `environmentPolicy`, `importPolicy`,
-`approval`. `schemaVersion` is `3`, qualification is
+The existing `apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2.json`
+path is immutable superseded evidence only. A new approval may create only the
+r2 path above, and only that r2 path is current Phase C authority.
+
+The closed r2 approval record has top-level keys in exact order `schemaVersion`,
+`qualification`, `decision`, `approvalPath`, `candidate`, `profiles`,
+`approvedReviewSet`, `dependencyPolicy`,
+`schemas`, `controlFlow`, `verificationTools`, `toolPolicy`, `compilerPolicy`,
+`environmentPolicy`, `importPolicy`, `supersededApproval`, `approval`. `schemaVersion` is `3`, qualification is
 `legacy-memory-node-api-sdk-v2`, and decision is
 `approve-candidate-for-clean-acceptance`. `candidate` binds path then SHA-256 of
 the aggregate. `profiles` binds the five profile receipt path, receipt SHA-256,
-and artifact SHA-256 triples in canonical order. The policy objects bind the
+and artifact SHA-256 triples in canonical order. `approvedReviewSet` contains
+exactly the 19 paths in §7.1 order as closed `path`, `sha256` objects. The policy objects bind the
 exact §6 dependency, license, schema, counter source/site, settlement source,
 phase-core/call-site AST, phase-fixture source/build/artifact/transcript schema,
 cfg, compiler, environment, ABI, and import digests. `approval` retains v1's
 exact key order and meanings for parent, UTC timestamp, session reference, and
-exact-statement SHA-256. No executable or Phase C verdict is present.
+exact-statement SHA-256. `approvalPath` is the exact r2 repository path.
+`supersededApproval` has exact key order `path`, `sha256`, `status`; it binds the
+historical v2 approval file bytes with status `superseded-historical-evidence`.
+No executable or Phase C verdict is present.
 
-The approval commit has exactly one parent and adds exactly that one regular
-file. Its parent already contains every approved v2 receipt byte. Candidate or
+The r2 approval commit has exactly one parent and adds exactly that one regular
+file. Its parent already contains all 19 approved-review files byte-identically
+at their approved digests and the exact
+historical approval bytes. Candidate or
 verifier code cannot generate, stage, approve, or commit it. The existing
-`legacy-memory-node-api-sdk-v1.json` is neither modified nor consulted as v2
-approval. Squash, rebase, parent change, or any later modification of the v2
-approval path requires a new Phase A candidate, statement, and approval-only
-commit.
+`legacy-memory-node-api-sdk-v2.json` remains unchanged and is not current
+authority. The v1 approval is neither modified nor consulted. Squash, rebase,
+parent change, or any later modification of the r2 approval path requires a new
+Phase A candidate, statement, and approval-only commit.
+
+Phase C uses only this same ordered 19-file set for topology and pre-load byte
+verification. Every file must be regular, match its approved digest, be
+byte-identical in the r2 parent and `HEAD`, and have no modifying commit from the
+r2 parent through `HEAD`. This includes all five profile records and sidecars,
+the dependency and human-license records and sidecar, ABI and undefined-import
+records and sidecars, and the candidate aggregate and sidecar. Self-tests omit
+and mutate each member individually and require all 38 adversaries to fail.
 
 ### 7.3 Phase C — clean acceptance
 
@@ -628,6 +649,20 @@ regeneration in place, or fallback approval is allowed. Only after every
 executable verdict is known and true does it atomically publish the §6 acceptance
 receipt as its final action and report `qualified`; failure leaves that receipt
 absent.
+
+Per ADR 0060, candidate and acceptance bind a closed absolute tool map and a
+closed child-environment policy. Inherited `PATH` bytes are excluded from every
+reproducibility digest. Child `PATH` is fixed to
+`/usr/bin:/bin:/usr/sbin:/sbin`; rustc and linker paths are explicit. The local
+OpenCode beta-17595 executable and package are path/hash/version bound and only
+that absolute executable may run in Phase C. A separate negative probe reads the
+original inherited `PATH`, records the first ambient OpenCode path, executable
+and package hashes, and version (or records absence), and never executes it.
+The approval introduced by commit `76677a35f56a7e65c5828bdde9b8436fd848eb67`
+is immutable historical evidence but insufficient for this replacement
+candidate. Phase C selects only the r2 path and verifies its unique add commit,
+bound parent, one-path diff, ancestry, parent receipt bytes, and absence of later
+modification.
 
 ## 8. V2 acceptance matrix
 

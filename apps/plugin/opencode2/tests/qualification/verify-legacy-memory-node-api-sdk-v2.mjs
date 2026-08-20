@@ -15,6 +15,16 @@ import {
 } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
+import {
+  closedEnvironment,
+  createToolPolicy,
+  verifyToolPolicy,
+} from "./legacy-memory-node-api-sdk-v2-tool-policy.mjs";
+import {
+  approvedReviewPaths,
+  materializeApprovedReviewSet,
+  validateApprovedReviewSet,
+} from "./legacy-memory-node-api-sdk-v2-approved-review-set.mjs";
 
 const repository = resolve(import.meta.dirname, "../../../../..");
 const approvedRoot =
@@ -25,6 +35,10 @@ const crateRoot = join(
 );
 const manifest = join(crateRoot, "Cargo.toml");
 const lockfile = join(crateRoot, "Cargo.lock");
+const runtimeNativeManifest = join(
+  repository,
+  "apps/runtime/native/Cargo.toml",
+);
 const toolRoot = join(
   repository,
   "apps/runtime/native-node-api-qualification-tools",
@@ -48,10 +62,16 @@ const phaseFixtureTranscriptSchemaPath = join(
   crateRoot,
   "tests/fixtures/controlled-phase-transcript-schema.json",
 );
-const approval = join(
+const historicalApproval = join(
   repository,
   "apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2.json",
 );
+const replacementApproval = join(
+  repository,
+  "apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2-r2.json",
+);
+const insufficientApprovalSha256 =
+  "40fca1b263d447e5f2d25cb2e75f1eb5463c7c41c4ab694077108907c6951878";
 const exactRustflags = "-C link-arg=-Wl,-dead_strip_dylibs";
 const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const napiSysSource = {
@@ -89,7 +109,20 @@ if (phase !== "candidate-generate" && phase !== "reproduce") {
   process.exit(2);
 }
 const reproductionMode = phase === "reproduce";
-if (!reproductionMode && existsSync(approval))
+if (!existsSync(historicalApproval))
+  throw new Error("SDK_HISTORICAL_APPROVAL_REQUIRED");
+const priorApproval = JSON.parse(readFileSync(historicalApproval));
+if (
+  priorApproval.decision !== "approve-candidate-for-clean-acceptance" ||
+  priorApproval.candidate?.sha256 !== insufficientApprovalSha256
+)
+  throw new Error("SDK_HISTORICAL_APPROVAL_INVALID");
+const supersededApproval = {
+  path: relative(repository, historicalApproval),
+  sha256: sha(readFileSync(historicalApproval)),
+  status: "superseded-historical-evidence",
+};
+if (!reproductionMode && existsSync(replacementApproval))
   throw new Error("SDK_PREMATURE_APPROVAL_RECORD");
 if (process.env.RUSTFLAGS !== exactRustflags)
   throw new Error("SDK_LINKER_POLICY_INVALID");
@@ -110,24 +143,58 @@ mkdirSync(candidate, { recursive: true, mode: 0o700 });
 mkdirSync(proposed, { recursive: true, mode: 0o700 });
 mkdirSync(join(runRoot, "home"), { recursive: true, mode: 0o700 });
 
-const approvedEnvironment = {
-  PATH: process.env.PATH,
-  HOME: join(runRoot, "home"),
-  CARGO_HOME: process.env.CARGO_HOME,
-  CARGO_TARGET_DIR: process.env.CARGO_TARGET_DIR,
-  CARGO_NET_OFFLINE: "true",
-  RUSTUP_HOME: process.env.RUSTUP_HOME ?? join(process.env.HOME, ".rustup"),
-  RUSTUP_TOOLCHAIN: "stable-aarch64-apple-darwin",
-  MACOSX_DEPLOYMENT_TARGET: "15.0",
-  RUSTFLAGS: exactRustflags,
-  LC_ALL: "C",
-  TMPDIR: runRoot,
+const toolPolicy = createToolPolicy({
+  repository,
+  bunPath: process.execPath,
+  inheritedPath: process.env.PATH ?? "",
+});
+verifyToolPolicy(toolPolicy);
+const boundToolPolicy = {
+  schemaVersion: toolPolicy.schemaVersion,
+  tools: toolPolicy.tools,
+  environment: toolPolicy.environment,
+  policySha256: toolPolicy.policySha256,
+};
+const approvedEnvironment = closedEnvironment(toolPolicy, {
+  runRoot,
+  cargoHome: process.env.CARGO_HOME,
+  cargoTarget: process.env.CARGO_TARGET_DIR,
+});
+const commandNames = new Map([
+  ["rustc", "rustc"],
+  ["cargo", "cargo"],
+  ["git", "git"],
+  ["/usr/bin/curl", "curl"],
+  ["/usr/bin/clang", "clang"],
+  ["/usr/bin/ld", "ld"],
+  ["/usr/bin/file", "file"],
+  ["/usr/bin/lipo", "lipo"],
+  ["/usr/bin/nm", "nm"],
+  ["/usr/bin/otool", "otool"],
+  ["/usr/bin/strings", "strings"],
+  ["/usr/bin/sandbox-exec", "sandboxExec"],
+  [process.execPath, "bun"],
+]);
+const boundCommand = (command) => {
+  const name = commandNames.get(command);
+  if (name !== undefined) return toolPolicy.tools[name].path;
+  if (command.startsWith(`${runRoot}/`)) return command;
+  throw new Error(`SDK_UNBOUND_TOOL:${command}`);
 };
 
 const commands = [];
 const run = (command, args, options = {}) => {
-  commands.push([command, ...args]);
-  const result = spawnSync(command, args, {
+  if (
+    Object.keys(options.env ?? {}).some(
+      (name) => !toolPolicy.environment.allowlistedNames.includes(name),
+    ) ||
+    (options.env?.PATH !== undefined &&
+      options.env.PATH !== toolPolicy.environment.normalizedValues.PATH)
+  )
+    throw new Error("SDK_CHILD_ENVIRONMENT_ALLOWLIST_INVALID");
+  const executable = boundCommand(command);
+  commands.push([executable, ...args]);
+  const result = spawnSync(executable, args, {
     cwd: repository,
     encoding: "utf8",
     env: {
@@ -142,7 +209,7 @@ const run = (command, args, options = {}) => {
   });
   if (result.status !== 0)
     throw new Error(
-      `${command} ${args.join(" ")}\n${result.stdout}${result.stderr}`,
+      `${executable} ${args.join(" ")}\n${result.stdout}${result.stderr}`,
     );
   return { stdout: result.stdout, stderr: result.stderr };
 };
@@ -303,6 +370,10 @@ run("cargo", ["fetch", "--manifest-path", toolManifest, "--locked"], {
   offline: reproductionMode,
   acquisition: !reproductionMode,
 });
+run("cargo", ["fetch", "--manifest-path", runtimeNativeManifest, "--locked"], {
+  offline: reproductionMode,
+  acquisition: !reproductionMode,
+});
 const canonicalNapiLicense = reproductionMode
   ? readFileSync(
       join(
@@ -327,6 +398,24 @@ const metadata = JSON.parse(
     ],
     { offline: true },
   ).stdout,
+);
+const runtimeMetadata = JSON.parse(
+  run(
+    "cargo",
+    [
+      "metadata",
+      "--manifest-path",
+      runtimeNativeManifest,
+      "--locked",
+      "--all-features",
+      "--format-version",
+      "1",
+    ],
+    { offline: true },
+  ).stdout,
+);
+const runtimeRegistryPackages = runtimeMetadata.packages.filter((pkg) =>
+  pkg.source?.startsWith("registry+"),
 );
 const expectedThirdParty = [
   "cfg-if@1.0.4",
@@ -387,6 +476,21 @@ const approvedArchiveNames = new Set([
   "quote-1.0.47.crate",
   "syn-2.0.119.crate",
   "unicode-ident-1.0.24.crate",
+  ...runtimeRegistryPackages.map(
+    ({ name, version }) => `${name}-${version}.crate`,
+  ),
+]);
+const approvedIndexNames = new Set([
+  "cfg-if",
+  "libloading",
+  "napi-sys",
+  "ryu-js",
+  "windows-link",
+  "proc-macro2",
+  "quote",
+  "syn",
+  "unicode-ident",
+  ...runtimeRegistryPackages.map(({ name }) => name),
 ]);
 const cargoHomeFiles = filesBelow(process.env.CARGO_HOME);
 for (const source of cargoHomeFiles) {
@@ -395,17 +499,7 @@ for (const source of cargoHomeFiles) {
   const isIndexMaterial =
     relativeSource.includes("/index.crates.io-") &&
     (basename(source) === "config.json" ||
-      [
-        "cfg-if",
-        "libloading",
-        "napi-sys",
-        "ryu-js",
-        "windows-link",
-        "proc-macro2",
-        "quote",
-        "syn",
-        "unicode-ident",
-      ].includes(basename(source)));
+      approvedIndexNames.has(basename(source)));
   if (!isArchive && !isIndexMaterial) continue;
   const destination = join(approvedArchiveRoot, "cargo-home", relativeSource);
   mkdirSync(dirname(destination), { recursive: true, mode: 0o700 });
@@ -423,9 +517,10 @@ const archiveInventory = filesBelow(approvedArchiveRoot)
   }))
   .sort((left, right) => left.path.localeCompare(right.path));
 if (
-  archiveInventory.filter((row) => row.path.endsWith(".crate")).length !== 9 ||
-  archiveInventory.length > 30 ||
-  archiveInventory.reduce((sum, row) => sum + row.size, 0) > 20_000_000
+  archiveInventory.filter((row) => row.path.endsWith(".crate")).length !==
+    approvedArchiveNames.size ||
+  archiveInventory.length > approvedArchiveNames.size * 2 + 2 ||
+  archiveInventory.reduce((sum, row) => sum + row.size, 0) > 50_000_000
 )
   throw new Error("SDK_APPROVED_ARCHIVE_ROOT_INVALID");
 const archiveInventoryBytes = `${archiveInventory.map((row) => `${row.path}\t${row.mode}\t${row.size}\t${row.sha256}`).join("\n")}\n`;
@@ -573,6 +668,24 @@ if (
   verifierSelfTest.packagingAbsence?.rejectionCases !== 108 ||
   verifierSelfTest.packagingAbsence?.cleanControlPathsInspected !== 9 ||
   verifierSelfTest.packagingAbsence?.cleanup !== true ||
+  verifierSelfTest.toolPolicy?.inheritedPathVariationIgnored !== true ||
+  verifierSelfTest.toolPolicy?.relocationRejected !== true ||
+  verifierSelfTest.toolPolicy?.mismatchRejected !== true ||
+  verifierSelfTest.toolPolicy?.ambientAbsentRejected !== true ||
+  verifierSelfTest.toolPolicy?.ambientPresentRejected !== true ||
+  verifierSelfTest.toolPolicy?.ambientWrongVersionRejected !== true ||
+  verifierSelfTest.toolPolicy?.ambientExecuted !== false ||
+  verifierSelfTest.toolPolicy?.explicitPathInvocation !== true ||
+  verifierSelfTest.toolPolicy?.minimalPath !==
+    "/usr/bin:/bin:/usr/sbin:/sbin" ||
+  Object.values(verifierSelfTest.replacementApprovalTopology ?? {}).length !==
+    7 ||
+  Object.values(verifierSelfTest.replacementApprovalTopology ?? {}).some(
+    (value) => value !== true,
+  ) ||
+  verifierSelfTest.approvedReviewSet?.canonicalCount !== 19 ||
+  verifierSelfTest.approvedReviewSet?.mutationRejections !== 19 ||
+  verifierSelfTest.approvedReviewSet?.omissionRejections !== 19 ||
   verifierSelfTest.timeoutRejected !== true ||
   verifierSelfTest.independentVerdictDerivation !== true ||
   verifierSelfTest.addonLoaderCalls !== 0 ||
@@ -603,7 +716,7 @@ run(
   [
     "-p",
     "(version 1)(allow default)(deny network*)",
-    "/usr/bin/clang",
+    toolPolicy.tools.clang.path,
     ...guardBuildArguments,
   ],
   { offline: true },
@@ -691,7 +804,7 @@ run(
   [
     "-p",
     "(version 1)(allow default)(deny network*)",
-    "rustc",
+    toolPolicy.tools.rustc.path,
     ...phaseFixtureBuildArguments,
   ],
   { offline: true },
@@ -811,7 +924,12 @@ for (const [name, cfg] of profileRows) {
   if (cfg) cargoArgs.push("--cfg", cfg);
   const build = run(
     "/usr/bin/sandbox-exec",
-    ["-p", "(version 1)(allow default)(deny network*)", "cargo", ...cargoArgs],
+    [
+      "-p",
+      "(version 1)(allow default)(deny network*)",
+      toolPolicy.tools.cargo.path,
+      ...cargoArgs,
+    ],
     { offline: true, env: { CARGO_TARGET_DIR: target } },
   );
   const linkerReceipt = `${build.stdout}${build.stderr}`;
@@ -1196,12 +1314,23 @@ const sourcePaths = [
   ),
   join(
     repository,
+    "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-tool-policy.mjs",
+  ),
+  join(
+    repository,
+    "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-approved-review-set.mjs",
+  ),
+  join(
+    repository,
     "apps/plugin/opencode2/tools/verify-legacy-memory-native-parity.mjs",
   ),
   join(
     repository,
     "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2.md",
   ),
+  join(repository, "apps/runtime/package.json"),
+  join(repository, "apps/runtime/tests/package-scripts.test.ts"),
+  join(repository, "turbo.json"),
   join(
     repository,
     "apps/runtime/docs/decisions/0058-fifth-node-api-control-flow-observation-artifact.md",
@@ -1218,11 +1347,21 @@ const sourcePaths = [
     repository,
     "apps/plugin/opencode2/docs/decisions/0029-controlled-phase-core-concurrency-companion.md",
   ),
+  join(
+    repository,
+    "apps/runtime/docs/decisions/0060-closed-sdk-v2-tool-and-environment-policy.md",
+  ),
+  join(
+    repository,
+    "apps/plugin/opencode2/docs/decisions/0030-closed-sdk-v2-tool-policy-companion.md",
+  ),
   import.meta.filename,
 ].sort();
 for (const requiredDecision of [
   "apps/runtime/docs/decisions/0059-controlled-phase-core-concurrency-evidence.md",
   "apps/plugin/opencode2/docs/decisions/0029-controlled-phase-core-concurrency-companion.md",
+  "apps/runtime/docs/decisions/0060-closed-sdk-v2-tool-and-environment-policy.md",
+  "apps/plugin/opencode2/docs/decisions/0030-closed-sdk-v2-tool-policy-companion.md",
 ])
   if (!sourcePaths.includes(join(repository, requiredDecision)))
     throw new Error(`SDK_SOURCE_TREE_DECISION_MISSING:${requiredDecision}`);
@@ -1518,22 +1657,7 @@ write(
   join(candidate, "source-material/packaging-absence-inventory.json"),
   `${JSON.stringify(packageAbsenceInventory, null, 2)}\n`,
 );
-const normalizedEnvironment = Object.entries(approvedEnvironment)
-  .filter(([, value]) => value !== undefined)
-  .map(([name, value]) => [
-    name,
-    String(value)
-      .replaceAll(runRoot, "<RUN_ROOT>")
-      .replaceAll(process.env.CARGO_HOME, "<CARGO_HOME>")
-      .replaceAll(process.env.CARGO_TARGET_DIR, "<CARGO_TARGET_DIR>"),
-  ])
-  .sort(([left], [right]) => left.localeCompare(right));
-const normalizedNames = `${normalizedEnvironment.map(([name]) => name).join("\n")}\n`;
-const normalizedNameValues = `${normalizedEnvironment.map(([name, value]) => `${name}=${value}`).join("\n")}\n`;
-const environment = {
-  normalizedNamesSha256: sha(normalizedNames),
-  normalizedNameValueSha256: sha(normalizedNameValues),
-};
+const environment = toolPolicy.environment;
 const rustcVersion = run("rustc", ["--version", "--verbose"]).stdout.trim();
 const cargoVersion = run("cargo", ["--version", "--verbose"]).stdout.trim();
 const observationMarkers = [
@@ -1608,6 +1732,7 @@ for (const [
     schemas: schemaMaterial,
     controlFlow,
     verificationTools,
+    toolPolicy: boundToolPolicy,
     compiler: {
       rustcVersion,
       cargoVersion,
@@ -1668,6 +1793,7 @@ const candidateAggregate = {
   schemas: schemaMaterial,
   controlFlow,
   verificationTools,
+  toolPolicy: boundToolPolicy,
   profiles: profileReceipts,
   candidateStaticVerdicts: {
     allProfileReceiptsClosed: true,
@@ -1714,6 +1840,13 @@ const receiptPaths = [
     "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-candidate-receipt.sha256",
   ),
 ];
+if (
+  JSON.stringify(receiptPaths.map((path) => relative(proposed, path))) !==
+  JSON.stringify(approvedReviewPaths)
+)
+  throw new Error("SDK_APPROVED_REVIEW_SET_INVALID");
+const approvedReviewSet = materializeApprovedReviewSet(proposed);
+validateApprovedReviewSet(approvedReviewSet);
 const normalProfileReceipt = JSON.parse(
   readFileSync(repoPath(profileReceipts[0].receiptPath)),
 );
@@ -1721,6 +1854,7 @@ const approvalProposal = {
   schemaVersion: 3,
   qualification: "legacy-memory-node-api-sdk-v2",
   decision: "proposal-only/not-approved",
+  approvalPath: relative(repository, replacementApproval),
   candidate: {
     path: relative(proposed, aggregatePath),
     sha256: sha(readFileSync(aggregatePath)),
@@ -1733,6 +1867,7 @@ const approvalProposal = {
       artifactSha256,
     }),
   ),
+  approvedReviewSet,
   dependencyPolicy: {
     dependencyReceiptSha256: candidateAggregate.dependencyReceiptSha256,
     humanLicenseReceiptSha256: candidateAggregate.humanLicenseReceiptSha256,
@@ -1742,9 +1877,11 @@ const approvalProposal = {
   schemas: schemaMaterial,
   controlFlow,
   verificationTools,
+  toolPolicy: boundToolPolicy,
   compilerPolicy: normalProfileReceipt.compiler,
   environmentPolicy: environment,
   importPolicy: normalProfileReceipt.imports,
+  supersededApproval,
   approval: null,
 };
 const approvalProposalPath = join(candidate, "approval-proposal.json");
@@ -1776,17 +1913,18 @@ const review = {
   schemas: schemaMaterial,
   controlFlow,
   verificationTools,
+  toolPolicy: boundToolPolicy,
+  ambientOpenCode: toolPolicy.ambientOpenCode,
+  supersededApproval,
   approvalProposal: {
     path: relative(runRoot, approvalProposalPath),
+    targetPath: relative(repository, replacementApproval),
     sha256: sha(readFileSync(approvalProposalPath)),
     status: "proposal-only/not-approved",
   },
   noLoadStatus,
   approvedArchiveRoot,
-  proposedReceipts: receiptPaths.map((path) => ({
-    path: relative(proposed, path),
-    sha256: sha(readFileSync(path)),
-  })),
+  proposedReceipts: approvedReviewSet,
 };
 write(reviewPath, `${JSON.stringify(review, null, 2)}\n`);
 console.log(JSON.stringify(review, null, 2));

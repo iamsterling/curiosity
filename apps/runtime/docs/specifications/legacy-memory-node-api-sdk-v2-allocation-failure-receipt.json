@@ -7,8 +7,8 @@
   "triggerSha256": "ff826102222fcf5470dac46368210237321598713d0f152fd6c6bf612c345ab0",
   "artifactSha256": "7e1716ab2c181bbc561db875af5dbc6406599ffa6e9a27b2b3afea539e684191",
   "source": {
-    "sourceCommit": "36f8a647addb403d0f21a9cca13772b6b8423395",
-    "sourceTreeSha256": "cc5671ed09d9f5fc21f9b3353989e71b7689d61d9852d5bdd919fcb91dd0f921",
+    "sourceCommit": "76677a35f56a7e65c5828bdde9b8436fd848eb67",
+    "sourceTreeSha256": "69a739981bd8db3f7941e71450f6f8cc40253beebb45ebd1f058289207d8f2ab",
     "manifestSha256": "f2085f8ae2dd865809a6e5a10dd90225a74d9cc4f6245c726c350352c7ee5cf6",
     "lockfileSha256": "0dcab1171b1a04620c0c72c9e6eb8e343b15a9896544fa71f08c4719a5467d28",
     "sharedDispatcherSha256": "8e411d0c15d155dad57aa289a6d3f2f30f4bb7f7598ac02e2addad4691b1c73b",
@@ -67,6 +67,157 @@
     "phaseFixtureArtifactSha256": "69f285e2987eaa975d9db96508b6a9711c60e388704727358c5def80c9ca402a",
     "phaseFixtureTranscriptSchemaSha256": "2660f866907fa43a50edb257268324b087fe32f4fc3f3b165af33d63e4917f33"
   },
+  "toolPolicy": {
+    "schemaVersion": 1,
+    "tools": {
+      "rustc": {
+        "path": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rustc",
+        "sha256": "210df6794001b73ec3d453878707fa1e0bdcb63c427024a6e6574bbe5615a4da",
+        "version": "rustc 1.97.1 (8bab26f4f 2026-07-14)\nbinary: rustc\ncommit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452\ncommit-date: 2026-07-14\nhost: aarch64-apple-darwin\nrelease: 1.97.1\nLLVM version: 22.1.6"
+      },
+      "rustdoc": {
+        "path": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rustdoc",
+        "sha256": "aa94960b6a477441f6d1a797394daf4cafcc889d837550c8fa462b102e3fa5da"
+      },
+      "cargo": {
+        "path": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+        "sha256": "7672ead309d505577c018fff2cafb3433601f073e38cbe87359ac1f7b944bbf5",
+        "version": "cargo 1.97.1 (c980f4866 2026-06-30)\nrelease: 1.97.1\ncommit-hash: c980f4866141969fab6254a680546a277789d6f0\ncommit-date: 2026-06-30\nhost: aarch64-apple-darwin\nlibgit2: 1.9.2 (sys:0.20.4 vendored)\nlibcurl: 8.7.1 (sys:0.4.88+curl-8.20.0 system ssl:(SecureTransport) LibreSSL/3.3.6)\nssl: OpenSSL 3.6.2 7 Apr 2026\nos: Mac OS 27.0.0 [64-bit]"
+      },
+      "cargoFmt": {
+        "path": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo-fmt",
+        "sha256": "34b8df30a0e7d654a9e9035a9e2461812559f3ed752674b8cfa4df5f634e7e9c"
+      },
+      "cargoClippy": {
+        "path": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo-clippy",
+        "sha256": "f3858d1218f0ebccb23bf1945ed6a2f672b386dbe244ec6c9f82493d99fb5719"
+      },
+      "clang": {
+        "path": "/usr/bin/clang",
+        "sha256": "0741e745385d941a1cb1e97bef08b801d58e86c795c8b9a57e873fce7930db19",
+        "version": "Apple clang version 21.0.0 (clang-2100.3.23.3)\nTarget: arm64-apple-darwin27.0.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin"
+      },
+      "ld": {
+        "path": "/usr/bin/ld",
+        "sha256": "0741e745385d941a1cb1e97bef08b801d58e86c795c8b9a57e873fce7930db19",
+        "version": "@(#)PROGRAM:ld PROJECT:ld-27031\nBUILD 05:20:07 Jun 11 2026\nconfigured to support archs: armv6 armv7 armv7s arm64 arm64e arm64_32 i386 x86_64 x86_64h armv6m armv7k armv7m armv7em armv8m.main armv8.1m.main\nLTO support using: LLVM version 21.0.0 (static support for 30, runtime is 30)\nTAPI support using: Apple TAPI version 21.0.0 (tapi-2100.3.7)"
+      },
+      "bun": {
+        "path": "/Users/sterling/.nvm/versions/node/v24.18.0/lib/node_modules/bun/bin/bun.exe",
+        "sha256": "e0c90ec15d33363e6b70713d56bc3b2c7585c17f40a0fe0f8fd9305901d4e233",
+        "version": "1.3.14"
+      },
+      "node": {
+        "path": "/Users/sterling/.nvm/versions/node/v24.18.0/bin/node",
+        "sha256": "ee6fb0e015284d83a91e8ec5213f43a157f8a392b58555301682892ba928c04a",
+        "version": "v24.18.0"
+      },
+      "git": {
+        "path": "/usr/bin/git",
+        "sha256": "0741e745385d941a1cb1e97bef08b801d58e86c795c8b9a57e873fce7930db19"
+      },
+      "curl": {
+        "path": "/usr/bin/curl",
+        "sha256": "4e87358413fde885f53035559ab4bb0fa2e6bace87f0074b21681fbd18a7e9d8"
+      },
+      "file": {
+        "path": "/usr/bin/file",
+        "sha256": "25540483b4792d6a3ee3ddcb4f7c3128bc46e6a19b57f8e6827c676f83741ded"
+      },
+      "lipo": {
+        "path": "/usr/bin/lipo",
+        "sha256": "0741e745385d941a1cb1e97bef08b801d58e86c795c8b9a57e873fce7930db19"
+      },
+      "nm": {
+        "path": "/usr/bin/nm",
+        "sha256": "0741e745385d941a1cb1e97bef08b801d58e86c795c8b9a57e873fce7930db19"
+      },
+      "otool": {
+        "path": "/usr/bin/otool",
+        "sha256": "0741e745385d941a1cb1e97bef08b801d58e86c795c8b9a57e873fce7930db19"
+      },
+      "strings": {
+        "path": "/usr/bin/strings",
+        "sha256": "0741e745385d941a1cb1e97bef08b801d58e86c795c8b9a57e873fce7930db19"
+      },
+      "sandboxExec": {
+        "path": "/usr/bin/sandbox-exec",
+        "sha256": "bdde91b34fb7d97c61fae58ce1ef96e2cd4dcc8339e47d4afbbcb7b6099f1af9"
+      },
+      "ps": {
+        "path": "/bin/ps",
+        "sha256": "1b2f1d97c0127982e8604f6b01fa02c98e4bc4deffd474745966b4191bafca6d"
+      },
+      "sysctl": {
+        "path": "/usr/sbin/sysctl",
+        "sha256": "16b95d2a889450079bbc736aaa95eb170f714a9f4a5f8b9514f5c45f578ce9e0"
+      },
+      "sleep": {
+        "path": "/bin/sleep",
+        "sha256": "f47c49d519c7aaa720ae9c2dc8e586b868ee557139889d06bfc94f0f37a4a10f"
+      },
+      "time": {
+        "path": "/usr/bin/time",
+        "sha256": "463fb1705a2abaf606d1a3e0d9f73e5c25d735da1c755a45fd412ffb5881932f"
+      },
+      "openCode": {
+        "path": "/Volumes/dev/curiosity/node_modules/.bun/@opencode-ai+cli@0.0.0-beta-17595/node_modules/@opencode-ai/cli/bin/opencode2.exe",
+        "sha256": "874ba7c06b959f308beb4dbd825e331fedc86196d8c79ab65c45afea2ca86746",
+        "version": "0.0.0-beta-17595",
+        "packagePath": "/Volumes/dev/curiosity/node_modules/.bun/@opencode-ai+cli@0.0.0-beta-17595/node_modules/@opencode-ai/cli/package.json",
+        "packageSha256": "b127bf45545d05b31df07d417499a06e7a3538c0f3b9befd620e271ba02cf3eb"
+      }
+    },
+    "environment": {
+      "schemaVersion": 1,
+      "allowlistedNames": [
+        "PATH",
+        "HOME",
+        "CARGO_HOME",
+        "CARGO_TARGET_DIR",
+        "CARGO_NET_OFFLINE",
+        "CARGO",
+        "CARGO_FMT",
+        "CARGO_CLIPPY",
+        "RUSTC",
+        "RUSTDOC",
+        "CARGO_TARGET_AARCH64_APPLE_DARWIN_LINKER",
+        "MACOSX_DEPLOYMENT_TARGET",
+        "RUSTFLAGS",
+        "LC_ALL",
+        "TMPDIR",
+        "XDG_CONFIG_HOME",
+        "XDG_CACHE_HOME",
+        "OPENCODE_CONFIG",
+        "SDK_REGRESSION_CARGO_TARGET_DIR"
+      ],
+      "normalizedValues": {
+        "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
+        "HOME": "<RUN_ROOT>/home",
+        "CARGO_HOME": "<CARGO_HOME>",
+        "CARGO_TARGET_DIR": "<CARGO_TARGET_DIR>",
+        "CARGO_NET_OFFLINE": "true",
+        "CARGO": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+        "CARGO_FMT": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo-fmt",
+        "CARGO_CLIPPY": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo-clippy",
+        "RUSTC": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rustc",
+        "RUSTDOC": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rustdoc",
+        "CARGO_TARGET_AARCH64_APPLE_DARWIN_LINKER": "/usr/bin/clang",
+        "MACOSX_DEPLOYMENT_TARGET": "15.0",
+        "RUSTFLAGS": "-C link-arg=-Wl,-dead_strip_dylibs",
+        "LC_ALL": "C",
+        "TMPDIR": "<RUN_ROOT>",
+        "XDG_CONFIG_HOME": "<RUN_ROOT>/opencode-config",
+        "XDG_CACHE_HOME": "<RUN_ROOT>/opencode-cache",
+        "OPENCODE_CONFIG": "<RUN_ROOT>/opencode-test-plugin/opencode.json",
+        "SDK_REGRESSION_CARGO_TARGET_DIR": "/Volumes/dev/curiosity/apps/runtime/native/target"
+      },
+      "normalizedNamesSha256": "1c04a4c6702e6c72745770556bc9c9e69c60cd3fcd6894eee6cc215171d8ef5f",
+      "normalizedNameValueSha256": "2de4d0a118e0cf53d2ccdd432b535580bbd3dcc9fa94b9f59a007136dab3ca36",
+      "policySha256": "02d3a38696064f70ea12afa80a2efcc415bab813366341a891aeafe3238d8b7c"
+    },
+    "policySha256": "c0328c4f363af8542559ef7929e39c1f7510103a0294c40992d9549fec1efd2b"
+  },
   "compiler": {
     "rustcVersion": "rustc 1.97.1 (8bab26f4f 2026-07-14)\nbinary: rustc\ncommit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452\ncommit-date: 2026-07-14\nhost: aarch64-apple-darwin\nrelease: 1.97.1\nLLVM version: 22.1.6",
     "cargoVersion": "cargo 1.97.1 (c980f4866 2026-06-30)\nrelease: 1.97.1\ncommit-hash: c980f4866141969fab6254a680546a277789d6f0\ncommit-date: 2026-06-30\nhost: aarch64-apple-darwin\nlibgit2: 1.9.2 (sys:0.20.4 vendored)\nlibcurl: 8.7.1 (sys:0.4.88+curl-8.20.0 system ssl:(SecureTransport) LibreSSL/3.3.6)\nssl: OpenSSL 3.6.2 7 Apr 2026\nos: Mac OS 27.0.0 [64-bit]",
@@ -81,8 +232,52 @@
     "macosDeploymentTarget": "15.0"
   },
   "environment": {
-    "normalizedNamesSha256": "57d13dc8dce5c313570f4394b4be5fae67ce18fef50fdb12d50d7b12fbf93604",
-    "normalizedNameValueSha256": "7b1445c456783f623ed609a389fb0e19bc91a5c30d60d3e447bfb18263df7d91"
+    "schemaVersion": 1,
+    "allowlistedNames": [
+      "PATH",
+      "HOME",
+      "CARGO_HOME",
+      "CARGO_TARGET_DIR",
+      "CARGO_NET_OFFLINE",
+      "CARGO",
+      "CARGO_FMT",
+      "CARGO_CLIPPY",
+      "RUSTC",
+      "RUSTDOC",
+      "CARGO_TARGET_AARCH64_APPLE_DARWIN_LINKER",
+      "MACOSX_DEPLOYMENT_TARGET",
+      "RUSTFLAGS",
+      "LC_ALL",
+      "TMPDIR",
+      "XDG_CONFIG_HOME",
+      "XDG_CACHE_HOME",
+      "OPENCODE_CONFIG",
+      "SDK_REGRESSION_CARGO_TARGET_DIR"
+    ],
+    "normalizedValues": {
+      "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
+      "HOME": "<RUN_ROOT>/home",
+      "CARGO_HOME": "<CARGO_HOME>",
+      "CARGO_TARGET_DIR": "<CARGO_TARGET_DIR>",
+      "CARGO_NET_OFFLINE": "true",
+      "CARGO": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+      "CARGO_FMT": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo-fmt",
+      "CARGO_CLIPPY": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo-clippy",
+      "RUSTC": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rustc",
+      "RUSTDOC": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rustdoc",
+      "CARGO_TARGET_AARCH64_APPLE_DARWIN_LINKER": "/usr/bin/clang",
+      "MACOSX_DEPLOYMENT_TARGET": "15.0",
+      "RUSTFLAGS": "-C link-arg=-Wl,-dead_strip_dylibs",
+      "LC_ALL": "C",
+      "TMPDIR": "<RUN_ROOT>",
+      "XDG_CONFIG_HOME": "<RUN_ROOT>/opencode-config",
+      "XDG_CACHE_HOME": "<RUN_ROOT>/opencode-cache",
+      "OPENCODE_CONFIG": "<RUN_ROOT>/opencode-test-plugin/opencode.json",
+      "SDK_REGRESSION_CARGO_TARGET_DIR": "/Volumes/dev/curiosity/apps/runtime/native/target"
+    },
+    "normalizedNamesSha256": "1c04a4c6702e6c72745770556bc9c9e69c60cd3fcd6894eee6cc215171d8ef5f",
+    "normalizedNameValueSha256": "2de4d0a118e0cf53d2ccdd432b535580bbd3dcc9fa94b9f59a007136dab3ca36",
+    "policySha256": "02d3a38696064f70ea12afa80a2efcc415bab813366341a891aeafe3238d8b7c"
   },
   "imports": {
     "abiReceiptSha256": "de0e2924745426144890fe03ed6c58a7aa6792685941eaffd5308d2aa7df2b86",

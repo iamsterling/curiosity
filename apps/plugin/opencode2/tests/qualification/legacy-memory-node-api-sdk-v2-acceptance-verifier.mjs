@@ -15,11 +15,25 @@ import {
   renameSync,
   rmSync,
   statSync,
+  symlinkSync,
   writeSync,
   writeFileSync,
 } from "node:fs";
-import { join, relative, resolve } from "node:path";
+import { dirname, join, relative, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
+import {
+  MINIMAL_SYSTEM_PATH,
+  createToolPolicy,
+  closedEnvironment,
+  discoverAmbientOpenCode,
+  runBound,
+  verifyToolPolicy,
+} from "./legacy-memory-node-api-sdk-v2-tool-policy.mjs";
+import {
+  approvedReviewPaths,
+  materializeApprovedReviewSet,
+  validateApprovedReviewSet,
+} from "./legacy-memory-node-api-sdk-v2-approved-review-set.mjs";
 
 const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const fail = (code) => {
@@ -33,11 +47,51 @@ const exactKeys = (value, keys, code) => {
   )
     fail(code);
 };
+let activeToolPolicy = null;
+let activeEnvironment = null;
+let activeRunRoot = null;
+const activeCommand = (command) => {
+  if (activeToolPolicy === null) return command;
+  const aliases = {
+    git: "git",
+    rustc: "rustc",
+    bun: "bun",
+    "/usr/bin/file": "file",
+    "/usr/bin/strings": "strings",
+    "/usr/bin/sandbox-exec": "sandboxExec",
+    "/bin/ps": "ps",
+    "/usr/sbin/sysctl": "sysctl",
+  };
+  const name = aliases[command];
+  if (name !== undefined) return activeToolPolicy.tools[name].path;
+  if (
+    Object.values(activeToolPolicy.tools).some(
+      ({ path }) => path === command,
+    ) ||
+    (activeRunRoot !== null && command.startsWith(`${activeRunRoot}/`))
+  )
+    return command;
+  throw new Error(`SDK_UNBOUND_TOOL:${command}`);
+};
 const run = (command, args, options = {}) => {
-  const result = spawnSync(command, args, {
+  const executable = activeCommand(command);
+  const environment =
+    activeEnvironment === null
+      ? options.env
+      : { ...activeEnvironment, ...(options.env ?? {}) };
+  if (
+    activeToolPolicy !== null &&
+    Object.entries(options.env ?? {}).some(
+      ([name, value]) =>
+        !activeToolPolicy.environment.allowlistedNames.includes(name) ||
+        activeEnvironment[name] !== value,
+    )
+  )
+    fail("SDK_CHILD_ENVIRONMENT_ALLOWLIST_INVALID");
+  const result = spawnSync(executable, args, {
     cwd: options.cwd,
     encoding: "utf8",
-    env: options.env,
+    env: environment,
     timeout: options.timeout ?? 120_000,
   });
   if (result.status !== 0)
@@ -49,7 +103,7 @@ const run = (command, args, options = {}) => {
 const git = (repository, args) =>
   run("git", args, {
     cwd: repository,
-    env: { PATH: process.env.PATH, LC_ALL: "C" },
+    env: { LC_ALL: "C" },
   }).stdout.trim();
 const filesBelow = (root) =>
   readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
@@ -233,13 +287,13 @@ const verifyPackagingAbsence = ({
     if (markers.some((marker) => bytes.includes(Buffer.from(marker))))
       fail(`SDK_PACKAGE_ABSENCE_FAILED:${relative(repository, path)}`);
     const fileKind = run("/usr/bin/file", [path], {
-      env: { PATH: process.env.PATH, LC_ALL: "C" },
+      env: { LC_ALL: "C" },
       code: "SDK_PACKAGE_FILE_INSPECTION_FAILED",
     }).stdout.trim();
     let stringsSha256 = null;
     if (/(?:Mach-O|archive|executable|shared library)/i.test(fileKind)) {
       const strings = run("/usr/bin/strings", [path], {
-        env: { PATH: process.env.PATH, LC_ALL: "C" },
+        env: { LC_ALL: "C" },
         code: "SDK_PACKAGE_STRING_INSPECTION_FAILED",
       }).stdout;
       if (markers.some((marker) => strings.includes(marker)))
@@ -291,7 +345,7 @@ const createPackagingSelfTestFixture = (root, contentBySurface) => {
     join(repository, "apps/runtime/package.json"),
     `${JSON.stringify({ exports: {} })}\n`,
   );
-  run("git", ["init", "-q"], {
+  run("/usr/bin/git", ["init", "-q"], {
     cwd: repository,
     env: { PATH: process.env.PATH, HOME: root, LC_ALL: "C" },
   });
@@ -375,6 +429,396 @@ const selfTestPackagingAbsence = (selfTestRoot) => {
     rejectionCases: rejections,
     cleanControlPathsInspected: cleanReceipt.pathsInspected,
     cleanup: true,
+  };
+};
+
+const selfTestToolPolicy = (selfTestRoot) => {
+  const first = createToolPolicy({
+    repository: resolve(import.meta.dirname, "../../../../.."),
+    bunPath: process.execPath,
+    inheritedPath: "/ambient/one:/ambient/two",
+  });
+  const second = createToolPolicy({
+    repository: resolve(import.meta.dirname, "../../../../.."),
+    bunPath: process.execPath,
+    inheritedPath: "/different/inherited/path",
+  });
+  if (
+    first.environment.policySha256 !== second.environment.policySha256 ||
+    first.policySha256 !== second.policySha256
+  )
+    fail("SDK_SELF_TEST_INHERITED_PATH_AFFECTED_POLICY");
+  verifyToolPolicy(first);
+  const mismatched = structuredClone(first);
+  mismatched.tools.node.sha256 = "0".repeat(64);
+  if (!rejects(() => verifyToolPolicy(mismatched)))
+    fail("SDK_SELF_TEST_TOOL_MISMATCH_MISSED");
+  const relocated = structuredClone(first);
+  relocated.tools.node.path = join(selfTestRoot, "relocated-node");
+  if (!rejects(() => verifyToolPolicy(relocated)))
+    fail("SDK_SELF_TEST_TOOL_RELOCATION_MISSED");
+  const ambientRoot = join(selfTestRoot, "ambient-tool");
+  const ambientPackage = join(ambientRoot, "node_modules/@opencode-ai/cli");
+  const ambientBin = join(ambientRoot, "bin");
+  mkdirSync(join(ambientPackage, "bin"), { recursive: true });
+  mkdirSync(ambientBin, { recursive: true });
+  writeFileSync(
+    join(ambientPackage, "package.json"),
+    `${JSON.stringify({ name: "@opencode-ai/cli", version: "0.0.0-beta-17639" })}\n`,
+  );
+  writeFileSync(join(ambientPackage, "bin/opencode2.exe"), "not executed\n");
+  symlinkSync(
+    join(ambientPackage, "bin/opencode2.exe"),
+    join(ambientBin, "opencode2"),
+  );
+  const ambientPresent = discoverAmbientOpenCode(ambientBin);
+  const ambientAbsent = discoverAmbientOpenCode(join(selfTestRoot, "absent"));
+  writeFileSync(
+    join(ambientPackage, "package.json"),
+    `${JSON.stringify({ name: "@opencode-ai/cli", version: "wrong-version" })}\n`,
+  );
+  const ambientWrongVersion = discoverAmbientOpenCode(ambientBin);
+  if (
+    ambientPresent.status !== "present-forbidden" ||
+    ambientPresent.version !== "0.0.0-beta-17639" ||
+    ambientPresent.executed !== false ||
+    ambientAbsent.status !== "absent" ||
+    ambientWrongVersion.status !== "present-forbidden" ||
+    ambientWrongVersion.version !== "wrong-version" ||
+    ambientWrongVersion.executed !== false
+  )
+    fail("SDK_SELF_TEST_AMBIENT_PROBE_INVALID");
+  const explicit = runBound(
+    first,
+    "node",
+    ["-e", "process.stdout.write(process.execPath+'\\n'+process.env.PATH)"],
+    {
+      env: { PATH: MINIMAL_SYSTEM_PATH, LC_ALL: "C" },
+    },
+  );
+  if (
+    explicit.status !== 0 ||
+    explicit.stdout !== `${first.tools.node.path}\n${MINIMAL_SYSTEM_PATH}` ||
+    !rejects(() => runBound(first, "notBound", []))
+  )
+    fail("SDK_SELF_TEST_EXPLICIT_TOOL_INVOCATION_INVALID");
+  rmSync(ambientRoot, { recursive: true, force: true });
+  if (existsSync(ambientRoot)) fail("SDK_SELF_TEST_TOOL_CLEANUP_FAILED");
+  return {
+    inheritedPathVariationIgnored: true,
+    relocationRejected: true,
+    mismatchRejected: true,
+    ambientAbsentRejected: true,
+    ambientPresentRejected: true,
+    ambientWrongVersionRejected: true,
+    ambientExecuted: false,
+    explicitPathInvocation: true,
+    minimalPath: MINIMAL_SYSTEM_PATH,
+  };
+};
+
+const verifyReplacementApprovalTopology = ({
+  repository,
+  approvalPath,
+  approval,
+  approvedReviewSet,
+  immutablePaths = [],
+}) => {
+  if (!existsSync(approvalPath)) fail("SDK_APPROVAL_REQUIRED");
+  const repositoryApprovalPath = relative(repository, approvalPath);
+  const introduction = git(repository, [
+    "log",
+    "--format=%H",
+    "--diff-filter=A",
+    "--",
+    repositoryApprovalPath,
+  ]);
+  if (!/^[0-9a-f]{40}$/.test(introduction)) fail("SDK_REAPPROVAL_REQUIRED");
+  const parents = git(repository, [
+    "rev-list",
+    "--parents",
+    "-n",
+    "1",
+    introduction,
+  ]).split(" ");
+  if (
+    parents.length !== 2 ||
+    parents[1] !== approval.approval.approvalCommitParent
+  )
+    fail("SDK_REAPPROVAL_REQUIRED");
+  const parent = parents[1];
+  if (
+    git(repository, [
+      "diff-tree",
+      "--no-commit-id",
+      "--name-status",
+      "-r",
+      introduction,
+    ]) !== `A\t${repositoryApprovalPath}`
+  )
+    fail("SDK_REAPPROVAL_REQUIRED");
+  run("git", ["merge-base", "--is-ancestor", introduction, "HEAD"], {
+    cwd: repository,
+    code: "SDK_REAPPROVAL_REQUIRED",
+  });
+  if (
+    git(repository, [
+      "log",
+      "--format=%H",
+      `${introduction}..HEAD`,
+      "--",
+      repositoryApprovalPath,
+    ])
+  )
+    fail("SDK_REAPPROVAL_REQUIRED");
+  try {
+    validateApprovedReviewSet(approvedReviewSet);
+  } catch {
+    fail("SDK_APPROVED_REVIEW_SET_INVALID");
+  }
+  for (const entry of approvedReviewSet) {
+    const path = join(repository, entry.path);
+    if (!existsSync(path) || !lstatSync(path).isFile())
+      fail("SDK_APPROVED_REVIEW_PATH_INVALID");
+    const currentBytes = readFileSync(path);
+    if (sha(currentBytes) !== entry.sha256)
+      fail("SDK_APPROVED_REVIEW_DIGEST_MISMATCH");
+    const parentBytes = run("git", ["show", `${parent}:${entry.path}`], {
+      cwd: repository,
+      code: "SDK_APPROVED_REVIEW_PARENT_MISMATCH",
+    }).stdout;
+    const headBytes = run("git", ["show", `HEAD:${entry.path}`], {
+      cwd: repository,
+      code: "SDK_APPROVED_REVIEW_HEAD_MISMATCH",
+    }).stdout;
+    if (
+      Buffer.compare(currentBytes, Buffer.from(parentBytes)) !== 0 ||
+      Buffer.compare(currentBytes, Buffer.from(headBytes)) !== 0
+    )
+      fail("SDK_APPROVED_REVIEW_BYTES_MISMATCH");
+    if (
+      git(repository, [
+        "log",
+        "--format=%H",
+        `${parent}..HEAD`,
+        "--",
+        entry.path,
+      ])
+    )
+      fail("SDK_APPROVED_REVIEW_MODIFIED_AFTER_PARENT");
+  }
+  for (const path of immutablePaths) {
+    const history = git(repository, [
+      "log",
+      "--format=%H",
+      "--",
+      relative(repository, path),
+    ]);
+    if (!/^[0-9a-f]{40}$/.test(history)) fail("SDK_REAPPROVAL_REQUIRED");
+    const headBytes = run(
+      "git",
+      ["show", `HEAD:${relative(repository, path)}`],
+      { cwd: repository, code: "SDK_REAPPROVAL_REQUIRED" },
+    ).stdout;
+    if (Buffer.compare(readFileSync(path), Buffer.from(headBytes)) !== 0)
+      fail("SDK_REAPPROVAL_REQUIRED");
+  }
+  return { introduction, parent };
+};
+
+const selfTestReplacementApprovalTopology = (selfTestRoot) => {
+  const createFixture = (name, mode) => {
+    const repository = join(selfTestRoot, `approval-topology-${name}`);
+    const approvalDirectory = join(repository, "approvals");
+    const historicalPath = join(approvalDirectory, "legacy-v2.json");
+    const replacementPath = join(approvalDirectory, "legacy-v2-r2.json");
+    mkdirSync(approvalDirectory, { recursive: true });
+    approvedReviewPaths.forEach((path, index) => {
+      const absolutePath = join(repository, path);
+      mkdirSync(dirname(absolutePath), { recursive: true });
+      writeFileSync(absolutePath, `review-${index}\n`);
+    });
+    writeFileSync(historicalPath, '{"historical":true}\n');
+    run("/usr/bin/git", ["init", "-q"], { cwd: repository });
+    run("/usr/bin/git", ["config", "user.name", "SDK self-test"], {
+      cwd: repository,
+    });
+    run("/usr/bin/git", ["config", "user.email", "sdk@example.invalid"], {
+      cwd: repository,
+    });
+    const commit = (message) => {
+      run("/usr/bin/git", ["add", "."], { cwd: repository });
+      run("/usr/bin/git", ["commit", "-q", "-m", message], {
+        cwd: repository,
+      });
+      return git(repository, ["rev-parse", "HEAD"]);
+    };
+    if (mode === "squash") {
+      writeFileSync(replacementPath, '{"replacement":true}\n');
+      const parent = "0".repeat(40);
+      commit("squashed replacement");
+      return {
+        repository,
+        approvalPath: replacementPath,
+        approval: { approval: { approvalCommitParent: parent } },
+        approvedReviewSet: materializeApprovedReviewSet(repository),
+        immutablePaths: [historicalPath],
+      };
+    }
+    const parent = commit("candidate receipts and historical approval");
+    const fixture = {
+      repository,
+      approvalPath: replacementPath,
+      approval: { approval: { approvalCommitParent: parent } },
+      approvedReviewSet: materializeApprovedReviewSet(repository),
+      immutablePaths: [historicalPath],
+    };
+    if (mode === "missing") return fixture;
+    writeFileSync(replacementPath, '{"replacement":true}\n');
+    if (mode === "uncommitted") return fixture;
+    commit("replacement approval only");
+    if (mode === "wrong-parent")
+      fixture.approval.approval.approvalCommitParent = "f".repeat(40);
+    if (mode === "modified") {
+      writeFileSync(replacementPath, '{"replacement":"modified"}\n');
+      commit("modify replacement approval");
+    }
+    return fixture;
+  };
+  const rejected = (name, mode, code) => {
+    const fixture = createFixture(name, mode);
+    try {
+      verifyReplacementApprovalTopology(fixture);
+    } catch (error) {
+      return error?.code === code;
+    }
+    return false;
+  };
+  const oldApprovalPresent = createFixture("old-present", "missing");
+  if (!existsSync(oldApprovalPresent.immutablePaths[0]))
+    fail("SDK_SELF_TEST_HISTORICAL_APPROVAL_MISSING");
+  const result = {
+    oldApprovalDoesNotAuthorize: rejected(
+      "old-only",
+      "missing",
+      "SDK_APPROVAL_REQUIRED",
+    ),
+    missingReplacementRejected: rejected(
+      "missing-r2",
+      "missing",
+      "SDK_APPROVAL_REQUIRED",
+    ),
+    uncommittedReplacementRejected: rejected(
+      "new-r2",
+      "uncommitted",
+      "SDK_REAPPROVAL_REQUIRED",
+    ),
+    wrongParentRejected: rejected(
+      "wrong-parent",
+      "wrong-parent",
+      "SDK_REAPPROVAL_REQUIRED",
+    ),
+    modifiedReplacementRejected: rejected(
+      "modified",
+      "modified",
+      "SDK_REAPPROVAL_REQUIRED",
+    ),
+    historySquashRejected: rejected(
+      "squash",
+      "squash",
+      "SDK_REAPPROVAL_REQUIRED",
+    ),
+    correctReplacementAccepted: false,
+  };
+  const correct = createFixture("correct", "correct");
+  result.correctReplacementAccepted =
+    verifyReplacementApprovalTopology(correct).parent ===
+    correct.approval.approval.approvalCommitParent;
+  if (Object.values(result).some((value) => value !== true))
+    fail("SDK_SELF_TEST_REPLACEMENT_APPROVAL_TOPOLOGY_INVALID");
+  return result;
+};
+
+const selfTestApprovedReviewSet = (selfTestRoot) => {
+  const exercise = (mode, targetIndex) => {
+    const repository = join(
+      selfTestRoot,
+      `approved-review-${mode}-${targetIndex}`,
+    );
+    const historicalPath = join(repository, "approvals/legacy-v2.json");
+    const approvalPath = join(repository, "approvals/legacy-v2-r2.json");
+    const entries = approvedReviewPaths.map((path, index) => ({
+      path,
+      sha256: sha(`review-${index}\n`),
+    }));
+    entries.forEach((entry, index) => {
+      if (mode === "omit" && index === targetIndex) return;
+      const path = join(repository, entry.path);
+      mkdirSync(dirname(path), { recursive: true });
+      writeFileSync(path, `review-${index}\n`);
+    });
+    mkdirSync(dirname(historicalPath), { recursive: true });
+    writeFileSync(historicalPath, "historical\n");
+    run("/usr/bin/git", ["init", "-q"], { cwd: repository });
+    run("/usr/bin/git", ["config", "user.name", "SDK self-test"], {
+      cwd: repository,
+    });
+    run("/usr/bin/git", ["config", "user.email", "sdk@example.invalid"], {
+      cwd: repository,
+    });
+    run("/usr/bin/git", ["add", "."], { cwd: repository });
+    run("/usr/bin/git", ["commit", "-q", "-m", "approved review parent"], {
+      cwd: repository,
+    });
+    const parent = git(repository, ["rev-parse", "HEAD"]);
+    writeFileSync(approvalPath, "replacement approval\n");
+    run("/usr/bin/git", ["add", relative(repository, approvalPath)], {
+      cwd: repository,
+    });
+    run("/usr/bin/git", ["commit", "-q", "-m", "replacement approval"], {
+      cwd: repository,
+    });
+    if (mode === "mutate") {
+      writeFileSync(
+        join(repository, entries[targetIndex].path),
+        `mutated-${targetIndex}\n`,
+      );
+      run("/usr/bin/git", ["add", entries[targetIndex].path], {
+        cwd: repository,
+      });
+      run("/usr/bin/git", ["commit", "-q", "-m", "mutate review file"], {
+        cwd: repository,
+      });
+    }
+    try {
+      verifyReplacementApprovalTopology({
+        repository,
+        approvalPath,
+        approval: { approval: { approvalCommitParent: parent } },
+        approvedReviewSet: entries,
+        immutablePaths: [historicalPath],
+      });
+    } catch (error) {
+      return String(error?.code).startsWith("SDK_APPROVED_REVIEW_");
+    }
+    return false;
+  };
+  const mutationRejections = approvedReviewPaths.filter((_, index) =>
+    exercise("mutate", index),
+  ).length;
+  const omissionRejections = approvedReviewPaths.filter((_, index) =>
+    exercise("omit", index),
+  ).length;
+  if (
+    approvedReviewPaths.length !== 19 ||
+    mutationRejections !== 19 ||
+    omissionRejections !== 19
+  )
+    fail("SDK_SELF_TEST_APPROVED_REVIEW_SET_INVALID");
+  return {
+    canonicalCount: approvedReviewPaths.length,
+    mutationRejections,
+    omissionRejections,
   };
 };
 
@@ -492,12 +936,12 @@ const sampleProcess = async (pid) => {
   for (let index = 0; index < 5; index++) {
     const rssValue = Number(
       run("/bin/ps", ["-o", "rss=", "-p", String(pid)], {
-        env: { PATH: process.env.PATH, LC_ALL: "C" },
+        env: { LC_ALL: "C" },
         code: "SDK_LIFECYCLE_SAMPLE_FAILED",
       }).stdout.trim(),
     );
     const threadRows = run("/bin/ps", ["-M", "-p", String(pid)], {
-      env: { PATH: process.env.PATH, LC_ALL: "C" },
+      env: { LC_ALL: "C" },
       code: "SDK_LIFECYCLE_SAMPLE_FAILED",
     })
       .stdout.trim()
@@ -511,12 +955,19 @@ const sampleProcess = async (pid) => {
   return { rssKiB: rss, threads };
 };
 
-const runLifecycleMatrix = async ({ bun, harness, addon, digest, runRoot }) => {
+const runLifecycleMatrix = async ({
+  bun,
+  harness,
+  addon,
+  digest,
+  runRoot,
+  environment,
+}) => {
   const child = Bun.spawn(
     [bun, harness, "--mode", "lifecycle", "--addon", addon, "--sha256", digest],
     {
       cwd: runRoot,
-      env: { PATH: process.env.PATH, HOME: join(runRoot, "home"), LC_ALL: "C" },
+      env: environment,
       stdin: "pipe",
       stdout: "pipe",
       stderr: "pipe",
@@ -563,12 +1014,19 @@ const runLifecycleMatrix = async ({ bun, harness, addon, digest, runRoot }) => {
   return points;
 };
 
-const runFreshProcessSeries = ({ bun, harness, addon, digest, runRoot }) => {
+const runFreshProcessSeries = ({
+  bun,
+  harness,
+  addon,
+  digest,
+  runRoot,
+  environment,
+}) => {
   const series = [];
   for (let runNumber = 1; runNumber <= 100; runNumber++) {
     const started = performance.now();
     const result = spawnSync(
-      "/usr/bin/time",
+      activeToolPolicy.tools.time.path,
       [
         "-l",
         bun,
@@ -583,11 +1041,7 @@ const runFreshProcessSeries = ({ bun, harness, addon, digest, runRoot }) => {
       {
         cwd: runRoot,
         encoding: "utf8",
-        env: {
-          PATH: process.env.PATH,
-          HOME: join(runRoot, "home"),
-          LC_ALL: "C",
-        },
+        env: environment,
         timeout: 15_000,
       },
     );
@@ -639,7 +1093,7 @@ export const selfTestAcceptanceVerifier = () => {
     const fakeRepository = join(fake, "repository");
     mkdirSync(fakeRepository);
     const fakeGit = (...args) =>
-      run("git", args, {
+      run("/usr/bin/git", args, {
         cwd: fakeRepository,
         env: {
           PATH: process.env.PATH,
@@ -722,6 +1176,10 @@ fn run(){ record_entry_phase(); record_worker_phase(); record_completion_phase()
     )
       fail("SDK_SELF_TEST_PROFILE_MEMBERSHIP_MISSED");
     const packagingAbsence = selfTestPackagingAbsence(fake);
+    const toolPolicy = selfTestToolPolicy(fake);
+    const replacementApprovalTopology =
+      selfTestReplacementApprovalTopology(fake);
+    const approvedReviewSet = selfTestApprovedReviewSet(fake);
     const validTranscript = buildSelfTestTranscript(2, "forward-reverse");
     validatePhaseTranscript(validTranscript, "", 2, "forward-reverse");
     const parsedTranscript = JSON.parse(validTranscript);
@@ -792,6 +1250,9 @@ fn run(){ record_entry_phase(); record_worker_phase(); record_completion_phase()
       phaseStaticAdversaries: Object.keys(staticAdversaries).length,
       wrongProfileMembershipRejected: true,
       packagingAbsence,
+      toolPolicy,
+      replacementApprovalTopology,
+      approvedReviewSet,
       transcriptAdversaries: transcriptAdversaries.length,
       timeoutRejected: true,
       independentVerdictDerivation: true,
@@ -805,6 +1266,7 @@ fn run(){ record_entry_phase(); record_worker_phase(); record_completion_phase()
 };
 
 export const runAcceptance = async ({ repository, argumentsMap }) => {
+  const inheritedPath = process.env.PATH ?? "";
   const approvalPath = resolve(argumentsMap.get("--approval-record") ?? "");
   const runRoot = realpathSync(argumentsMap.get("--run-root") ?? "");
   const archiveRoot = realpathSync(
@@ -812,7 +1274,7 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
   );
   const expectedApproval = join(
     repository,
-    "apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2.json",
+    "apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2-r2.json",
   );
   if (approvalPath !== expectedApproval || !existsSync(approvalPath))
     fail("SDK_APPROVAL_REQUIRED");
@@ -829,15 +1291,19 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
       "schemaVersion",
       "qualification",
       "decision",
+      "approvalPath",
       "candidate",
       "profiles",
+      "approvedReviewSet",
       "dependencyPolicy",
       "schemas",
       "controlFlow",
       "verificationTools",
+      "toolPolicy",
       "compilerPolicy",
       "environmentPolicy",
       "importPolicy",
+      "supersededApproval",
       "approval",
     ],
     "SDK_APPROVAL_SCHEMA_INVALID",
@@ -845,9 +1311,42 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
   if (
     approval.schemaVersion !== 3 ||
     approval.qualification !== "legacy-memory-node-api-sdk-v2" ||
-    approval.decision !== "approve-candidate-for-clean-acceptance"
+    approval.decision !== "approve-candidate-for-clean-acceptance" ||
+    approval.approvalPath !== relative(repository, expectedApproval)
   )
     fail("SDK_APPROVAL_SCHEMA_INVALID");
+  exactKeys(
+    approval.supersededApproval,
+    ["path", "sha256", "status"],
+    "SDK_APPROVAL_SCHEMA_INVALID",
+  );
+  const historicalApprovalPath = join(
+    repository,
+    "apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2.json",
+  );
+  if (
+    approval.supersededApproval.path !==
+      relative(repository, historicalApprovalPath) ||
+    approval.supersededApproval.status !== "superseded-historical-evidence" ||
+    !existsSync(historicalApprovalPath) ||
+    sha(readFileSync(historicalApprovalPath)) !==
+      approval.supersededApproval.sha256
+  )
+    fail("SDK_SUPERSEDED_APPROVAL_INVALID");
+  verifyToolPolicy(approval.toolPolicy);
+  if (
+    JSON.stringify(approval.environmentPolicy) !==
+    JSON.stringify(approval.toolPolicy.environment)
+  )
+    fail("SDK_APPROVAL_TOOL_ENVIRONMENT_MISMATCH");
+  activeToolPolicy = approval.toolPolicy;
+  activeRunRoot = runRoot;
+  activeEnvironment = closedEnvironment(activeToolPolicy, {
+    runRoot,
+    cargoHome: join(runRoot, "cargo-home"),
+    cargoTarget: join(runRoot, "cargo-target"),
+  });
+  const ambientOpenCode = discoverAmbientOpenCode(inheritedPath);
   exactKeys(
     approval.candidate,
     ["path", "sha256"],
@@ -868,67 +1367,23 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
     if (profile.profile !== expectedProfiles[index])
       fail("SDK_APPROVAL_SCHEMA_INVALID");
   });
-  const introduction = git(repository, [
-    "log",
-    "--format=%H",
-    "--diff-filter=A",
-    "--",
-    relative(repository, approvalPath),
-  ]);
-  if (!/^[0-9a-f]{40}$/.test(introduction)) fail("SDK_REAPPROVAL_REQUIRED");
-  const parents = git(repository, [
-    "rev-list",
-    "--parents",
-    "-n",
-    "1",
-    introduction,
-  ]).split(" ");
-  if (
-    parents.length !== 2 ||
-    parents[1] !== approval.approval.approvalCommitParent
-  )
-    fail("SDK_REAPPROVAL_REQUIRED");
-  if (
-    git(repository, [
-      "diff-tree",
-      "--no-commit-id",
-      "--name-status",
-      "-r",
-      introduction,
-    ]) !== `A\t${relative(repository, approvalPath)}`
-  )
-    fail("SDK_REAPPROVAL_REQUIRED");
-  run("git", ["merge-base", "--is-ancestor", introduction, "HEAD"], {
-    cwd: repository,
-    env: { PATH: process.env.PATH },
-    code: "SDK_REAPPROVAL_REQUIRED",
-  });
-  if (
-    git(repository, [
-      "log",
-      "--format=%H",
-      `${introduction}..HEAD`,
-      "--",
-      relative(repository, approvalPath),
-    ])
-  )
-    fail("SDK_REAPPROVAL_REQUIRED");
-
   const candidatePath = join(repository, approval.candidate.path);
+  const { introduction } = verifyReplacementApprovalTopology({
+    repository,
+    approvalPath,
+    approval,
+    approvedReviewSet: approval.approvedReviewSet,
+    immutablePaths: [historicalApprovalPath],
+  });
   const committedPaths = [
     approvalPath,
-    candidatePath,
-    ...approval.profiles.flatMap((profile) => [
-      join(repository, profile.receiptPath),
-      join(repository, profile.receiptPath.replace(/\.json$/, ".sha256")),
-    ]),
+    ...approval.approvedReviewSet.map(({ path }) => join(repository, path)),
   ];
   for (const path of committedPaths) {
     if (!statSync(path).isFile()) fail("SDK_APPROVED_PATH_INVALID");
     const repositoryPath = relative(repository, path);
     const committed = run("git", ["show", `HEAD:${repositoryPath}`], {
       cwd: repository,
-      env: { PATH: process.env.PATH, LC_ALL: "C" },
       code: "SDK_APPROVED_PATH_UNCOMMITTED",
     }).stdout;
     if (Buffer.compare(readFileSync(path), Buffer.from(committed)) !== 0)
@@ -937,6 +1392,9 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
   if (sha(readFileSync(candidatePath)) !== approval.candidate.sha256)
     fail("SDK_APPROVED_BYTES_MISMATCH");
   const candidate = JSON.parse(readFileSync(candidatePath));
+  const approvedReviewDigests = new Map(
+    approval.approvedReviewSet.map(({ path, sha256 }) => [path, sha256]),
+  );
   exactKeys(
     candidate,
     [
@@ -950,6 +1408,7 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
       "schemas",
       "controlFlow",
       "verificationTools",
+      "toolPolicy",
       "profiles",
       "candidateStaticVerdicts",
     ],
@@ -958,6 +1417,24 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
   if (
     candidate.schemaVersion !== 3 ||
     candidate.receiptKind !== "candidate" ||
+    approvedReviewDigests.get(approval.candidate.path) !==
+      approval.candidate.sha256 ||
+    approvedReviewDigests.get(
+      "apps/runtime/docs/licenses/legacy-memory-node-api-sdk-v2.json",
+    ) !== candidate.dependencyReceiptSha256 ||
+    approvedReviewDigests.get(
+      "apps/runtime/docs/licenses/legacy-memory-node-api-sdk-v2.md",
+    ) !== candidate.humanLicenseReceiptSha256 ||
+    approvedReviewDigests.get(
+      "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-abi.json",
+    ) !== candidate.abiReceiptSha256 ||
+    approvedReviewDigests.get(
+      "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-undefined-imports.txt",
+    ) !== candidate.undefinedImportsSha256 ||
+    approval.profiles.some(
+      ({ receiptPath, receiptSha256 }) =>
+        approvedReviewDigests.get(receiptPath) !== receiptSha256,
+    ) ||
     JSON.stringify(
       candidate.profiles.map(
         ({ profile, receiptPath, receiptSha256, artifactSha256 }) => ({
@@ -1036,7 +1513,8 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
     JSON.stringify(approval.controlFlow) !==
       JSON.stringify(candidate.controlFlow) ||
     JSON.stringify(approval.verificationTools) !==
-      JSON.stringify(candidate.verificationTools)
+      JSON.stringify(candidate.verificationTools) ||
+    JSON.stringify(approval.toolPolicy) !== JSON.stringify(candidate.toolPolicy)
   )
     fail("SDK_APPROVAL_POLICY_MISMATCH");
   const approvedNormalReceipt = JSON.parse(
@@ -1071,6 +1549,7 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
         "schemas",
         "controlFlow",
         "verificationTools",
+        "toolPolicy",
         "compiler",
         "environment",
         "imports",
@@ -1117,6 +1596,8 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
         JSON.stringify(candidate.controlFlow) ||
       JSON.stringify(parsedReceipt.verificationTools) !==
         JSON.stringify(candidate.verificationTools) ||
+      JSON.stringify(parsedReceipt.toolPolicy) !==
+        JSON.stringify(candidate.toolPolicy) ||
       Object.values(parsedReceipt.staticVerdicts).some(
         (verdict) => verdict !== true,
       )
@@ -1171,19 +1652,6 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
     ],
     {
       cwd: repository,
-      env: {
-        PATH: process.env.PATH,
-        HOME: join(runRoot, "home"),
-        CARGO_HOME: cargoHome,
-        CARGO_TARGET_DIR: cargoTarget,
-        CARGO_NET_OFFLINE: "true",
-        RUSTUP_HOME:
-          process.env.RUSTUP_HOME ?? join(process.env.HOME, ".rustup"),
-        RUSTUP_TOOLCHAIN: "stable-aarch64-apple-darwin",
-        MACOSX_DEPLOYMENT_TARGET: "15.0",
-        RUSTFLAGS: "-C link-arg=-Wl,-dead_strip_dylibs",
-        LC_ALL: "C",
-      },
       timeout: 300_000,
       code: "SDK_REPRODUCTION_FAILED",
     },
@@ -1239,24 +1707,12 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
   )
     fail("SDK_REBUILT_PHASE_FIXTURE_MISMATCH_BEFORE_EXECUTION");
 
-  const cliPackage = join(
-    repository,
-    "node_modules/@opencode-ai/cli/package.json",
-  );
-  if (JSON.parse(readFileSync(cliPackage)).version !== "0.0.0-beta-17595")
-    fail("SDK_OPENCODE_PIN_INVALID");
-  const selectedCli = realpathSync(
-    join(repository, "node_modules/.bin/opencode2"),
-  );
-  const ambientCli = spawnSync("/usr/bin/which", ["opencode2"], {
-    encoding: "utf8",
-    env: { PATH: process.env.PATH, LC_ALL: "C" },
-  });
+  const selectedCli = approval.toolPolicy.tools.openCode.path;
   if (
-    ambientCli.status === 0 &&
-    realpathSync(ambientCli.stdout.trim()) !== selectedCli
+    approval.toolPolicy.tools.openCode.version !== "0.0.0-beta-17595" ||
+    ambientOpenCode.executed !== false
   )
-    fail("SDK_AMBIENT_HOST_FORBIDDEN");
+    fail("SDK_OPENCODE_PIN_INVALID");
 
   const vectors = join(runRoot, "parity-vectors.json");
   const vectorBuilder = join(
@@ -1265,7 +1721,6 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
   );
   run(process.execPath, [vectorBuilder, "--emit-sdk-vectors", vectors], {
     cwd: repository,
-    env: { PATH: process.env.PATH, LC_ALL: "C" },
     code: "SDK_VECTOR_BUILD_FAILED",
   });
   const harness = join(
@@ -1352,11 +1807,6 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
       ],
       {
         cwd: loadRoot,
-        env: {
-          PATH: process.env.PATH,
-          HOME: join(runRoot, "home"),
-          LC_ALL: "C",
-        },
         timeout: 15_000,
         code: "SDK_BUN_PROFILE_FAILED",
       },
@@ -1468,30 +1918,28 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
   );
   const hardware = {
     memoryBytes: Number(
-      run("/usr/sbin/sysctl", ["-n", "hw.memsize"], {
-        env: { PATH: process.env.PATH, LC_ALL: "C" },
-      }).stdout.trim(),
+      run("/usr/sbin/sysctl", ["-n", "hw.memsize"], {}).stdout.trim(),
     ),
     logicalCpu: Number(
-      run("/usr/sbin/sysctl", ["-n", "hw.logicalcpu"], {
-        env: { PATH: process.env.PATH, LC_ALL: "C" },
-      }).stdout.trim(),
+      run("/usr/sbin/sysctl", ["-n", "hw.logicalcpu"], {}).stdout.trim(),
     ),
   };
   const parentBefore = await sampleProcess(process.pid);
   const lifecyclePoints = await runLifecycleMatrix({
-    bun: process.execPath,
+    bun: approval.toolPolicy.tools.bun.path,
     harness,
     addon: normalPath,
     digest: normalProfile.artifactSha256,
     runRoot,
+    environment: activeEnvironment,
   });
   const freshProcesses = runFreshProcessSeries({
-    bun: process.execPath,
+    bun: approval.toolPolicy.tools.bun.path,
     harness,
     addon: normalPath,
     digest: normalProfile.artifactSha256,
     runRoot,
+    environment: activeEnvironment,
   });
   const parentAfter = await sampleProcess(process.pid);
   if (
@@ -1526,11 +1974,6 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
       ],
       {
         cwd: runRoot,
-        env: {
-          PATH: process.env.PATH,
-          HOME: join(runRoot, "home"),
-          LC_ALL: "C",
-        },
         timeout: 15_000,
         code: `SDK_NAMED_LIFECYCLE_FAILED:${mode}`,
       },
@@ -1558,11 +2001,6 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
     ],
     {
       cwd: runRoot,
-      env: {
-        PATH: process.env.PATH,
-        HOME: join(runRoot, "home"),
-        LC_ALL: "C",
-      },
       timeout: 15_000,
       code: "SDK_SUBSEQUENT_CLEAN_CHILD_FAILED",
     },
@@ -1598,11 +2036,6 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
     ],
     {
       cwd: repository,
-      env: {
-        PATH: process.env.PATH,
-        RUSTUP_HOME: process.env.RUSTUP_HOME,
-        HOME: join(runRoot, "home"),
-      },
       code: "SDK_FAKE_ADAPTER_COMPILE_FAILED",
     },
   );
@@ -1652,14 +2085,6 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
     ["-p", opencodePolicy, cli, "debug", "config"],
     {
       cwd: pluginRoot,
-      env: {
-        PATH: process.env.PATH,
-        HOME: join(runRoot, "opencode-home"),
-        XDG_CONFIG_HOME: join(runRoot, "opencode-config"),
-        XDG_CACHE_HOME: join(runRoot, "opencode-cache"),
-        OPENCODE_CONFIG: join(pluginRoot, "opencode.json"),
-        LC_ALL: "C",
-      },
       timeout: 15_000,
       code: "SDK_OPENCODE_PROBE_FAILED",
     },
@@ -1674,6 +2099,10 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
     stage: "before-cleanup",
   });
 
+  activeEnvironment = {
+    ...activeEnvironment,
+    CARGO_TARGET_DIR: activeEnvironment.SDK_REGRESSION_CARGO_TARGET_DIR,
+  };
   let regressionCommandsCompleted = 0;
   for (const command of [
     ["git", ["diff", "--check"]],
@@ -1688,7 +2117,6 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
   ]) {
     run(command[0], command[1], {
       cwd: repository,
-      env: { ...process.env, LC_ALL: "C" },
       timeout: 300_000,
       code: "SDK_REGRESSION_FAILED",
     });
@@ -1744,6 +2172,8 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
       introductionCommit: introduction,
       approvalCommitParent: approval.approval.approvalCommitParent,
     },
+    toolPolicy: approval.toolPolicy,
+    ambientOpenCode,
     reproduction: reproductionResults,
     executableVerdicts: {
       promiseOutcomesObserved: gateResults.promiseOutcomesObserved,
