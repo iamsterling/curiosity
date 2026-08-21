@@ -30,6 +30,12 @@ import {
   orderArchiveInventoryRows,
   renderArchiveInventory,
 } from "./legacy-memory-node-api-sdk-v2-archive-inventory-order.mjs";
+import {
+  bindGeneratedExecutable,
+  createGeneratedExecutablePolicy,
+  generatedExecutablePolicyRule,
+  resolveGeneratedExecutable,
+} from "./legacy-memory-node-api-sdk-v2-generated-executable-policy.mjs";
 
 const repository = resolve(import.meta.dirname, "../../../../..");
 const approvedRoot =
@@ -69,14 +75,14 @@ const phaseFixtureTranscriptSchemaPath = join(
 );
 const historicalApproval = join(
   repository,
-  "apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2-r2.json",
+  "apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2-r3.json",
 );
 const replacementApproval = join(
   repository,
-  "apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2-r3.json",
+  "apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2-r4.json",
 );
 const insufficientApprovalSha256 =
-  "0d24ecf488f8d39f8a8f9353f2920ef1fe9f205d36e545e888e9c41fc19a2310";
+  "2f41cc0bd640401754d7d2a77751cc7a50999072d154db03db697bdaa2d40fcb";
 const exactRustflags = "-C link-arg=-Wl,-dead_strip_dylibs";
 const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const napiSysSource = {
@@ -142,6 +148,15 @@ if (!runRoot.startsWith(`${realpathSync(approvedRoot)}/`))
 const candidate = join(runRoot, "candidate");
 const proposed = resolve(argumentsMap.get("--proposed-checkin-root"));
 const reviewPath = resolve(argumentsMap.get("--root-user-review-report"));
+for (const [name, path] of [
+  ["CARGO_HOME", process.env.CARGO_HOME],
+  ["CARGO_TARGET_DIR", process.env.CARGO_TARGET_DIR],
+  ["PROPOSED_CHECKIN_ROOT", proposed],
+]) {
+  const resolved = resolve(path ?? "");
+  if (!resolved.startsWith(`${runRoot}/`))
+    throw new Error(`SDK_INVOCATION_PATH_OUTSIDE_RUN_ROOT:${name}`);
+}
 if (reviewPath !== join(candidate, "root-user-review.json"))
   throw new Error("SDK_REVIEW_PATH_INVALID");
 mkdirSync(candidate, { recursive: true, mode: 0o700 });
@@ -165,6 +180,7 @@ const approvedEnvironment = closedEnvironment(toolPolicy, {
   cargoHome: process.env.CARGO_HOME,
   cargoTarget: process.env.CARGO_TARGET_DIR,
 });
+const generatedExecutablePolicy = createGeneratedExecutablePolicy(runRoot);
 const commandNames = new Map([
   ["rustc", "rustc"],
   ["cargo", "cargo"],
@@ -183,8 +199,7 @@ const commandNames = new Map([
 const boundCommand = (command) => {
   const name = commandNames.get(command);
   if (name !== undefined) return toolPolicy.tools[name].path;
-  if (command.startsWith(`${runRoot}/`)) return command;
-  throw new Error(`SDK_UNBOUND_TOOL:${command}`);
+  return resolveGeneratedExecutable(generatedExecutablePolicy, command);
 };
 
 const commands = [];
@@ -607,6 +622,21 @@ write(
   scannerDependencyReceiptBytes,
 );
 const scannerTarget = join(process.env.CARGO_TARGET_DIR, "source-scanner");
+const scannerBuildArguments = [
+  "build",
+  "--manifest-path",
+  toolManifest,
+  "--release",
+  "--locked",
+  "--offline",
+  "--bin",
+  "node_api_source_scanner",
+];
+const scannerBuildRecipe = `${[
+  toolPolicy.tools.cargo.path,
+  ...scannerBuildArguments,
+  "CARGO_TARGET_DIR=<RUN_ROOT>/cargo-target/source-scanner",
+].join("\n")}\n`;
 run(
   "cargo",
   [
@@ -619,21 +649,19 @@ run(
   ],
   { offline: true, env: { CARGO_TARGET_DIR: scannerTarget } },
 );
-run(
-  "cargo",
-  [
-    "build",
-    "--manifest-path",
-    toolManifest,
-    "--release",
-    "--locked",
-    "--offline",
-    "--bin",
-    "node_api_source_scanner",
-  ],
-  { offline: true, env: { CARGO_TARGET_DIR: scannerTarget } },
-);
+run("cargo", scannerBuildArguments, {
+  offline: true,
+  env: { CARGO_TARGET_DIR: scannerTarget },
+});
 const scannerBinary = join(scannerTarget, "release/node_api_source_scanner");
+const scannerArtifactSha256 = sha(readFileSync(scannerBinary));
+const scannerBuildRecipeSha256 = sha(scannerBuildRecipe);
+bindGeneratedExecutable(generatedExecutablePolicy, {
+  path: scannerBinary,
+  identity: "node-api-source-scanner",
+  sha256: scannerArtifactSha256,
+  recipeSha256: scannerBuildRecipeSha256,
+});
 const scannerOutput = run(scannerBinary, [repository]).stdout;
 const scannerLines = scannerOutput.trimEnd().split("\n");
 if (
@@ -698,6 +726,10 @@ if (
   verifierSelfTest.archiveInventoryOrdering
     ?.candidateAcceptanceBytesIdentical !== true ||
   verifierSelfTest.archiveInventoryOrdering?.localeInvariant !== true ||
+  Object.keys(verifierSelfTest.generatedExecutablePolicy ?? {}).length !== 7 ||
+  Object.values(verifierSelfTest.generatedExecutablePolicy ?? {}).some(
+    (value) => value !== true,
+  ) ||
   verifierSelfTest.timeoutRejected !== true ||
   verifierSelfTest.independentVerdictDerivation !== true ||
   verifierSelfTest.addonLoaderCalls !== 0 ||
@@ -1338,6 +1370,10 @@ const sourcePaths = [
   ),
   join(
     repository,
+    "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-generated-executable-policy.mjs",
+  ),
+  join(
+    repository,
     "apps/plugin/opencode2/tools/verify-legacy-memory-native-parity.mjs",
   ),
   join(
@@ -1559,6 +1595,7 @@ const verificationTools = {
   astScannerDependencyReceiptSha256: sha(scannerDependencyReceiptBytes),
   astNormalizationSha256: sha(`${scannerNormalization}\n`),
   astOutputSha256: sha(scannerOutput),
+  astScannerBuildRecipeSha256: scannerBuildRecipeSha256,
   archiveInventoryComparatorSourceSha256: sha(
     readFileSync(
       join(
@@ -1568,6 +1605,17 @@ const verificationTools = {
     ),
   ),
   archiveInventoryComparatorRuleSha256: sha(`${archiveInventoryOrderRule}\n`),
+  generatedExecutablePolicySourceSha256: sha(
+    readFileSync(
+      join(
+        repository,
+        "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-generated-executable-policy.mjs",
+      ),
+    ),
+  ),
+  generatedExecutablePolicyRuleSha256: sha(
+    `${generatedExecutablePolicyRule}\n`,
+  ),
   guardSourceSha256: sha(readFileSync(guardSourcePath)),
   guardBuildRecipeSha256: sha(readFileSync(guardRecipePath)),
   guardCompilerSha256: sha(`${clangVersion}\n`),

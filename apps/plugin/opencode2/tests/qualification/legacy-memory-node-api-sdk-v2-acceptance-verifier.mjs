@@ -40,6 +40,12 @@ import {
   compareArchiveInventoryPaths,
   renderArchiveInventory,
 } from "./legacy-memory-node-api-sdk-v2-archive-inventory-order.mjs";
+import {
+  bindGeneratedExecutable,
+  createGeneratedExecutablePolicy,
+  generatedExecutablePolicyRule,
+  resolveGeneratedExecutable,
+} from "./legacy-memory-node-api-sdk-v2-generated-executable-policy.mjs";
 
 const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const fail = (code) => {
@@ -56,6 +62,7 @@ const exactKeys = (value, keys, code) => {
 let activeToolPolicy = null;
 let activeEnvironment = null;
 let activeRunRoot = null;
+let activeGeneratedExecutablePolicy = null;
 const activeCommand = (command) => {
   if (activeToolPolicy === null) return command;
   const aliases = {
@@ -71,26 +78,28 @@ const activeCommand = (command) => {
   const name = aliases[command];
   if (name !== undefined) return activeToolPolicy.tools[name].path;
   if (
-    Object.values(activeToolPolicy.tools).some(
-      ({ path }) => path === command,
-    ) ||
-    (activeRunRoot !== null && command.startsWith(`${activeRunRoot}/`))
+    Object.values(activeToolPolicy.tools).some(({ path }) => path === command)
   )
     return command;
+  if (activeGeneratedExecutablePolicy !== null)
+    return resolveGeneratedExecutable(activeGeneratedExecutablePolicy, command);
   throw new Error(`SDK_UNBOUND_TOOL:${command}`);
 };
 const run = (command, args, options = {}) => {
   const executable = activeCommand(command);
   const environment =
-    activeEnvironment === null
-      ? options.env
-      : { ...activeEnvironment, ...(options.env ?? {}) };
+    options.environment !== undefined
+      ? options.environment
+      : activeEnvironment === null
+        ? options.env
+        : { ...activeEnvironment, ...(options.env ?? {}) };
   if (
     activeToolPolicy !== null &&
-    Object.entries(options.env ?? {}).some(
+    Object.entries(options.environment ?? options.env ?? {}).some(
       ([name, value]) =>
         !activeToolPolicy.environment.allowlistedNames.includes(name) ||
-        activeEnvironment[name] !== value,
+        (options.environment === undefined &&
+          activeEnvironment[name] !== value),
     )
   )
     fail("SDK_CHILD_ENVIRONMENT_ALLOWLIST_INVALID");
@@ -895,6 +904,86 @@ const selfTestArchiveInventoryOrdering = () => {
   };
 };
 
+const selfTestGeneratedExecutablePolicy = (selfTestRoot) => {
+  const fixtureRoot = join(selfTestRoot, "generated-executable-policy");
+  const runRoot = join(fixtureRoot, "own-run");
+  const siblingRoot = join(fixtureRoot, "sibling-run");
+  const ownScanner = join(runRoot, "cargo-target/release/scanner");
+  const ownFixture = join(runRoot, "fixtures/phase-core");
+  const siblingExecutable = join(siblingRoot, "scanner");
+  const parentExecutable = join(fixtureRoot, "parent-scanner");
+  for (const [path, bytes] of [
+    [ownScanner, "scanner\n"],
+    [ownFixture, "fixture\n"],
+    [siblingExecutable, "sibling\n"],
+    [parentExecutable, "parent\n"],
+  ]) {
+    mkdirSync(dirname(path), { recursive: true });
+    writeFileSync(path, bytes, { mode: 0o500 });
+  }
+  const escapedLink = join(runRoot, "escaped-scanner");
+  symlinkSync(siblingExecutable, escapedLink);
+  const policy = createGeneratedExecutablePolicy(runRoot);
+  const recipeSha256 = sha("bound-build-recipe\n");
+  const receiptFor = (path, identity) => ({
+    path,
+    identity,
+    sha256: sha(readFileSync(path)),
+    recipeSha256,
+  });
+  const ownBeforeReceiptRejected =
+    rejects(() => resolveGeneratedExecutable(policy, ownScanner)) &&
+    rejects(() => resolveGeneratedExecutable(policy, ownFixture));
+  bindGeneratedExecutable(
+    policy,
+    receiptFor(ownScanner, "node-api-source-scanner"),
+  );
+  bindGeneratedExecutable(
+    policy,
+    receiptFor(ownFixture, "controlled-phase-core"),
+  );
+  const result = {
+    siblingRejected: rejects(() =>
+      bindGeneratedExecutable(
+        policy,
+        receiptFor(siblingExecutable, "sibling-scanner"),
+      ),
+    ),
+    parentRejected: rejects(() =>
+      bindGeneratedExecutable(
+        policy,
+        receiptFor(parentExecutable, "parent-scanner"),
+      ),
+    ),
+    outsideRejected: rejects(() =>
+      bindGeneratedExecutable(policy, {
+        path: "/usr/bin/true",
+        identity: "outside",
+        sha256: sha(readFileSync("/usr/bin/true")),
+        recipeSha256,
+      }),
+    ),
+    symlinkEscapeRejected: rejects(() =>
+      bindGeneratedExecutable(policy, {
+        path: escapedLink,
+        identity: "escaped",
+        sha256: sha(readFileSync(siblingExecutable)),
+        recipeSha256,
+      }),
+    ),
+    ownBeforeReceiptRejected,
+    ownScannerAcceptedAfterReceipt:
+      resolveGeneratedExecutable(policy, ownScanner) ===
+      realpathSync(ownScanner),
+    ownFixtureAcceptedAfterReceipt:
+      resolveGeneratedExecutable(policy, ownFixture) ===
+      realpathSync(ownFixture),
+  };
+  if (Object.values(result).some((value) => value !== true))
+    fail("SDK_SELF_TEST_GENERATED_EXECUTABLE_POLICY_INVALID");
+  return result;
+};
+
 const expectedProfiles = [
   "normal",
   "panic",
@@ -1254,6 +1343,7 @@ fn run(){ record_entry_phase(); record_worker_phase(); record_completion_phase()
       selfTestReplacementApprovalTopology(fake);
     const approvedReviewSet = selfTestApprovedReviewSet(fake);
     const archiveInventoryOrdering = selfTestArchiveInventoryOrdering(fake);
+    const generatedExecutablePolicy = selfTestGeneratedExecutablePolicy(fake);
     const validTranscript = buildSelfTestTranscript(2, "forward-reverse");
     validatePhaseTranscript(validTranscript, "", 2, "forward-reverse");
     const parsedTranscript = JSON.parse(validTranscript);
@@ -1328,6 +1418,7 @@ fn run(){ record_entry_phase(); record_worker_phase(); record_completion_phase()
       replacementApprovalTopology,
       approvedReviewSet,
       archiveInventoryOrdering,
+      generatedExecutablePolicy,
       transcriptAdversaries: transcriptAdversaries.length,
       timeoutRejected: true,
       independentVerdictDerivation: true,
@@ -1349,7 +1440,7 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
   );
   const expectedApproval = join(
     repository,
-    "apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2-r3.json",
+    "apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2-r4.json",
   );
   if (approvalPath !== expectedApproval || !existsSync(approvalPath))
     fail("SDK_APPROVAL_REQUIRED");
@@ -1397,7 +1488,7 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
   );
   const historicalApprovalPath = join(
     repository,
-    "apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2-r2.json",
+    "apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2-r3.json",
   );
   if (
     approval.supersededApproval.path !==
@@ -1416,6 +1507,7 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
     fail("SDK_APPROVAL_TOOL_ENVIRONMENT_MISMATCH");
   activeToolPolicy = approval.toolPolicy;
   activeRunRoot = runRoot;
+  activeGeneratedExecutablePolicy = createGeneratedExecutablePolicy(runRoot);
   activeEnvironment = closedEnvironment(activeToolPolicy, {
     runRoot,
     cargoHome: join(runRoot, "cargo-home"),
@@ -1545,8 +1637,11 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
       "astScannerDependencyReceiptSha256",
       "astNormalizationSha256",
       "astOutputSha256",
+      "astScannerBuildRecipeSha256",
       "archiveInventoryComparatorSourceSha256",
       "archiveInventoryComparatorRuleSha256",
+      "generatedExecutablePolicySourceSha256",
+      "generatedExecutablePolicyRuleSha256",
       "guardSourceSha256",
       "guardBuildRecipeSha256",
       "guardCompilerSha256",
@@ -1572,9 +1667,19 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
       ),
     ) !== candidate.verificationTools.archiveInventoryComparatorSourceSha256 ||
     sha(`${archiveInventoryOrderRule}\n`) !==
-      candidate.verificationTools.archiveInventoryComparatorRuleSha256
+      candidate.verificationTools.archiveInventoryComparatorRuleSha256 ||
+    sha(
+      readFileSync(
+        join(
+          repository,
+          "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-generated-executable-policy.mjs",
+        ),
+      ),
+    ) !== candidate.verificationTools.generatedExecutablePolicySourceSha256 ||
+    sha(`${generatedExecutablePolicyRule}\n`) !==
+      candidate.verificationTools.generatedExecutablePolicyRuleSha256
   )
-    fail("SDK_ARCHIVE_INVENTORY_COMPARATOR_MISMATCH");
+    fail("SDK_VERIFICATION_POLICY_SOURCE_MISMATCH");
   exactKeys(
     candidate.candidateStaticVerdicts,
     [
@@ -1724,6 +1829,15 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
   cpSync(join(archiveRoot, "cargo-home"), cargoHome, { recursive: true });
   const reproduction = join(runRoot, "reproduction");
   mkdirSync(reproduction, { recursive: true, mode: 0o700 });
+  const reproductionCargoHome = join(reproduction, "cargo-home");
+  cpSync(join(archiveRoot, "cargo-home"), reproductionCargoHome, {
+    recursive: true,
+  });
+  const reproductionEnvironment = closedEnvironment(activeToolPolicy, {
+    runRoot: reproduction,
+    cargoHome: reproductionCargoHome,
+    cargoTarget: join(reproduction, "cargo-target"),
+  });
   const verifier = join(
     repository,
     "apps/plugin/opencode2/tests/qualification/verify-legacy-memory-node-api-sdk-v2.mjs",
@@ -1747,6 +1861,7 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
     ],
     {
       cwd: repository,
+      environment: reproductionEnvironment,
       timeout: 300_000,
       code: "SDK_REPRODUCTION_FAILED",
     },
@@ -1971,6 +2086,12 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
     approval.verificationTools.phaseFixtureArtifactSha256
   )
     fail("SDK_PHASE_FIXTURE_COPY_INVALID");
+  bindGeneratedExecutable(activeGeneratedExecutablePolicy, {
+    path: phaseFixture,
+    identity: "controlled-phase-core",
+    sha256: approval.verificationTools.phaseFixtureArtifactSha256,
+    recipeSha256: approval.verificationTools.phaseFixtureBuildRecipeSha256,
+  });
   const phaseTranscriptResults = [];
   for (const width of expectedWidths) {
     for (const permutation of [
@@ -2139,6 +2260,12 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
     approval.verificationTools.fakeAdapterArtifactSha256
   )
     fail("SDK_FAKE_ADAPTER_REPRODUCTION_MISMATCH");
+  bindGeneratedExecutable(activeGeneratedExecutablePolicy, {
+    path: fakeBinary,
+    identity: "fake-settlement-adapter",
+    sha256: approval.verificationTools.fakeAdapterArtifactSha256,
+    recipeSha256: approval.verificationTools.fakeAdapterBuildRecipeSha256,
+  });
   const fakeResult = run(fakeBinary, [], {
     cwd: runRoot,
     env: { LC_ALL: "C" },

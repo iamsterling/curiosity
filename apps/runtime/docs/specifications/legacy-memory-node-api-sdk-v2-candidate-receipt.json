@@ -41,8 +41,11 @@
     "astScannerDependencyReceiptSha256": "95610888641cb448efc1e1a82b56b5701d446d9e6b3ec6e60577148419ff4566",
     "astNormalizationSha256": "d67a9cf464a719b1e9c331f5bbfe87ca904b90e2e297a3a3558a3cc6fdd43838",
     "astOutputSha256": "be0ead17777005975fcb69ad94e7dd0ca87696deee7379b68a51b52f9980cd18",
+    "astScannerBuildRecipeSha256": "c7bf4213ce0b782b9fcde40cda357f356a42f143429376c92740d1d611e76c54",
     "archiveInventoryComparatorSourceSha256": "0b474c516631568aadafdbfd4635fc098eb2ff24898ab3c7b742500031e4def7",
     "archiveInventoryComparatorRuleSha256": "ff0aa0d9cad22d35eaeb27a17e781e185e316b130146d4b03dde6ef701bc20b1",
+    "generatedExecutablePolicySourceSha256": "8276b5fdad0a608ffb35ae03c18bce1770a90290bb241a0f7acfdbb6c6629a37",
+    "generatedExecutablePolicyRuleSha256": "68092b63dae1e048ad9d6288e2bd7c2cacd90592438fe571ad81279bd540f2ef",
     "guardSourceSha256": "c111825344ffedfdcd7b5bebecfd8f8b1f59c1eab464868f52c09544ddc28968",
     "guardBuildRecipeSha256": "c00d5118352346f83a3659f4d70de5326adf7ff14ea2222b015143ea05278cd6",
     "guardCompilerSha256": "5839b06c4259d9b391fe22277ec00329ef8b55918a5f5743cd1427a262bc7f63",
@@ -211,35 +214,35 @@
     {
       "profile": "normal",
       "receiptPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-normal-receipt.json",
-      "receiptSha256": "834221f3c7607a524ee7fb3b64a3aec57f4c7737bc8542edd152f8221372078e",
+      "receiptSha256": "3927917e7c80d9b8af0878af093e6cc0622aab501b20699f087199bc50fe0fb7",
       "sidecarPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-normal-receipt.sha256",
       "artifactSha256": "ced6f2ef07502695c1bdbce5b634e704568740e831130d5c6d2d290483d982c9"
     },
     {
       "profile": "panic",
       "receiptPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-panic-receipt.json",
-      "receiptSha256": "b4326dbabfb5a48c06eefd5a29901dae5615eca5b1129cbc8f6486703e626465",
+      "receiptSha256": "f1af95392232ce8480d90334a561aeeb2267c9742ce412c75d13e3c415af4707",
       "sidecarPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-panic-receipt.sha256",
       "artifactSha256": "d2bdfadc40d6964aaa75a3087f095780287d8946bda5ce67ed04abb88d58ae75"
     },
     {
       "profile": "allocationFailure",
       "receiptPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-allocation-failure-receipt.json",
-      "receiptSha256": "ef4b7bc55b9d903f9b93f41a646df3eb6659d9dbd3dc38c0e1f8c300dfd5dd21",
+      "receiptSha256": "e501d38ae57e0c625bb8b6d28079e68626ee3e39bb55efb37ce0da839144ffdf",
       "sidecarPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-allocation-failure-receipt.sha256",
       "artifactSha256": "7e1716ab2c181bbc561db875af5dbc6406599ffa6e9a27b2b3afea539e684191"
     },
     {
       "profile": "queueFailure",
       "receiptPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-queue-failure-receipt.json",
-      "receiptSha256": "e19fc534b3bc47ffacfee85af46b34215c127ff22488f801fdc9bb8edbf2a3ba",
+      "receiptSha256": "ce903aff8971185024d2f5e7e5ddf86ae0ebe22a78c00a910e1cef387837e77e",
       "sidecarPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-queue-failure-receipt.sha256",
       "artifactSha256": "9649c69be974d45f85b53c3aea3e9fd92b9d0e4bf3c85beb919f9d2ff24c704e"
     },
     {
       "profile": "controlFlowObservation",
       "receiptPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-control-flow-observation-receipt.json",
-      "receiptSha256": "e3c85532da4013237c05106ef428a59f801bb32dadc084a4ff7ac8b9931edb40",
+      "receiptSha256": "8dc381a00c8461c5e3f0cb79b4c3ec03a9c9b06c467db949d298ebbc1eba733c",
       "sidecarPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-control-flow-observation-receipt.sha256",
       "artifactSha256": "02c2d608cc8c5798d7cb50de3a034586d3a4810f3581336b4fcd9bfc24013e5a"
     }

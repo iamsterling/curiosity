@@ -68,6 +68,22 @@ acceptance inventories under inherited `C`, `en_US.UTF-8`, `sv_SE.UTF-8`, and
 new approval authority can exist only at
 `apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2-r3.json`.
 
+The r3 Phase C run exposed a generated-executable confinement mismatch: the
+reproduction child received the outer acceptance `CARGO_TARGET_DIR`, so its
+scanner was outside the child's own run root and correctly rejected. The r4
+replacement gives every invocation its own Cargo home and target beneath that
+invocation's run root. A shared generated-executable policy permits no blanket
+run-root or parent-temp execution: a canonical non-symlink path must be strictly
+beneath the current run root and must first bind an exact output identity,
+artifact SHA-256, and build-recipe SHA-256. Scanner, controlled phase fixture,
+and fake settlement adapter execution use this policy. Policy source/rule and
+the scanner recipe digest are approval-receipt-bound; each invocation's build
+receipt binds the immediately measured executable hash because native scanner
+bytes may encode their isolated target root. Self-tests reject sibling,
+parent, outside, pre-receipt, and symlink-escape paths and accept own-root scanner
+and fixture paths only after receipt binding. New authority can exist only at
+`apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2-r4.json`.
+
 ## Non-goals
 
 This decision does not load an addon or OpenCode, approve, qualify, commit,

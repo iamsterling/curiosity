@@ -35,3 +35,11 @@ renderer from candidate and acceptance code. It binds comparator source/rule
 digests and rejects locale-dependent output using mixed ASCII, case,
 punctuation, combining, and non-ASCII vectors. The immutable r2 approval is
 superseded evidence; only a new r3 approval-only commit can authorize Phase C.
+
+For r4, acceptance creates a closed reproduction environment whose Cargo home
+and target are beneath the reproduction child's own run root. Candidate and
+acceptance import one generated-executable policy: generated outputs execute
+only after canonical own-root confinement and exact identity/hash/recipe receipt
+binding. Sibling, parent, shared-temp, outside, unbound, and symlink-escape paths
+are rejected. The immutable r3 approval is superseded evidence; only a new r4
+approval-only commit can authorize Phase C.
