@@ -34,6 +34,12 @@ import {
   materializeApprovedReviewSet,
   validateApprovedReviewSet,
 } from "./legacy-memory-node-api-sdk-v2-approved-review-set.mjs";
+import {
+  adversarialArchiveInventoryPaths,
+  archiveInventoryOrderRule,
+  compareArchiveInventoryPaths,
+  renderArchiveInventory,
+} from "./legacy-memory-node-api-sdk-v2-archive-inventory-order.mjs";
 
 const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const fail = (code) => {
@@ -822,6 +828,73 @@ const selfTestApprovedReviewSet = (selfTestRoot) => {
   };
 };
 
+const selfTestArchiveInventoryOrdering = () => {
+  const expectedPaths = [
+    "!",
+    "0",
+    "A",
+    "Z",
+    "[",
+    "a",
+    "a-b",
+    "a.b",
+    "a/b",
+    "a_b",
+    "e\u0301",
+    "z",
+    "{",
+    "~",
+    "ß",
+    "é",
+    "Ω",
+    "中",
+  ];
+  const orderedPaths = [...adversarialArchiveInventoryPaths].sort(
+    compareArchiveInventoryPaths,
+  );
+  if (JSON.stringify(orderedPaths) !== JSON.stringify(expectedPaths))
+    fail("SDK_SELF_TEST_ARCHIVE_INVENTORY_ORDER_INVALID");
+  const rows = adversarialArchiveInventoryPaths.map((path, index) => ({
+    path,
+    mode: "0600",
+    size: index,
+    sha256: String(index).padStart(64, "0"),
+  }));
+  const candidateBytes = renderArchiveInventory(rows);
+  const acceptanceBytes = renderArchiveInventory([...rows].reverse());
+  if (candidateBytes !== acceptanceBytes)
+    fail("SDK_SELF_TEST_ARCHIVE_INVENTORY_BYTES_DIVERGED");
+  const modulePath = join(
+    import.meta.dirname,
+    "legacy-memory-node-api-sdk-v2-archive-inventory-order.mjs",
+  );
+  const localeOutputs = ["C", "en_US.UTF-8", "sv_SE.UTF-8", "tr_TR.UTF-8"].map(
+    (locale) => {
+      const result = spawnSync(
+        process.execPath,
+        [modulePath, "--emit-adversarial-order"],
+        {
+          encoding: "utf8",
+          env: { PATH: MINIMAL_SYSTEM_PATH, LC_ALL: locale },
+        },
+      );
+      if (result.status !== 0)
+        fail("SDK_SELF_TEST_ARCHIVE_INVENTORY_LOCALE_CHILD_FAILED");
+      return result.stdout;
+    },
+  );
+  const expectedOutput = `${expectedPaths.join("\n")}\n`;
+  if (localeOutputs.some((output) => output !== expectedOutput))
+    fail("SDK_SELF_TEST_ARCHIVE_INVENTORY_LOCALE_DIVERGED");
+  return {
+    rule: archiveInventoryOrderRule,
+    vectorCount: expectedPaths.length,
+    localeVariationCount: localeOutputs.length,
+    candidateAcceptanceBytesIdentical: true,
+    localeInvariant: true,
+  };
+};
+
 const expectedProfiles = [
   "normal",
   "panic",
@@ -1180,6 +1253,7 @@ fn run(){ record_entry_phase(); record_worker_phase(); record_completion_phase()
     const replacementApprovalTopology =
       selfTestReplacementApprovalTopology(fake);
     const approvedReviewSet = selfTestApprovedReviewSet(fake);
+    const archiveInventoryOrdering = selfTestArchiveInventoryOrdering(fake);
     const validTranscript = buildSelfTestTranscript(2, "forward-reverse");
     validatePhaseTranscript(validTranscript, "", 2, "forward-reverse");
     const parsedTranscript = JSON.parse(validTranscript);
@@ -1253,6 +1327,7 @@ fn run(){ record_entry_phase(); record_worker_phase(); record_completion_phase()
       toolPolicy,
       replacementApprovalTopology,
       approvedReviewSet,
+      archiveInventoryOrdering,
       transcriptAdversaries: transcriptAdversaries.length,
       timeoutRejected: true,
       independentVerdictDerivation: true,
@@ -1274,7 +1349,7 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
   );
   const expectedApproval = join(
     repository,
-    "apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2-r2.json",
+    "apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2-r3.json",
   );
   if (approvalPath !== expectedApproval || !existsSync(approvalPath))
     fail("SDK_APPROVAL_REQUIRED");
@@ -1322,7 +1397,7 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
   );
   const historicalApprovalPath = join(
     repository,
-    "apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2.json",
+    "apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2-r2.json",
   );
   if (
     approval.supersededApproval.path !==
@@ -1470,6 +1545,8 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
       "astScannerDependencyReceiptSha256",
       "astNormalizationSha256",
       "astOutputSha256",
+      "archiveInventoryComparatorSourceSha256",
+      "archiveInventoryComparatorRuleSha256",
       "guardSourceSha256",
       "guardBuildRecipeSha256",
       "guardCompilerSha256",
@@ -1485,6 +1562,19 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
     ],
     "SDK_CANDIDATE_VERIFICATION_TOOLS_SCHEMA_INVALID",
   );
+  if (
+    sha(
+      readFileSync(
+        join(
+          repository,
+          "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-archive-inventory-order.mjs",
+        ),
+      ),
+    ) !== candidate.verificationTools.archiveInventoryComparatorSourceSha256 ||
+    sha(`${archiveInventoryOrderRule}\n`) !==
+      candidate.verificationTools.archiveInventoryComparatorRuleSha256
+  )
+    fail("SDK_ARCHIVE_INVENTORY_COMPARATOR_MISMATCH");
   exactKeys(
     candidate.candidateStaticVerdicts,
     [
@@ -1610,15 +1700,20 @@ export const runAcceptance = async ({ repository, argumentsMap }) => {
     approval.dependencyPolicy.approvedArchiveInventorySha256
   )
     fail("SDK_ARCHIVE_INVENTORY_MISMATCH");
-  const actualArchiveInventory = filesBelow(archiveRoot)
-    .filter((path) => path !== inventoryPath)
-    .map((path) => {
-      const metadata = lstatSync(path);
-      return `${relative(archiveRoot, path)}\t${(metadata.mode & 0o777).toString(8).padStart(4, "0")}\t${metadata.size}\t${sha(readFileSync(path))}`;
-    })
-    .sort()
-    .join("\n");
-  if (`${actualArchiveInventory}\n` !== readFileSync(inventoryPath, "utf8"))
+  const actualArchiveInventory = renderArchiveInventory(
+    filesBelow(archiveRoot)
+      .filter((path) => path !== inventoryPath)
+      .map((path) => {
+        const metadata = lstatSync(path);
+        return {
+          path: relative(archiveRoot, path),
+          mode: (metadata.mode & 0o777).toString(8).padStart(4, "0"),
+          size: metadata.size,
+          sha256: sha(readFileSync(path)),
+        };
+      }),
+  );
+  if (actualArchiveInventory !== readFileSync(inventoryPath, "utf8"))
     fail("SDK_ARCHIVE_INVENTORY_MISMATCH");
 
   const cargoHome = join(runRoot, "cargo-home");

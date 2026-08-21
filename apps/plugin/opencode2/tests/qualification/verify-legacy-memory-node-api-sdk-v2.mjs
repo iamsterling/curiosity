@@ -25,6 +25,11 @@ import {
   materializeApprovedReviewSet,
   validateApprovedReviewSet,
 } from "./legacy-memory-node-api-sdk-v2-approved-review-set.mjs";
+import {
+  archiveInventoryOrderRule,
+  orderArchiveInventoryRows,
+  renderArchiveInventory,
+} from "./legacy-memory-node-api-sdk-v2-archive-inventory-order.mjs";
 
 const repository = resolve(import.meta.dirname, "../../../../..");
 const approvedRoot =
@@ -64,14 +69,14 @@ const phaseFixtureTranscriptSchemaPath = join(
 );
 const historicalApproval = join(
   repository,
-  "apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2.json",
+  "apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2-r2.json",
 );
 const replacementApproval = join(
   repository,
-  "apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2-r2.json",
+  "apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2-r3.json",
 );
 const insufficientApprovalSha256 =
-  "40fca1b263d447e5f2d25cb2e75f1eb5463c7c41c4ab694077108907c6951878";
+  "0d24ecf488f8d39f8a8f9353f2920ef1fe9f205d36e545e888e9c41fc19a2310";
 const exactRustflags = "-C link-arg=-Wl,-dead_strip_dylibs";
 const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const napiSysSource = {
@@ -508,14 +513,14 @@ for (const source of cargoHomeFiles) {
 }
 write(join(approvedArchiveRoot, "napi-rs-LICENSE"), canonicalNapiLicense);
 chmodSync(join(approvedArchiveRoot, "napi-rs-LICENSE"), 0o600);
-const archiveInventory = filesBelow(approvedArchiveRoot)
-  .map((path) => ({
+const archiveInventory = orderArchiveInventoryRows(
+  filesBelow(approvedArchiveRoot).map((path) => ({
     path: relative(approvedArchiveRoot, path),
     mode: (statSync(path).mode & 0o777).toString(8).padStart(4, "0"),
     size: statSync(path).size,
     sha256: sha(readFileSync(path)),
-  }))
-  .sort((left, right) => left.path.localeCompare(right.path));
+  })),
+);
 if (
   archiveInventory.filter((row) => row.path.endsWith(".crate")).length !==
     approvedArchiveNames.size ||
@@ -523,7 +528,7 @@ if (
   archiveInventory.reduce((sum, row) => sum + row.size, 0) > 50_000_000
 )
   throw new Error("SDK_APPROVED_ARCHIVE_ROOT_INVALID");
-const archiveInventoryBytes = `${archiveInventory.map((row) => `${row.path}\t${row.mode}\t${row.size}\t${row.sha256}`).join("\n")}\n`;
+const archiveInventoryBytes = renderArchiveInventory(archiveInventory);
 write(join(candidate, "approved-archive-inventory.txt"), archiveInventoryBytes);
 write(
   join(approvedArchiveRoot, "approved-archive-inventory.txt"),
@@ -686,6 +691,13 @@ if (
   verifierSelfTest.approvedReviewSet?.canonicalCount !== 19 ||
   verifierSelfTest.approvedReviewSet?.mutationRejections !== 19 ||
   verifierSelfTest.approvedReviewSet?.omissionRejections !== 19 ||
+  verifierSelfTest.archiveInventoryOrdering?.rule !==
+    archiveInventoryOrderRule ||
+  verifierSelfTest.archiveInventoryOrdering?.vectorCount !== 18 ||
+  verifierSelfTest.archiveInventoryOrdering?.localeVariationCount !== 4 ||
+  verifierSelfTest.archiveInventoryOrdering
+    ?.candidateAcceptanceBytesIdentical !== true ||
+  verifierSelfTest.archiveInventoryOrdering?.localeInvariant !== true ||
   verifierSelfTest.timeoutRejected !== true ||
   verifierSelfTest.independentVerdictDerivation !== true ||
   verifierSelfTest.addonLoaderCalls !== 0 ||
@@ -1322,6 +1334,10 @@ const sourcePaths = [
   ),
   join(
     repository,
+    "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-archive-inventory-order.mjs",
+  ),
+  join(
+    repository,
     "apps/plugin/opencode2/tools/verify-legacy-memory-native-parity.mjs",
   ),
   join(
@@ -1543,6 +1559,15 @@ const verificationTools = {
   astScannerDependencyReceiptSha256: sha(scannerDependencyReceiptBytes),
   astNormalizationSha256: sha(`${scannerNormalization}\n`),
   astOutputSha256: sha(scannerOutput),
+  archiveInventoryComparatorSourceSha256: sha(
+    readFileSync(
+      join(
+        repository,
+        "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-archive-inventory-order.mjs",
+      ),
+    ),
+  ),
+  archiveInventoryComparatorRuleSha256: sha(`${archiveInventoryOrderRule}\n`),
   guardSourceSha256: sha(readFileSync(guardSourcePath)),
   guardBuildRecipeSha256: sha(readFileSync(guardRecipePath)),
   guardCompilerSha256: sha(`${clangVersion}\n`),

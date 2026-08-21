@@ -56,6 +56,18 @@ modification. The set closes the dependency/human-license, ABI/import,
 five-profile, aggregate, and every corresponding sidecar surface. Self-tests
 individually omit and mutate all 19 members.
 
+The r2 candidate exposed one remaining reproducibility defect: candidate archive
+inventory rows used `localeCompare` while acceptance used default string sort.
+A replacement r3 candidate imports one shared comparator/renderer in both
+verifiers. Its rule is ascending unsigned UTF-8 bytes of normalized relative
+paths, which is also Unicode code-point order for valid UTF-8 paths. Comparator
+source and rule digests are receipt-bound. Mixed ASCII, case, punctuation,
+combining, and non-ASCII vectors must produce byte-identical candidate and
+acceptance inventories under inherited `C`, `en_US.UTF-8`, `sv_SE.UTF-8`, and
+`tr_TR.UTF-8` locale values. The immutable r2 approval is superseded evidence;
+new approval authority can exist only at
+`apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2-r3.json`.
+
 ## Non-goals
 
 This decision does not load an addon or OpenCode, approve, qualify, commit,

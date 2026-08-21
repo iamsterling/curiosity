@@ -2,8 +2,8 @@
   "schemaVersion": 3,
   "qualification": "legacy-memory-node-api-sdk-v2",
   "receiptKind": "candidate",
-  "dependencyReceiptSha256": "b8440128f881cea26eabf3da3c1a91d6da6fcb9f14f554d5368ee2205843f07d",
-  "humanLicenseReceiptSha256": "b395b2893d8e7543799f7c1778e726ef8d50107616afe892525400b216a79b6b",
+  "dependencyReceiptSha256": "a1ae4ebe43296407f90a05cfc2349deb35b844b4737bb98f5ec8956159ffc9f0",
+  "humanLicenseReceiptSha256": "3ec795a88e690e7517484041d7fb0b45bdf226da6d2f30a78a251cb2b94b1a9e",
   "abiReceiptSha256": "de0e2924745426144890fe03ed6c58a7aa6792685941eaffd5308d2aa7df2b86",
   "undefinedImportsSha256": "3af0067e25448ce0750a9c8e139914fa1e66a19f15354861d66a63f0e20183f0",
   "schemas": {
@@ -41,6 +41,8 @@
     "astScannerDependencyReceiptSha256": "95610888641cb448efc1e1a82b56b5701d446d9e6b3ec6e60577148419ff4566",
     "astNormalizationSha256": "d67a9cf464a719b1e9c331f5bbfe87ca904b90e2e297a3a3558a3cc6fdd43838",
     "astOutputSha256": "be0ead17777005975fcb69ad94e7dd0ca87696deee7379b68a51b52f9980cd18",
+    "archiveInventoryComparatorSourceSha256": "0b474c516631568aadafdbfd4635fc098eb2ff24898ab3c7b742500031e4def7",
+    "archiveInventoryComparatorRuleSha256": "ff0aa0d9cad22d35eaeb27a17e781e185e316b130146d4b03dde6ef701bc20b1",
     "guardSourceSha256": "c111825344ffedfdcd7b5bebecfd8f8b1f59c1eab464868f52c09544ddc28968",
     "guardBuildRecipeSha256": "c00d5118352346f83a3659f4d70de5326adf7ff14ea2222b015143ea05278cd6",
     "guardCompilerSha256": "5839b06c4259d9b391fe22277ec00329ef8b55918a5f5743cd1427a262bc7f63",
@@ -209,35 +211,35 @@
     {
       "profile": "normal",
       "receiptPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-normal-receipt.json",
-      "receiptSha256": "8d5dc84480eea5cb03ae1ffca488e913beecfa89c66e79366f72fe439da17abb",
+      "receiptSha256": "834221f3c7607a524ee7fb3b64a3aec57f4c7737bc8542edd152f8221372078e",
       "sidecarPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-normal-receipt.sha256",
       "artifactSha256": "ced6f2ef07502695c1bdbce5b634e704568740e831130d5c6d2d290483d982c9"
     },
     {
       "profile": "panic",
       "receiptPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-panic-receipt.json",
-      "receiptSha256": "702209c400d90a231d1d8b0b23d696d4e8b3a1bbed9f955e9b5095d7fbf557af",
+      "receiptSha256": "b4326dbabfb5a48c06eefd5a29901dae5615eca5b1129cbc8f6486703e626465",
       "sidecarPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-panic-receipt.sha256",
       "artifactSha256": "d2bdfadc40d6964aaa75a3087f095780287d8946bda5ce67ed04abb88d58ae75"
     },
     {
       "profile": "allocationFailure",
       "receiptPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-allocation-failure-receipt.json",
-      "receiptSha256": "830eedde23e840db2f32b5a4a7855b4334861fc287309c64ee02a6ad7f4507d7",
+      "receiptSha256": "ef4b7bc55b9d903f9b93f41a646df3eb6659d9dbd3dc38c0e1f8c300dfd5dd21",
       "sidecarPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-allocation-failure-receipt.sha256",
       "artifactSha256": "7e1716ab2c181bbc561db875af5dbc6406599ffa6e9a27b2b3afea539e684191"
     },
     {
       "profile": "queueFailure",
       "receiptPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-queue-failure-receipt.json",
-      "receiptSha256": "0af38c04b22cd13cbee9e3c20b787a92f07152e635fa97894323a51b6523a6ba",
+      "receiptSha256": "e19fc534b3bc47ffacfee85af46b34215c127ff22488f801fdc9bb8edbf2a3ba",
       "sidecarPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-queue-failure-receipt.sha256",
       "artifactSha256": "9649c69be974d45f85b53c3aea3e9fd92b9d0e4bf3c85beb919f9d2ff24c704e"
     },
     {
       "profile": "controlFlowObservation",
       "receiptPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-control-flow-observation-receipt.json",
-      "receiptSha256": "fd40db26dfb295cc8ddd5ff0250e953c750a856643d17233d766dcc3560291dd",
+      "receiptSha256": "e3c85532da4013237c05106ef428a59f801bb32dadc084a4ff7ac8b9931edb40",
       "sidecarPath": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-control-flow-observation-receipt.sha256",
       "artifactSha256": "02c2d608cc8c5798d7cb50de3a034586d3a4810f3581336b4fcd9bfc24013e5a"
     }

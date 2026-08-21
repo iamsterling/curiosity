@@ -2,7 +2,7 @@
 
 Status: candidate/not-qualified. Design: raw-napi-sys-v2-control-flow-observation.
 
-Dependency JSON SHA-256: `b8440128f881cea26eabf3da3c1a91d6da6fcb9f14f554d5368ee2205843f07d`. This field is normalized to 64 zeroes for the JSON-to-human binding.
+Dependency JSON SHA-256: `a1ae4ebe43296407f90a05cfc2349deb35b844b4737bb98f5ec8956159ffc9f0`. This field is normalized to 64 zeroes for the JSON-to-human binding.
 
 - cfg-if 1.0.4: MIT OR Apache-2.0; selected MIT; transitive-lock
 - curiosity-native-node-api-qualification 0.0.0: MIT; selected MIT; first-party-root

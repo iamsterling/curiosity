@@ -364,7 +364,9 @@ Their values are constrained as follows:
 - `verificationTools` key order is `astScannerVersion`,
   `astScannerSourceSha256`, `astScannerManifestSha256`,
   `astScannerLockfileSha256`, `astScannerDependencyReceiptSha256`,
-  `astNormalizationSha256`, `astOutputSha256`, `guardSourceSha256`,
+  `astNormalizationSha256`, `astOutputSha256`,
+  `archiveInventoryComparatorSourceSha256`,
+  `archiveInventoryComparatorRuleSha256`, `guardSourceSha256`,
   `guardBuildRecipeSha256`, `guardCompilerSha256`, `guardArtifactSha256`,
   `guardImportsSha256`, `guardExportsSha256`,
   `fakeAdapterBuildRecipeSha256`, `fakeAdapterArtifactSha256`,
@@ -589,14 +591,15 @@ Only a new explicit root-user statement approving the presented v2 digests may
 create:
 
 ```text
-apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2-r2.json
+apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2-r3.json
 ```
 
-The existing `apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2.json`
-path is immutable superseded evidence only. A new approval may create only the
-r2 path above, and only that r2 path is current Phase C authority.
+The existing `apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2-r2.json`
+path is immutable superseded evidence for the locale-sensitive archive-ordering
+candidate only. A new approval may create only the r3 path above, and only that
+r3 path is current Phase C authority.
 
-The closed r2 approval record has top-level keys in exact order `schemaVersion`,
+The closed r3 approval record has top-level keys in exact order `schemaVersion`,
 `qualification`, `decision`, `approvalPath`, `candidate`, `profiles`,
 `approvedReviewSet`, `dependencyPolicy`,
 `schemas`, `controlFlow`, `verificationTools`, `toolPolicy`, `compilerPolicy`,
@@ -610,25 +613,25 @@ exact §6 dependency, license, schema, counter source/site, settlement source,
 phase-core/call-site AST, phase-fixture source/build/artifact/transcript schema,
 cfg, compiler, environment, ABI, and import digests. `approval` retains v1's
 exact key order and meanings for parent, UTC timestamp, session reference, and
-exact-statement SHA-256. `approvalPath` is the exact r2 repository path.
+exact-statement SHA-256. `approvalPath` is the exact r3 repository path.
 `supersededApproval` has exact key order `path`, `sha256`, `status`; it binds the
 historical v2 approval file bytes with status `superseded-historical-evidence`.
 No executable or Phase C verdict is present.
 
-The r2 approval commit has exactly one parent and adds exactly that one regular
+The r3 approval commit has exactly one parent and adds exactly that one regular
 file. Its parent already contains all 19 approved-review files byte-identically
 at their approved digests and the exact
 historical approval bytes. Candidate or
 verifier code cannot generate, stage, approve, or commit it. The existing
 `legacy-memory-node-api-sdk-v2.json` remains unchanged and is not current
 authority. The v1 approval is neither modified nor consulted. Squash, rebase,
-parent change, or any later modification of the r2 approval path requires a new
+parent change, or any later modification of the r3 approval path requires a new
 Phase A candidate, statement, and approval-only commit.
 
 Phase C uses only this same ordered 19-file set for topology and pre-load byte
 verification. Every file must be regular, match its approved digest, be
-byte-identical in the r2 parent and `HEAD`, and have no modifying commit from the
-r2 parent through `HEAD`. This includes all five profile records and sidecars,
+byte-identical in the r3 parent and `HEAD`, and have no modifying commit from the
+r3 parent through `HEAD`. This includes all five profile records and sidecars,
 the dependency and human-license records and sidecar, ABI and undefined-import
 records and sidecars, and the candidate aggregate and sidecar. Self-tests omit
 and mutate each member individually and require all 38 adversaries to fail.
@@ -660,7 +663,9 @@ original inherited `PATH`, records the first ambient OpenCode path, executable
 and package hashes, and version (or records absence), and never executes it.
 The approval introduced by commit `76677a35f56a7e65c5828bdde9b8436fd848eb67`
 is immutable historical evidence but insufficient for this replacement
-candidate. Phase C selects only the r2 path and verifies its unique add commit,
+candidate. The r2 approval is likewise immutable but insufficient because its
+candidate used divergent locale-sensitive and default ordering. Phase C selects
+only the r3 path and verifies its unique add commit,
 bound parent, one-path diff, ancestry, parent receipt bytes, and absence of later
 modification.
 

@@ -29,3 +29,9 @@ candidate generation. The approval proposal binds one digest per path, and
 Phase C verifies parent, approved, working-tree, and `HEAD` bytes before any
 addon or OpenCode execution. Per-file omission and mutation self-tests are
 mandatory for all 19 members.
+
+The r3 replacement imports the same canonical archive-inventory comparator and
+renderer from candidate and acceptance code. It binds comparator source/rule
+digests and rejects locale-dependent output using mixed ASCII, case,
+punctuation, combining, and non-ASCII vectors. The immutable r2 approval is
+superseded evidence; only a new r3 approval-only commit can authorize Phase C.
