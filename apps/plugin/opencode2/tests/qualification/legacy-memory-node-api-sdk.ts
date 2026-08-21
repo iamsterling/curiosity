@@ -37,7 +37,10 @@ export const openQualificationSdk = async (
         return Promise.reject(sdkError("SDK_CONCURRENCY_LIMIT"));
       const work = native.execute(request);
       accepted.add(work);
-      void work.finally(() => accepted.delete(work));
+      void work.then(
+        () => accepted.delete(work),
+        () => accepted.delete(work),
+      );
       return work;
     },
     close() {

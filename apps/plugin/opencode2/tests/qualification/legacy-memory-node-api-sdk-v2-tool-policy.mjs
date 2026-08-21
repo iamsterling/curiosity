@@ -42,6 +42,7 @@ const fixedToolPaths = (repository, bunPath) => {
     nm: "/usr/bin/nm",
     otool: "/usr/bin/otool",
     strings: "/usr/bin/strings",
+    codesign: "/usr/bin/codesign",
     sandboxExec: "/usr/bin/sandbox-exec",
     ps: "/bin/ps",
     sysctl: "/usr/sbin/sysctl",

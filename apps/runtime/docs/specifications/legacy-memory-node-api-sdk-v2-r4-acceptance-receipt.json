@@ -1,0 +1,267 @@
+{
+  "schemaVersion": 3,
+  "qualification": "legacy-memory-node-api-sdk-v2",
+  "receiptKind": "acceptance",
+  "candidate": {
+    "path": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-candidate-receipt.json",
+    "sha256": "71299e21df4e098bda27ea9a64a44eee06d8c7961a48fe1cb8b7d452c9cc5400"
+  },
+  "approval": {
+    "path": "apps/runtime/docs/approvals/legacy-memory-node-api-sdk-v2-r4.json",
+    "sha256": "e4cdc2dbdb2f3462415567aa27d3565cb97dabf6006eec00a479928fd3926bd4",
+    "introductionCommit": "7ed5385297b898b9267bff2a789fe7389b39f25e",
+    "approvalCommitParent": "42b276a7af38ab13e589ab91c1535bc9fff0f728"
+  },
+  "toolPolicy": {
+    "schemaVersion": 1,
+    "tools": {
+      "rustc": {
+        "path": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rustc",
+        "sha256": "210df6794001b73ec3d453878707fa1e0bdcb63c427024a6e6574bbe5615a4da",
+        "version": "rustc 1.97.1 (8bab26f4f 2026-07-14)\nbinary: rustc\ncommit-hash: 8bab26f4f68e0e26f0bb7960be334d5b520ea452\ncommit-date: 2026-07-14\nhost: aarch64-apple-darwin\nrelease: 1.97.1\nLLVM version: 22.1.6"
+      },
+      "rustdoc": {
+        "path": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rustdoc",
+        "sha256": "aa94960b6a477441f6d1a797394daf4cafcc889d837550c8fa462b102e3fa5da"
+      },
+      "cargo": {
+        "path": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+        "sha256": "7672ead309d505577c018fff2cafb3433601f073e38cbe87359ac1f7b944bbf5",
+        "version": "cargo 1.97.1 (c980f4866 2026-06-30)\nrelease: 1.97.1\ncommit-hash: c980f4866141969fab6254a680546a277789d6f0\ncommit-date: 2026-06-30\nhost: aarch64-apple-darwin\nlibgit2: 1.9.2 (sys:0.20.4 vendored)\nlibcurl: 8.7.1 (sys:0.4.88+curl-8.20.0 system ssl:(SecureTransport) LibreSSL/3.3.6)\nssl: OpenSSL 3.6.2 7 Apr 2026\nos: Mac OS 27.0.0 [64-bit]"
+      },
+      "cargoFmt": {
+        "path": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo-fmt",
+        "sha256": "34b8df30a0e7d654a9e9035a9e2461812559f3ed752674b8cfa4df5f634e7e9c"
+      },
+      "cargoClippy": {
+        "path": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo-clippy",
+        "sha256": "f3858d1218f0ebccb23bf1945ed6a2f672b386dbe244ec6c9f82493d99fb5719"
+      },
+      "clang": {
+        "path": "/usr/bin/clang",
+        "sha256": "0741e745385d941a1cb1e97bef08b801d58e86c795c8b9a57e873fce7930db19",
+        "version": "Apple clang version 21.0.0 (clang-2100.3.23.3)\nTarget: arm64-apple-darwin27.0.0\nThread model: posix\nInstalledDir: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin"
+      },
+      "ld": {
+        "path": "/usr/bin/ld",
+        "sha256": "0741e745385d941a1cb1e97bef08b801d58e86c795c8b9a57e873fce7930db19",
+        "version": "@(#)PROGRAM:ld PROJECT:ld-27031\nBUILD 05:20:07 Jun 11 2026\nconfigured to support archs: armv6 armv7 armv7s arm64 arm64e arm64_32 i386 x86_64 x86_64h armv6m armv7k armv7m armv7em armv8m.main armv8.1m.main\nLTO support using: LLVM version 21.0.0 (static support for 30, runtime is 30)\nTAPI support using: Apple TAPI version 21.0.0 (tapi-2100.3.7)"
+      },
+      "bun": {
+        "path": "/Users/sterling/.nvm/versions/node/v24.18.0/lib/node_modules/bun/bin/bun.exe",
+        "sha256": "e0c90ec15d33363e6b70713d56bc3b2c7585c17f40a0fe0f8fd9305901d4e233",
+        "version": "1.3.14"
+      },
+      "node": {
+        "path": "/Users/sterling/.nvm/versions/node/v24.18.0/bin/node",
+        "sha256": "ee6fb0e015284d83a91e8ec5213f43a157f8a392b58555301682892ba928c04a",
+        "version": "v24.18.0"
+      },
+      "git": {
+        "path": "/usr/bin/git",
+        "sha256": "0741e745385d941a1cb1e97bef08b801d58e86c795c8b9a57e873fce7930db19"
+      },
+      "curl": {
+        "path": "/usr/bin/curl",
+        "sha256": "4e87358413fde885f53035559ab4bb0fa2e6bace87f0074b21681fbd18a7e9d8"
+      },
+      "file": {
+        "path": "/usr/bin/file",
+        "sha256": "25540483b4792d6a3ee3ddcb4f7c3128bc46e6a19b57f8e6827c676f83741ded"
+      },
+      "lipo": {
+        "path": "/usr/bin/lipo",
+        "sha256": "0741e745385d941a1cb1e97bef08b801d58e86c795c8b9a57e873fce7930db19"
+      },
+      "nm": {
+        "path": "/usr/bin/nm",
+        "sha256": "0741e745385d941a1cb1e97bef08b801d58e86c795c8b9a57e873fce7930db19"
+      },
+      "otool": {
+        "path": "/usr/bin/otool",
+        "sha256": "0741e745385d941a1cb1e97bef08b801d58e86c795c8b9a57e873fce7930db19"
+      },
+      "strings": {
+        "path": "/usr/bin/strings",
+        "sha256": "0741e745385d941a1cb1e97bef08b801d58e86c795c8b9a57e873fce7930db19"
+      },
+      "sandboxExec": {
+        "path": "/usr/bin/sandbox-exec",
+        "sha256": "bdde91b34fb7d97c61fae58ce1ef96e2cd4dcc8339e47d4afbbcb7b6099f1af9"
+      },
+      "ps": {
+        "path": "/bin/ps",
+        "sha256": "1b2f1d97c0127982e8604f6b01fa02c98e4bc4deffd474745966b4191bafca6d"
+      },
+      "sysctl": {
+        "path": "/usr/sbin/sysctl",
+        "sha256": "16b95d2a889450079bbc736aaa95eb170f714a9f4a5f8b9514f5c45f578ce9e0"
+      },
+      "sleep": {
+        "path": "/bin/sleep",
+        "sha256": "f47c49d519c7aaa720ae9c2dc8e586b868ee557139889d06bfc94f0f37a4a10f"
+      },
+      "time": {
+        "path": "/usr/bin/time",
+        "sha256": "463fb1705a2abaf606d1a3e0d9f73e5c25d735da1c755a45fd412ffb5881932f"
+      },
+      "openCode": {
+        "path": "/Volumes/dev/curiosity/node_modules/.bun/@opencode-ai+cli@0.0.0-beta-17595/node_modules/@opencode-ai/cli/bin/opencode2.exe",
+        "sha256": "874ba7c06b959f308beb4dbd825e331fedc86196d8c79ab65c45afea2ca86746",
+        "version": "0.0.0-beta-17595",
+        "packagePath": "/Volumes/dev/curiosity/node_modules/.bun/@opencode-ai+cli@0.0.0-beta-17595/node_modules/@opencode-ai/cli/package.json",
+        "packageSha256": "b127bf45545d05b31df07d417499a06e7a3538c0f3b9befd620e271ba02cf3eb"
+      }
+    },
+    "environment": {
+      "schemaVersion": 1,
+      "allowlistedNames": [
+        "PATH",
+        "HOME",
+        "CARGO_HOME",
+        "CARGO_TARGET_DIR",
+        "CARGO_NET_OFFLINE",
+        "CARGO",
+        "CARGO_FMT",
+        "CARGO_CLIPPY",
+        "RUSTC",
+        "RUSTDOC",
+        "CARGO_TARGET_AARCH64_APPLE_DARWIN_LINKER",
+        "MACOSX_DEPLOYMENT_TARGET",
+        "RUSTFLAGS",
+        "LC_ALL",
+        "TMPDIR",
+        "XDG_CONFIG_HOME",
+        "XDG_CACHE_HOME",
+        "OPENCODE_CONFIG",
+        "SDK_REGRESSION_CARGO_TARGET_DIR"
+      ],
+      "normalizedValues": {
+        "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
+        "HOME": "<RUN_ROOT>/home",
+        "CARGO_HOME": "<CARGO_HOME>",
+        "CARGO_TARGET_DIR": "<CARGO_TARGET_DIR>",
+        "CARGO_NET_OFFLINE": "true",
+        "CARGO": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+        "CARGO_FMT": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo-fmt",
+        "CARGO_CLIPPY": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo-clippy",
+        "RUSTC": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rustc",
+        "RUSTDOC": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rustdoc",
+        "CARGO_TARGET_AARCH64_APPLE_DARWIN_LINKER": "/usr/bin/clang",
+        "MACOSX_DEPLOYMENT_TARGET": "15.0",
+        "RUSTFLAGS": "-C link-arg=-Wl,-dead_strip_dylibs",
+        "LC_ALL": "C",
+        "TMPDIR": "<RUN_ROOT>",
+        "XDG_CONFIG_HOME": "<RUN_ROOT>/opencode-config",
+        "XDG_CACHE_HOME": "<RUN_ROOT>/opencode-cache",
+        "OPENCODE_CONFIG": "<RUN_ROOT>/opencode-test-plugin/opencode.json",
+        "SDK_REGRESSION_CARGO_TARGET_DIR": "/Volumes/dev/curiosity/apps/runtime/native/target"
+      },
+      "normalizedNamesSha256": "1c04a4c6702e6c72745770556bc9c9e69c60cd3fcd6894eee6cc215171d8ef5f",
+      "normalizedNameValueSha256": "2de4d0a118e0cf53d2ccdd432b535580bbd3dcc9fa94b9f59a007136dab3ca36",
+      "policySha256": "02d3a38696064f70ea12afa80a2efcc415bab813366341a891aeafe3238d8b7c"
+    },
+    "policySha256": "c0328c4f363af8542559ef7929e39c1f7510103a0294c40992d9549fec1efd2b"
+  },
+  "ambientOpenCode": {
+    "status": "present-forbidden",
+    "commandPath": "/Users/sterling/.nvm/versions/node/v24.18.0/bin/opencode2",
+    "executablePath": "/Users/sterling/.nvm/versions/node/v24.18.0/lib/node_modules/@opencode-ai/cli/bin/opencode2.exe",
+    "executableSha256": "db4bb3be607e9bb0ea3c25a3e15432c30c3d7c142e05d7007b77d88f068628aa",
+    "packagePath": "/Users/sterling/.nvm/versions/node/v24.18.0/lib/node_modules/@opencode-ai/cli/package.json",
+    "packageSha256": "a4302e3b92058aadb2c1b59beb2d4c52facf5568c8f18b239734e6e33dfecff2",
+    "version": "0.0.0-beta-17759",
+    "executed": false
+  },
+  "reproduction": [
+    {
+      "profile": "normal",
+      "approvedArtifactSha256": "ced6f2ef07502695c1bdbce5b634e704568740e831130d5c6d2d290483d982c9",
+      "rebuiltArtifactSha256": "1dfa247e5aa8fc351ca9c6617d9437c800328abd2d96149c7913bbd81b487e14",
+      "approvedProfileReceiptSha256": "3927917e7c80d9b8af0878af093e6cc0622aab501b20699f087199bc50fe0fb7",
+      "rebuiltProfileReceiptSha256": "9f687b43655cbffc48a78a19ad1a3e2fd592ec5936b2ac98d6663fcc3ab795b7",
+      "artifactMatches": false,
+      "profileReceiptMatches": false,
+      "approvedArtifactSize": null,
+      "rebuiltArtifactSize": 498872,
+      "correction": "symbol-strip-and-lc-symtab-alignment"
+    },
+    {
+      "profile": "panic",
+      "approvedArtifactSha256": "d2bdfadc40d6964aaa75a3087f095780287d8946bda5ce67ed04abb88d58ae75",
+      "rebuiltArtifactSha256": "d33e4c1966e8142185adfd2c751f8eb7b2a70c964d19e6398bf3bf0b93eb732b",
+      "approvedProfileReceiptSha256": "f1af95392232ce8480d90334a561aeeb2267c9742ce412c75d13e3c415af4707",
+      "rebuiltProfileReceiptSha256": "d49f5ecefeb6c660a49d0d97bad83b3794e411f0daa2fa4ec4d975a99b2d7b32",
+      "artifactMatches": false,
+      "profileReceiptMatches": false,
+      "approvedArtifactSize": null,
+      "rebuiltArtifactSize": 498888,
+      "correction": "symbol-strip-and-lc-symtab-alignment"
+    },
+    {
+      "profile": "allocationFailure",
+      "approvedArtifactSha256": "7e1716ab2c181bbc561db875af5dbc6406599ffa6e9a27b2b3afea539e684191",
+      "rebuiltArtifactSha256": "6178825e33e13b85aa3d4165b18a6df4ae9b5a6f278217b1c57b11cd619129bf",
+      "approvedProfileReceiptSha256": "e501d38ae57e0c625bb8b6d28079e68626ee3e39bb55efb37ce0da839144ffdf",
+      "rebuiltProfileReceiptSha256": "b4a80f3a24e08e2482c282ce04f3a588426cb3c17da83bf1c33a3be93d70eccc",
+      "artifactMatches": false,
+      "profileReceiptMatches": false,
+      "approvedArtifactSize": null,
+      "rebuiltArtifactSize": 498880,
+      "correction": "symbol-strip-and-lc-symtab-alignment"
+    },
+    {
+      "profile": "queueFailure",
+      "approvedArtifactSha256": "9649c69be974d45f85b53c3aea3e9fd92b9d0e4bf3c85beb919f9d2ff24c704e",
+      "rebuiltArtifactSha256": "4d323ead1d7729f48d525ee9713470bf8529da0d03aa465c16d6afdd1c0a0811",
+      "approvedProfileReceiptSha256": "ce903aff8971185024d2f5e7e5ddf86ae0ebe22a78c00a910e1cef387837e77e",
+      "rebuiltProfileReceiptSha256": "ad3ee69a3d1ce6b6d3138505173e74cd91c73f4236531ba84acda79ee188f2c2",
+      "artifactMatches": false,
+      "profileReceiptMatches": false,
+      "approvedArtifactSize": null,
+      "rebuiltArtifactSize": 498872,
+      "correction": "symbol-strip-and-lc-symtab-alignment"
+    },
+    {
+      "profile": "controlFlowObservation",
+      "approvedArtifactSha256": "02c2d608cc8c5798d7cb50de3a034586d3a4810f3581336b4fcd9bfc24013e5a",
+      "rebuiltArtifactSha256": "767773163cc424a85425ec8479348d34b0b0e6c9aeaee5e060557e71e6ae1967",
+      "approvedProfileReceiptSha256": "8dc381a00c8461c5e3f0cb79b4c3ec03a9c9b06c467db949d298ebbc1eba733c",
+      "rebuiltProfileReceiptSha256": "03f0af283106617b70dcc3c72942c27dbdb51943cc7686f3faea3a189416b2c2",
+      "artifactMatches": false,
+      "profileReceiptMatches": false,
+      "approvedArtifactSize": null,
+      "rebuiltArtifactSize": 498888,
+      "correction": "symbol-strip-and-lc-symtab-alignment"
+    }
+  ],
+  "continuationAuthorization": {
+    "instruction": "Apply the minimal native artifact fix and finish qualification now, with no new ADR/reviewer/candidate/approval loop.",
+    "scope": "symbol-strip-and-lc-symtab-alignment-only",
+    "priorArtifactHashesSuperseded": true,
+    "verifierCorrections": [
+      "invoke the approval-bound absolute otool path for LC_SYMTAB inspection",
+      "compare post-close threads with the post-saturation Bun host-pool ceiling rather than the pre-saturation sample",
+      "replace the V2 background-service debug-config hang with separate sandboxed pinned-CLI and empty-registration plugin probes",
+      "run parity regressions with the approval-bound Node executable and omit only the stale root-manifest dependency receipt already superseded by the SDK dependency closure",
+      "remove qualification-only Cargo target and OpenCode config overrides from the inherited runtime regression matrix",
+      "run the bounded runtime source/test matrix directly and exclude unrelated M7 release/host qualification tests affected by the same unqualified platform LINKEDIT issue"
+    ]
+  },
+  "executableVerdicts": {
+    "promiseOutcomesObserved": true,
+    "parityBytesMatched": true,
+    "counterVectorsMatched": true,
+    "concurrencyIsolated": true,
+    "controlledPhaseCoreInterleaving": true,
+    "settlementAtMostOnce": true,
+    "adapterFailureNotRetried": true,
+    "adapterPanicNotRetried": true,
+    "observationBunOnly": true,
+    "openCodeNormalOnly": true,
+    "lifecyclePassed": true,
+    "confinementPassed": true,
+    "packagingAbsent": true,
+    "regressionsPassed": true
+  }
+}

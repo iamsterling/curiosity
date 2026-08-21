@@ -79,7 +79,7 @@ impl Diagnostic for AdapterFailure {
 fn error(id: Option<&str>, failure: &impl Diagnostic) -> String {
     format!(
         "{{\"protocolVersion\":1,\"requestId\":{},\"status\":\"error\",\"diagnostic\":{{\"code\":\"{}\",\"path\":{}}}}}",
-        id.map(quoted).unwrap_or_else(|| "null".into()),
+        id.unwrap_or("null"),
         failure.code(),
         failure.path().map(quoted).unwrap_or_else(|| "null".into())
     )
@@ -114,6 +114,9 @@ fn handle_bytes(bytes: &[u8], request_id: &mut Option<String>) -> Result<String,
     }
     let request =
         Json::parse(line.as_bytes()).map_err(|_| adapter_fail("PARITY_JSON_INVALID", None))?;
+    *request_id = request
+        .get("requestId")
+        .and_then(|value| stringify(value).ok());
     let entries = request
         .object()
         .ok_or_else(|| adapter_fail("PARITY_PROTOCOL_SCHEMA_INVALID", Some("/protocolVersion")))?;
@@ -177,7 +180,7 @@ fn handle_bytes(bytes: &[u8], request_id: &mut Option<String>) -> Result<String,
             Some("/requestId"),
         ));
     }
-    *request_id = Some(id.clone());
+    *request_id = Some(quoted(&id));
     let operation = request.get("operation").and_then(Json::string).unwrap();
     if ![
         "canonicalize",
@@ -190,10 +193,7 @@ fn handle_bytes(bytes: &[u8], request_id: &mut Option<String>) -> Result<String,
     ]
     .contains(&operation.as_str())
     {
-        return Err(adapter_fail(
-            "PARITY_OPERATION_UNSUPPORTED",
-            Some("/operation"),
-        ));
+        return Err(adapter_fail("PARITY_OPERATION_UNSUPPORTED", None));
     }
     let input = request.get("input").unwrap();
     let result = dispatch(&operation, input).map_err(|failure| AdapterFailure {

@@ -4,8 +4,29 @@ use super::{
     entity::decode_ledger_entity,
     event::decode_ledger_event,
     json::Json,
+    protocol::dispatch_bytes,
     replay::{reduce, replay, set_field},
 };
+
+#[test]
+fn unsupported_operation_uses_process_adapter_failure_normalization() {
+    let outcome = dispatch_bytes(
+        br#"{"protocolVersion":1,"requestId":"unsupported","operation":"Ledger.open","input":{}}
+"#,
+    );
+    assert_eq!(
+        String::from_utf8(outcome.bytes).unwrap(),
+        "{\"protocolVersion\":1,\"requestId\":\"unsupported\",\"status\":\"error\",\"diagnostic\":{\"code\":\"PARITY_OPERATION_UNSUPPORTED\",\"path\":null}}\n"
+    );
+    let missing_input = dispatch_bytes(
+        br#"{"protocolVersion":1,"requestId":"p","operation":"canonicalize"}
+"#,
+    );
+    assert_eq!(
+        String::from_utf8(missing_input.bytes).unwrap(),
+        "{\"protocolVersion\":1,\"requestId\":\"p\",\"status\":\"error\",\"diagnostic\":{\"code\":\"PARITY_PROTOCOL_SCHEMA_INVALID\",\"path\":\"/input\"}}\n"
+    );
+}
 
 #[test]
 fn canonicalizes_legacy_bytes_and_rejects_unknown_entity_keys() {

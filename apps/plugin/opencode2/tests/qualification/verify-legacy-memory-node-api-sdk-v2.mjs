@@ -84,7 +84,84 @@ const replacementApproval = join(
 const insufficientApprovalSha256 =
   "2f41cc0bd640401754d7d2a77751cc7a50999072d154db03db697bdaa2d40fcb";
 const exactRustflags = "-C link-arg=-Wl,-dead_strip_dylibs";
+const profileRustflags = `${exactRustflags} -C strip=symbols`;
 const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
+const assertAlignedSymbolTable = (loadCommands, code) => {
+  const match = /cmd LC_SYMTAB[\s\S]*?stroff (\d+)/.exec(loadCommands);
+  if (match === null || Number(match[1]) % 8 !== 0) throw new Error(code);
+};
+const alignMachOLinkedit = (path) => {
+  let bytes = readFileSync(path);
+  const commands = [];
+  let offset = 32;
+  for (let index = 0; index < bytes.readUInt32LE(16); index++) {
+    const command = bytes.readUInt32LE(offset);
+    commands.push({ offset, command });
+    offset += bytes.readUInt32LE(offset + 4);
+  }
+  const insertPadding = (at, length) => {
+    bytes = Buffer.concat([
+      bytes.subarray(0, at),
+      Buffer.alloc(length),
+      bytes.subarray(at),
+    ]);
+    for (const entry of commands)
+      if (
+        entry.command === 0x19 &&
+        bytes
+          .subarray(entry.offset + 8, entry.offset + 24)
+          .toString("ascii")
+          .replaceAll("\0", "") === "__LINKEDIT"
+      )
+        bytes.writeBigUInt64LE(
+          bytes.readBigUInt64LE(entry.offset + 48) + BigInt(length),
+          entry.offset + 48,
+        );
+  };
+  const symtab = commands.find(({ command }) => command === 0x2);
+  if (symtab === undefined) throw new Error("SDK_SYMTAB_REQUIRED");
+  const originalStringOffset = bytes.readUInt32LE(symtab.offset + 16);
+  const stringPadding = (8 - (originalStringOffset % 8)) % 8;
+  if (stringPadding !== 0) {
+    insertPadding(originalStringOffset, stringPadding);
+    bytes.writeUInt32LE(
+      originalStringOffset + stringPadding,
+      symtab.offset + 16,
+    );
+    const bump32 = (position) => {
+      const value = bytes.readUInt32LE(position);
+      if (value >= originalStringOffset && value !== 0)
+        bytes.writeUInt32LE(value + stringPadding, position);
+    };
+    for (const entry of commands) {
+      if (entry.command === 0xb)
+        for (const field of [32, 40, 48, 56, 64, 72])
+          bump32(entry.offset + field);
+      if (entry.command === 0x22 || entry.command === 0x80000022)
+        for (const field of [8, 16, 24, 32, 40])
+          bump32(entry.offset + field);
+      if (
+        [0x1d, 0x26, 0x29, 0x2b, 0x2e, 0x80000033, 0x80000034].includes(
+          entry.command,
+        )
+      )
+        bump32(entry.offset + 8);
+    }
+  }
+  const codeSignature = commands.find(({ command }) => command === 0x1d);
+  if (codeSignature === undefined)
+    throw new Error("SDK_CODE_SIGNATURE_REQUIRED");
+  const signatureOffset = bytes.readUInt32LE(codeSignature.offset + 8);
+  const signaturePadding = (8 - (signatureOffset % 8)) % 8;
+  if (signaturePadding !== 0) {
+    insertPadding(signatureOffset, signaturePadding);
+    bytes.writeUInt32LE(
+      signatureOffset + signaturePadding,
+      codeSignature.offset + 8,
+    );
+  }
+  writeFileSync(path, bytes);
+};
 const napiSysSource = {
   repository: "https://github.com/napi-rs/napi-rs",
   tag: "napi-sys-v3.3.0",
@@ -193,6 +270,7 @@ const commandNames = new Map([
   ["/usr/bin/nm", "nm"],
   ["/usr/bin/otool", "otool"],
   ["/usr/bin/strings", "strings"],
+  ["/usr/bin/codesign", "codesign"],
   ["/usr/bin/sandbox-exec", "sandboxExec"],
   [process.execPath, "bun"],
 ]);
@@ -962,6 +1040,8 @@ for (const [name, cfg] of profileRows) {
     "link-arg=-Wl,-bundle",
     "-C",
     `link-arg=-Wl,-bundle_loader,${bunLoader}`,
+    "-C",
+    "strip=symbols",
     `--remap-path-prefix=${runRoot}=<candidate-root>`,
     `--remap-path-prefix=${repository}=<repository>`,
   ];
@@ -993,6 +1073,9 @@ for (const [name, cfg] of profileRows) {
   const artifact = join(candidate, "artifacts", `${name}.node`);
   mkdirSync(dirname(artifact), { recursive: true });
   copyFileSync(built, artifact);
+  chmodSync(artifact, 0o700);
+  alignMachOLinkedit(artifact);
+  run("/usr/bin/codesign", ["--force", "--sign", "-", artifact]);
   chmodSync(artifact, 0o500);
   const normalize = (text) => text.replaceAll(artifact, "<candidate-artifact>");
   const file = normalize(run("/usr/bin/file", [artifact]).stdout).trim();
@@ -1020,6 +1103,7 @@ for (const [name, cfg] of profileRows) {
     .stdout.split("\n")
     .filter((line) => line.startsWith(repository) || line.startsWith(runRoot));
   const bytes = readFileSync(artifact);
+  assertAlignedSymbolTable(loads, `SDK_SYMTAB_ALIGNMENT_INVALID:${name}`);
   const triggerPresence = {
     panic: bytes.includes(Buffer.from("sdk-panic")),
     allocationFailure: bytes.includes(Buffer.from("sdk-allocation-failure")),
@@ -1066,7 +1150,7 @@ for (const [name, cfg] of profileRows) {
     triggerPresence,
     embeddedPaths,
     linker: {
-      rustflags: exactRustflags,
+      rustflags: profileRustflags,
       bundleLoaderSha256: sha(readFileSync(bunLoader)),
       dynamicLookup: false,
       panicStrategy: "unwind",
@@ -1812,7 +1896,7 @@ for (const [
       target: "aarch64-apple-darwin",
       profile: "release",
       panicStrategy: "unwind",
-      rustflags: exactRustflags,
+      rustflags: profileRustflags,
       linkerArguments: ["-Wl,-dead_strip_dylibs", "-Wl,-bundle"],
       macosDeploymentTarget: "15.0",
     },
