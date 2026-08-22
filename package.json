@@ -12,6 +12,7 @@
     "verify:legacy-memory-node-api-sdk-v2": "bun apps/plugin/opencode2/tests/qualification/verify-legacy-memory-node-api-sdk-v2.mjs"
   },
   "devDependencies": {
+    "@curiosity/runtime": "workspace:*",
     "prettier": "^3.7.4",
     "turbo": "^2.10.10",
     "typescript": "5.9.2"

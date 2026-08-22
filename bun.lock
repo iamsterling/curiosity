@@ -5,6 +5,7 @@
     "": {
       "name": "curiosity",
       "devDependencies": {
+        "@curiosity/runtime": "workspace:*",
         "prettier": "^3.7.4",
         "turbo": "^2.10.10",
         "typescript": "5.9.2",
