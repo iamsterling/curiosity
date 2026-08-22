@@ -1,0 +1,9 @@
+{
+  "name": "opencode2-ephemeral-container-test-environment",
+  "private": true,
+  "dependencies": {
+    "@opencode-ai/cli": "0.0.0-beta-17595",
+    "@opencode-ai/plugin": "0.0.0-beta-17595",
+    "effect": "4.0.0-beta.107"
+  }
+}

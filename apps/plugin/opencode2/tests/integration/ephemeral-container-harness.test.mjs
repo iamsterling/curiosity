@@ -1,19 +1,19 @@
 import assert from "node:assert/strict"
-import { chmod, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
+import { access, copyFile, mkdir, mkdtemp, readFile, rm, symlink, unlink, writeFile } from "node:fs/promises"
+import { spawn } from "node:child_process"
 import os from "node:os"
 import path from "node:path"
-import { spawn } from "node:child_process"
 import test from "node:test"
 
-const pluginRoot = path.resolve(import.meta.dirname, "../..")
-const launcher = path.join(pluginRoot, "tools", "ephemeral-container.mjs")
+import { runVerifiedValidationContainer, validationContainerArguments } from "../../tools/ephemeral-container/container-command.mjs"
+import { writePreparedInputManifest } from "../../tools/ephemeral-container/prepared-input.mjs"
+import { stageReleaseInput, stageValidationHarness } from "../../tools/prepare-ephemeral-container-input.mjs"
 
-const runLauncher = (args, env) => new Promise((resolve, reject) => {
-  const child = spawn(process.execPath, [launcher, ...args], {
-    cwd: pluginRoot,
-    env,
-    stdio: ["ignore", "pipe", "pipe"],
-  })
+const pluginRoot = path.resolve(import.meta.dirname, "../..")
+const testEnvironmentSource = path.join(pluginRoot, "tools", "ephemeral-container", "test-environment")
+
+const run = (command, args) => new Promise((resolve, reject) => {
+  const child = spawn(command, args, { stdio: ["ignore", "pipe", "pipe"] })
   const stdout = []
   const stderr = []
   child.stdout.on("data", (chunk) => stdout.push(Buffer.from(chunk)))
@@ -26,99 +26,146 @@ const runLauncher = (args, env) => new Promise((resolve, reject) => {
   }))
 })
 
-const fixture = async () => {
-  const root = await mkdtemp(path.join(os.tmpdir(), "opencode2-container-harness-"))
-  const bin = path.join(root, "bin")
-  const log = path.join(root, "docker.jsonl")
-  const marker = path.join(root, "docker-invoked")
-  const token = path.join(root, "git-token")
-  await import("node:fs/promises").then(({ mkdir }) => mkdir(bin))
-  await writeFile(token, "file-token-sentinel", { mode: 0o600 })
-  const docker = path.join(bin, "docker")
-  await writeFile(docker, `#!/usr/bin/env node
-import { appendFileSync, writeFileSync } from "node:fs"
-writeFileSync(process.env.FAKE_DOCKER_MARKER, "invoked\\n")
-appendFileSync(process.env.FAKE_DOCKER_LOG, JSON.stringify(process.argv.slice(2)) + "\\n")
-`)
-  await chmod(docker, 0o700)
-  return {
-    log,
-    marker,
-    root,
-    token,
-    env: {
-      ...process.env,
-      FAKE_DOCKER_LOG: log,
-      FAKE_DOCKER_MARKER: marker,
-      PATH: `${bin}${path.delimiter}${process.env.PATH}`,
-    },
-  }
-}
+test("validation container has no network and exactly one read-only prepared bind mount", () => {
+  const preparedInput = "/host/prepared-input"
+  const args = validationContainerArguments({
+    image: "oven/bun:exact-digest",
+    mode: "smoke",
+    preparedInput,
+  })
 
-test("private Git acquisition and candidate preparation are separate credential-free containers", async () => {
-  const context = await fixture()
-  const privateUrl = "https://git.example.invalid/private/repository.git"
-  const tokenEnvironmentName = ["OPENCODE2", "GIT", "TOKEN"].join("_")
+  assert.equal(args[0], "run")
+  assert.ok(args.includes("--rm"))
+  assert.ok(args.includes("--read-only"))
+  assert.deepEqual(args.slice(args.indexOf("--network"), args.indexOf("--network") + 2), ["--network", "none"])
+  assert.ok(args.includes(`type=bind,src=${preparedInput},dst=/input,readonly`))
+  const bindMounts = args.filter((argument) => argument.startsWith("type=bind,"))
+  assert.deepEqual(bindMounts, [`type=bind,src=${preparedInput},dst=/input,readonly`])
+  assert.equal(args.some((argument) => argument.includes(pluginRoot) || argument.includes("/workspace")), false)
+  assert.equal(args.at(-3), "bun")
+  assert.equal(args.at(-2), "/input/validation-harness/validate.mjs")
+  assert.equal(args.at(-1), "smoke")
+})
+
+test("host staging creates an inventoried release input without repository build surfaces", async () => {
+  const temporary = await mkdtemp(path.join(os.tmpdir(), "opencode2-release-input-"))
   try {
-    const result = await runLauncher(["smoke"], {
-      ...context.env,
-      GIT_ASKPASS: "askpass-sentinel",
-      OPENCODE2_GIT_REF: "reviewed-ref",
-      [tokenEnvironmentName]: "token-env-sentinel",
-      OPENCODE2_GIT_TOKEN_FILE: context.token,
-      OPENCODE2_GIT_URL: privateUrl,
-      SSH_AUTH_SOCK: "/credential/ssh-agent-sentinel",
-    })
-    assert.equal(result.code, 0, result.stderr)
-    const calls = (await readFile(context.log, "utf8")).trim().split("\n").map((line) => JSON.parse(line))
-    const runs = calls.filter(([command]) => command === "run")
-    const acquisition = runs.find((args) => args.includes("/opt/opencode2-validation/acquire.mjs"))
-    const preparation = runs.find((args) => args.includes("/opt/opencode2-validation/prepare.mjs"))
-    const validation = runs.find((args) => args.includes("/opt/opencode2-validation/validate.mjs"))
-    assert.ok(acquisition, JSON.stringify(runs))
-    assert.ok(preparation, JSON.stringify(runs))
-    assert.ok(validation, JSON.stringify(runs))
-    assert.ok(acquisition.some((arg) => arg.includes("dst=/run/secrets/git_token")))
-    assert.ok(acquisition.includes(`OPENCODE2_GIT_URL=${privateUrl}`))
-    const candidateBoundary = JSON.stringify(preparation)
-    for (const forbidden of [
-      privateUrl,
-      context.token,
-      "/run/secrets/git_token",
-      "file-token-sentinel",
-      "token-env-sentinel",
-      "askpass-sentinel",
-      "SSH_AUTH_SOCK",
-      "/credential/ssh-agent-sentinel",
-    ]) assert.equal(candidateBoundary.includes(forbidden), false, forbidden)
-    assert.ok(runs.indexOf(acquisition) < runs.indexOf(preparation))
-    assert.ok(runs.indexOf(preparation) < runs.indexOf(validation))
+    const release = path.join(temporary, "release")
+    const inventory = await stageReleaseInput({ pluginRoot, release })
+    assert.equal(inventory.schemaVersion, 1)
+    assert.equal(inventory.files.length > 0, true)
+    assert.deepEqual(inventory.files.map(({ path: file }) => file), [...inventory.files.map(({ path: file }) => file)].sort())
+    for (const required of ["package.json", "tools/install-node.mjs", "dist/index.js", "assets/manifest.json"]) {
+      assert.equal(inventory.files.some(({ path: file }) => file === required), true, required)
+    }
+    for (const excluded of ["src", "tests", "tsconfig.json", "bun.lock", "node_modules"]) {
+      assert.equal(inventory.files.some(({ path: file }) => file === excluded || file.startsWith(`${excluded}/`)), false, excluded)
+    }
   } finally {
-    await rm(context.root, { recursive: true, force: true })
+    await rm(temporary, { recursive: true, force: true })
   }
 })
 
-test("credential-bearing Git URL components fail before Docker without disclosure", async () => {
-  for (const url of [
-    "https://query-secret@example.invalid/private.git",
-    "https://example.invalid/private.git?token=query-secret",
-    "https://example.invalid/private.git#token=fragment-secret",
-  ]) {
-    const context = await fixture()
+test("host staging copies only the inventoried validation harness into prepared input", async () => {
+  const temporary = await mkdtemp(path.join(os.tmpdir(), "opencode2-validation-input-"))
+  try {
+    await stageValidationHarness({ inputRoot: temporary, pluginRoot })
+    const manifest = await writePreparedInputManifest({ inputRoot: temporary, metadata: { purpose: "test" } })
+    assert.deepEqual(
+      manifest.inventory.entries.map(({ path: file }) => file),
+      [
+        "validation-harness/prepared-input.mjs",
+        "validation-harness/validate.mjs",
+        "validation-harness/validation-files.mjs",
+      ],
+    )
+  } finally {
+    await rm(temporary, { recursive: true, force: true })
+  }
+})
+
+const preparedFixture = async (temporary) => {
+  const dependency = path.join(temporary, "test-environment", "node_modules", "effect", "dist", "Array.js")
+  const harness = path.join(temporary, "validation-harness", "validate.mjs")
+  await mkdir(path.dirname(dependency), { recursive: true })
+  await mkdir(path.dirname(harness), { recursive: true })
+  await mkdir(path.join(temporary, "release"), { recursive: true })
+  await writeFile(dependency, "export const sentinel = true\n")
+  await writeFile(harness, "console.log('validate')\n")
+  await writeFile(path.join(temporary, "release", "package.json"), "{\"private\":true}\n")
+  await symlink("dist/Array.js", path.join(temporary, "test-environment", "node_modules", "effect", "Array-link.js"))
+  await writePreparedInputManifest({ inputRoot: temporary, metadata: { purpose: "test" } })
+  return { dependency, harness }
+}
+
+for (const target of ["transitive runtime dependency", "validation harness"]) {
+  test(`prepared-input ${target} tampering fails before Docker execution`, async () => {
+    const temporary = await mkdtemp(path.join(os.tmpdir(), "opencode2-prepared-tamper-"))
     try {
-      const result = await runLauncher(["smoke"], {
-        ...context.env,
-        OPENCODE2_GIT_REF: "reviewed-ref",
-        OPENCODE2_GIT_TOKEN_FILE: context.token,
-        OPENCODE2_GIT_URL: url,
-      })
-      assert.equal(result.code, 2)
-      assert.equal(result.stdout, "")
-      assert.equal(result.stderr, "OPENCODE2_CREDENTIAL_IN_URL_FORBIDDEN\n")
-      assert.equal(result.stderr.includes(url), false)
-      await assert.rejects(() => readFile(context.marker), { code: "ENOENT" })
+      const fixture = await preparedFixture(temporary)
+      await writeFile(target === "validation harness" ? fixture.harness : fixture.dependency, "tampered\n")
+      let dockerExecuted = false
+      await assert.rejects(
+        () => runVerifiedValidationContainer({
+          execute: async () => { dockerExecuted = true },
+          image: "oven/bun:exact-digest",
+          mode: "smoke",
+          preparedInput: temporary,
+        }),
+        { message: "OPENCODE2_PREPARED_INPUT_INTEGRITY_INVALID" },
+      )
+      assert.equal(dockerExecuted, false)
     } finally {
-      await rm(context.root, { recursive: true, force: true })
+      await rm(temporary, { recursive: true, force: true })
     }
+  })
+}
+
+test("prepared-input symlink escape fails before Docker execution", async () => {
+  const temporary = await mkdtemp(path.join(os.tmpdir(), "opencode2-prepared-symlink-"))
+  const outside = await mkdtemp(path.join(os.tmpdir(), "opencode2-prepared-outside-"))
+  try {
+    await preparedFixture(temporary)
+    const link = path.join(temporary, "test-environment", "node_modules", "effect", "Array-link.js")
+    await unlink(link)
+    await writeFile(path.join(outside, "outside.js"), "outside\n")
+    await symlink(path.join(outside, "outside.js"), link)
+    let dockerExecuted = false
+    await assert.rejects(
+      () => runVerifiedValidationContainer({
+        execute: async () => { dockerExecuted = true },
+        image: "oven/bun:exact-digest",
+        mode: "smoke",
+        preparedInput: temporary,
+      }),
+      { message: "OPENCODE2_PREPARED_INPUT_SYMLINK_ESCAPE" },
+    )
+    assert.equal(dockerExecuted, false)
+  } finally {
+    await rm(temporary, { recursive: true, force: true })
+    await rm(outside, { recursive: true, force: true })
+  }
+})
+
+test("test-environment dependency provisioning is frozen-lockfile enforced", async () => {
+  const temporary = await mkdtemp(path.join(os.tmpdir(), "opencode2-frozen-environment-"))
+  try {
+    await copyFile(path.join(testEnvironmentSource, "package.json"), path.join(temporary, "package.json"))
+    await copyFile(path.join(testEnvironmentSource, "bun.lock"), path.join(temporary, "bun.lock"))
+    const originalLock = await readFile(path.join(temporary, "bun.lock"), "utf8")
+    const manifest = JSON.parse(await readFile(path.join(temporary, "package.json"), "utf8"))
+    manifest.dependencies.effect = "4.0.0-beta.106"
+    await writeFile(path.join(temporary, "package.json"), `${JSON.stringify(manifest, null, 2)}\n`)
+    const result = await run("bun", ["install", "--cwd", temporary, "--lockfile-only", "--frozen-lockfile", "--ignore-scripts"])
+    assert.notEqual(result.code, 0, `${result.stdout}\n${result.stderr}`)
+    assert.equal(await readFile(path.join(temporary, "bun.lock"), "utf8"), originalLock)
+  } finally {
+    await rm(temporary, { recursive: true, force: true })
+  }
+})
+
+test("obsolete container preparation programs are absent", async () => {
+  for (const file of ["acquire.mjs", "candidate-boundary-probe.mjs", "prepare.mjs", "Dockerfile"]) {
+    await assert.rejects(() => access(path.join(pluginRoot, "tools", "ephemeral-container", file)), { code: "ENOENT" })
   }
 })

@@ -3,6 +3,8 @@ import { createHash } from "node:crypto"
 import { access, lstat, readFile, readdir } from "node:fs/promises"
 import path from "node:path"
 
+import { verifyPreparedInputManifest } from "./prepared-input.mjs"
+
 const digest = (contents) => createHash("sha256").update(contents).digest("hex")
 
 const files = async (directory, base = directory) => {
@@ -18,6 +20,42 @@ const files = async (directory, base = directory) => {
     else assert.fail(`non-regular installed output: ${relative}`)
   }
   return output.sort()
+}
+
+const inventory = async (directory) => Promise.all((await files(directory)).map(async (relative) => {
+  const contents = await readFile(path.join(directory, relative))
+  return { path: relative, sha256: digest(contents), size: contents.length }
+}))
+
+export const verifyPreparedInput = async ({ inputRoot, expectedHost }) => {
+  const metadata = await verifyPreparedInputManifest(inputRoot)
+  assert.equal(metadata.schemaVersion, 2)
+  assert.equal(metadata.release.schemaVersion, 1)
+  const releaseRoot = path.join(inputRoot, "release")
+  assert.deepEqual(await inventory(releaseRoot), metadata.release.files)
+  const manifest = JSON.parse(await readFile(path.join(releaseRoot, "package.json"), "utf8"))
+  assert.equal(manifest.private, true)
+  assert.equal(manifest.dependencies?.["@opencode-ai/plugin"], expectedHost)
+  assert.equal(manifest.devDependencies?.["@opencode-ai/cli"], expectedHost)
+  assert.equal(metadata.testEnvironment.architecture, process.arch)
+  assert.equal(metadata.testEnvironment.host.version, expectedHost)
+  assert.equal(metadata.testEnvironment.host.path, "test-environment/bin/opencode2")
+  const host = path.join(inputRoot, metadata.testEnvironment.host.path)
+  assert.equal(digest(await readFile(host)), metadata.testEnvironment.host.sha256)
+  assert.equal(metadata.testEnvironment.provenance.frozenLockfile, true)
+  assert.equal(metadata.testEnvironment.provenance.install.includes("--frozen-lockfile"), true)
+  for (const [name, expectedPath] of [["lock", "test-environment/bun.lock"], ["manifest", "test-environment/package.json"]]) {
+    const evidence = metadata.testEnvironment.provenance[name]
+    assert.equal(evidence.path, expectedPath)
+    assert.equal(digest(await readFile(path.join(inputRoot, evidence.path))), evidence.sha256)
+  }
+  assert.equal(metadata.testEnvironment.runtime.nodeModules, "test-environment/node_modules")
+  assert.equal(metadata.validationHarness.entry, "validation-harness/validate.mjs")
+  for (const [name, version] of Object.entries(metadata.testEnvironment.runtime.dependencies)) {
+    const installed = JSON.parse(await readFile(path.join(inputRoot, "test-environment", "node_modules", ...name.split("/"), "package.json"), "utf8"))
+    assert.equal(installed.version, version, name)
+  }
+  return { host, metadata, releaseRoot }
 }
 
 const verifyReleaseDirectory = async ({ directory, expectedFiles, expectedEntry, publishedReceipt }) => {

@@ -30,8 +30,6 @@
     "test:release": "node tools/staged-release-test.mjs",
     "test:container:smoke": "node tools/ephemeral-container.mjs smoke",
     "test:container:stress": "node tools/ephemeral-container.mjs stress",
-    "test:container:smoke:local": "node tools/ephemeral-container.mjs smoke --local-fixture",
-    "test:container:stress:local": "node tools/ephemeral-container.mjs stress --local-fixture",
     "test:workflow-pins": "node --test --test-name-pattern=third-party.*immutable tools/identity-test.mjs",
     "search:smoke": "node tools/search-live-smoke.mjs",
     "test": "bun run test:unit && bun run test:integration && bun run test:characterization",

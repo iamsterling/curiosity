@@ -1,62 +1,39 @@
 # Ephemeral-container setup validation
 
-This harness validates a release candidate; it does not authorize installation cutover, publication, deployment, or remote mutation. The authoritative source is an exact ref from the approved private Git repository. The local working-tree mode is explicitly non-authoritative.
+This harness is the normal repository setup test. It does not authorize installation cutover, publication, deployment, or remote mutation.
 
-## Prerequisites and inputs
+## Boundary and input preparation
 
-- Docker with Linux containers and network access during image build and acquisition.
-- A private HTTPS Git URL plus a token **file**, or a private SSH Git URL plus an SSH agent socket and pinned `known_hosts` file.
-- An exact branch, tag, or preferably immutable commit in `OPENCODE2_GIT_REF`.
-- `OPENCODE2_PLUGIN_PATH` only when the plugin is not at `apps/plugin/opencode2`.
+The checked-out workspace is the only repository input. The launcher runs the normal plugin build on the host, then copies only the release package surfaces (`dist`, `assets`, installer, package metadata, README, and license) and the three-file validation harness into one temporary prepared tree. Source files, tests, workspace locks, repository metadata, and all other checkout surfaces are excluded. Every prepared file and symlink is hash-inventoried with its size, file mode or link target; links must resolve within the prepared root. The launcher verifies that complete inventory immediately before invoking Docker, and validation verifies it again as its first container action.
 
-Credentials are bind-mounted only into the short-lived Git acquisition container. After Git checkout, that container removes `.git` and its temporary askpass helper and exits. Dependency installation and build then run in a second container with no token or known-hosts mount, SSH-agent socket, Git URL/ref environment, askpass setting, or inherited candidate-script environment; `prepare.mjs` also fails closed if a credential path or environment variable is present. Candidate lifecycle/build scripts receive a small allowlist containing only Bun cache, home, locale, and executable-path values. The launcher never passes credentials as container command arguments, secret environment values, build arguments, image layers, preparation/validation-container mounts, or retained volumes. Git URLs containing userinfo, query, or fragment components are rejected before Docker with `OPENCODE2_CREDENTIAL_IN_URL_FORBIDDEN`, and the rejected URL is never printed. Git command output is suppressed so authentication failures cannot replay credential material. CI briefly materializes its masked secret as a mode-0600 runner file, removes it in an `always()` step, and does not echo it. The launcher removes its named volume and image in `finally` cleanup.
+The host also provisions two Linux-only test prerequisites from the reviewed `tools/ephemeral-container/test-environment/package.json` and `bun.lock`: the plugin runtime dependencies and the `opencode2 0.0.0-beta-17595` executable. Provisioning uses `bun install --frozen-lockfile --production --ignore-scripts` for the selected Linux architecture and fails if the lock would change. The manifest, lock, installed dependency graph, copied executable, and lock provenance are all part of the prepared-tree inventory. Bun may satisfy the locked packages from its host cache or package registry. The test container runs no package installation, compilation, bundling, source build, or other development command.
 
-### HTTPS (authoritative)
+Every test container is started with `--network none`, a read-only root filesystem, dropped capabilities, no-new-privileges, and exactly one read-only bind mount: the host-prepared tree at `/input`. The inventoried harness runs from `/input/validation-harness`; no checkout path or second host bind enters the container. The only interface retained by Docker is container-local loopback, which the activation check needs; there is no external route or interface. The validation program checks this namespace before setup.
 
-Create a mode-0600 token file outside the repository using the operator or CI secret store, then run:
-
-```sh
-export OPENCODE2_GIT_URL=https://github.example/owner/private-repository.git
-export OPENCODE2_GIT_REF=<reviewed-ref>
-export OPENCODE2_GIT_TOKEN_FILE=/secure/runtime/opencode2-git-token
-bun run test:container:smoke
-```
-
-### SSH agent (authoritative)
-
-```sh
-export OPENCODE2_GIT_URL=git@github.example:owner/private-repository.git
-export OPENCODE2_GIT_REF=<reviewed-ref>
-export OPENCODE2_GIT_KNOWN_HOSTS_FILE=/secure/runtime/known_hosts
-# SSH_AUTH_SOCK must name the existing agent socket.
-bun run test:container:smoke
-```
-
-Missing URL, ref, credential file, agent, or pinned host keys fails closed. Git acquisition and the credential-free dependency/build preparation each have networking in separate containers; validation starts afterward in a third `docker run --network none` container. Never report the local fixture as a private-Git result.
+The launcher names the base image by the Bun 1.3.14 digest already pinned in the repository. If that image is not present, the host Docker daemon may acquire that exact image before process startup; this daemon-side image operation is separate from the network-disabled container. The harness neither builds an image nor creates a named volume. `--rm` removes the stopped container, and the host removes its temporary prepared input in `finally` cleanup.
 
 ## Smoke and stress
 
-`bun run test:container:smoke` creates isolated HOME, XDG config/data/cache, OpenCode config, temporary, and project roots. Before the normal install it points a managed skills directory at a distinct outside-root canary directory and proves installation fails with `OPENCODE2_CONFIG_DESTINATION_UNSAFE` without adding or changing any outside file. It then installs and serially reinstalls, checks every release receipt hash and manifested asset, preserves unrelated/config and outside-root canaries, exposes only the already-acquired local-plugin dependencies required by the [V2 plugin contract](https://opencode.ai/v2/docs/build/plugins), and starts exact `opencode2 v0.0.0-beta-17595`. The V2 `/api/plugin` inventory must contain exactly one `iamsterling.opencode2-config`; shutdown must leave no process-group survivors.
+Run the normal smoke test from the checked-out workspace:
 
-`bun run test:container:stress` launches 12 installers against one `OPENCODE_CONFIG_DIR`. Exactly one must succeed. All 11 losers must exit `75`, write no stdout, and emit exactly:
+```sh
+bun run test:container:smoke
+```
+
+Smoke creates isolated HOME, XDG config/data/cache, OpenCode config, temporary, and project roots. Before normal installation it points a managed skills directory at a distinct outside-root canary and proves installation fails with `OPENCODE2_CONFIG_DESTINATION_UNSAFE` without changing any outside file. It then performs clean setup from the prepared release, serially reinstalls, checks the complete prepared release inventory, every installed release receipt/hash, and every manifested asset, and preserves unrelated/config and outside-root canaries. Finally it starts exact `opencode2 v0.0.0-beta-17595`; the V2 `/api/plugin` inventory must contain exactly one `iamsterling.opencode2-config`, and shutdown must leave no process-group survivors.
+
+Run contention coverage with:
+
+```sh
+bun run test:container:stress
+```
+
+Stress launches 12 installers against one `OPENCODE_CONFIG_DIR`. Exactly one succeeds. All 11 losers exit `75`, write no stdout, and emit exactly:
 
 ```text
 OPENCODE2_CONFIG_INSTALL_BUSY: retry the installation
 ```
 
-Stress also checks coherent receipt/file hashes, all assets, no staging or lock leaks, unrelated files, and the outside-root canary. It is scheduled/manual initially, not a pull-request gate.
+Stress also checks coherent receipt/file hashes, all assets, no staging or lock leaks, unrelated files, and the outside-root canary. It runs on schedule or manual dispatch in CI; smoke is the ordinary pull-request and push test.
 
-For mechanical harness checks without private credentials:
-
-```sh
-bun run test:container:smoke:local
-bun run test:container:stress:local
-```
-
-These commands print `NON-AUTHORITATIVE` and use the current working tree. On abrupt host termination, inspect and remove leftover `opencode2-validation-*` Docker volumes/images. Build cache contains only the generic harness image; `docker builder prune` is optional operator cleanup. A stale installer lock inside a real config root must be removed only after confirming no installer process is active.
-
-## CI and platform limit
-
-The repository-root workflow runs local smoke on pull requests/pushes and runs authoritative smoke only for non-fork contexts when the configured private URL, ref, and token are all available. Local and credential-available private stress run only on schedule or manual dispatch. Forks receive no private secret.
-
-This validates Linux containers on Docker-supported `x64`/`arm64`. It does not validate Windows, PowerShell execution, Darwin, macOS sandbox behavior, or Darwin host binaries.
+This validates Linux Docker environments on `x64` and `arm64`. It does not validate Windows, PowerShell execution, Darwin, macOS sandbox behavior, or Darwin host binaries. A stale installer lock in an operator config root must be removed only after confirming no installer process is active.

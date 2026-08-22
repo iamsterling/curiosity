@@ -3,16 +3,16 @@ import { randomBytes } from "node:crypto"
 import { spawn } from "node:child_process"
 import { access, mkdir, readFile, readdir, symlink, writeFile } from "node:fs/promises"
 import path from "node:path"
-import { verifyInstalledState } from "./validation-files.mjs"
+import { verifyInstalledState, verifyPreparedInput } from "./validation-files.mjs"
 
 const validationRoot = "/validation"
-const workspace = "/workspace"
+const inputRoot = "/input"
 const expectedHost = "0.0.0-beta-17595"
 const expectedPlugin = "iamsterling.opencode2-config"
 const busyDiagnostic = "OPENCODE2_CONFIG_INSTALL_BUSY: retry the installation\n"
 const unsafeDestinationDiagnostic = "OPENCODE2_CONFIG_DESTINATION_UNSAFE\n"
-const acquisition = JSON.parse(await readFile(path.join(workspace, "acquisition.json"), "utf8"))
-const pluginRoot = path.join(workspace, "source", acquisition.pluginPath)
+const prepared = await verifyPreparedInput({ inputRoot, expectedHost })
+const pluginRoot = prepared.releaseRoot
 const installer = path.join(pluginRoot, "tools", "install-node.mjs")
 
 const capture = (command, args, options = {}) => new Promise((resolve, reject) => {
@@ -49,7 +49,7 @@ const fixture = async () => {
   await writeFile(unrelated.command, "operator-command-canary\n", { flag: "wx" })
   await writeFile(outsideCanary, "outside-root-canary\n", { flag: "wx" })
   const env = {
-    BUN_INSTALL_CACHE_DIR: path.join(workspace, "bun-cache"),
+    BUN_INSTALL_CACHE_DIR: roots["xdg-cache"],
     BUN_INSTALL: roots["bun-install"],
     BUN_TMPDIR: roots.tmp,
     HOME: roots.home,
@@ -91,17 +91,18 @@ const assertDestinationConfinement = async (context) => {
 const assertNetworkNamespaceDisabled = async () => {
   const routes = (await readFile("/proc/net/route", "utf8")).trim().split("\n").slice(1).filter(Boolean)
   assert.deepEqual(routes.filter((line) => line.trim().split(/\s+/u)[0] !== "lo"), [], "validation must run with Docker --network none")
+  const interfaces = (await readFile("/proc/net/dev", "utf8")).split("\n").slice(2).map((line) => line.split(":", 1)[0].trim()).filter(Boolean)
+  const activeExternal = []
+  for (const name of interfaces.filter((value) => value !== "lo")) {
+    const state = (await readFile(path.join("/sys/class/net", name, "operstate"), "utf8")).trim()
+    if (state !== "down") activeExternal.push({ name, state })
+  }
+  assert.deepEqual(activeExternal, [], "validation must have no active external interface")
+  const ipv6Routes = (await readFile("/proc/net/ipv6_route", "utf8")).trim().split("\n").filter(Boolean)
+  assert.deepEqual(ipv6Routes.filter((line) => line.trim().split(/\s+/u).at(-1) !== "lo"), [], "validation must have no external IPv6 route")
 }
 
-const findHost = async () => {
-  for (const candidate of [
-    path.join(workspace, "source", acquisition.hostPath),
-    path.join(pluginRoot, "node_modules", ".bin", "opencode2"),
-  ]) {
-    if (await access(candidate).then(() => true).catch(() => false)) return candidate
-  }
-  throw new Error("CONTAINER_PINNED_HOST_NOT_FOUND")
-}
+const findHost = async () => access(prepared.host).then(() => prepared.host, () => { throw new Error("CONTAINER_PINNED_HOST_NOT_FOUND") })
 
 const waitFor = async (operation, timeout = 15_000) => {
   const deadline = Date.now() + timeout
@@ -127,9 +128,12 @@ const terminate = async (child) => {
     await exited
     throw new Error("CONTAINER_HOST_CLEAN_SHUTDOWN_FAILED")
   }
-  const ps = await capture("ps", ["-eo", "pid=,pgid="], { env: { PATH: "/usr/bin:/bin" } })
-  assert.equal(ps.code, 0, ps.stderr)
-  const survivors = ps.stdout.split("\n").map((line) => line.trim().split(/\s+/u)).filter(([, pgid]) => pgid === String(child.pid))
+  const survivors = []
+  for (const entry of (await readdir("/proc", { withFileTypes: true })).filter((item) => item.isDirectory() && /^\d+$/u.test(item.name))) {
+    const stat = await readFile(path.join("/proc", entry.name, "stat"), "utf8").catch(() => "")
+    const fields = stat.slice(stat.lastIndexOf(")") + 1).trim().split(/\s+/u)
+    if (fields[2] === String(child.pid)) survivors.push(entry.name)
+  }
   assert.deepEqual(survivors, [], `host process-group survivors: ${JSON.stringify(survivors)}`)
 }
 
@@ -175,7 +179,7 @@ const smoke = async () => {
   const context = await fixture()
   await assertDestinationConfinement(context)
   assertWinner(await runInstaller(context.env))
-  await symlink(path.join(workspace, "source", acquisition.dependencyPath), path.join(context.roots.config, "node_modules"), "dir")
+  await symlink(path.join(inputRoot, prepared.metadata.testEnvironment.runtime.nodeModules), path.join(context.roots.config, "node_modules"), "dir")
   assertWinner(await runInstaller(context.env))
   const state = await verifyInstalledState({ pluginRoot, configRoot: context.roots.config, ...context })
   const runtime = await activate(context)
@@ -201,7 +205,7 @@ const stress = async () => {
 }
 
 await assertNetworkNamespaceDisabled()
-assert.equal(acquisition.credentialBoundary, "separate-container-without-git-credentials")
+await assert.rejects(() => writeFile(path.join(inputRoot, ".mutation-probe"), "forbidden\n"), { code: "EROFS" })
 const mode = process.argv[2]
 const result = mode === "smoke" ? await smoke() : mode === "stress" ? await stress() : assert.fail("VALIDATION_MODE_INVALID")
-console.log(JSON.stringify({ status: "passed", acquisition: acquisition.source, ...result }))
+console.log(JSON.stringify({ status: "passed", input: "host-prepared", ...result }))

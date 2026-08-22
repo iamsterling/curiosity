@@ -8,4 +8,4 @@ The installer serializes its complete setup mutation with `.opencode2-config.ins
 - old state is read by neither runtime nor bootstrap tooling;
 - validation never targets global OpenCode configuration; operator cutover remains separately authorized.
 
-See [ephemeral-container-validation.md](ephemeral-container-validation.md) for the private-Git smoke and stress procedures.
+See [ephemeral-container-validation.md](ephemeral-container-validation.md) for the host-prepared, network-disabled smoke and stress procedures.
