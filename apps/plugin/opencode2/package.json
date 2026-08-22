@@ -1,7 +1,7 @@
 {
   "name": "@iamsterling/opencode2-config",
   "version": "0.1.0",
-  "description": "Private first-class OpenCode 2 plugin platform.",
+  "description": "First-class OpenCode 2 plugin platform.",
   "type": "module",
   "main": "./dist/index.js",
   "exports": {
@@ -28,6 +28,7 @@
     "test:security": "node --test tests/security/*.test.mjs",
     "test:real-host": "node tools/real-host-suite.mjs",
     "test:release": "node tools/staged-release-test.mjs",
+    "pack:verify": "node --test tests/integration/registry-package-contract.test.mjs",
     "test:container:smoke": "node tools/ephemeral-container.mjs smoke",
     "test:container:stress": "node tools/ephemeral-container.mjs stress",
     "test:workflow-pins": "node --test --test-name-pattern=third-party.*immutable tools/identity-test.mjs",
@@ -44,8 +45,8 @@
     "provenance:verify": "node tools/verify-provenance.mjs && node tools/verify-relocations.mjs && bun run test:workflow-pins",
     "secret:scan": "node tools/secret-scan.mjs",
     "resources:size": "node tools/resource-size.mjs 74fe8c5",
-    "verify": "bun run abi:check && bun run assets:manifest && bun run typecheck && bun run lint && bun run format:check && bun run build && bun run test && bun run test:security && bun run test:real-host && bun run test:release && bun run resources:size && bun run artifact:verify && bun run provenance:verify && bun run secret:scan",
-    "verify:linux": "bun run abi:check && bun run assets:manifest && bun run typecheck && bun run lint && bun run format:check && bun run build && bun run test && bun run test:security && bun run test:release && bun run resources:size && bun run artifact:verify && bun run provenance:verify && bun run secret:scan"
+    "verify": "bun run abi:check && bun run assets:manifest && bun run typecheck && bun run lint && bun run format:check && bun run build && bun run pack:verify && bun run test && bun run test:security && bun run test:real-host && bun run test:release && bun run resources:size && bun run artifact:verify && bun run provenance:verify && bun run secret:scan",
+    "verify:linux": "bun run abi:check && bun run assets:manifest && bun run typecheck && bun run lint && bun run format:check && bun run build && bun run pack:verify && bun run test && bun run test:security && bun run test:release && bun run resources:size && bun run artifact:verify && bun run provenance:verify && bun run secret:scan"
   },
   "keywords": [
     "opencode",
@@ -55,7 +56,7 @@
     "evidence",
     "loop-compatibility"
   ],
-  "author": "OpenCode Loop Contributors (implementation); iamsterling (private repository)",
+  "author": "OpenCode Loop Contributors (implementation); iamsterling",
   "license": "MIT",
   "homepage": "https://github.com/iamsterling/opencode2-config#readme",
   "repository": {
@@ -68,9 +69,10 @@
   "bin": {
     "opencode2-config": "tools/install-node.mjs"
   },
-  "private": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
-    "@curiosity/runtime": "workspace:*",
     "@opencode-ai/plugin": "0.0.0-beta-17595",
     "effect": "4.0.0-beta.107"
   },

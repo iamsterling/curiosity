@@ -73,9 +73,9 @@ if (installerArgs.includes("--help") || installerArgs.includes("-h")) {
 
 Usage:
   opencode2-config
-  npx -y @iamsterling/opencode2-config@latest
+  bunx --bun ${packageSpec}
 
-Installs the plugin commands and local command agent into OPENCODE_CONFIG_DIR
+Installs the plugin commands, skills, and bundle assets into OPENCODE_CONFIG_DIR
 or the default ~/.config/opencode directory for OpenCode 2 (opencode2).`)
   process.exit(0)
 }
@@ -299,8 +299,11 @@ async function install(config) {
   const useConfiguredPackage = packageConfig.configured
   if (useConfiguredPackage) {
     await Promise.all(pluginFiles.map((target) => assertSafeDestination(target, { file: true })))
+    await assertSafeDestination(join(pluginDir, "opencode2-config"), { directory: true })
+    await rm(join(pluginDir, "opencode2-config"), { recursive: true, force: true })
     await rm(join(pluginDir, "opencode2-config.ts"), { force: true })
     await rm(join(pluginDir, "opencode2-config.js"), { force: true })
+    await rm(join(pluginDir, "opencode2-config.receipt.json"), { force: true })
   } else {
     await ensureDependency(config)
     await assertSafeDestination(join(pluginDir, "opencode2-config.ts"), { file: true })

@@ -7,6 +7,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import path from "node:path";
+import os from "node:os";
 import test from "node:test";
 import {
   DEPENDENCY,
@@ -15,8 +16,7 @@ import {
   validateDependencyReceiptEvidence,
 } from "../../tools/legacy-memory-dependency-receipt.mjs";
 
-const tempBase =
-  "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode";
+const tempBase = path.join(os.tmpdir(), "opencode");
 mkdirSync(tempBase, { recursive: true });
 
 const baselineCargoToml = `[package]\nname = "curiosity-runtime-native"\nversion = "0.0.0"\n\n[lib]\ncrate-type = ["cdylib", "rlib"]\n\n[features]\nowned-lexical-builder-qualification = ["owned-lexical-reader-qualification"]\n\n[dependencies]\nscraper = { version = "=0.27.0", optional = true, default-features = false }\n`;

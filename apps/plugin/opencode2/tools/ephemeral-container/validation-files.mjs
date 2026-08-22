@@ -3,7 +3,9 @@ import { createHash } from "node:crypto"
 import { access, lstat, readFile, readdir } from "node:fs/promises"
 import path from "node:path"
 
+import { inspectPackageArchive } from "./package-archive.mjs"
 import { verifyPreparedInputManifest } from "./prepared-input.mjs"
+import { extractReadmeSetup } from "./readme-setup.mjs"
 
 const digest = (contents) => createHash("sha256").update(contents).digest("hex")
 
@@ -27,16 +29,10 @@ const inventory = async (directory) => Promise.all((await files(directory)).map(
   return { path: relative, sha256: digest(contents), size: contents.length }
 }))
 
-export const verifyPreparedInput = async ({ inputRoot, expectedHost }) => {
+export const verifyPreparedInput = async ({ inputRoot, expectedHost, mode }) => {
   const metadata = await verifyPreparedInputManifest(inputRoot)
   assert.equal(metadata.schemaVersion, 2)
-  assert.equal(metadata.release.schemaVersion, 1)
-  const releaseRoot = path.join(inputRoot, "release")
-  assert.deepEqual(await inventory(releaseRoot), metadata.release.files)
-  const manifest = JSON.parse(await readFile(path.join(releaseRoot, "package.json"), "utf8"))
-  assert.equal(manifest.private, true)
-  assert.equal(manifest.dependencies?.["@opencode-ai/plugin"], expectedHost)
-  assert.equal(manifest.devDependencies?.["@opencode-ai/cli"], expectedHost)
+  assert.equal(metadata.mode, mode)
   assert.equal(metadata.testEnvironment.architecture, process.arch)
   assert.equal(metadata.testEnvironment.host.version, expectedHost)
   assert.equal(metadata.testEnvironment.host.path, "test-environment/bin/opencode2")
@@ -49,13 +45,55 @@ export const verifyPreparedInput = async ({ inputRoot, expectedHost }) => {
     assert.equal(evidence.path, expectedPath)
     assert.equal(digest(await readFile(path.join(inputRoot, evidence.path))), evidence.sha256)
   }
-  assert.equal(metadata.testEnvironment.runtime.nodeModules, "test-environment/node_modules")
   assert.equal(metadata.validationHarness.entry, "validation-harness/validate.mjs")
-  for (const [name, version] of Object.entries(metadata.testEnvironment.runtime.dependencies)) {
-    const installed = JSON.parse(await readFile(path.join(inputRoot, "test-environment", "node_modules", ...name.split("/"), "package.json"), "utf8"))
-    assert.equal(installed.version, version, name)
+  if (mode === "stress") {
+    assert.equal(metadata.release.schemaVersion, 1)
+    const releaseRoot = path.join(inputRoot, "release")
+    assert.deepEqual(await inventory(releaseRoot), metadata.release.files)
+    const manifest = JSON.parse(await readFile(path.join(releaseRoot, "package.json"), "utf8"))
+    assert.notEqual(manifest.private, true)
+    assert.equal(manifest.publishConfig?.access, "public")
+    assert.equal(manifest.dependencies?.["@opencode-ai/plugin"], expectedHost)
+    assert.equal(manifest.devDependencies?.["@opencode-ai/cli"], expectedHost)
+    assert.equal(metadata.testEnvironment.runtime.nodeModules, "test-environment/node_modules")
+    for (const [name, version] of Object.entries(metadata.testEnvironment.runtime.dependencies)) {
+      const installed = JSON.parse(await readFile(path.join(inputRoot, "test-environment", "node_modules", ...name.split("/"), "package.json"), "utf8"))
+      assert.equal(installed.version, version, name)
+    }
+    return { host, metadata, releaseRoot }
   }
-  return { host, metadata, releaseRoot }
+  assert.equal(metadata.registry.schemaVersion, 1)
+  assert.equal(metadata.registry.allowlistOnly, true)
+  assert.equal(metadata.registry.noProxy, true)
+  assert.equal(metadata.testEnvironment.runtime.nodeModules, undefined)
+  assert.equal(metadata.inventory.entries.some(({ path: entryPath }) => entryPath.includes("node_modules") || entryPath.startsWith("release/")), false)
+  const catalogPath = path.join(inputRoot, metadata.registry.catalog)
+  const catalog = JSON.parse(await readFile(catalogPath, "utf8"))
+  assert.equal(catalog.schemaVersion, 1)
+  assert.equal(catalog.allowlistOnly, true)
+  assert.equal(catalog.noProxy, true)
+  assert.equal(catalog.product.packageSpec, "@iamsterling/opencode2-config@0.1.0")
+  assert.equal(catalog.packages.filter(({ kind }) => kind === "product").length, 1)
+  assert.equal(catalog.packages.filter(({ kind }) => kind === "lock-resolved-dependency").length, metadata.registry.dependencyTarballs)
+  for (const record of catalog.packages) {
+    assert.match(record.filename, /^[A-Za-z0-9._-]+\.tgz$/u)
+    const inspected = await inspectPackageArchive(path.join(inputRoot, "registry", "tarballs", record.filename), { rejectLinks: true })
+    assert.deepEqual(inspected.archive, record.archive)
+    assert.deepEqual(inspected.manifest, record.manifest)
+    assert.equal(inspected.manifest.name, record.name)
+    assert.equal(inspected.manifest.version, record.version)
+    if (record.kind !== "product") continue
+    assert.deepEqual(inspected.inventory, catalog.product.inventory)
+    assert.notEqual(inspected.manifest.private, true)
+    assert.equal(inspected.manifest.publishConfig?.access, "public")
+    assert.equal(inspected.manifest.dependencies?.["@curiosity/runtime"], undefined)
+    const readme = inspected.entries.find(({ path: entryPath, type }) => entryPath === "package/README.md" && type === "0")
+    assert.ok(readme)
+    const setup = extractReadmeSetup(readme.contents.toString("utf8"), catalog.product.packageSpec)
+    assert.deepEqual({ config: setup.config, installerArgv: setup.installerArgv, verificationArgv: setup.verificationArgv }, catalog.readmeSetup)
+  }
+  assert.deepEqual(metadata.registry.product, catalog.product)
+  return { catalog, catalogPath, host, metadata, product: catalog.packages.find(({ kind }) => kind === "product") }
 }
 
 const verifyReleaseDirectory = async ({ directory, expectedFiles, expectedEntry, publishedReceipt }) => {

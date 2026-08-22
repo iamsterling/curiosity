@@ -7,6 +7,7 @@ import test from "node:test"
 
 import { runVerifiedValidationContainer, validationContainerArguments } from "../../tools/ephemeral-container/container-command.mjs"
 import { writePreparedInputManifest } from "../../tools/ephemeral-container/prepared-input.mjs"
+import { EXPECTED_AGENTS, EXPECTED_COMMAND_IDS, EXPECTED_SKILL_IDS, EXPECTED_TOOL_IDS } from "../../tools/ephemeral-container/validation-contract.mjs"
 import { stageReleaseInput, stageValidationHarness } from "../../tools/prepare-ephemeral-container-input.mjs"
 
 const pluginRoot = path.resolve(import.meta.dirname, "../..")
@@ -38,6 +39,7 @@ test("validation container has no network and exactly one read-only prepared bin
   assert.ok(args.includes("--rm"))
   assert.ok(args.includes("--read-only"))
   assert.deepEqual(args.slice(args.indexOf("--network"), args.indexOf("--network") + 2), ["--network", "none"])
+  assert.deepEqual(args.slice(args.indexOf("--workdir"), args.indexOf("--workdir") + 2), ["--workdir", "/tmp"])
   assert.ok(args.includes(`type=bind,src=${preparedInput},dst=/input,readonly`))
   const bindMounts = args.filter((argument) => argument.startsWith("type=bind,"))
   assert.deepEqual(bindMounts, [`type=bind,src=${preparedInput},dst=/input,readonly`])
@@ -74,14 +76,32 @@ test("host staging copies only the inventoried validation harness into prepared 
     assert.deepEqual(
       manifest.inventory.entries.map(({ path: file }) => file),
       [
+        "validation-harness/functional-validation.mjs",
+        "validation-harness/package-archive.mjs",
         "validation-harness/prepared-input.mjs",
+        "validation-harness/readme-setup.mjs",
+        "validation-harness/registry-server.mjs",
+        "validation-harness/registry-validation.mjs",
         "validation-harness/validate.mjs",
+        "validation-harness/validation-contract.mjs",
         "validation-harness/validation-files.mjs",
       ],
     )
   } finally {
     await rm(temporary, { recursive: true, force: true })
   }
+})
+
+test("functional setup contract is explicit, unique, and aligned with checked-in release assets", async () => {
+  const manifest = JSON.parse(await readFile(path.join(pluginRoot, "assets", "manifest.json"), "utf8"))
+  const commands = manifest.assets.filter(({ kind }) => kind === "command")
+  assert.deepEqual(commands.map(({ id }) => id), EXPECTED_COMMAND_IDS)
+  assert.equal(commands.filter(({ status }) => status === "active").length, 11)
+  assert.equal(commands.filter(({ status }) => status === "compatibility-deprecated").length, 30)
+  assert.deepEqual(manifest.assets.filter(({ kind }) => kind === "skill").map(({ id }) => id), EXPECTED_SKILL_IDS)
+  assert.deepEqual(Object.keys(EXPECTED_AGENTS).sort(), ["analyst", "generalist", "implementer", "orchestrator", "researcher", "reviewer", "strategist", "worker"])
+  assert.equal(EXPECTED_TOOL_IDS.length, 20)
+  for (const values of [EXPECTED_COMMAND_IDS, EXPECTED_SKILL_IDS, EXPECTED_TOOL_IDS]) assert.equal(new Set(values).size, values.length)
 })
 
 const preparedFixture = async (temporary) => {

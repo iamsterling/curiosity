@@ -4,6 +4,7 @@ import { chmod, copyFile, lstat, mkdir, readFile, readdir, rm } from "node:fs/pr
 import path from "node:path"
 
 import { writePreparedInputManifest } from "./ephemeral-container/prepared-input.mjs"
+import { prepareRegistry } from "./ephemeral-container/prepare-registry.mjs"
 
 const digest = (contents) => createHash("sha256").update(contents).digest("hex")
 
@@ -63,7 +64,7 @@ const exactVersion = (value, code) => {
   return value
 }
 
-const provisionTestEnvironment = async ({ architecture, inputRoot, manifest, pluginRoot }) => {
+const provisionTestEnvironment = async ({ architecture, inputRoot, keepNodeModules, manifest, pluginRoot }) => {
   const environment = path.join(inputRoot, "test-environment")
   const frozenEnvironment = path.join(pluginRoot, "tools", "ephemeral-container", "test-environment")
   const pluginVersion = exactVersion(manifest.dependencies?.["@opencode-ai/plugin"], "OPENCODE2_PLUGIN_PIN_INVALID")
@@ -90,7 +91,7 @@ const provisionTestEnvironment = async ({ architecture, inputRoot, manifest, plu
   const host = path.join(environment, "bin", "opencode2")
   await copyTree(sourceHost, host)
   await chmod(host, 0o755)
-  return {
+  const result = {
     architecture,
     host: { path: "test-environment/bin/opencode2", sha256: digest(await readFile(host)), version: hostVersion },
     provenance: {
@@ -104,31 +105,62 @@ const provisionTestEnvironment = async ({ architecture, inputRoot, manifest, plu
         "@opencode-ai/plugin": pluginVersion,
         effect: effectVersion,
       },
-      nodeModules: "test-environment/node_modules",
+      ...(keepNodeModules ? { nodeModules: "test-environment/node_modules" } : {}),
     },
   }
+  return result
 }
 
 export const stageValidationHarness = async ({ inputRoot, pluginRoot }) => {
   const source = path.join(pluginRoot, "tools", "ephemeral-container")
   const destination = path.join(inputRoot, "validation-harness")
   await mkdir(destination, { recursive: true })
-  for (const file of ["prepared-input.mjs", "validate.mjs", "validation-files.mjs"]) {
+  for (const file of [
+    "functional-validation.mjs",
+    "package-archive.mjs",
+    "prepared-input.mjs",
+    "readme-setup.mjs",
+    "registry-server.mjs",
+    "registry-validation.mjs",
+    "validate.mjs",
+    "validation-contract.mjs",
+    "validation-files.mjs",
+  ]) {
     await copyTree(path.join(source, file), path.join(destination, file))
   }
   return { entry: "validation-harness/validate.mjs" }
 }
 
-export const prepareEphemeralContainerInput = async ({ architecture, inputRoot, pluginRoot }) => {
+export const prepareEphemeralContainerInput = async ({ architecture, inputRoot, mode, pluginRoot }) => {
   if (!new Set(["arm64", "x64"]).has(architecture)) fail("OPENCODE2_CONTAINER_ARCHITECTURE_UNSUPPORTED")
-  const release = path.join(inputRoot, "release")
-  const releaseInventory = await stageReleaseInput({ pluginRoot, release })
-  const manifest = JSON.parse(await readFile(path.join(release, "package.json"), "utf8"))
-  if (manifest.private !== true) fail("OPENCODE2_RELEASE_PACKAGE_MUST_BE_PRIVATE")
-  const testEnvironment = await provisionTestEnvironment({ architecture, inputRoot, manifest, pluginRoot })
+  if (!new Set(["smoke", "stress"]).has(mode)) fail("OPENCODE2_CONTAINER_MODE_INVALID")
+  const manifest = JSON.parse(await readFile(path.join(pluginRoot, "package.json"), "utf8"))
+  if (manifest.private === true || manifest.publishConfig?.access !== "public") fail("OPENCODE2_RELEASE_PACKAGE_NOT_REGISTRY_READY")
+  const testEnvironment = await provisionTestEnvironment({ architecture, inputRoot, keepNodeModules: mode === "stress", manifest, pluginRoot })
+  let release
+  let registry
+  if (mode === "stress") {
+    const releaseRoot = path.join(inputRoot, "release")
+    release = await stageReleaseInput({ pluginRoot, release: releaseRoot })
+  } else {
+    registry = await prepareRegistry({
+      environment: path.join(inputRoot, "test-environment"),
+      inputRoot,
+      lockPath: path.join(inputRoot, "test-environment", "bun.lock"),
+      pluginRoot,
+      sourceManifest: manifest,
+    })
+    await rm(path.join(inputRoot, "test-environment", "node_modules"), { recursive: true, force: true })
+  }
   const validationHarness = await stageValidationHarness({ inputRoot, pluginRoot })
   return writePreparedInputManifest({
     inputRoot,
-    metadata: { release: releaseInventory, testEnvironment, validationHarness },
+    metadata: {
+      mode,
+      ...(registry ? { registry } : {}),
+      ...(release ? { release } : {}),
+      testEnvironment,
+      validationHarness,
+    },
   })
 }

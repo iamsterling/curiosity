@@ -1,7 +1,44 @@
 # OpenCode2 Config
 
-Private OpenCode 2 Effect plugin (with a Promise compatibility setup seam) pinned
+OpenCode 2 Effect plugin (with a Promise compatibility setup seam) pinned
 to `@opencode-ai/plugin@0.0.0-beta-17595`.
+
+## Exact OpenCode V2 setup
+
+The `@iamsterling/opencode2-config@0.1.0` artifact is independently
+registry-ready, but this change does **not** publish it. Publication requires a
+separate approval. Once that exact version is available from the operator's
+configured package registry, use this complete setup contract. Do not replace
+the version with a tag or range.
+
+<!-- registry-setup:start -->
+Create `~/.config/opencode/opencode.json` with the exact package entry first:
+
+```jsonc
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugins": ["@iamsterling/opencode2-config@0.1.0"]
+}
+```
+
+Run the exact packaged installer to install the commands, skills, and bundle
+assets without creating a duplicate local plugin wrapper:
+
+```sh
+bunx --bun @iamsterling/opencode2-config@0.1.0
+```
+
+Verify that OpenCode resolves and activates `iamsterling.opencode2-config`:
+
+```sh
+opencode2 plugin list
+```
+<!-- registry-setup:end -->
+
+OpenCode V2 installs the configured package and its production dependencies in
+its isolated package cache. The installer leaves the exact package spec pinned
+in configuration and installs 41 commands, eight skills, and the reviewed
+bundle assets under the OpenCode config directory.
 
 ## Web search
 
@@ -28,19 +65,12 @@ checks trusted researcher identity again at execution, and imports only
 deadline-bounded, not natively preemptible. Name uniqueness is deployment
 attestation against the pinned host, not a host-global guarantee.
 
-## OpenCode configuration
+## Configuration behavior
 
-Add only the plugin. Its V2 agent transform installs the bundled agent suite
+The V2 agent transform installs the bundled agent suite
 and selects `orchestrator` as the default primary agent; no separate
 `default_agent` or `agents` configuration is required. Agent models inherit the
 active session model.
-
-```jsonc
-{
-  "$schema": "https://opencode.ai/config.json",
-  "plugins": ["@iamsterling/opencode2-config"],
-}
-```
 
 ## Product architecture
 
@@ -78,6 +108,11 @@ State belongs under `.opencode/opencode2-config/`. Unknown schema versions and c
 
 The imported loop runtime, daemon, timers, polling, shell/process/git/watch scheduler, mutable state authority and marker agent are removed. `/loop-*` files are thin compatibility aliases or stable unsupported diagnostics.
 
+## Source-checkout development only
+
+These commands are for contributors working from this repository. They are not
+the registry installation contract above.
+
 ```sh
 bun install --frozen-lockfile
 bun run verify
@@ -85,5 +120,6 @@ bun run verify
 bun run search:smoke
 ```
 
-Installation creates a reviewed candidate; global cutover requires separate authorization.
-Host-prepared, network-disabled Linux setup validation is documented in [docs/ephemeral-container-validation.md](docs/ephemeral-container-validation.md).
+Registry readiness does not authorize publication, deployment, or global
+installation cutover; each requires separate approval.
+Host-prepared, network-disabled Linux functional setup validation is documented in [docs/ephemeral-container-validation.md](docs/ephemeral-container-validation.md). It checks the pinned host's plugin/agent/command/skill/config catalogs and model-free event capture. The 20-tool result is explicitly installed-plugin setup instrumentation because beta-17595 has no HTTP tool-catalog route; context and tool runtime callbacks are not claimed.

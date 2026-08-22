@@ -1,19 +1,19 @@
 import assert from "node:assert/strict"
-import { randomBytes } from "node:crypto"
 import { spawn } from "node:child_process"
-import { access, mkdir, readFile, readdir, symlink, writeFile } from "node:fs/promises"
+import { mkdir, readFile, readdir, symlink, writeFile } from "node:fs/promises"
 import path from "node:path"
+import { validateRegistryPackageSmoke } from "./registry-validation.mjs"
+import { EXPECTED_HOST_VERSION } from "./validation-contract.mjs"
 import { verifyInstalledState, verifyPreparedInput } from "./validation-files.mjs"
 
 const validationRoot = "/validation"
 const inputRoot = "/input"
-const expectedHost = "0.0.0-beta-17595"
-const expectedPlugin = "iamsterling.opencode2-config"
+const mode = process.argv[2]
 const busyDiagnostic = "OPENCODE2_CONFIG_INSTALL_BUSY: retry the installation\n"
 const unsafeDestinationDiagnostic = "OPENCODE2_CONFIG_DESTINATION_UNSAFE\n"
-const prepared = await verifyPreparedInput({ inputRoot, expectedHost })
+const prepared = await verifyPreparedInput({ inputRoot, expectedHost: EXPECTED_HOST_VERSION, mode })
 const pluginRoot = prepared.releaseRoot
-const installer = path.join(pluginRoot, "tools", "install-node.mjs")
+const installer = pluginRoot ? path.join(pluginRoot, "tools", "install-node.mjs") : undefined
 
 const capture = (command, args, options = {}) => new Promise((resolve, reject) => {
   const child = spawn(command, args, {
@@ -38,6 +38,10 @@ const capture = (command, args, options = {}) => new Promise((resolve, reject) =
 const fixture = async () => {
   const roots = Object.fromEntries(["home", "xdg-config", "xdg-data", "xdg-cache", "config", "project", "tmp", "bun-install"]
     .map((name) => [name, path.join(validationRoot, name)]))
+  roots.config = path.join(roots["xdg-config"], "opencode")
+  for (const name of ["home", "xdg-config", "xdg-data", "xdg-cache", "project", "tmp"]) {
+    roots[`disabled-${name}`] = path.join(validationRoot, "disabled", name)
+  }
   await Promise.all(Object.values(roots).map((directory) => mkdir(directory, { recursive: true })))
   const unrelated = {
     config: path.join(roots.config, "operator-config-canary.txt"),
@@ -61,7 +65,17 @@ const fixture = async () => {
     XDG_CONFIG_HOME: roots["xdg-config"],
     XDG_DATA_HOME: roots["xdg-data"],
   }
-  return { env, outsideCanary, roots, unrelated }
+  const disabledEnv = {
+    ...env,
+    BUN_INSTALL_CACHE_DIR: roots["disabled-xdg-cache"],
+    BUN_TMPDIR: roots["disabled-tmp"],
+    HOME: roots["disabled-home"],
+    TMPDIR: roots["disabled-tmp"],
+    XDG_CACHE_HOME: roots["disabled-xdg-cache"],
+    XDG_CONFIG_HOME: roots["xdg-config"],
+    XDG_DATA_HOME: roots["disabled-xdg-data"],
+  }
+  return { disabledEnv, env, outsideCanary, roots, unrelated }
 }
 
 const runInstaller = (env) => capture(process.execPath, [installer], { cwd: pluginRoot, env })
@@ -102,90 +116,6 @@ const assertNetworkNamespaceDisabled = async () => {
   assert.deepEqual(ipv6Routes.filter((line) => line.trim().split(/\s+/u).at(-1) !== "lo"), [], "validation must have no external IPv6 route")
 }
 
-const findHost = async () => access(prepared.host).then(() => prepared.host, () => { throw new Error("CONTAINER_PINNED_HOST_NOT_FOUND") })
-
-const waitFor = async (operation, timeout = 15_000) => {
-  const deadline = Date.now() + timeout
-  let lastError
-  while (Date.now() < deadline) {
-    try {
-      const value = await operation()
-      if (value !== undefined) return value
-    } catch (error) {
-      lastError = error
-    }
-    await new Promise((resolve) => setTimeout(resolve, 50))
-  }
-  throw lastError ?? new Error("CONTAINER_HOST_TIMEOUT")
-}
-
-const terminate = async (child) => {
-  const exited = new Promise((resolve) => child.once("close", resolve))
-  process.kill(-child.pid, "SIGTERM")
-  const graceful = await Promise.race([exited.then(() => true), new Promise((resolve) => setTimeout(() => resolve(false), 10_000))])
-  if (!graceful) {
-    process.kill(-child.pid, "SIGKILL")
-    await exited
-    throw new Error("CONTAINER_HOST_CLEAN_SHUTDOWN_FAILED")
-  }
-  const survivors = []
-  for (const entry of (await readdir("/proc", { withFileTypes: true })).filter((item) => item.isDirectory() && /^\d+$/u.test(item.name))) {
-    const stat = await readFile(path.join("/proc", entry.name, "stat"), "utf8").catch(() => "")
-    const fields = stat.slice(stat.lastIndexOf(")") + 1).trim().split(/\s+/u)
-    if (fields[2] === String(child.pid)) survivors.push(entry.name)
-  }
-  assert.deepEqual(survivors, [], `host process-group survivors: ${JSON.stringify(survivors)}`)
-}
-
-const activate = async ({ env, roots }) => {
-  const host = await findHost()
-  const version = await capture(host, ["--version"], { cwd: roots.project, env })
-  assert.equal(version.code, 0, version.stderr)
-  assert.equal(version.stdout.trim(), `opencode2 v${expectedHost}`)
-  const password = randomBytes(24).toString("base64url")
-  const authorization = `Basic ${Buffer.from(`opencode:${password}`).toString("base64")}`
-  const hostEnv = {
-    ...env,
-    OPENCODE_CONFIG_CONTENT: JSON.stringify({ plugins: ["-opencode.*"] }),
-    OPENCODE_PASSWORD: password,
-  }
-  const child = spawn(host, ["serve", "--hostname", "127.0.0.1", "--port", "0", "--log-level", "all"], {
-    cwd: roots.project,
-    env: hostEnv,
-    detached: true,
-    stdio: ["ignore", "pipe", "pipe"],
-  })
-  const output = []
-  child.stdout.on("data", (chunk) => output.push(Buffer.from(chunk)))
-  child.stderr.on("data", (chunk) => output.push(Buffer.from(chunk)))
-  try {
-    const baseURL = await waitFor(() => Buffer.concat(output).toString("utf8").match(/server listening on (http:\/\/127\.0\.0\.1:\d+)/u)?.[1])
-    const url = new URL("/api/plugin", baseURL)
-    url.searchParams.set("location[directory]", roots.project)
-    const inventory = await waitFor(async () => {
-      const response = await fetch(url, { headers: { Authorization: authorization }, signal: AbortSignal.timeout(1_000) })
-      if (!response.ok) throw new Error(`CONTAINER_HOST_HTTP_${response.status}`)
-      const payload = await response.json()
-      return Array.isArray(payload?.data) && payload.data.length > 0 ? payload.data : undefined
-    })
-    assert.deepEqual(inventory, [{ id: expectedPlugin }])
-    return { hostVersion: expectedHost, pluginRegistrations: inventory.map(({ id }) => id) }
-  } finally {
-    await terminate(child)
-  }
-}
-
-const smoke = async () => {
-  const context = await fixture()
-  await assertDestinationConfinement(context)
-  assertWinner(await runInstaller(context.env))
-  await symlink(path.join(inputRoot, prepared.metadata.testEnvironment.runtime.nodeModules), path.join(context.roots.config, "node_modules"), "dir")
-  assertWinner(await runInstaller(context.env))
-  const state = await verifyInstalledState({ pluginRoot, configRoot: context.roots.config, ...context })
-  const runtime = await activate(context)
-  return { mode: "smoke", ...state, ...runtime, serialReinstall: true }
-}
-
 const stress = async () => {
   const context = await fixture()
   await assertDestinationConfinement(context)
@@ -206,6 +136,9 @@ const stress = async () => {
 
 await assertNetworkNamespaceDisabled()
 await assert.rejects(() => writeFile(path.join(inputRoot, ".mutation-probe"), "forbidden\n"), { code: "EROFS" })
-const mode = process.argv[2]
-const result = mode === "smoke" ? await smoke() : mode === "stress" ? await stress() : assert.fail("VALIDATION_MODE_INVALID")
-console.log(JSON.stringify({ status: "passed", input: "host-prepared", ...result }))
+const result = mode === "smoke"
+  ? await validateRegistryPackageSmoke({ inputRoot, prepared, validationRoot })
+  : mode === "stress"
+    ? { input: "host-prepared-local-staged-release", ...await stress() }
+    : assert.fail("VALIDATION_MODE_INVALID")
+console.log(JSON.stringify({ status: "passed", ...result }))

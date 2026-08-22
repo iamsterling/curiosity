@@ -9,6 +9,7 @@ export const validationContainerArguments = ({ image, mode, preparedInput }) => 
   return [
     "run", "--rm", "--network", "none", "--read-only", "--init",
     "--cap-drop", "ALL", "--security-opt", "no-new-privileges", "--pids-limit", "256",
+    "--workdir", "/tmp",
     "--mount", `type=bind,src=${preparedInput},dst=/input,readonly`,
     "--tmpfs", "/validation:rw,exec,nosuid,nodev,mode=1777,size=768m",
     "--tmpfs", "/tmp:rw,exec,nosuid,nodev,mode=1777,size=128m",

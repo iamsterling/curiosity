@@ -49,7 +49,7 @@ const architecture = await architectureFromDocker()
 const preparedInput = await mkdtemp(path.join(os.tmpdir(), "opencode2-prepared-input-"))
 try {
   await run("bun", ["run", "build"], { cwd: pluginRoot, code: "OPENCODE2_HOST_RELEASE_BUILD_FAILED" })
-  await prepareEphemeralContainerInput({ architecture, inputRoot: preparedInput, pluginRoot })
+  await prepareEphemeralContainerInput({ architecture, inputRoot: preparedInput, mode, pluginRoot })
   await runVerifiedValidationContainer({
     execute: (args) => run("docker", args, { code: `OPENCODE2_CONTAINER_${mode.toUpperCase()}_FAILED` }),
     image,
