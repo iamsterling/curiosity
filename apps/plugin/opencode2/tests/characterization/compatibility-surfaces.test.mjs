@@ -20,6 +20,12 @@ test("legacy runtime, daemon, mutable state authority, and marker agent are abse
   const source = await fs.readdir(path.join(root, "src"), { recursive: true })
   for (const relative of source.filter((item) => /\.(?:ts|mjs)$/.test(item))) {
     const text = await fs.readFile(path.join(root, "src", relative), "utf8")
-    assert.doesNotMatch(text, /child_process|spawn\(|execFile\(|setInterval\(|setTimeout\(|nodegit|simple-git|fs\.watch/)
+    assert.doesNotMatch(text, /child_process|spawn\(|execFile\(|setInterval\(|nodegit|simple-git|fs\.watch/)
+    assert.equal((text.match(/setTimeout\(/gu) ?? []).length, relative === "features/search/searxng-adapter.ts" ? 1 : 0, relative)
+    if (relative === "features/search/searxng-adapter.ts") {
+      assert.match(text, /const controller = new AbortController\(\)/u)
+      assert.match(text, /timer\.ref\(\)/u)
+      assert.match(text, /finally \{\s+clearTimeout\(timer\)/u)
+    }
   }
 })

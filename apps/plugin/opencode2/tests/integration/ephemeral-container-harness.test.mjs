@@ -1,5 +1,5 @@
 import assert from "node:assert/strict"
-import { access, copyFile, mkdir, mkdtemp, readFile, rm, symlink, unlink, writeFile } from "node:fs/promises"
+import { access, copyFile, lstat, mkdir, mkdtemp, readFile, rm, symlink, unlink, writeFile } from "node:fs/promises"
 import { spawn } from "node:child_process"
 import os from "node:os"
 import path from "node:path"
@@ -68,9 +68,10 @@ test("host staging creates an inventoried release input without repository build
   }
 })
 
-test("host staging copies only the inventoried validation harness into prepared input", async () => {
+test("verified credential-free staging makes only the prepared root traversable", async () => {
   const temporary = await mkdtemp(path.join(os.tmpdir(), "opencode2-validation-input-"))
   try {
+    assert.equal((await lstat(temporary)).mode & 0o777, 0o700)
     await stageValidationHarness({ inputRoot: temporary, pluginRoot })
     const manifest = await writePreparedInputManifest({ inputRoot: temporary, metadata: { purpose: "test" } })
     assert.deepEqual(
@@ -87,6 +88,19 @@ test("host staging copies only the inventoried validation harness into prepared 
         "validation-harness/validation-files.mjs",
       ],
     )
+    assert.equal(manifest.inventory.entries.some(({ path: file }) => /(?:^|\/)(?:\.git|\.npmrc|\.env|credentials?|secrets?)(?:$|\/)/iu.test(file)), false)
+    let executed = false
+    await runVerifiedValidationContainer({
+      execute: async () => {
+        executed = true
+        assert.equal((await lstat(temporary)).mode & 0o777, 0o755)
+        assert.equal((await lstat(temporary)).mode & 0o005, 0o005)
+      },
+      image: "oven/bun:exact-digest",
+      mode: "smoke",
+      preparedInput: temporary,
+    })
+    assert.equal(executed, true)
   } finally {
     await rm(temporary, { recursive: true, force: true })
   }

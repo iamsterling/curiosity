@@ -10,8 +10,14 @@ test("product has no autonomous or imported lifecycle runtime", async () => {
   const product = [...await walk(path.join(root, "src")), ...await walk(path.join(root, "assets"))]
   for (const file of product.filter((item) => /\.(?:ts|mjs|js|md|json)$/.test(item))) {
     const source = await readFile(file, "utf8")
-    assert.doesNotMatch(source, /child_process|\bspawn\s*\(|\bexecFile\s*\(|setInterval\s*\(|setTimeout\s*\(|fs\.watch\s*\(|simple-git|nodegit/, path.relative(root, file))
-    assert.doesNotMatch(source, /opencode-loop-local|\[opencode-loop:/, path.relative(root, file))
+    const relative = path.relative(root, file)
+    assert.doesNotMatch(source, /child_process|\bspawn\s*\(|\bexecFile\s*\(|setInterval\s*\(|fs\.watch\s*\(|simple-git|nodegit/, relative)
+    assert.equal((source.match(/setTimeout\s*\(/gu) ?? []).length, relative === "src/features/search/searxng-adapter.ts" ? 1 : 0, relative)
+    if (relative === "src/features/search/searxng-adapter.ts") {
+      assert.match(source, /controller\.abort\(\)/u)
+      assert.match(source, /finally \{\s+clearTimeout\(timer\)/u)
+    }
+    assert.doesNotMatch(source, /opencode-loop-local|\[opencode-loop:/, relative)
   }
 })
 

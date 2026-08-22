@@ -1,3 +1,4 @@
+import { chmod } from "node:fs/promises"
 import path from "node:path"
 
 import { verifyPreparedInputManifest } from "./prepared-input.mjs"
@@ -20,5 +21,6 @@ export const validationContainerArguments = ({ image, mode, preparedInput }) => 
 export const runVerifiedValidationContainer = async ({ execute, image, mode, preparedInput }) => {
   const args = validationContainerArguments({ image, mode, preparedInput })
   await verifyPreparedInputManifest(preparedInput)
+  await chmod(preparedInput, 0o755)
   return execute(args)
 }
