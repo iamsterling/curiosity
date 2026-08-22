@@ -8,6 +8,8 @@ import { fileURLToPath } from "node:url"
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)))
 const installer = path.join(root, "tools", "install-node.mjs")
 const packageJson = JSON.parse(await fs.readFile(path.join(root, "package.json"), "utf8"))
+const shellInstaller = path.join(root, "tools", "install.sh")
+const powerShellSource = await fs.readFile(path.join(root, "tools", "install.ps1"), "utf8")
 const packageVersion = packageJson.version
 const expectedPackageSpec = `@iamsterling/opencode2-config@${packageVersion}`
 const temporaryRoot = await fs.mkdtemp(path.join(os.tmpdir(), "opencode2-config-installer-"))
@@ -51,6 +53,24 @@ try {
   assert.equal(versionResult.code, 0, versionResult.stderr)
   assert.equal(versionResult.stdout.trim(), packageVersion)
   assert.equal(await exists(helpConfig), false, "--version must not mutate the OpenCode config directory")
+
+  const shellHelpResult = await new Promise((resolve, reject) => {
+    const child = spawn("sh", [shellInstaller, "--help"], {
+      cwd: root,
+      env: { ...process.env, OPENCODE_CONFIG_DIR: helpConfig },
+    })
+    const stdout = []
+    const stderr = []
+    child.stdout.on("data", (data) => stdout.push(Buffer.from(data)))
+    child.stderr.on("data", (data) => stderr.push(Buffer.from(data)))
+    child.on("error", reject)
+    child.on("close", (code) => resolve({ code, stdout: Buffer.concat(stdout).toString("utf8"), stderr: Buffer.concat(stderr).toString("utf8") }))
+  })
+  assert.equal(shellHelpResult.code, 0, shellHelpResult.stderr)
+  assert.match(shellHelpResult.stdout, /OpenCode2 Config installer/)
+  assert.equal(await exists(helpConfig), false, "the shell wrapper must forward --help without installing")
+  assert.match(powerShellSource, /tools[\\/]install-node\.mjs/)
+  assert.match(powerShellSource, /@args/)
 
   const local = path.join(temporaryRoot, "local")
   const localResult = await runInstaller(local)

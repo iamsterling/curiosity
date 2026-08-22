@@ -86,3 +86,4 @@ bun run search:smoke
 ```
 
 Installation creates a reviewed candidate; global cutover requires separate authorization.
+Private-Git Linux candidate validation is documented in [docs/ephemeral-container-validation.md](docs/ephemeral-container-validation.md).

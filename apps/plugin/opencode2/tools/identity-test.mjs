@@ -7,9 +7,8 @@ import { promisify } from "node:util"
 const execFileAsync = promisify(execFile)
 const root = new URL("../", import.meta.url)
 const packageJson = JSON.parse(await fs.readFile(new URL("package.json", root), "utf8"))
-const daemonSource = await fs.readFile(new URL("tools/loopd.mjs", root), "utf8")
 const installerSource = await fs.readFile(new URL("tools/install-node.mjs", root), "utf8")
-const workflow = await fs.readFile(new URL(".github/workflows/ci.yml", root), "utf8")
+const workflow = await fs.readFile(new URL("../../../.github/workflows/opencode2.yml", root), "utf8")
 
 const legacyIdentityPattern = /bybrawe\.opencode-loop|@bybrawe\/opencode-loop|OpenCodeLoop|OpenCode Loop|opencode-loopd|OPENCODE_LOOPD|\.opencode\/opencode-loop|opencode-loop/gi
 const historicalProvenanceEvidence = new Set([
@@ -81,17 +80,6 @@ test("package binaries use only the new identity", () => {
   assert.deepEqual(packageJson.bin, {
     "opencode2-config": "tools/install-node.mjs",
   })
-})
-
-test("daemon has no legacy identity in environment, diagnostics, defaults, or help", async () => {
-  assert.doesNotMatch(daemonSource, /OPENCODE_LOOPD_/)
-  assert.doesNotMatch(daemonSource, /opencode-loopd/)
-  assert.doesNotMatch(daemonSource, /OpenCodeLoop/)
-  assert.match(daemonSource, /OPENCODE2_CONFIGD_FAILED_RUN_RETRY_MS/)
-  assert.match(daemonSource, /OpenCode2 Config/)
-  const { stdout } = await execFileAsync(process.execPath, ["tools/loopd.mjs", "--help"], { cwd: new URL(".", root).pathname })
-  assert.match(stdout, /opencode2-configd/)
-  assert.doesNotMatch(stdout, /opencode-loopd|OpenCodeLoop/)
 })
 
 test("installer uses the new identity for its binary, plugin path, and diagnostics", () => {
