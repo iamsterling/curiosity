@@ -2,7 +2,7 @@
   "$schema": "./schema.json",
   "schemaVersion": 1,
   "policy": {
-    "code": "wave-1-baseline-v1"
+    "code": "wave-2-verification-v1"
   },
   "workspaces": [
     { "path": "apps/plugin/opencode2", "name": "@iamsterling/opencode2-config", "kind": "plugin", "private": false },
@@ -71,14 +71,14 @@
       }
     ],
     "guardedSources": [
-      { "path": "package.json", "sha256": "ab5d5a9763a3553268da2e35aa2365f4c8f6d9458e4608eafa64f2e2c73660db" },
-      { "path": "apps/plugin/opencode2/package.json", "sha256": "2086e8d9003ad7205eba3fbb34688dd47813e4663f63e848bfd7e0e5cdeafddc" },
+      { "path": "package.json", "sha256": "d45e0fcd14dd5f373fec1e131895bca2e291abc3bfe4aef1418562ee9d5b31d5" },
+      { "path": "apps/plugin/opencode2/package.json", "sha256": "8bbec2a75b907aff4402885821897167f2d286b8faea76aaa5d2feb51f4ff84c" },
       { "path": "apps/plugin/opencode2/src/index.ts", "sha256": "5e352d675e5d12f80fbc31bd38e3ae28f2a0c5d5e1de33e8fc5078d5bc9f9a65" },
       { "path": "apps/plugin/opencode2/src/plugin/plugin.ts", "sha256": "e1349089fd24623accdfc3def40e3fa6ff11eb2a30b14d450fc8d81bf03d43fb" },
       { "path": "apps/plugin/opencode2/src/platform/real-host/index.ts", "sha256": "2314f93021c0ecad109f2ea88c427abd1709b2277e147ef75557f2831d340ceb" },
-      { "path": "apps/runtime/package.json", "sha256": "05914daf80e02fd5c799c01868f23f8eb967b12f92b20bf4660e7ab2048e8d73" },
-      { "path": "apps/runtime/src/index.ts", "sha256": "07e4bbc710ded0bdcb315dced648771e5dae6150328f8ecae5acce5fac7ba664" },
-      { "path": "apps/runtime/src/query.ts", "sha256": "f610ffd47f69ec751d9cf73fa0d33879e027dea64ed4fc56378938ce72418808" },
+      { "path": "apps/runtime/package.json", "sha256": "03e967ba66faad296920d6abb0e91ede3cc671a248583cb17492643138d64d40" },
+      { "path": "apps/runtime/src/index.ts", "sha256": "5c6da5642e12edb078c3ab755b72a2d83aac3fa549f4302c313c702b3b18fe84" },
+      { "path": "apps/runtime/src/query.ts", "sha256": "775c0412047e10c912cb891bac67da0162cc1c9cf1992a5b52a24d8e2eda82e4" },
       { "path": "apps/runtime/src/admin.ts", "sha256": "839b16ffed0d13cfcdbbdfbc2f6bc112591c37e2d192f6bb7108be150e1b0db4" }
     ]
   },
@@ -124,12 +124,12 @@
       "evidence": { "state": "sufficient", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/unit/ledger-v1.test.mjs#activation and claim automation fail closed while commit-bound fencing is unproven" }] },
       "authority": { "state": "authorized", "refs": [{ "kind": "decision", "ref": "apps/plugin/opencode2/docs/decisions/0012-ledger-native-product.md#ADR 0012 Ledger authority and native loop product" }] },
       "delivery": { "state": "composed", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/plugin/plugin.ts#composed" }] },
-      "qualification": { "state": "qualified", "platforms": [], "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/real-host/serve-isolation.test.mjs#repeated isolated exact-host smokes import set up and register the exported Effect plugin" }] },
+      "qualification": { "state": "qualified", "platforms": [], "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/integration/functional-container-startup.test.mjs#installed setup instrumentation proves exact tool registration schemas and safe executor behavior" }] },
       "availability": { "state": "enabled", "environments": ["repository", "development"], "production": "disabled", "publication": "unknown", "deployment": "disabled" },
       "status": "Current",
       "verdict": { "decision": "GO", "rationaleCode": "scope-qualified-current" },
       "blockerCodes": [],
-      "guards": [{"path":"apps/plugin/opencode2/src/features/tools/index.ts","mode":"exact","sha256":"1df74ef171f925cb6b52bee8bca608bccf916151162133a7622343566f662a4d"},{"path":"apps/plugin/opencode2/src/plugin/plugin.ts","mode":"exact","sha256":"e1349089fd24623accdfc3def40e3fa6ff11eb2a30b14d450fc8d81bf03d43fb"},{"path":"apps/plugin/opencode2/tests/unit/ledger-v1.test.mjs","mode":"exact","sha256":"99cdfbc7e28627a61b5fbd6d58576718c752659eb30c19ab9074e54e4f2878ee"},{"path":"apps/plugin/opencode2/docs/decisions/0012-ledger-native-product.md","mode":"exact","sha256":"63f31dda664ea883c04d8974aec902d75638a3a24892e6933e45b4a67fe16ef7"},{"path":"apps/plugin/opencode2/tests/real-host/serve-isolation.test.mjs","mode":"exact","sha256":"9aea4e9d3a59629a40e3a38dae9873fb2723c866eade021845c8f49444e5db2f"}]
+      "guards": [{"path":"apps/plugin/opencode2/src/features/tools/index.ts","mode":"exact","sha256":"1df74ef171f925cb6b52bee8bca608bccf916151162133a7622343566f662a4d"},{"path":"apps/plugin/opencode2/src/plugin/plugin.ts","mode":"exact","sha256":"e1349089fd24623accdfc3def40e3fa6ff11eb2a30b14d450fc8d81bf03d43fb"},{"path":"apps/plugin/opencode2/tests/unit/ledger-v1.test.mjs","mode":"exact","sha256":"99cdfbc7e28627a61b5fbd6d58576718c752659eb30c19ab9074e54e4f2878ee"},{"path":"apps/plugin/opencode2/docs/decisions/0012-ledger-native-product.md","mode":"exact","sha256":"63f31dda664ea883c04d8974aec902d75638a3a24892e6933e45b4a67fe16ef7"},{"path":"apps/plugin/opencode2/tests/integration/functional-container-startup.test.mjs","mode":"exact","sha256":"2993c7c7574fa4ed9454797647f75421a3a7c4ad40257e2d825839d550f4392a"},{"path":"apps/plugin/opencode2/tools/ephemeral-container/functional-validation.mjs","mode":"exact","sha256":"1dde9417b008949d9f15ce4abe30d8f19b3fa2a7ad2e87b3f81d78ef30b2ba44"}]
     },
     {
       "id": "plugin-ledger-authority",
@@ -241,7 +241,7 @@
       "status": "Current",
       "verdict": { "decision": "GO", "rationaleCode": "scope-qualified-current" },
       "blockerCodes": ["publication-review-required"],
-      "guards": [{"path":"apps/plugin/opencode2/tests/integration/registry-package-contract.test.mjs","mode":"exact","sha256":"26ea6886f2c2efde35f1b919ed2fe285eeb77259b8feebf841d79f83f031e8f9"},{"path":"apps/plugin/opencode2/package.json","mode":"exact","sha256":"2086e8d9003ad7205eba3fbb34688dd47813e4663f63e848bfd7e0e5cdeafddc"},{"path":"apps/plugin/opencode2/tests/integration/readme-verification.test.mjs","mode":"exact","sha256":"0655e356ab9d60a09c73552c93b98aa524d5180cafb823710b97fe434ab9df9a"},{"path":"apps/plugin/opencode2/docs/decisions/0031-registry-ready-package-and-black-box-proof.md","mode":"exact","sha256":"6ba562fa73d9e4090d8bc1cf9a6a03e2ab63865d9edbbf2e295e4101f9c34802"},{"path":"apps/plugin/opencode2/tests/integration/ephemeral-container-harness.test.mjs","mode":"exact","sha256":"977fa44aee19aa5212f64fd4e518fd782f40ff9b6d176339443a673c0be6a920"}]
+      "guards": [{"path":"apps/plugin/opencode2/tests/integration/registry-package-contract.test.mjs","mode":"exact","sha256":"26ea6886f2c2efde35f1b919ed2fe285eeb77259b8feebf841d79f83f031e8f9"},{"path":"apps/plugin/opencode2/package.json","mode":"exact","sha256":"8bbec2a75b907aff4402885821897167f2d286b8faea76aaa5d2feb51f4ff84c"},{"path":"apps/plugin/opencode2/tests/integration/readme-verification.test.mjs","mode":"exact","sha256":"0655e356ab9d60a09c73552c93b98aa524d5180cafb823710b97fe434ab9df9a"},{"path":"apps/plugin/opencode2/docs/decisions/0031-registry-ready-package-and-black-box-proof.md","mode":"exact","sha256":"6ba562fa73d9e4090d8bc1cf9a6a03e2ab63865d9edbbf2e295e4101f9c34802"},{"path":"apps/plugin/opencode2/tests/integration/ephemeral-container-harness.test.mjs","mode":"exact","sha256":"977fa44aee19aa5212f64fd4e518fd782f40ff9b6d176339443a673c0be6a920"}]
     },
     {
       "id": "plugin-engineering-intent",
@@ -305,7 +305,7 @@
       "status": "Current",
       "verdict": { "decision": "GO", "rationaleCode": "scope-qualified-current" },
       "blockerCodes": [],
-      "guards": [{"path":"apps/runtime/src/index.ts","mode":"exact","sha256":"07e4bbc710ded0bdcb315dced648771e5dae6150328f8ecae5acce5fac7ba664"},{"path":"apps/runtime/native/src/lib.rs","mode":"exact","sha256":"95de23f7ec6c802c9959421c75d9fb4df80fa31460d8a365faed0fc41e1fb5e6"},{"path":"apps/runtime/tests/runtime.test.ts","mode":"exact","sha256":"06b095df2d2038ab262d89d2adae248f57b2546ea594f179a6676e91d1b8b487"},{"path":"apps/runtime/package.json","mode":"exact","sha256":"05914daf80e02fd5c799c01868f23f8eb967b12f92b20bf4660e7ab2048e8d73"},{"path":"apps/runtime/docs/decisions/0023-stateless-m1-runtime.md","mode":"exact","sha256":"cea469bd6cb48280a78c4152628d1639a649fe382be7b1ac614cd87b855dde16"},{"path":"apps/runtime/tests/boundaries.test.ts","mode":"exact","sha256":"639c8fed9c0264ffc371ac92cd0215e78d06ecf390bf289a38af54c72f15aaa4"}]
+      "guards": [{"path":"apps/runtime/src/index.ts","mode":"exact","sha256":"5c6da5642e12edb078c3ab755b72a2d83aac3fa549f4302c313c702b3b18fe84"},{"path":"apps/runtime/native/src/lib.rs","mode":"exact","sha256":"95de23f7ec6c802c9959421c75d9fb4df80fa31460d8a365faed0fc41e1fb5e6"},{"path":"apps/runtime/tests/runtime.test.ts","mode":"exact","sha256":"06b095df2d2038ab262d89d2adae248f57b2546ea594f179a6676e91d1b8b487"},{"path":"apps/runtime/package.json","mode":"exact","sha256":"03e967ba66faad296920d6abb0e91ede3cc671a248583cb17492643138d64d40"},{"path":"apps/runtime/docs/decisions/0023-stateless-m1-runtime.md","mode":"exact","sha256":"cea469bd6cb48280a78c4152628d1639a649fe382be7b1ac614cd87b855dde16"},{"path":"apps/runtime/tests/boundaries.test.ts","mode":"exact","sha256":"639c8fed9c0264ffc371ac92cd0215e78d06ecf390bf289a38af54c72f15aaa4"}]
     },
     {
       "id": "runtime-m2",
@@ -321,7 +321,7 @@
       "status": "Current",
       "verdict": { "decision": "GO", "rationaleCode": "scope-qualified-current" },
       "blockerCodes": [],
-      "guards": [{"path":"apps/runtime/native/src/corpus.rs","mode":"exact","sha256":"1234211b8cbdb82f2b8ac16fb50aedfa8903ebe9a30fa0085f7854fa0e644398"},{"path":"apps/runtime/src/admin.ts","mode":"exact","sha256":"839b16ffed0d13cfcdbbdfbc2f6bc112591c37e2d192f6bb7108be150e1b0db4"},{"path":"apps/runtime/tests/corpus.test.ts","mode":"exact","sha256":"722be5b9b8195fc86a02316ca419d1d46a072ca36b8d6b87523743bc2a3be634"},{"path":"apps/runtime/package.json","mode":"exact","sha256":"05914daf80e02fd5c799c01868f23f8eb967b12f92b20bf4660e7ab2048e8d73"},{"path":"apps/runtime/src/index.ts","mode":"exact","sha256":"07e4bbc710ded0bdcb315dced648771e5dae6150328f8ecae5acce5fac7ba664"},{"path":"apps/runtime/docs/decisions/0027-m2-contract-abi-and-authority.md","mode":"exact","sha256":"e079601d778ace7bc137cb01193c3a6237512ba6e79dddc20b37bf9d8f0a464f"}]
+      "guards": [{"path":"apps/runtime/native/src/corpus.rs","mode":"exact","sha256":"1234211b8cbdb82f2b8ac16fb50aedfa8903ebe9a30fa0085f7854fa0e644398"},{"path":"apps/runtime/src/admin.ts","mode":"exact","sha256":"839b16ffed0d13cfcdbbdfbc2f6bc112591c37e2d192f6bb7108be150e1b0db4"},{"path":"apps/runtime/tests/corpus.test.ts","mode":"exact","sha256":"722be5b9b8195fc86a02316ca419d1d46a072ca36b8d6b87523743bc2a3be634"},{"path":"apps/runtime/package.json","mode":"exact","sha256":"03e967ba66faad296920d6abb0e91ede3cc671a248583cb17492643138d64d40"},{"path":"apps/runtime/src/index.ts","mode":"exact","sha256":"5c6da5642e12edb078c3ab755b72a2d83aac3fa549f4302c313c702b3b18fe84"},{"path":"apps/runtime/docs/decisions/0027-m2-contract-abi-and-authority.md","mode":"exact","sha256":"e079601d778ace7bc137cb01193c3a6237512ba6e79dddc20b37bf9d8f0a464f"}]
     },
     {
       "id": "runtime-m3",
@@ -337,7 +337,7 @@
       "status": "Current",
       "verdict": { "decision": "GO", "rationaleCode": "scope-qualified-current" },
       "blockerCodes": [],
-      "guards": [{"path":"apps/runtime/src/query.ts","mode":"exact","sha256":"f610ffd47f69ec751d9cf73fa0d33879e027dea64ed4fc56378938ce72418808"},{"path":"apps/runtime/tests/query-boundary.test.ts","mode":"exact","sha256":"3a2f009d7e2da9b9c61629d695f21124c002d19576f44c020f6ddb558607c510"},{"path":"apps/runtime/package.json","mode":"exact","sha256":"05914daf80e02fd5c799c01868f23f8eb967b12f92b20bf4660e7ab2048e8d73"},{"path":"apps/runtime/docs/decisions/0029-m3-query-authority-and-source-contract.md","mode":"exact","sha256":"8aa1273b59fd30ec4b9699641d323ea29148701820fb05dfa89857a4dbe19709"},{"path":"apps/runtime/tests/corpus.test.ts","mode":"exact","sha256":"722be5b9b8195fc86a02316ca419d1d46a072ca36b8d6b87523743bc2a3be634"}]
+      "guards": [{"path":"apps/runtime/src/query.ts","mode":"exact","sha256":"775c0412047e10c912cb891bac67da0162cc1c9cf1992a5b52a24d8e2eda82e4"},{"path":"apps/runtime/tests/query-boundary.test.ts","mode":"exact","sha256":"3a2f009d7e2da9b9c61629d695f21124c002d19576f44c020f6ddb558607c510"},{"path":"apps/runtime/package.json","mode":"exact","sha256":"03e967ba66faad296920d6abb0e91ede3cc671a248583cb17492643138d64d40"},{"path":"apps/runtime/docs/decisions/0029-m3-query-authority-and-source-contract.md","mode":"exact","sha256":"8aa1273b59fd30ec4b9699641d323ea29148701820fb05dfa89857a4dbe19709"},{"path":"apps/runtime/tests/corpus.test.ts","mode":"exact","sha256":"722be5b9b8195fc86a02316ca419d1d46a072ca36b8d6b87523743bc2a3be634"}]
     },
     {
       "id": "runtime-m4",
@@ -353,7 +353,7 @@
       "status": "Current",
       "verdict": { "decision": "GO", "rationaleCode": "scope-qualified-current" },
       "blockerCodes": [],
-      "guards": [{"path":"apps/runtime/src/admin.ts","mode":"exact","sha256":"839b16ffed0d13cfcdbbdfbc2f6bc112591c37e2d192f6bb7108be150e1b0db4"},{"path":"apps/runtime/native/src/jobs.rs","mode":"exact","sha256":"47ede8e7d6ceb658b2d434540a280207e580b9b8e3889799545b174b7f415252"},{"path":"apps/runtime/tests/owned-crawl.test.ts","mode":"exact","sha256":"82cb26d4e0e2e0695408bb444b0f30d8668d6ab804e834c8de42d3a12ecee6d8"},{"path":"apps/runtime/docs/decisions/0034-m4-d5a-owned-crawl-job-semantics.md","mode":"exact","sha256":"729ef6292d5a337088b1653f6dd137339fc711fb60e8ec9c0be0442102be8169"},{"path":"apps/runtime/package.json","mode":"exact","sha256":"05914daf80e02fd5c799c01868f23f8eb967b12f92b20bf4660e7ab2048e8d73"}]
+      "guards": [{"path":"apps/runtime/src/admin.ts","mode":"exact","sha256":"839b16ffed0d13cfcdbbdfbc2f6bc112591c37e2d192f6bb7108be150e1b0db4"},{"path":"apps/runtime/native/src/jobs.rs","mode":"exact","sha256":"47ede8e7d6ceb658b2d434540a280207e580b9b8e3889799545b174b7f415252"},{"path":"apps/runtime/tests/owned-crawl.test.ts","mode":"exact","sha256":"82cb26d4e0e2e0695408bb444b0f30d8668d6ab804e834c8de42d3a12ecee6d8"},{"path":"apps/runtime/docs/decisions/0034-m4-d5a-owned-crawl-job-semantics.md","mode":"exact","sha256":"729ef6292d5a337088b1653f6dd137339fc711fb60e8ec9c0be0442102be8169"},{"path":"apps/runtime/package.json","mode":"exact","sha256":"03e967ba66faad296920d6abb0e91ede3cc671a248583cb17492643138d64d40"}]
     },
     {
       "id": "runtime-m5",
@@ -369,7 +369,7 @@
       "status": "Current",
       "verdict": { "decision": "GO", "rationaleCode": "scope-qualified-current" },
       "blockerCodes": ["live-endpoint-qualification-required"],
-      "guards": [{"path":"apps/runtime/src/repository-search.ts","mode":"exact","sha256":"3c6eecf0a936d87a5bf2c4f44b1d74f64077d92c092e82988a08fb540e5538bc"},{"path":"apps/runtime/tests/repository-search.test.ts","mode":"exact","sha256":"6b40ff0077a45ea090a3044b14afe4105f1eb98f654fe9a4db3b4a3f4a71d6f7"},{"path":"apps/runtime/docs/decisions/0031-m5-searxng-gateway-d6.md","mode":"exact","sha256":"41a4d663b7b6b343db5cad76c1705c05c9fbf8842b2ac6596c42bf10258119c7"},{"path":"apps/runtime/package.json","mode":"exact","sha256":"05914daf80e02fd5c799c01868f23f8eb967b12f92b20bf4660e7ab2048e8d73"}]
+      "guards": [{"path":"apps/runtime/src/repository-search.ts","mode":"exact","sha256":"3c6eecf0a936d87a5bf2c4f44b1d74f64077d92c092e82988a08fb540e5538bc"},{"path":"apps/runtime/tests/repository-search.test.ts","mode":"exact","sha256":"6b40ff0077a45ea090a3044b14afe4105f1eb98f654fe9a4db3b4a3f4a71d6f7"},{"path":"apps/runtime/docs/decisions/0031-m5-searxng-gateway-d6.md","mode":"exact","sha256":"41a4d663b7b6b343db5cad76c1705c05c9fbf8842b2ac6596c42bf10258119c7"},{"path":"apps/runtime/package.json","mode":"exact","sha256":"03e967ba66faad296920d6abb0e91ede3cc671a248583cb17492643138d64d40"}]
     },
     {
       "id": "runtime-m6",
@@ -385,23 +385,39 @@
       "status": "Current",
       "verdict": { "decision": "GO", "rationaleCode": "scope-qualified-current" },
       "blockerCodes": [],
-      "guards": [{"path":"apps/runtime/src/admin.ts","mode":"exact","sha256":"839b16ffed0d13cfcdbbdfbc2f6bc112591c37e2d192f6bb7108be150e1b0db4"},{"path":"apps/runtime/tests/owned-crawl.test.ts","mode":"exact","sha256":"82cb26d4e0e2e0695408bb444b0f30d8668d6ab804e834c8de42d3a12ecee6d8"},{"path":"apps/runtime/tests/characterization/m6-local-tls.test.ts","mode":"exact","sha256":"d76f5739b798320d237c7a98a1e787681d7acb3d6d0c4dd4c07dbf1116c6e28d"},{"path":"apps/runtime/docs/decisions/0036-m6-owned-synthetic-cell-d7.md","mode":"exact","sha256":"722be31e7bdcdc055efafe97e18b2be6c1191bfd7a914e998c368c43372cbaf1"},{"path":"apps/runtime/package.json","mode":"exact","sha256":"05914daf80e02fd5c799c01868f23f8eb967b12f92b20bf4660e7ab2048e8d73"}]
+      "guards": [{"path":"apps/runtime/src/admin.ts","mode":"exact","sha256":"839b16ffed0d13cfcdbbdfbc2f6bc112591c37e2d192f6bb7108be150e1b0db4"},{"path":"apps/runtime/tests/owned-crawl.test.ts","mode":"exact","sha256":"82cb26d4e0e2e0695408bb444b0f30d8668d6ab804e834c8de42d3a12ecee6d8"},{"path":"apps/runtime/tests/characterization/m6-local-tls.test.ts","mode":"exact","sha256":"d76f5739b798320d237c7a98a1e787681d7acb3d6d0c4dd4c07dbf1116c6e28d"},{"path":"apps/runtime/docs/decisions/0036-m6-owned-synthetic-cell-d7.md","mode":"exact","sha256":"722be31e7bdcdc055efafe97e18b2be6c1191bfd7a914e998c368c43372cbaf1"},{"path":"apps/runtime/package.json","mode":"exact","sha256":"03e967ba66faad296920d6abb0e91ede3cc671a248583cb17492643138d64d40"}]
     },
     {
-      "id": "runtime-m7",
+      "id": "runtime-m7-historical",
       "owners": ["runtime", "plugin"],
-      "scope": { "product": "runtime", "level": "private-profile", "environments": ["private-release"], "platforms": ["darwin-arm64"], "constraints": ["source commit 0dfc71d", "artifact SHA-256 3aa8e5ba6660cafefb3d3121ba1e652346f4019a78922a0ec689b04b32e06642", "single-machine private profile"] },
-      "observation": { "state": "implemented", "refs": [{ "kind": "source", "ref": "apps/runtime/tools/m7-release.mjs#command" }] },
+      "scope": { "product": "runtime", "level": "private-profile", "environments": ["private-release"], "platforms": ["darwin-arm64"], "constraints": ["source commit 0dfc71de02393da9aad37bc753724886c00e323c", "artifact SHA-256 3aa8e5ba6660cafefb3d3121ba1e652346f4019a78922a0ec689b04b32e06642", "OpenCode beta-17519 and Effect beta.101", "single-machine immutable historical profile only"] },
+      "observation": { "state": "implemented", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#Verdict and immutable identity" }] },
       "assertion": { "state": "limited", "code": "scope-limited", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#Decision" }] },
-      "evidence": { "state": "sufficient", "refs": [{ "kind": "test", "ref": "apps/runtime/tests/m7-release.test.ts#M7 install upgrade rollback and uninstall are atomic and preserve unrelated state and credentials" }] },
-      "authority": { "state": "authorized", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0039-private-local-darwin-arm64-release-profile.md#Decision" }] },
-      "delivery": { "state": "private-release", "refs": [{ "kind": "section", "ref": "apps/runtime/README.md#Private M7 release profile" }] },
-      "qualification": { "state": "qualified", "platforms": ["darwin-arm64"], "refs": [{ "kind": "test", "ref": "apps/runtime/tests/m7-native-install-id.test.ts#M7 release-native linking is reproducible and loadable across different-length source roots" }] },
+      "evidence": { "state": "sufficient", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#Verification evidence" }] },
+      "authority": { "state": "authorized", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#Status Accepted 2026-08-18 for the exact private Darwin arm64 profile all broader release gates NO-GO" }] },
+      "delivery": { "state": "private-release", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#The immutable release is" }] },
+      "qualification": { "state": "qualified", "platforms": ["darwin-arm64"], "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#Three independent clean builds were byte-reproducible" }] },
       "availability": { "state": "enabled", "environments": ["private-release"], "production": "disabled", "publication": "unpublished", "deployment": "disabled" },
       "status": "Current",
       "verdict": { "decision": "GO", "rationaleCode": "scope-qualified-current" },
       "blockerCodes": [],
-      "guards": [{"path":"apps/runtime/tools/m7-release.mjs","mode":"exact","sha256":"9d7bb14cfdcbd78059ec7789225261657e84322dc17914e0a292a891cb5e8259"},{"path":"apps/runtime/tools/m7-release-lib.mjs","mode":"exact","sha256":"8246dc365dcd9f4a60528ea24b57f1ba4e78a0a80eade0a0c167c347aa1a0078"},{"path":"apps/runtime/tests/m7-release.test.ts","mode":"exact","sha256":"ead86591c3668188a841b6a903517ba3876268e7cae7fe81a3d18345c1382201"},{"path":"apps/runtime/tests/m7-native-install-id.test.ts","mode":"exact","sha256":"bba5a208d2a664cec9d6dc49011f315e50cc247bebfc2df07aa93c916288b0e0"},{"path":"apps/runtime/docs/decisions/0039-private-local-darwin-arm64-release-profile.md","mode":"exact","sha256":"e6d23db4f980f4ce4d69db77516970fc7ade0449d3b50abae24cb3e6ad069ef8"},{"path":"apps/runtime/README.md","mode":"exact","sha256":"9d2c43f958500924efedc7b7f29ab1ec2faff59222d618a0742632711e51d140"}]
+      "guards": [{"path":"apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md","mode":"exact","sha256":"8ac26ef942dba0eccfd85742db04ee1ef843b8b9445d5c5b17e5a3eb601206cf"}]
+    },
+    {
+      "id": "runtime-m7-current",
+      "owners": ["runtime", "plugin"],
+      "scope": { "product": "runtime", "level": "private-profile", "environments": ["private-release"], "platforms": ["darwin-arm64"], "constraints": ["current source differs from accepted commit", "OpenCode beta-17595 and Effect beta.107 drift", "no current artifact qualification", "manual candidate only"] },
+      "observation": { "state": "implemented", "refs": [{ "kind": "source", "ref": "apps/runtime/tools/m7-release.mjs#build" }] },
+      "assertion": { "state": "negative", "code": "validated-negative", "refs": [{ "kind": "section", "ref": "apps/runtime/README.md#Current M7 source candidate" }] },
+      "evidence": { "state": "partial", "refs": [{ "kind": "test", "ref": "apps/runtime/tests/package-scripts.test.ts#M7 current candidate and SDK qualification stay manual and outside ordinary verification" }] },
+      "authority": { "state": "unauthorized", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#Reopen this decision before any source or artifact-byte change" }] },
+      "delivery": { "state": "internal", "refs": [{ "kind": "source", "ref": "apps/runtime/tools/m7-release.mjs#command" }] },
+      "qualification": { "state": "unqualified", "platforms": [], "refs": [] },
+      "availability": { "state": "disabled", "environments": [], "production": "disabled", "publication": "unpublished", "deployment": "disabled" },
+      "status": "Deferred",
+      "verdict": { "decision": "NO-GO", "rationaleCode": "fail-closed-deferred" },
+      "blockerCodes": ["source-requalification-required", "platform-qualification-required"],
+      "guards": [{"path":"apps/runtime/tools/m7-release.mjs","mode":"exact","sha256":"a4688d841b90628ba57c840d2805bbb133f4e2052411cf0a79d6eecc99b3ca09"},{"path":"apps/runtime/tests/package-scripts.test.ts","mode":"exact","sha256":"c5457a9f67208b1238049ece13d026f255bc983add9b5e1eee34889b31b832dd"},{"path":"apps/runtime/README.md","mode":"exact","sha256":"b84e1e4da0a20444719c3695db2d854f11168546297ba897da13c929bc3b1f86"},{"path":"apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md","mode":"exact","sha256":"8ac26ef942dba0eccfd85742db04ee1ef843b8b9445d5c5b17e5a3eb601206cf"}]
     },
     {
       "id": "runtime-unified-evidence",
@@ -449,7 +465,7 @@
       "status": "Experimental",
       "verdict": { "decision": "CONDITIONAL", "rationaleCode": "bounded-experimental" },
       "blockerCodes": ["product-definition-required", "broader-delivery-authority-required"],
-      "guards": [{"path":"turbo.json","mode":"exact","sha256":"34543ea20cdedd9aaeae750bd46ee2aaef8dcb63febe4eb89dbb30f2ba1c090a"},{"path":"apps/web/package.json","mode":"exact","sha256":"c250cb76e835cbab26ee6d674a3d12c2e70493036ca3763c498f020a63753584"},{"path":"apps/docs/package.json","mode":"exact","sha256":"07e56025d548c72b5a950fac1d176043b78d783e5a728cd7bc001312ef200712"},{"path":"packages/ui/package.json","mode":"exact","sha256":"cebc614cc6c42816b267cb4d67f800fde8af2d45b4ade662cc24f20e5489b8fa"}]
+      "guards": [{"path":"turbo.json","mode":"exact","sha256":"d6e2e99a1ae21c2f5fd2c32a7f85089b1ae81b73c0eac7999e7a19cef2c5c549"},{"path":"apps/web/package.json","mode":"exact","sha256":"6424001993ac07180be894cd92779eb501f7f4b0ed602b24be12e62e5ab0ea57"},{"path":"apps/docs/package.json","mode":"exact","sha256":"f90f912f976997d62fb9dfb8ba0c9c9817d19fe0507bf972a90c6f3ccfcf977f"},{"path":"packages/ui/package.json","mode":"exact","sha256":"54cf76aca25250990a87f8aa12942f3a88dd23a451757d75de9c9af281f6939b"}]
     },
     {
       "id": "retired-legacy-runtime",

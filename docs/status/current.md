@@ -10,7 +10,7 @@
 - **Deferred:** Deferred is disabled with an explicit blocker and a NO-GO verdict.
 - **Retired:** Retired is a guarded negative assertion that a former surface is absent.
 - **Fail-closed unknowns:** Unknown or contradictory consequential state fails closed.
-- **Consequential claims:** Wave 1 mechanically forbids publication, production enablement or readiness, and deployment enablement or readiness.
+- **Consequential claims:** Wave 2 mechanically forbids publication, production enablement or readiness, and deployment enablement or readiness.
 
 ## Summary
 
@@ -35,7 +35,8 @@
 | [Runtime M4 owned-crawl job operation](#runtime-m4) | runtime / repository / repository, test | enabled | **Current** | GO |
 | [Runtime M5 repository gateway adapter](#runtime-m5) | runtime / repository / repository, test | enabled | **Current** | GO |
 | [Runtime M6 fixed synthetic cell](#runtime-m6) | runtime / repository / repository, test | enabled | **Current** | GO |
-| [Runtime M7 private release profile](#runtime-m7) | runtime / private-profile / private-release / platforms: darwin-arm64 | enabled | **Current** | GO |
+| [Runtime M7 immutable historical artifact](#runtime-m7-historical) | runtime / private-profile / private-release / platforms: darwin-arm64 | enabled | **Current** | GO |
+| [Runtime M7 current source candidate](#runtime-m7-current) | runtime / private-profile / private-release / platforms: darwin-arm64 | disabled | **Deferred** | NO-GO |
 | [Unified retrieval and validated-memory design](#runtime-unified-evidence) | runtime / design / — | disabled | **Deferred** | NO-GO |
 | [Legacy-memory Node-API SDK v2 qualification](#runtime-sdk-v2) | runtime / test-only / test | disabled | **Deferred** | NO-GO |
 | [Web, docs, and UI starter scaffolds](#starter-scaffolds) | scaffolds / repository / development | conditional | **Experimental** | CONDITIONAL |
@@ -107,7 +108,7 @@
 - **Evidence refs:** test: `apps/plugin/opencode2/tests/unit/ledger-v1.test.mjs#activation and claim automation fail closed while commit-bound fencing is unproven`
 - **Authority refs:** decision: `apps/plugin/opencode2/docs/decisions/0012-ledger-native-product.md#ADR 0012 Ledger authority and native loop product`
 - **Delivery refs:** source: `apps/plugin/opencode2/src/plugin/plugin.ts#composed`
-- **Qualification refs:** test: `apps/plugin/opencode2/tests/real-host/serve-isolation.test.mjs#repeated isolated exact-host smokes import set up and register the exported Effect plugin`
+- **Qualification refs:** test: `apps/plugin/opencode2/tests/integration/functional-container-startup.test.mjs#installed setup instrumentation proves exact tool registration schemas and safe executor behavior`
 
 <a id="plugin-ledger-authority"></a>
 ## Ledger lifecycle boundary
@@ -461,13 +462,13 @@
 - **Delivery refs:** source: `apps/runtime/package.json#./admin`
 - **Qualification refs:** test: `apps/runtime/tests/characterization/m6-local-tls.test.ts#M6 fixture uses project-CA TLS validates the logical host and never resolves public DNS`
 
-<a id="runtime-m7"></a>
-## Runtime M7 private release profile
+<a id="runtime-m7-historical"></a>
+## Runtime M7 immutable historical artifact
 
 - **Status / verdict:** Current / GO — Current only for the declared scope and validated local facets.
 - **Owners:** runtime, plugin
 - **Scope:** runtime / private-profile / private-release / platforms: darwin-arm64
-- **Constraint count:** 3
+- **Constraint count:** 4
 - **Assertion:** limited; Limited assertion; the structured scope and facet states remain controlling.
 - **Observation:** implemented
 - **Evidence:** sufficient
@@ -476,12 +477,34 @@
 - **Qualification:** qualified; platforms: darwin-arm64
 - **Availability:** enabled; environments: private-release; production: disabled; publication: unpublished; deployment: disabled
 - **Blockers:** —
-- **Observation refs:** source: `apps/runtime/tools/m7-release.mjs#command`
+- **Observation refs:** decision: `apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#Verdict and immutable identity`
 - **Assertion refs:** decision: `apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#Decision`
-- **Evidence refs:** test: `apps/runtime/tests/m7-release.test.ts#M7 install upgrade rollback and uninstall are atomic and preserve unrelated state and credentials`
-- **Authority refs:** decision: `apps/runtime/docs/decisions/0039-private-local-darwin-arm64-release-profile.md#Decision`
-- **Delivery refs:** section: `apps/runtime/README.md#Private M7 release profile`
-- **Qualification refs:** test: `apps/runtime/tests/m7-native-install-id.test.ts#M7 release-native linking is reproducible and loadable across different-length source roots`
+- **Evidence refs:** decision: `apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#Verification evidence`
+- **Authority refs:** decision: `apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#Status Accepted 2026-08-18 for the exact private Darwin arm64 profile all broader release gates NO-GO`
+- **Delivery refs:** decision: `apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#The immutable release is`
+- **Qualification refs:** decision: `apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#Three independent clean builds were byte-reproducible`
+
+<a id="runtime-m7-current"></a>
+## Runtime M7 current source candidate
+
+- **Status / verdict:** Deferred / NO-GO — Deferred, disabled, and blocked from consequential use.
+- **Owners:** runtime, plugin
+- **Scope:** runtime / private-profile / private-release / platforms: darwin-arm64
+- **Constraint count:** 4
+- **Assertion:** negative; Negative assertion under the validated absence or fail-closed facets.
+- **Observation:** implemented
+- **Evidence:** partial
+- **Authority:** unauthorized
+- **Delivery:** internal
+- **Qualification:** unqualified; platforms: —
+- **Availability:** disabled; environments: —; production: disabled; publication: unpublished; deployment: disabled
+- **Blockers:** Changed source requires a new exact artifact qualification. Exact platform qualification is required.
+- **Observation refs:** source: `apps/runtime/tools/m7-release.mjs#build`
+- **Assertion refs:** section: `apps/runtime/README.md#Current M7 source candidate`
+- **Evidence refs:** test: `apps/runtime/tests/package-scripts.test.ts#M7 current candidate and SDK qualification stay manual and outside ordinary verification`
+- **Authority refs:** decision: `apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#Reopen this decision before any source or artifact-byte change`
+- **Delivery refs:** source: `apps/runtime/tools/m7-release.mjs#command`
+- **Qualification refs:** —
 
 <a id="runtime-unified-evidence"></a>
 ## Unified retrieval and validated-memory design

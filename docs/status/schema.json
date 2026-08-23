@@ -13,7 +13,7 @@
       "additionalProperties": false,
       "required": ["code"],
       "properties": {
-        "code": { "const": "wave-1-baseline-v1" }
+        "code": { "const": "wave-2-verification-v1" }
       }
     },
     "workspaces": {
@@ -313,7 +313,8 @@
               "implementation-authority-required",
               "coherent-candidate-required",
               "platform-qualification-required",
-              "product-definition-required"
+              "product-definition-required",
+              "source-requalification-required"
             ]
           }
         },

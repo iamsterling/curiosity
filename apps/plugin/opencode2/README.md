@@ -120,11 +120,16 @@ These commands are for contributors working from this repository. They are not
 the registry installation contract above.
 
 ```sh
-bun install --frozen-lockfile
+bun install --frozen-lockfile --ignore-scripts
+# Portable repository checks; this never invokes the Darwin real-host suite.
 bun run verify
 # opt-in after production deployment; reads the token from the environment
 bun run search:smoke
 ```
+
+`verify:linux` fails closed off Linux. `verify:darwin` is the separate real-host
+profile; it requires Darwin arm64 and `CURIOSITY_TRUSTED_DARWIN_MANUAL=1` and is
+only for the reviewed foreground manual lane.
 
 Registry readiness does not authorize publication, deployment, or global
 installation cutover; each requires separate approval.

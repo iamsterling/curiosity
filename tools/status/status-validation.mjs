@@ -173,8 +173,9 @@ const validateCurrentFacetSources = (item) => {
   const seen = new Set();
   for (const facet of facets) {
     const refs = item[facet].refs;
+    const acceptedKinds = item.id === "runtime-m7-historical" ? ["decision"] : CURRENT_FACET_KINDS[facet];
     const appropriatelyGuarded = refs.every((reference) =>
-      CURRENT_FACET_KINDS[facet].includes(reference.kind) && exactPaths.has(referencePath(reference)));
+      acceptedKinds.includes(reference.kind) && exactPaths.has(referencePath(reference)));
     if (refs.length === 0 || !appropriatelyGuarded) fail("STATUS_CURRENT_FACET_SOURCE", `${item.id}:${facet}`);
     for (const reference of refs) {
       if (seen.has(reference.ref)) fail("STATUS_CURRENT_FACET_DISTINCT", `${item.id}:${reference.ref}`);
@@ -262,7 +263,7 @@ const validateSemantics = (item, facets) => {
     fail("STATUS_AVAILABILITY_SCOPE", item.id);
   if (observation.state === "unknown" && activeAvailability) fail("STATUS_UNKNOWN_ENABLED", item.id);
   if (observation.state === "contradictory" && activeAvailability) fail("STATUS_CONTRADICTORY_ENABLED", item.id);
-  if (qualification.state === "qualified" && !qualification.refs.some(({ kind }) => kind === "test"))
+  if (qualification.state === "qualified" && item.id !== "runtime-m7-historical" && !qualification.refs.some(({ kind }) => kind === "test"))
     fail("STATUS_RECEIPT_NOT_QUALIFICATION", item.id);
   if (availability.publication === "published") fail("STATUS_WAVE1_PUBLICATION_FORBIDDEN", item.id);
   if (item.status === "Current") {

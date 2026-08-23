@@ -4,11 +4,15 @@
     "build": {
       "outputs": [
         "$TURBO_EXTENDS$",
-        "native/target/debug/libcuriosity_runtime_native.dylib"
+        "native/target/debug/libcuriosity_runtime_native.dylib",
+        "native/target/debug/libcuriosity_runtime_native.so"
       ]
     },
     "build:native:release": {
-      "outputs": ["native/target/release/libcuriosity_runtime_native.dylib"]
+      "outputs": [
+        "native/target/release/libcuriosity_runtime_native.dylib",
+        "native/target/release/libcuriosity_runtime_native.so"
+      ]
     },
     "m7:prepare": {
       "dependsOn": [
@@ -17,9 +21,6 @@
       ]
     },
     "m7:test:run": {
-      "dependsOn": ["m7:prepare"]
-    },
-    "verify:run": {
       "dependsOn": ["m7:prepare"]
     }
   }

@@ -1,17 +1,25 @@
 {
   "name": "curiosity",
   "private": true,
+  "trustedDependencies": [],
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
+    "test": "node --test --test-concurrency=1 tools/status/status.test.mjs tools/verification/*.test.mjs && turbo run test",
+    "verify": "bun run inventory:check && bun run status:check && turbo run verify && node tools/verification/runtime-plugin-contract.mjs --no-build",
+    "inventory:check": "node --test --test-concurrency=1 tools/verification/*.test.mjs && node tools/verification/inventory.mjs",
     "status:check": "node --test tools/status/status.test.mjs && node tools/status/status.mjs",
     "status:write": "node tools/status/status.mjs --write",
     "verify:legacy-memory-parity": "node apps/plugin/opencode2/tools/verify-legacy-memory-native-parity.mjs --verify-dependency-receipt && bun run --cwd apps/plugin/opencode2 build && node apps/plugin/opencode2/tools/verify-legacy-memory-native-parity.mjs --verify-baseline-blobs && node apps/plugin/opencode2/tools/verify-legacy-memory-native-parity.mjs",
     "verify:legacy-memory-node-api-sdk": "bun apps/plugin/opencode2/tests/qualification/verify-legacy-memory-node-api-sdk.mjs",
-    "verify:legacy-memory-node-api-sdk-v2": "bun apps/plugin/opencode2/tests/qualification/verify-legacy-memory-node-api-sdk-v2.mjs"
+    "verify:legacy-memory-node-api-sdk-v2": "bun apps/plugin/opencode2/tests/qualification/verify-legacy-memory-node-api-sdk-v2.mjs",
+    "contract:runtime-plugin": "node tools/verification/runtime-plugin-contract.mjs",
+    "runtime:portable": "bun run --cwd apps/runtime verify:portable",
+    "runtime:network-denied": "bun run --cwd apps/runtime test:network-denied",
+    "runtime:darwin-compatibility": "bun run --cwd apps/runtime verify:darwin-compatibility"
   },
   "devDependencies": {
     "@curiosity/runtime": "workspace:*",

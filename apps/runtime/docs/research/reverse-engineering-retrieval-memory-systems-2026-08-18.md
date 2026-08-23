@@ -22,9 +22,12 @@ design neither modifies Ledger v1 nor authorizes implementation
 
 - **Public boundaries.** The package exports general runtime, query-only,
   admin, and owned-snapshot-query entrypoints
-  (`apps/runtime/package.json:6-17`). The query declaration accepts an absolute
-  state root, workspace scope, query capability, and optional fixed SearXNG
-  repository source (`apps/runtime/src/query.d.ts:1-22`).
+  (`apps/runtime/package.json:6-17`). The authoritative query exports are
+  `apps/runtime/src/query.ts#createQueryRuntime` and
+  `apps/runtime/src/query.ts#queryRuntimeCapabilities`; their option shapes are
+  `apps/runtime/src/index.ts#RuntimeOptions` and
+  `apps/runtime/src/index.ts#QueryRuntimeOptions`. The compatibility-only
+  `query.d.ts` redirects to the query module without duplicating shapes.
 - **Query admission and routing.** `createQueryRuntime` requires the exact
   `researcher` role, workspace, operation, and constant-time-equivalent query
   capability before calling `createRuntime.webSearch`

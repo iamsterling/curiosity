@@ -4,8 +4,50 @@ import os from "node:os"
 import path from "node:path"
 import test from "node:test"
 import { assertDarwinArm64Runtime, canonicalRoot, classifyProxyAttempts, createProxyRecorder, isolatedEnvironment, resolveInstalledRuntimePaths, scanRetainedFiles, verifyCopiedRuntimeIdentity } from "../../tools/lib/darwin-real-host-guard.mjs"
+import * as profileVerification from "../../tools/verification-profile.mjs"
 
 const isDarwinArm64 = process.platform === "darwin" && process.arch === "arm64"
+
+test("Linux and trusted Darwin verification plans guard before executing exact commands", () => {
+  assert.deepEqual(profileVerification.PLUGIN_VERIFICATION_PROFILE_PLANS, {
+    linux: { platform: "linux", commands: ["verify"] },
+    darwin: { platform: "darwin", architecture: "arm64", trusted: true, commands: ["verify", "test:real-host"] },
+  })
+  const linux = []
+  profileVerification.verifyPluginProfile(
+    "linux",
+    { platform: "linux", architecture: "x64", trusted: false },
+    (command) => linux.push(command),
+  )
+  assert.deepEqual(linux, ["verify"])
+  const darwin = []
+  profileVerification.verifyPluginProfile(
+    "darwin",
+    { platform: "darwin", architecture: "arm64", trusted: true },
+    (command) => darwin.push(command),
+  )
+  assert.deepEqual(darwin, ["verify", "test:real-host"])
+
+  const rejected = []
+  assert.throws(
+    () => profileVerification.verifyPluginProfile("linux", { platform: "darwin", architecture: "arm64", trusted: false }, (command) => rejected.push(command)),
+    { message: "PLUGIN_VERIFY_LINUX_REQUIRED" },
+  )
+  assert.deepEqual(rejected, [])
+  assert.throws(
+    () => profileVerification.verifyPluginProfile("darwin", { platform: "linux", architecture: "x64", trusted: true }, (command) => rejected.push(command)),
+    { message: "PLUGIN_VERIFY_DARWIN_ARM64_REQUIRED" },
+  )
+  assert.throws(
+    () => profileVerification.verifyPluginProfile("darwin", { platform: "darwin", architecture: "arm64", trusted: false }, (command) => rejected.push(command)),
+    { message: "PLUGIN_VERIFY_DARWIN_TRUSTED_MANUAL_REQUIRED" },
+  )
+  assert.throws(
+    () => profileVerification.verifyPluginProfile("portable", { platform: "linux", architecture: "x64", trusted: false }, (command) => rejected.push(command)),
+    { message: "PLUGIN_VERIFY_PROFILE_UNKNOWN:portable" },
+  )
+  assert.deepEqual(rejected, [])
+})
 
 test("retained-file scan catches output and file credential canaries without serializing them", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "opencode2-guard-test-"))

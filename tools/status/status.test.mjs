@@ -672,7 +672,7 @@ test("every Wave 1 capability has a fail-closed exact source contract", async (c
   const { createFileRepository, verifySourceContracts } = await implementation();
   const value = await catalog();
   const repository = createFileRepository(ROOT);
-  assert.equal(value.capabilities.length, 26);
+  assert.equal(value.capabilities.length, 27);
   for (const capability of value.capabilities) {
     assert.ok(capability.guards.length > 0, capability.id);
     await context.test(capability.id, async () => {
@@ -680,11 +680,13 @@ test("every Wave 1 capability has a fail-closed exact source contract", async (c
       const changes = guard.mode === "absent"
         ? { [guard.path]: "unreviewed surface\n" }
         : { [guard.path]: `${await repository.read(guard.path)}\n// unreviewed change\n` };
-      const code = capability.id === "runtime-sdk-v2"
-        ? "STATUS_SDK_RECEIPT_INVALID"
-        : capability.status === "Retired"
-          ? "STATUS_RETIRED_SURFACE_PRESENT"
-          : guard.mode === "absent" ? "STATUS_ABSENCE_GUARD" : "STATUS_SOURCE_CHANGED";
+      const code = capability.id === "runtime-m7-historical"
+        ? "STATUS_M7_HISTORICAL_CHANGED"
+        : capability.id === "runtime-sdk-v2"
+          ? "STATUS_SDK_RECEIPT_INVALID"
+          : capability.status === "Retired"
+            ? "STATUS_RETIRED_SURFACE_PRESENT"
+            : guard.mode === "absent" ? "STATUS_ABSENCE_GUARD" : "STATUS_SOURCE_CHANGED";
       await rejectsWith(() => verifySourceContracts(value, overlay(repository, changes)), code);
     });
   }
@@ -702,6 +704,29 @@ test("M5 endpoint and policy mutations invalidate the runtime-m5 review", async 
   await context.test("policy test", () => rejectsWith(() => verifySourceContracts(value, overlay(repository, {
     "apps/runtime/tests/repository-search.test.ts": policy.replace("provider_redirect_rejected", "provider_redirect_allowed"),
   })), "STATUS_SOURCE_CHANGED"));
+});
+
+test("M7 immutable acceptance and changed source candidate cannot be conflated", async () => {
+  const { createFileRepository, verifySourceContracts } = await implementation();
+  const value = await catalog();
+  const historical = value.capabilities.find(({ id }) => id === "runtime-m7-historical");
+  historical.scope.constraints = historical.scope.constraints.map((constraint) =>
+    constraint.startsWith("source commit ") ? "source commit de8a4ec674d16d87a184c29b668fc06003caeb6a" : constraint);
+  await rejectsWith(() => verifySourceContracts(value, createFileRepository(ROOT)), "STATUS_M7_CONFLATION");
+});
+
+test("Current qualification evidence must execute through a required verification entrypoint", async () => {
+  const { createFileRepository, verifySourceContracts } = await implementation();
+  const value = await catalog();
+  const capability = value.capabilities.find(({ id }) => id === "plugin-structured-tools");
+  capability.qualification.refs = [{
+    kind: "test",
+    ref: "apps/plugin/opencode2/tests/real-host/serve-isolation.test.mjs#repeated isolated exact-host smokes import set up and register the exported Effect plugin",
+  }];
+  await rejectsWith(
+    () => verifySourceContracts(value, createFileRepository(ROOT)),
+    "STATUS_QUALIFICATION_EXECUTION_CLOSURE",
+  );
 });
 
 test("source contracts detect ADR omissions and preserve the exact historical preflight", async (context) => {

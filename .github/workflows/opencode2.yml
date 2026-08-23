@@ -1,58 +1,179 @@
-name: OpenCode2 CI
+name: Curiosity verification
 
 on:
   pull_request:
   push:
     branches: [main]
+  merge_group:
   schedule:
     - cron: "17 5 * * 2"
   workflow_dispatch:
+    inputs:
+      installer_stress:
+        description: Run the scheduled installer stress lane
+        required: false
+        default: false
+        type: boolean
+      darwin_compatibility:
+        description: Run trusted foreground Darwin compatibility (not M7 qualification)
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
 
 jobs:
-  verify-linux:
-    name: Linux source verification
-    if: github.event_name != 'schedule'
+  inventory-status:
+    name: Verification inventory and status
+    if: github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           fetch-depth: 0
+          persist-credentials: false
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: 1.3.14
-      - run: bun install --frozen-lockfile
-      - name: Check scope-qualified status truth
-        run: bun run status:check
-      - run: bun run verify:linux
-        working-directory: apps/plugin/opencode2
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - run: bun run inventory:check
+      - run: bun run status:check
 
-  container-smoke:
-    name: Registry package container smoke
-    if: github.event_name != 'schedule'
+  workspace-verification:
+    name: Starter and configuration workspace verification
+    if: github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: 1.3.14
-      - run: bun install --frozen-lockfile
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - run: bunx turbo run verify --filter=docs --filter=web --filter=@repo/ui --filter=@repo/eslint-config --filter=@repo/typescript-config
+
+  plugin-linux:
+    name: Plugin Linux verification
+    if: github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - run: bun run verify:linux
+        working-directory: apps/plugin/opencode2
+
+  registry-smoke:
+    name: Registry package smoke
+    if: github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile --ignore-scripts
       - name: Validate README setup through isolated loopback registry
         run: bun run test:container:smoke
         working-directory: apps/plugin/opencode2
 
-  container-stress:
-    name: Local staged-release contention stress
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+  runtime-portable:
+    name: Runtime portable Linux, ABI, and executable contract
+    if: github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: 1.3.14
-      - run: bun install --frozen-lockfile
-      - name: Validate local installer contention and confinement
-        run: bun run test:container:stress
+      - name: Install exact Rust toolchain
+        run: rustup toolchain install 1.97.1 --profile minimal --component rustfmt,clippy && rustup default 1.97.1
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - run: bun run runtime:portable
+
+  runtime-network-denied:
+    name: Runtime fail-closed Linux network namespace
+    if: github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.3.14
+      - name: Install exact Rust toolchain
+        run: rustup toolchain install 1.97.1 --profile minimal && rustup default 1.97.1
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - name: Cache locked Cargo inputs before namespace denial
+        run: cargo fetch --locked --manifest-path apps/runtime/native/Cargo.toml
+      - run: bun run runtime:network-denied
+
+  required-gate:
+    name: Required verification gate
+    if: always() && (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group')
+    needs: [inventory-status, workspace-verification, plugin-linux, registry-smoke, runtime-portable]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every required lane to succeed
+        env:
+          INVENTORY_STATUS: ${{ needs.inventory-status.result }}
+          WORKSPACE_VERIFICATION: ${{ needs.workspace-verification.result }}
+          PLUGIN_LINUX: ${{ needs.plugin-linux.result }}
+          REGISTRY_SMOKE: ${{ needs.registry-smoke.result }}
+          RUNTIME_PORTABLE: ${{ needs.runtime-portable.result }}
+        run: |
+          test "$INVENTORY_STATUS" = success
+          test "$WORKSPACE_VERIFICATION" = success
+          test "$PLUGIN_LINUX" = success
+          test "$REGISTRY_SMOKE" = success
+          test "$RUNTIME_PORTABLE" = success
+
+  installer-stress:
+    name: Scheduled or selected installer stress
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.installer_stress)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - run: bun run test:container:stress
         working-directory: apps/plugin/opencode2
+
+  darwin-compatibility:
+    name: Darwin compatibility (not M7 qualification)
+    if: github.event_name == 'workflow_dispatch' && inputs.darwin_compatibility
+    runs-on: [self-hosted, macOS, ARM64, curiosity-darwin-arm64]
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: 1.3.14
+      - name: Install exact Rust toolchain
+        run: rustup toolchain install 1.97.1 --profile minimal --component rustfmt,clippy && rustup default 1.97.1
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - name: Verify the plugin's explicit trusted Darwin real-host profile
+        env:
+          CURIOSITY_TRUSTED_DARWIN_MANUAL: "1"
+        run: bun run verify:darwin
+        working-directory: apps/plugin/opencode2
+      - name: Verify non-M7 Darwin compatibility in the trusted foreground session
+        env:
+          CURIOSITY_TRUSTED_DARWIN_MANUAL: "1"
+        run: bun run runtime:darwin-compatibility

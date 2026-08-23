@@ -4,8 +4,9 @@ Private, independent home for Curiosity web-search and retrieval architecture,
 provider evaluation, deployment research, benchmarking records, and the
 authorized M1 runtime, bounded M2 local corpus projection, M3 query package,
 repository-only M5 gateway capability, the M4 `build_owned_crawl_snapshot`
-operation, the exact local M6 synthetic cell, and the exact private M7 Darwin
-arm64 release profile.
+operation, the exact local M6 synthetic cell, and M7 records split between one
+immutable accepted historical artifact and an unqualified current source
+candidate.
 
 The dependency-free Rust core and in-process Bun shim live here under ADRs 0023
 and 0027. ADR 0024 records M1 `GO`; ADRs 0025–0027 accept only the repository
@@ -82,6 +83,16 @@ scripts directly. ADR 0040 records full artifact and lifecycle acceptance for
 that immutable source/archive pair. This completes M1–M7
 repository/private-profile work only: production/public, M5-live, M6-crawl,
 publication, signing, notarization, and other-platform gates remain NO-GO.
+
+## Current M7 source candidate
+
+The current M7-related source is **Deferred**, disabled, and unqualified. It has
+different source bytes and OpenCode/Effect pins from the exact artifact accepted
+by ADR 0040. Its source tests and build utilities are candidate evidence only;
+they do not extend the historical GO, and ordinary CI never runs them. A new
+clean artifact, exact-profile review, and explicit qualification decision would
+be required before its status could change. Darwin compatibility verification
+is a separate non-M7 profile and cannot supply that decision.
 
 ## M2 use
 

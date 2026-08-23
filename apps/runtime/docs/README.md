@@ -1,5 +1,15 @@
 # Architecture and research index
 
+## Current source redirect and historical errata
+
+The historical `apps/runtime/src/query.d.ts:1-29` reference in ADR 0043 is
+preserved as historical text, but it is not current type authority. The adjacent
+`query.d.ts` now contains only a compatibility redirect. Resolve current query
+API references to `apps/runtime/src/query.ts#createQueryRuntime` and
+`apps/runtime/src/query.ts#queryRuntimeCapabilities`; resolve the shared option
+shapes to `apps/runtime/src/index.ts#RuntimeOptions` and
+`apps/runtime/src/index.ts#QueryRuntimeOptions`.
+
 ## Plans
 
 - [Complementary runtime implementation plan](plans/complementary-runtime-implementation-plan.md)

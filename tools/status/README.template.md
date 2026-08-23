@@ -30,7 +30,7 @@ navigation, verification, contribution, provenance, and licensing guidance.
 Install the pinned workspace dependencies without changing the lockfile:
 
 ```sh
-bun install --frozen-lockfile
+bun install --frozen-lockfile --ignore-scripts
 ```
 
 Then start at the boundary you intend to change:
@@ -43,15 +43,27 @@ Then start at the boundary you intend to change:
 
 ## Verification entry points
 
-The root intentionally has no aggregate `test` or `verify` task yet. Use the
-owned checks instead:
+The root tasks are non-recursive and use the reviewed Turbo graph so every
+authoritative workspace is covered once:
 
 ```sh
+bun run test
+bun run verify
+bun run inventory:check
 bun run status:check
 bun run --cwd apps/plugin/opencode2 verify
 bun run --cwd apps/plugin/opencode2 verify:linux
 bun run --cwd apps/runtime verify
 ```
+
+The plugin `verify` task is portable and never invokes the Darwin real-host
+suite. `verify:linux` fails closed off Linux; the separate `verify:darwin`
+profile requires Darwin arm64 plus `CURIOSITY_TRUSTED_DARWIN_MANUAL=1` and is
+reserved for the reviewed manual lane.
+
+See [verification tiers and CI operation](docs/verification/README.md) for the
+portable Linux, fail-closed network namespace, trusted foreground Darwin, CI
+cadence, aggregate required-gate, platform limits, and NO-GO boundaries.
 
 `status:write` is the explicit maintainer command for regenerating the canonical
 root README and `docs/status/current.md`. CI uses check mode and never rewrites

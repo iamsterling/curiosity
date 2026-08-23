@@ -20,6 +20,7 @@
     "dev:reload": "bun run abi:check-active && bun run build && opencode2 service restart",
     "prebuild": "bun run abi:check",
     "typecheck": "tsc --noEmit",
+    "contract:types": "tsc -p tsconfig.contract.json --noEmit",
     "check-types": "bun run typecheck",
     "build": "rm -rf dist && tsc -p tsconfig.build.json && node tools/write-build-provenance.mjs",
     "test:unit": "node --test tests/unit/*.test.mjs",
@@ -29,9 +30,9 @@
     "test:real-host": "node tools/real-host-suite.mjs",
     "test:release": "node tools/staged-release-test.mjs",
     "pack:verify": "node --test tests/integration/registry-package-contract.test.mjs",
-    "test:container:smoke": "node tools/ephemeral-container.mjs smoke",
+    "test:container:smoke": "bun run build && node --test tests/integration/functional-container-startup.test.mjs && node tools/ephemeral-container.mjs smoke",
     "test:container:stress": "node tools/ephemeral-container.mjs stress",
-    "test:workflow-pins": "node --test --test-name-pattern=third-party.*immutable tools/identity-test.mjs",
+    "test:workflow-pins": "node --test tests/security/workflow-pins.test.mjs",
     "search:smoke": "node tools/search-live-smoke.mjs",
     "test": "bun run test:unit && bun run test:integration && bun run test:characterization",
     "lint": "eslint src --max-warnings=0 && node tools/verify-architecture.mjs",
@@ -45,8 +46,9 @@
     "provenance:verify": "node tools/verify-provenance.mjs && node tools/verify-relocations.mjs && bun run test:workflow-pins",
     "secret:scan": "node tools/secret-scan.mjs",
     "resources:size": "node tools/resource-size.mjs 74fe8c5",
-    "verify": "bun run abi:check && bun run assets:manifest && bun run typecheck && bun run lint && bun run format:check && bun run build && bun run pack:verify && bun run test && bun run test:security && bun run test:real-host && bun run test:release && bun run resources:size && bun run artifact:verify && bun run provenance:verify && bun run secret:scan",
-    "verify:linux": "bun run abi:check && bun run assets:manifest && bun run typecheck && bun run lint && bun run format:check && bun run build && bun run pack:verify && bun run test && bun run test:security && bun run test:release && bun run resources:size && bun run artifact:verify && bun run provenance:verify && bun run secret:scan"
+    "verify": "bun run abi:check && bun run assets:manifest && bun run typecheck && bun run contract:types && bun run lint && bun run format:check && bun run build && bun run test && bun run test:security && bun run test:release && bun run resources:size && bun run artifact:verify && bun run provenance:verify && bun run secret:scan",
+    "verify:linux": "node tools/verification-profile.mjs linux",
+    "verify:darwin": "node tools/verification-profile.mjs darwin"
   },
   "keywords": [
     "opencode",

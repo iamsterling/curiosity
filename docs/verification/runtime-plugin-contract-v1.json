@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "contract": "curiosity-runtime-plugin-query/v1",
+  "runtimePackage": {
+    "name": "@curiosity/runtime",
+    "exports": [".", "./query", "./admin", "./owned-query"],
+    "queryTypes": "./src/query.ts",
+    "queryRuntimeExports": ["createQueryRuntime", "queryRuntimeCapabilities"],
+    "queryTypeExports": [
+      "PrincipalEnvelope",
+      "QueryCapability",
+      "QueryRuntime",
+      "QueryRuntimeOptions",
+      "RepositoryTransport",
+      "RepositoryTransportCall",
+      "RepositoryTransportResponse"
+    ]
+  },
+  "capabilities": {
+    "apiVersions": ["curiosity.runtime/v0"],
+    "operations": ["web_search"],
+    "limits": {
+      "maxQueryUtf16": 500,
+      "maxQueryUtf8": 2000,
+      "maxResults": 10,
+      "maxDeadlineAheadMs": 15000,
+      "maxConcurrency": 8
+    },
+    "network": false,
+    "corpus": false,
+    "persistence": false
+  },
+  "definitions": {
+    "queryOptionKeys": [
+      "libraryPath",
+      "nativeProfile",
+      "now",
+      "queryCapability",
+      "repository",
+      "repositoryTransport",
+      "stateRoot",
+      "workspaceScope"
+    ],
+    "runtimeMethods": ["close", "webSearch"],
+    "executorMethods": ["cleanup", "execute", "open"],
+    "adapterError": "WEB_SEARCH_CORPUS_ABSENT"
+  },
+  "authority": {
+    "role": "researcher",
+    "operation": "web_search",
+    "requiresExactWorkspaceScope": true,
+    "requiresExactCapabilityBytes": true,
+    "fallback": "forbidden"
+  },
+  "lookup": {
+    "packageSpecifier": "@curiosity/runtime/query",
+    "releaseNativeRelativePath": "native/libcuriosity_runtime_native",
+    "releaseMayProbeDevelopment": false
+  },
+  "abi": {
+    "default": [
+      "curiosity_runtime_v0_web_search",
+      "curiosity_runtime_v1_corpus_admin",
+      "curiosity_runtime_v1_corpus_query",
+      "curiosity_runtime_v2_owned_job_transition",
+      "curiosity_runtime_v2_owned_job_transition_canonical",
+      "curiosity_runtime_v2_owned_state_write"
+    ],
+    "query-only": [
+      "curiosity_runtime_v0_web_search",
+      "curiosity_runtime_v1_corpus_query"
+    ]
+  },
+  "publicPluginBoundary": {
+    "runtimeDependency": false,
+    "runtimeSelectors": false,
+    "runtimeBundling": false
+  }
+}

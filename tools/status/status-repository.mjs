@@ -4,7 +4,7 @@ import { constants } from "node:fs";
 import { lstat, open, readdir, realpath } from "node:fs/promises";
 import path from "node:path";
 import { noFollowFlag } from "./status-generated-write.mjs";
-import { SDK_ACCEPTANCE_RECEIPT, SDK_STATUS_ANCHORS, WAVE_1_HISTORICAL_SNAPSHOT } from "./status-registry.mjs";
+import { M7_HISTORICAL_ACCEPTANCE, SDK_ACCEPTANCE_RECEIPT, SDK_STATUS_ANCHORS, WAVE_1_HISTORICAL_SNAPSHOT } from "./status-registry.mjs";
 import { assertEvidenceFragment, assertRepositoryPath, normalizeEvidenceText, statusFailure } from "./status-validation.mjs";
 
 const slash = (value) => value.split(path.sep).join("/");
@@ -294,6 +294,28 @@ const verifySdkReceipt = async (catalog, repository) => {
   if (!anchored) statusFailure("STATUS_SDK_RECEIPT_ANCHOR", "runtime-sdk-v2");
 };
 
+const verifyM7HistoricalAcceptance = async (catalog, repository) => {
+  const historical = catalog.capabilities.find(({ id }) => id === "runtime-m7-historical");
+  const candidate = catalog.capabilities.find(({ id }) => id === "runtime-m7-current");
+  const constraints = historical?.scope?.constraints ?? [];
+  const historicalValid = historical?.status === "Current"
+    && historical?.qualification?.state === "qualified"
+    && constraints.includes(`source commit ${M7_HISTORICAL_ACCEPTANCE.sourceCommit}`)
+    && constraints.includes(`artifact SHA-256 ${M7_HISTORICAL_ACCEPTANCE.artifactSha256}`);
+  const candidateValid = candidate?.status === "Deferred"
+    && candidate?.qualification?.state === "unqualified"
+    && candidate?.availability?.state === "disabled"
+    && candidate?.verdict?.decision === "NO-GO";
+  if (!historicalValid || !candidateValid) statusFailure("STATUS_M7_CONFLATION", "catalog");
+  const source = await repository.read(M7_HISTORICAL_ACCEPTANCE.path).catch(() => undefined);
+  const digest = source === undefined ? undefined : createHash("sha256").update(source).digest("hex");
+  const identity = await repository.historicalIdentity(M7_HISTORICAL_ACCEPTANCE.path).catch(() => undefined);
+  if (digest !== M7_HISTORICAL_ACCEPTANCE.sha256 || !identity
+    || identity.indexBlob !== M7_HISTORICAL_ACCEPTANCE.indexBlob || identity.worktreeChanged) {
+    statusFailure("STATUS_M7_HISTORICAL_CHANGED", M7_HISTORICAL_ACCEPTANCE.path);
+  }
+};
+
 const verifyEvidenceReferences = async (catalog, repository) => {
   const facets = ["observation", "assertion", "evidence", "authority", "delivery", "qualification"];
   for (const capability of catalog.capabilities)
@@ -311,6 +333,26 @@ const verifyEvidenceReferences = async (catalog, repository) => {
           || !` ${normalizeEvidenceText(source)} `.includes(` ${normalizedFragment} `))
           statusFailure("STATUS_EVIDENCE_REFERENCE", reference.ref);
       }
+};
+
+const verifyCurrentQualificationExecution = async (catalog, repository) => {
+  const inventory = await json(repository, "docs/verification/inventory.json", "STATUS_QUALIFICATION_EXECUTION_CLOSURE");
+  const tests = new Map((inventory.tests ?? []).map((item) => [item.path, item]));
+  for (const capability of catalog.capabilities) {
+    if (capability.status !== "Current" || capability.id === "runtime-m7-historical" || capability.qualification.state === "not-required") continue;
+    for (const reference of capability.qualification.refs) {
+      const testPath = catalogReferencePath(reference.ref);
+      const test = tests.get(testPath);
+      const requiredProfiles = (test?.profiles ?? []).filter((profile) => {
+        const definition = inventory.testProfiles?.[profile];
+        return definition?.disposition === "required"
+          && definition.entrypoints?.length > 0
+          && definition.tests?.includes(testPath);
+      });
+      if (reference.kind !== "test" || requiredProfiles.length === 0)
+        statusFailure("STATUS_QUALIFICATION_EXECUTION_CLOSURE", `${capability.id}:${testPath}`);
+    }
+  }
 };
 
 const catalogReferencePath = (reference) => {
@@ -351,7 +393,9 @@ export const verifySourceContracts = async (catalog, repository) => {
   await verifyIndexes(contracts, repository);
   await verifyRetirement(contracts, repository);
   await verifySdkReceipt(catalog, repository);
+  await verifyM7HistoricalAcceptance(catalog, repository);
   await verifyCapabilityGuards(catalog, repository);
   await verifyGuardedSources(contracts, repository);
+  await verifyCurrentQualificationExecution(catalog, repository);
   await verifyEvidenceReferences(catalog, repository);
 };

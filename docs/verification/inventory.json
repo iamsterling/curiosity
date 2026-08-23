@@ -1,0 +1,3050 @@
+{
+  "$schema": "./schema.json",
+  "schemaVersion": 1,
+  "packages": [
+    {
+      "path": ".",
+      "manifest": "package.json",
+      "name": "curiosity",
+      "private": true,
+      "role": "root",
+      "scripts": {
+        "build": "turbo run build",
+        "dev": "turbo run dev",
+        "lint": "turbo run lint",
+        "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+        "check-types": "turbo run check-types",
+        "test": "node --test --test-concurrency=1 tools/status/status.test.mjs tools/verification/*.test.mjs && turbo run test",
+        "verify": "bun run inventory:check && bun run status:check && turbo run verify && node tools/verification/runtime-plugin-contract.mjs --no-build",
+        "inventory:check": "node --test --test-concurrency=1 tools/verification/*.test.mjs && node tools/verification/inventory.mjs",
+        "status:check": "node --test tools/status/status.test.mjs && node tools/status/status.mjs",
+        "status:write": "node tools/status/status.mjs --write",
+        "verify:legacy-memory-parity": "node apps/plugin/opencode2/tools/verify-legacy-memory-native-parity.mjs --verify-dependency-receipt && bun run --cwd apps/plugin/opencode2 build && node apps/plugin/opencode2/tools/verify-legacy-memory-native-parity.mjs --verify-baseline-blobs && node apps/plugin/opencode2/tools/verify-legacy-memory-native-parity.mjs",
+        "verify:legacy-memory-node-api-sdk": "bun apps/plugin/opencode2/tests/qualification/verify-legacy-memory-node-api-sdk.mjs",
+        "verify:legacy-memory-node-api-sdk-v2": "bun apps/plugin/opencode2/tests/qualification/verify-legacy-memory-node-api-sdk-v2.mjs",
+        "contract:runtime-plugin": "node tools/verification/runtime-plugin-contract.mjs",
+        "runtime:portable": "bun run --cwd apps/runtime verify:portable",
+        "runtime:network-denied": "bun run --cwd apps/runtime test:network-denied",
+        "runtime:darwin-compatibility": "bun run --cwd apps/runtime verify:darwin-compatibility"
+      },
+      "exports": null,
+      "bin": null,
+      "files": [],
+      "implicitConfigSubpaths": [
+        "turbo.json",
+        ".npmrc"
+      ],
+      "dependencies": [
+        {
+          "name": "@curiosity/runtime",
+          "section": "devDependencies",
+          "version": "workspace:*",
+          "classification": "workspace",
+          "protocol": "workspace"
+        },
+        {
+          "name": "ajv",
+          "section": "devDependencies",
+          "version": "8.17.1",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "he",
+          "section": "devDependencies",
+          "version": "1.2.0",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "marked",
+          "section": "devDependencies",
+          "version": "12.0.2",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "prettier",
+          "section": "devDependencies",
+          "version": "^3.7.4",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "turbo",
+          "section": "devDependencies",
+          "version": "^2.10.10",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "typescript",
+          "section": "devDependencies",
+          "version": "5.9.2",
+          "classification": "external",
+          "protocol": "exact"
+        }
+      ],
+      "workspaceMember": false,
+      "executionMetadata": [
+        {
+          "kind": "lifecycle-script",
+          "path": "scripts.test",
+          "value": "node --test --test-concurrency=1 tools/status/status.test.mjs tools/verification/*.test.mjs && turbo run test",
+          "classification": "reviewed",
+          "reason": "Reviewed npm lifecycle entrypoint; execution remains limited to its classified command graph."
+        },
+        {
+          "kind": "trust-policy",
+          "path": "trustedDependencies",
+          "value": [],
+          "classification": "reviewed",
+          "reason": "The explicit empty root allowlist disables Bun implicit default trust; CI also ignores all lifecycle scripts."
+        }
+      ]
+    },
+    {
+      "path": "apps/docs",
+      "manifest": "apps/docs/package.json",
+      "name": "docs",
+      "private": true,
+      "role": "starter-app",
+      "scripts": {
+        "dev": "next dev --port 3001",
+        "build": "next build",
+        "start": "next start",
+        "lint": "eslint --max-warnings 0",
+        "check-types": "next typegen && tsc --noEmit",
+        "test": "node --test tests/config-load.test.mjs",
+        "verify": "bun run lint && bun run check-types && bun run build && bun run test"
+      },
+      "exports": null,
+      "bin": null,
+      "files": [],
+      "implicitConfigSubpaths": [
+        "eslint.config.js",
+        "next.config.js",
+        "tsconfig.json"
+      ],
+      "dependencies": [
+        {
+          "name": "@repo/eslint-config",
+          "section": "devDependencies",
+          "version": "*",
+          "classification": "workspace",
+          "protocol": "wildcard"
+        },
+        {
+          "name": "@repo/typescript-config",
+          "section": "devDependencies",
+          "version": "*",
+          "classification": "workspace",
+          "protocol": "wildcard"
+        },
+        {
+          "name": "@repo/ui",
+          "section": "dependencies",
+          "version": "*",
+          "classification": "workspace",
+          "protocol": "wildcard"
+        },
+        {
+          "name": "@types/node",
+          "section": "devDependencies",
+          "version": "^22.15.3",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "@types/react-dom",
+          "section": "devDependencies",
+          "version": "19.2.2",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "@types/react",
+          "section": "devDependencies",
+          "version": "19.2.2",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "eslint",
+          "section": "devDependencies",
+          "version": "^9.39.1",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "next",
+          "section": "dependencies",
+          "version": "16.3.0",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "react-dom",
+          "section": "dependencies",
+          "version": "^19.2.0",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "react",
+          "section": "dependencies",
+          "version": "^19.2.0",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "typescript",
+          "section": "devDependencies",
+          "version": "5.9.2",
+          "classification": "external",
+          "protocol": "exact"
+        }
+      ],
+      "workspaceMember": true,
+      "executionMetadata": [
+        {
+          "kind": "lifecycle-script",
+          "path": "scripts.start",
+          "value": "next start",
+          "classification": "reviewed",
+          "reason": "Reviewed npm lifecycle entrypoint; execution remains limited to its classified command graph."
+        },
+        {
+          "kind": "lifecycle-script",
+          "path": "scripts.test",
+          "value": "node --test tests/config-load.test.mjs",
+          "classification": "reviewed",
+          "reason": "Reviewed npm lifecycle entrypoint; execution remains limited to its classified command graph."
+        }
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2",
+      "manifest": "apps/plugin/opencode2/package.json",
+      "name": "@iamsterling/opencode2-config",
+      "private": false,
+      "role": "plugin",
+      "scripts": {
+        "abi:check": "node tools/check-opencode-abi.mjs",
+        "abi:check-active": "node tools/check-opencode-abi.mjs --active",
+        "dev:reload": "bun run abi:check-active && bun run build && opencode2 service restart",
+        "prebuild": "bun run abi:check",
+        "typecheck": "tsc --noEmit",
+        "contract:types": "tsc -p tsconfig.contract.json --noEmit",
+        "check-types": "bun run typecheck",
+        "build": "rm -rf dist && tsc -p tsconfig.build.json && node tools/write-build-provenance.mjs",
+        "test:unit": "node --test tests/unit/*.test.mjs",
+        "test:integration": "node --test tests/integration/*.test.mjs",
+        "test:characterization": "node --test tests/characterization/*.test.mjs tools/bundle-test.mjs && node tools/install-test.mjs",
+        "test:security": "node --test tests/security/*.test.mjs",
+        "test:real-host": "node tools/real-host-suite.mjs",
+        "test:release": "node tools/staged-release-test.mjs",
+        "pack:verify": "node --test tests/integration/registry-package-contract.test.mjs",
+        "test:container:smoke": "bun run build && node --test tests/integration/functional-container-startup.test.mjs && node tools/ephemeral-container.mjs smoke",
+        "test:container:stress": "node tools/ephemeral-container.mjs stress",
+        "test:workflow-pins": "node --test tests/security/workflow-pins.test.mjs",
+        "search:smoke": "node tools/search-live-smoke.mjs",
+        "test": "bun run test:unit && bun run test:integration && bun run test:characterization",
+        "lint": "eslint src --max-warnings=0 && node tools/verify-architecture.mjs",
+        "format": "biome format --write src package.json tsconfig.json tsconfig.build.json biome.json assets/manifest.json",
+        "format:check": "biome format src package.json tsconfig.json tsconfig.build.json biome.json assets/manifest.json",
+        "assets:manifest": "node tools/generate-asset-manifest.mjs && biome format --write assets/manifest.json",
+        "artifact:verify": "node tools/verify-artifact.mjs",
+        "bundle:export": "node tools/bundle-assets.mjs export",
+        "bundle:doctor": "node tools/bundle-assets.mjs doctor",
+        "install:global": "node tools/install-node.mjs",
+        "provenance:verify": "node tools/verify-provenance.mjs && node tools/verify-relocations.mjs && bun run test:workflow-pins",
+        "secret:scan": "node tools/secret-scan.mjs",
+        "resources:size": "node tools/resource-size.mjs 74fe8c5",
+        "verify": "bun run abi:check && bun run assets:manifest && bun run typecheck && bun run contract:types && bun run lint && bun run format:check && bun run build && bun run test && bun run test:security && bun run test:release && bun run resources:size && bun run artifact:verify && bun run provenance:verify && bun run secret:scan",
+        "verify:linux": "node tools/verification-profile.mjs linux",
+        "verify:darwin": "node tools/verification-profile.mjs darwin"
+      },
+      "exports": {
+        ".": {
+          "types": "./dist/index.d.ts",
+          "import": "./dist/index.js"
+        },
+        "./server": {
+          "types": "./dist/index.d.ts",
+          "import": "./dist/index.js"
+        }
+      },
+      "bin": {
+        "opencode2-config": "tools/install-node.mjs"
+      },
+      "files": [
+        "dist",
+        "assets",
+        "tools/install-node.mjs",
+        "README.md",
+        "LICENSE"
+      ],
+      "implicitConfigSubpaths": [
+        "biome.json",
+        "eslint.config.js",
+        "tsconfig.json",
+        "tsconfig.build.json",
+        "tsconfig.contract.json",
+        "turbo.json"
+      ],
+      "dependencies": [
+        {
+          "name": "@biomejs/biome",
+          "section": "devDependencies",
+          "version": "^2.5.8",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "@opencode-ai/cli",
+          "section": "devDependencies",
+          "version": "0.0.0-beta-17595",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "@opencode-ai/plugin",
+          "section": "dependencies",
+          "version": "0.0.0-beta-17595",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "@types/node",
+          "section": "devDependencies",
+          "version": "26.2.0",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "@typescript-eslint/parser",
+          "section": "devDependencies",
+          "version": "^8.67.0",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "effect",
+          "section": "dependencies",
+          "version": "4.0.0-beta.107",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "eslint-import-resolver-typescript",
+          "section": "devDependencies",
+          "version": "^4.4.5",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "eslint-plugin-import",
+          "section": "devDependencies",
+          "version": "^2.32.0",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "eslint",
+          "section": "devDependencies",
+          "version": "9.39.2",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "typescript",
+          "section": "devDependencies",
+          "version": "5.8.2",
+          "classification": "external",
+          "protocol": "exact"
+        }
+      ],
+      "workspaceMember": true,
+      "executionMetadata": [
+        {
+          "kind": "lifecycle-script",
+          "path": "scripts.prebuild",
+          "value": "bun run abi:check",
+          "classification": "reviewed",
+          "reason": "Required build hook verifies the pinned OpenCode ABI before compilation."
+        },
+        {
+          "kind": "lifecycle-script",
+          "path": "scripts.test",
+          "value": "bun run test:unit && bun run test:integration && bun run test:characterization",
+          "classification": "reviewed",
+          "reason": "Reviewed npm lifecycle entrypoint; execution remains limited to its classified command graph."
+        }
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tools/ephemeral-container/test-environment",
+      "manifest": "apps/plugin/opencode2/tools/ephemeral-container/test-environment/package.json",
+      "name": "opencode2-ephemeral-container-test-environment",
+      "private": true,
+      "workspaceMember": false,
+      "role": "test-fixture",
+      "scripts": {},
+      "exports": null,
+      "bin": null,
+      "files": [],
+      "implicitConfigSubpaths": [
+        "bun.lock"
+      ],
+      "dependencies": [
+        {
+          "name": "@opencode-ai/cli",
+          "section": "dependencies",
+          "version": "0.0.0-beta-17595",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "@opencode-ai/plugin",
+          "section": "dependencies",
+          "version": "0.0.0-beta-17595",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "effect",
+          "section": "dependencies",
+          "version": "4.0.0-beta.107",
+          "classification": "external",
+          "protocol": "exact"
+        }
+      ],
+      "executionMetadata": []
+    },
+    {
+      "path": "apps/runtime",
+      "manifest": "apps/runtime/package.json",
+      "name": "@curiosity/runtime",
+      "private": true,
+      "role": "runtime",
+      "scripts": {
+        "build:native": "\"${CARGO:-cargo}\" build --manifest-path native/Cargo.toml --locked",
+        "build:native:release": "\"${CARGO:-cargo}\" build --manifest-path native/Cargo.toml --release --locked --no-default-features",
+        "build": "bun run build:native && tsc --noEmit",
+        "check-types": "tsc --noEmit",
+        "lint": "(if [ -n \"${CARGO_FMT:-}\" ]; then \"$CARGO_FMT\" --manifest-path native/Cargo.toml --check; else cargo fmt --manifest-path native/Cargo.toml --check; fi) && (if [ -n \"${CARGO_CLIPPY:-}\" ]; then \"$CARGO_CLIPPY\" clippy --manifest-path native/Cargo.toml --locked --all-targets -- -D warnings; else cargo clippy --manifest-path native/Cargo.toml --locked --all-targets -- -D warnings; fi)",
+        "test": "bun run build:native && node tools/run-test-profile.mjs source",
+        "test:portable": "bun run build:native && node tools/run-test-profile.mjs portable-linux",
+        "test:network-denied": "sh tools/network-denied-linux.sh",
+        "test:owned-web-qualification": "\"${CARGO:-cargo}\" build --manifest-path native/Cargo.toml --locked --all-features && CURIOSITY_OWNED_WEB_QUALIFICATION=1 sandbox-exec -p '(version 1)(allow default)(deny network*)' bun test tests/owned-web-qualification.test.ts",
+        "verify:owned-web-qualification": "node tools/verify-owned-web-qualification.mjs",
+        "verify:owned-lexical-reader-qualification": "node tools/verify-owned-lexical-reader-qualification.mjs",
+        "verify:owned-lexical-builder-qualification": "node tools/verify-owned-lexical-builder-qualification.mjs",
+        "verify:legacy-memory-parity": "node ../plugin/opencode2/tools/verify-legacy-memory-native-parity.mjs --verify-dependency-receipt && bun run --cwd ../plugin/opencode2 build && node ../plugin/opencode2/tools/verify-legacy-memory-native-parity.mjs --verify-baseline-blobs && node ../plugin/opencode2/tools/verify-legacy-memory-native-parity.mjs",
+        "check:owned-web-receipt": "node tools/owned-web-receipt.mjs --check",
+        "test:characterization": "bun test tests/characterization/*.test.ts",
+        "search:smoke": "bun tools/repository-live-smoke.ts",
+        "m7:test": "node tools/run-test-profile.mjs m7-current-candidate",
+        "m7:build": "bun tools/m7-release.mjs build",
+        "verify": "node tools/verify-profile.mjs source",
+        "verify:portable": "node tools/verify-profile.mjs portable-linux",
+        "verify:darwin-compatibility": "node tools/verify-profile.mjs darwin-compatibility"
+      },
+      "exports": {
+        ".": "./src/index.ts",
+        "./query": {
+          "types": "./src/query.ts",
+          "import": "./src/query.ts"
+        },
+        "./admin": {
+          "import": "./src/admin.ts"
+        },
+        "./owned-query": {
+          "import": "./src/owned-query.ts"
+        }
+      },
+      "bin": null,
+      "files": [],
+      "implicitConfigSubpaths": [
+        "tsconfig.json",
+        "tsconfig.types.json",
+        "turbo.json"
+      ],
+      "dependencies": [
+        {
+          "name": "@types/bun",
+          "section": "devDependencies",
+          "version": "1.3.14",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "typescript",
+          "section": "devDependencies",
+          "version": "5.9.2",
+          "classification": "external",
+          "protocol": "exact"
+        }
+      ],
+      "workspaceMember": true,
+      "executionMetadata": [
+        {
+          "kind": "lifecycle-script",
+          "path": "scripts.test",
+          "value": "bun run build:native && node tools/run-test-profile.mjs source",
+          "classification": "reviewed",
+          "reason": "Reviewed npm lifecycle entrypoint; execution remains limited to its classified command graph."
+        }
+      ]
+    },
+    {
+      "path": "apps/web",
+      "manifest": "apps/web/package.json",
+      "name": "web",
+      "private": true,
+      "role": "starter-app",
+      "scripts": {
+        "dev": "next dev --port 3000",
+        "build": "next build",
+        "start": "next start",
+        "lint": "eslint --max-warnings 0",
+        "check-types": "next typegen && tsc --noEmit",
+        "test": "node --test tests/config-load.test.mjs",
+        "verify": "bun run lint && bun run check-types && bun run build && bun run test"
+      },
+      "exports": null,
+      "bin": null,
+      "files": [],
+      "implicitConfigSubpaths": [
+        "eslint.config.js",
+        "next.config.js",
+        "tsconfig.json"
+      ],
+      "dependencies": [
+        {
+          "name": "@repo/eslint-config",
+          "section": "devDependencies",
+          "version": "*",
+          "classification": "workspace",
+          "protocol": "wildcard"
+        },
+        {
+          "name": "@repo/typescript-config",
+          "section": "devDependencies",
+          "version": "*",
+          "classification": "workspace",
+          "protocol": "wildcard"
+        },
+        {
+          "name": "@repo/ui",
+          "section": "dependencies",
+          "version": "*",
+          "classification": "workspace",
+          "protocol": "wildcard"
+        },
+        {
+          "name": "@types/node",
+          "section": "devDependencies",
+          "version": "^22.15.3",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "@types/react-dom",
+          "section": "devDependencies",
+          "version": "19.2.2",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "@types/react",
+          "section": "devDependencies",
+          "version": "19.2.2",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "eslint",
+          "section": "devDependencies",
+          "version": "^9.39.1",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "next",
+          "section": "dependencies",
+          "version": "16.3.0",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "react-dom",
+          "section": "dependencies",
+          "version": "^19.2.0",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "react",
+          "section": "dependencies",
+          "version": "^19.2.0",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "typescript",
+          "section": "devDependencies",
+          "version": "5.9.2",
+          "classification": "external",
+          "protocol": "exact"
+        }
+      ],
+      "workspaceMember": true,
+      "executionMetadata": [
+        {
+          "kind": "lifecycle-script",
+          "path": "scripts.start",
+          "value": "next start",
+          "classification": "reviewed",
+          "reason": "Reviewed npm lifecycle entrypoint; execution remains limited to its classified command graph."
+        },
+        {
+          "kind": "lifecycle-script",
+          "path": "scripts.test",
+          "value": "node --test tests/config-load.test.mjs",
+          "classification": "reviewed",
+          "reason": "Reviewed npm lifecycle entrypoint; execution remains limited to its classified command graph."
+        }
+      ]
+    },
+    {
+      "path": "packages/eslint-config",
+      "manifest": "packages/eslint-config/package.json",
+      "name": "@repo/eslint-config",
+      "private": true,
+      "role": "configuration",
+      "scripts": {
+        "test": "node --test tests/exports.test.mjs",
+        "verify": "bun run test"
+      },
+      "exports": {
+        "./base": "./base.js",
+        "./next-js": "./next.js",
+        "./react-internal": "./react-internal.js"
+      },
+      "bin": null,
+      "files": [],
+      "implicitConfigSubpaths": [],
+      "dependencies": [
+        {
+          "name": "@eslint/js",
+          "section": "devDependencies",
+          "version": "^9.39.1",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "@next/eslint-plugin-next",
+          "section": "devDependencies",
+          "version": "^16.3.0",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "eslint-config-prettier",
+          "section": "devDependencies",
+          "version": "^10.1.1",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "eslint-plugin-only-warn",
+          "section": "devDependencies",
+          "version": "^1.1.0",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "eslint-plugin-react-hooks",
+          "section": "devDependencies",
+          "version": "^5.2.0",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "eslint-plugin-react",
+          "section": "devDependencies",
+          "version": "^7.37.5",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "eslint-plugin-turbo",
+          "section": "devDependencies",
+          "version": "^2.7.1",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "eslint",
+          "section": "devDependencies",
+          "version": "^9.39.1",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "globals",
+          "section": "devDependencies",
+          "version": "^16.5.0",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "typescript-eslint",
+          "section": "devDependencies",
+          "version": "^8.50.0",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "typescript",
+          "section": "devDependencies",
+          "version": "^5.9.2",
+          "classification": "external",
+          "protocol": "caret"
+        }
+      ],
+      "workspaceMember": true,
+      "executionMetadata": [
+        {
+          "kind": "lifecycle-script",
+          "path": "scripts.test",
+          "value": "node --test tests/exports.test.mjs",
+          "classification": "reviewed",
+          "reason": "Reviewed npm lifecycle entrypoint; execution remains limited to its classified command graph."
+        }
+      ]
+    },
+    {
+      "path": "packages/typescript-config",
+      "manifest": "packages/typescript-config/package.json",
+      "name": "@repo/typescript-config",
+      "private": true,
+      "role": "configuration",
+      "scripts": {
+        "test": "node --test tests/exports.test.mjs",
+        "verify": "bun run test"
+      },
+      "exports": {
+        "./base.json": "./base.json",
+        "./nextjs.json": "./nextjs.json",
+        "./react-library.json": "./react-library.json"
+      },
+      "bin": null,
+      "files": [],
+      "implicitConfigSubpaths": [],
+      "dependencies": [],
+      "workspaceMember": true,
+      "executionMetadata": [
+        {
+          "kind": "lifecycle-script",
+          "path": "scripts.test",
+          "value": "node --test tests/exports.test.mjs",
+          "classification": "reviewed",
+          "reason": "Reviewed npm lifecycle entrypoint; execution remains limited to its classified command graph."
+        }
+      ]
+    },
+    {
+      "path": "packages/ui",
+      "manifest": "packages/ui/package.json",
+      "name": "@repo/ui",
+      "private": true,
+      "role": "starter-library",
+      "scripts": {
+        "build": "rm -rf dist && tsc --emitDeclarationOnly",
+        "lint": "eslint . --max-warnings 0",
+        "generate:component": "turbo gen react-component",
+        "check-types": "tsc --noEmit",
+        "test": "node --test tests/package-contract.test.mjs",
+        "verify": "bun run lint && bun run check-types && bun run build && bun run test"
+      },
+      "exports": {
+        "./*": "./src/*.tsx"
+      },
+      "bin": null,
+      "files": [],
+      "implicitConfigSubpaths": [
+        "eslint.config.mjs",
+        "tsconfig.json"
+      ],
+      "dependencies": [
+        {
+          "name": "@repo/eslint-config",
+          "section": "devDependencies",
+          "version": "*",
+          "classification": "workspace",
+          "protocol": "wildcard"
+        },
+        {
+          "name": "@repo/typescript-config",
+          "section": "devDependencies",
+          "version": "*",
+          "classification": "workspace",
+          "protocol": "wildcard"
+        },
+        {
+          "name": "@types/node",
+          "section": "devDependencies",
+          "version": "^22.15.3",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "@types/react-dom",
+          "section": "devDependencies",
+          "version": "19.2.2",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "@types/react",
+          "section": "devDependencies",
+          "version": "19.2.2",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "eslint",
+          "section": "devDependencies",
+          "version": "^9.39.1",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "react-dom",
+          "section": "dependencies",
+          "version": "^19.2.0",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "react",
+          "section": "dependencies",
+          "version": "^19.2.0",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "typescript",
+          "section": "devDependencies",
+          "version": "5.9.2",
+          "classification": "external",
+          "protocol": "exact"
+        }
+      ],
+      "workspaceMember": true,
+      "executionMetadata": [
+        {
+          "kind": "lifecycle-script",
+          "path": "scripts.test",
+          "value": "node --test tests/package-contract.test.mjs",
+          "classification": "reviewed",
+          "reason": "Reviewed npm lifecycle entrypoint; execution remains limited to its classified command graph."
+        }
+      ]
+    }
+  ],
+  "workspaceEdges": [
+    {
+      "from": ".",
+      "to": "apps/runtime",
+      "section": "devDependencies",
+      "specifier": "workspace:*"
+    },
+    {
+      "from": "apps/docs",
+      "to": "packages/eslint-config",
+      "section": "devDependencies",
+      "specifier": "*"
+    },
+    {
+      "from": "apps/docs",
+      "to": "packages/typescript-config",
+      "section": "devDependencies",
+      "specifier": "*"
+    },
+    {
+      "from": "apps/docs",
+      "to": "packages/ui",
+      "section": "dependencies",
+      "specifier": "*"
+    },
+    {
+      "from": "apps/web",
+      "to": "packages/eslint-config",
+      "section": "devDependencies",
+      "specifier": "*"
+    },
+    {
+      "from": "apps/web",
+      "to": "packages/typescript-config",
+      "section": "devDependencies",
+      "specifier": "*"
+    },
+    {
+      "from": "apps/web",
+      "to": "packages/ui",
+      "section": "dependencies",
+      "specifier": "*"
+    },
+    {
+      "from": "packages/ui",
+      "to": "packages/eslint-config",
+      "section": "devDependencies",
+      "specifier": "*"
+    },
+    {
+      "from": "packages/ui",
+      "to": "packages/typescript-config",
+      "section": "devDependencies",
+      "specifier": "*"
+    }
+  ],
+  "cargoCrates": [
+    {
+      "path": "apps/runtime/native/Cargo.toml",
+      "name": "curiosity-runtime-native",
+      "edition": "2024",
+      "targets": [
+        {
+          "kind": "bin",
+          "name": "legacy_memory_parity_adapter",
+          "path": "apps/runtime/native/src/bin/legacy_memory_parity_adapter.rs",
+          "crateTypes": [],
+          "requiredFeatures": [
+            "legacy-memory-parity"
+          ]
+        },
+        {
+          "kind": "lib",
+          "name": "curiosity_runtime_native",
+          "path": "apps/runtime/native/src/lib.rs",
+          "crateTypes": [
+            "cdylib",
+            "rlib"
+          ],
+          "requiredFeatures": []
+        }
+      ],
+      "features": {
+        "admin": [],
+        "default": [
+          "admin"
+        ],
+        "legacy-memory-parity": [
+          "dep:ryu-js"
+        ],
+        "owned-lexical-builder-qualification": [
+          "owned-lexical-reader-qualification"
+        ],
+        "owned-lexical-reader-qualification": [],
+        "owned-web-qualification": [
+          "dep:rusqlite",
+          "dep:scraper"
+        ]
+      },
+      "dependencies": [
+        {
+          "name": "rusqlite",
+          "section": "dependencies",
+          "declaration": "{ version = \"=0.40.2\", optional = true, default-features = false, features = [\"bundled\"] }"
+        },
+        {
+          "name": "ryu-js",
+          "section": "dependencies",
+          "declaration": "{ version = \"=1.0.3\", optional = true }"
+        },
+        {
+          "name": "scraper",
+          "section": "dependencies",
+          "declaration": "{ version = \"=0.27.0\", optional = true, default-features = false }"
+        }
+      ]
+    },
+    {
+      "path": "apps/runtime/native-node-api-qualification/Cargo.toml",
+      "name": "curiosity-native-node-api-qualification",
+      "edition": "2024",
+      "targets": [
+        {
+          "kind": "lib",
+          "name": "curiosity_native_node_api_qualification",
+          "path": "apps/runtime/native-node-api-qualification/src/lib.rs",
+          "crateTypes": [
+            "cdylib",
+            "rlib"
+          ],
+          "requiredFeatures": []
+        }
+      ],
+      "features": {},
+      "dependencies": [
+        {
+          "name": "napi-sys",
+          "section": "dependencies",
+          "declaration": "{ version = \"=3.3.0\", default-features = false, features = [\"napi4\"] }"
+        },
+        {
+          "name": "ryu-js",
+          "section": "dependencies",
+          "declaration": "\"=1.0.3\""
+        }
+      ]
+    },
+    {
+      "path": "apps/runtime/native-node-api-qualification-tools/Cargo.toml",
+      "name": "curiosity-node-api-qualification-tools",
+      "edition": "2024",
+      "targets": [
+        {
+          "kind": "bin",
+          "name": "node_api_source_scanner",
+          "path": "apps/runtime/native-node-api-qualification-tools/src/main.rs",
+          "crateTypes": [],
+          "requiredFeatures": []
+        }
+      ],
+      "features": {},
+      "dependencies": [
+        {
+          "name": "quote",
+          "section": "dependencies",
+          "declaration": "\"=1.0.47\""
+        },
+        {
+          "name": "syn",
+          "section": "dependencies",
+          "declaration": "{ version = \"=2.0.119\", default-features = false, features = [\"full\", \"parsing\", \"printing\", \"visit\"] }"
+        }
+      ]
+    }
+  ],
+  "abiProfiles": {
+    "default": [
+      "curiosity_runtime_v0_web_search",
+      "curiosity_runtime_v1_corpus_admin",
+      "curiosity_runtime_v1_corpus_query",
+      "curiosity_runtime_v2_owned_job_transition",
+      "curiosity_runtime_v2_owned_job_transition_canonical",
+      "curiosity_runtime_v2_owned_state_write"
+    ],
+    "query-only": [
+      "curiosity_runtime_v0_web_search",
+      "curiosity_runtime_v1_corpus_query"
+    ]
+  },
+  "verificationTools": [
+    {
+      "path": "apps/plugin/opencode2/tools/verification-profile.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "sha256": "b2fe5a89c3aba76cf9e780b2323c106ed432417802d720084d522ed5950947c0"
+    },
+    {
+      "path": "apps/runtime/tools/network-denied-linux.sh",
+      "owner": "runtime",
+      "sha256": "3a005d3ff46de8d6f0529bf6cbcc784fc4e906156cc1e6861c27b307384e1f45",
+      "profiles": [
+        "network-denied"
+      ]
+    },
+    {
+      "path": "apps/runtime/tools/run-test-profile.mjs",
+      "owner": "runtime",
+      "sha256": "cadbcb78bcd73509c7c4a4e8a6b13e3da5f8a12029e09f84f00397990d9f0d80",
+      "profiles": [
+        "source",
+        "portable-linux",
+        "darwin-compatibility",
+        "network-denied",
+        "m7-current-candidate"
+      ]
+    },
+    {
+      "path": "apps/runtime/tools/verify-profile.mjs",
+      "owner": "runtime",
+      "sha256": "d02c322052b7b03254467724e977d639e81979a19d898562f568d4a038bc6320",
+      "profiles": [
+        "source",
+        "portable-linux",
+        "darwin-compatibility"
+      ]
+    },
+    {
+      "path": "tools/verification/inventory-model.mjs",
+      "owner": "repository",
+      "sha256": "9755aaab7daf8a9ef0a73dbad3fa8453801701e2d7ba1945319dddb22d6438de",
+      "profiles": [
+        "inventory-status"
+      ]
+    },
+    {
+      "path": "tools/verification/inventory.mjs",
+      "owner": "repository",
+      "sha256": "ce28ad0fd5941bb3f192281f4cec8185945f886daf0ce41ea799ca4bdebbd11a",
+      "profiles": [
+        "inventory-status"
+      ]
+    },
+    {
+      "path": "tools/verification/native-abi.mjs",
+      "owner": "repository",
+      "sha256": "f8c016eac7c3c10fdead9864d557fc7f613be85b0541deb08b78aaf16a34d6a0",
+      "profiles": [
+        "inventory-status",
+        "source",
+        "portable-linux",
+        "darwin-compatibility"
+      ]
+    },
+    {
+      "path": "tools/verification/plugin-profile-contract.mjs",
+      "owner": "repository",
+      "profiles": [
+        "inventory-status"
+      ],
+      "sha256": "d779865b25a06f07f14c131fdb13c027bf19bc9180ddde6914fd221d142cdf20"
+    },
+    {
+      "path": "tools/verification/runtime-contract-evidence.mjs",
+      "owner": "repository",
+      "sha256": "6cb06cfe16e62e0d4f24376678e32c6962eccc52d16fb4c6e0ac646851af8c31",
+      "profiles": [
+        "inventory-status"
+      ]
+    },
+    {
+      "path": "tools/verification/runtime-plugin-contract.mjs",
+      "owner": "repository",
+      "sha256": "02aadc2140488e12c49f548f424935cf46428d7a5a8d16c0f5ec4c93b27b9575",
+      "profiles": [
+        "inventory-status",
+        "portable-linux",
+        "darwin-compatibility"
+      ]
+    }
+  ],
+  "testProfiles": {
+    "scaffold": {
+      "disposition": "required",
+      "entrypoints": [
+        {
+          "package": "apps/docs",
+          "script": "verify"
+        },
+        {
+          "package": "apps/web",
+          "script": "verify"
+        },
+        {
+          "package": "packages/ui",
+          "script": "verify"
+        }
+      ],
+      "tests": [
+        "apps/docs/tests/config-load.test.mjs",
+        "apps/web/tests/config-load.test.mjs",
+        "packages/ui/tests/package-contract.test.mjs"
+      ],
+      "reason": "Required starter and UI package verification command."
+    },
+    "plugin-linux": {
+      "disposition": "required",
+      "entrypoints": [
+        {
+          "package": "apps/plugin/opencode2",
+          "script": "verify:linux"
+        }
+      ],
+      "tests": [
+        "apps/plugin/opencode2/tests/characterization/compatibility-surfaces.test.mjs",
+        "apps/plugin/opencode2/tests/characterization/promise-tool-host-abi.test.mjs",
+        "apps/plugin/opencode2/tests/characterization/release-manifest-dispositions.test.mjs",
+        "apps/plugin/opencode2/tests/integration/engineering-foreground.test.mjs",
+        "apps/plugin/opencode2/tests/integration/ephemeral-container-harness.test.mjs",
+        "apps/plugin/opencode2/tests/integration/evidence-ingest-query.test.mjs",
+        "apps/plugin/opencode2/tests/integration/functional-container-startup.test.mjs",
+        "apps/plugin/opencode2/tests/integration/installer-concurrency.test.mjs",
+        "apps/plugin/opencode2/tests/integration/installer-confinement.test.mjs",
+        "apps/plugin/opencode2/tests/integration/optional-runtime-adapter.test.mjs",
+        "apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs",
+        "apps/plugin/opencode2/tests/integration/readme-verification.test.mjs",
+        "apps/plugin/opencode2/tests/integration/registry-package-contract.test.mjs",
+        "apps/plugin/opencode2/tests/integration/release-candidate-install.test.mjs",
+        "apps/plugin/opencode2/tests/security/darwin-real-host-guard.test.mjs",
+        "apps/plugin/opencode2/tests/security/engineering-command-security.test.mjs",
+        "apps/plugin/opencode2/tests/security/evidence-bootstrap-security.test.mjs",
+        "apps/plugin/opencode2/tests/security/m7-query-capability-file.test.mjs",
+        "apps/plugin/opencode2/tests/security/release-security.test.mjs",
+        "apps/plugin/opencode2/tests/security/search-adapter-security.test.mjs",
+        "apps/plugin/opencode2/tests/security/workflow-pins.test.mjs",
+        "apps/plugin/opencode2/tests/unit/context-projection.test.mjs",
+        "apps/plugin/opencode2/tests/unit/engineering-command-assets.test.mjs",
+        "apps/plugin/opencode2/tests/unit/engineering-intent-codec.test.mjs",
+        "apps/plugin/opencode2/tests/unit/engineering-policy.test.mjs",
+        "apps/plugin/opencode2/tests/unit/event-capture.test.mjs",
+        "apps/plugin/opencode2/tests/unit/evidence-development.test.mjs",
+        "apps/plugin/opencode2/tests/unit/github-contract.test.mjs",
+        "apps/plugin/opencode2/tests/unit/handoff-contract.test.mjs",
+        "apps/plugin/opencode2/tests/unit/hook-foundation-doctor.test.mjs",
+        "apps/plugin/opencode2/tests/unit/hook-foundation.test.mjs",
+        "apps/plugin/opencode2/tests/unit/ledger-authority-archive.test.mjs",
+        "apps/plugin/opencode2/tests/unit/ledger-authority-domain.test.mjs",
+        "apps/plugin/opencode2/tests/unit/ledger-v1.test.mjs",
+        "apps/plugin/opencode2/tests/unit/legacy-memory-dependency-receipt.test.mjs",
+        "apps/plugin/opencode2/tests/unit/legacy-memory-mutant-scorer.test.mjs",
+        "apps/plugin/opencode2/tests/unit/legacy-memory-native-parity.test.mjs",
+        "apps/plugin/opencode2/tests/unit/loop-engine-v1.test.mjs",
+        "apps/plugin/opencode2/tests/unit/native-loop-completion.test.mjs",
+        "apps/plugin/opencode2/tests/unit/opencode-17595-service-compat.test.mjs",
+        "apps/plugin/opencode2/tests/unit/opencode-abi-pin.test.mjs",
+        "apps/plugin/opencode2/tests/unit/persistence-fencing.test.mjs",
+        "apps/plugin/opencode2/tests/unit/plugin-agent-config.test.mjs",
+        "apps/plugin/opencode2/tests/unit/plugin-entrypoint.test.mjs",
+        "apps/plugin/opencode2/tests/unit/provenance-manifest.test.mjs",
+        "apps/plugin/opencode2/tests/unit/provenance-resource-verification.test.mjs",
+        "apps/plugin/opencode2/tests/unit/real-host-suite.test.mjs",
+        "apps/plugin/opencode2/tests/unit/resource-hook-parity.test.mjs",
+        "apps/plugin/opencode2/tests/unit/web-search-timeout-child.test.mjs",
+        "apps/plugin/opencode2/tests/unit/web-search.test.mjs",
+        "apps/plugin/opencode2/tools/bundle-test.mjs",
+        "apps/plugin/opencode2/tools/install-test.mjs",
+        "apps/plugin/opencode2/tools/staged-release-test.mjs"
+      ],
+      "reason": "Required Linux plugin verification command."
+    },
+    "plugin-darwin": {
+      "disposition": "manual",
+      "entrypoints": [
+        {
+          "package": "apps/plugin/opencode2",
+          "script": "verify:darwin"
+        },
+        {
+          "package": "apps/plugin/opencode2",
+          "script": "test:real-host"
+        }
+      ],
+      "tests": [
+        "apps/plugin/opencode2/tests/characterization/compatibility-surfaces.test.mjs",
+        "apps/plugin/opencode2/tests/characterization/promise-tool-host-abi.test.mjs",
+        "apps/plugin/opencode2/tests/characterization/release-manifest-dispositions.test.mjs",
+        "apps/plugin/opencode2/tests/integration/engineering-foreground.test.mjs",
+        "apps/plugin/opencode2/tests/integration/ephemeral-container-harness.test.mjs",
+        "apps/plugin/opencode2/tests/integration/evidence-ingest-query.test.mjs",
+        "apps/plugin/opencode2/tests/integration/functional-container-startup.test.mjs",
+        "apps/plugin/opencode2/tests/integration/installer-concurrency.test.mjs",
+        "apps/plugin/opencode2/tests/integration/installer-confinement.test.mjs",
+        "apps/plugin/opencode2/tests/integration/optional-runtime-adapter.test.mjs",
+        "apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs",
+        "apps/plugin/opencode2/tests/integration/readme-verification.test.mjs",
+        "apps/plugin/opencode2/tests/integration/registry-package-contract.test.mjs",
+        "apps/plugin/opencode2/tests/integration/release-candidate-install.test.mjs",
+        "apps/plugin/opencode2/tests/security/darwin-real-host-guard.test.mjs",
+        "apps/plugin/opencode2/tests/security/engineering-command-security.test.mjs",
+        "apps/plugin/opencode2/tests/security/evidence-bootstrap-security.test.mjs",
+        "apps/plugin/opencode2/tests/security/m7-query-capability-file.test.mjs",
+        "apps/plugin/opencode2/tests/security/release-security.test.mjs",
+        "apps/plugin/opencode2/tests/security/search-adapter-security.test.mjs",
+        "apps/plugin/opencode2/tests/security/workflow-pins.test.mjs",
+        "apps/plugin/opencode2/tests/unit/context-projection.test.mjs",
+        "apps/plugin/opencode2/tests/unit/engineering-command-assets.test.mjs",
+        "apps/plugin/opencode2/tests/unit/engineering-intent-codec.test.mjs",
+        "apps/plugin/opencode2/tests/unit/engineering-policy.test.mjs",
+        "apps/plugin/opencode2/tests/unit/event-capture.test.mjs",
+        "apps/plugin/opencode2/tests/unit/evidence-development.test.mjs",
+        "apps/plugin/opencode2/tests/unit/github-contract.test.mjs",
+        "apps/plugin/opencode2/tests/unit/handoff-contract.test.mjs",
+        "apps/plugin/opencode2/tests/unit/hook-foundation-doctor.test.mjs",
+        "apps/plugin/opencode2/tests/unit/hook-foundation.test.mjs",
+        "apps/plugin/opencode2/tests/unit/ledger-authority-archive.test.mjs",
+        "apps/plugin/opencode2/tests/unit/ledger-authority-domain.test.mjs",
+        "apps/plugin/opencode2/tests/unit/ledger-v1.test.mjs",
+        "apps/plugin/opencode2/tests/unit/legacy-memory-dependency-receipt.test.mjs",
+        "apps/plugin/opencode2/tests/unit/legacy-memory-mutant-scorer.test.mjs",
+        "apps/plugin/opencode2/tests/unit/legacy-memory-native-parity.test.mjs",
+        "apps/plugin/opencode2/tests/unit/loop-engine-v1.test.mjs",
+        "apps/plugin/opencode2/tests/unit/native-loop-completion.test.mjs",
+        "apps/plugin/opencode2/tests/unit/opencode-17595-service-compat.test.mjs",
+        "apps/plugin/opencode2/tests/unit/opencode-abi-pin.test.mjs",
+        "apps/plugin/opencode2/tests/unit/persistence-fencing.test.mjs",
+        "apps/plugin/opencode2/tests/unit/plugin-agent-config.test.mjs",
+        "apps/plugin/opencode2/tests/unit/plugin-entrypoint.test.mjs",
+        "apps/plugin/opencode2/tests/unit/provenance-manifest.test.mjs",
+        "apps/plugin/opencode2/tests/unit/provenance-resource-verification.test.mjs",
+        "apps/plugin/opencode2/tests/unit/real-host-suite.test.mjs",
+        "apps/plugin/opencode2/tests/unit/resource-hook-parity.test.mjs",
+        "apps/plugin/opencode2/tests/unit/web-search-timeout-child.test.mjs",
+        "apps/plugin/opencode2/tests/unit/web-search.test.mjs",
+        "apps/plugin/opencode2/tools/bundle-test.mjs",
+        "apps/plugin/opencode2/tools/install-test.mjs",
+        "apps/plugin/opencode2/tools/staged-release-test.mjs"
+      ],
+      "reason": "Manual trusted Darwin arm64 plugin verification and real-host suite; not M7 qualification."
+    },
+    "compile-contract": {
+      "disposition": "required",
+      "entrypoints": [
+        {
+          "package": "apps/plugin/opencode2",
+          "script": "contract:types"
+        }
+      ],
+      "tests": [
+        "apps/plugin/opencode2/tests/compile/runtime-query-contract.ts"
+      ],
+      "reason": "Required TypeScript compile contract command."
+    },
+    "sdk-v2-manual": {
+      "disposition": "manual",
+      "entrypoints": [
+        {
+          "package": ".",
+          "script": "verify:legacy-memory-node-api-sdk-v2"
+        }
+      ],
+      "tests": [
+        "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-acceptance-verifier.mjs",
+        "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-approved-review-set.mjs",
+        "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-archive-inventory-order.mjs",
+        "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-generated-executable-policy.mjs",
+        "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-tool-policy.mjs",
+        "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2.acceptance.ts",
+        "apps/plugin/opencode2/tests/qualification/verify-legacy-memory-node-api-sdk-v2.mjs"
+      ],
+      "reason": "Manual SDK v2 qualification only; outside ordinary verification."
+    },
+    "sdk-v1-manual": {
+      "disposition": "manual",
+      "entrypoints": [
+        {
+          "package": ".",
+          "script": "verify:legacy-memory-node-api-sdk"
+        }
+      ],
+      "tests": [
+        "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk.test.ts",
+        "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk.ts",
+        "apps/plugin/opencode2/tests/qualification/verify-legacy-memory-node-api-sdk.mjs"
+      ],
+      "reason": "Manual SDK v1 qualification only; outside ordinary verification."
+    },
+    "source": {
+      "disposition": "required",
+      "entrypoints": [
+        {
+          "package": "apps/runtime",
+          "script": "verify"
+        }
+      ],
+      "tests": [
+        "apps/runtime/tests/acquisition-kernel-v3.test.ts",
+        "apps/runtime/tests/boundaries.test.ts",
+        "apps/runtime/tests/characterization/bun-https-lookup.test.ts",
+        "apps/runtime/tests/characterization/m6-local-tls.test.ts",
+        "apps/runtime/tests/corpus.test.ts",
+        "apps/runtime/tests/owned-crawl.test.ts",
+        "apps/runtime/tests/package-scripts.test.ts",
+        "apps/runtime/tests/query-boundary.test.ts",
+        "apps/runtime/tests/repository-search.test.ts",
+        "apps/runtime/tests/retrieval-characterization.test.ts",
+        "apps/runtime/tests/retrieval-contracts.test.ts",
+        "apps/runtime/tests/retrieve-information-v3.test.ts",
+        "apps/runtime/tests/retrieve-information.test.ts",
+        "apps/runtime/tests/runtime.test.ts"
+      ],
+      "reason": "Required portable source verification command; no M7 or SDK qualification claim."
+    },
+    "portable-linux": {
+      "disposition": "required",
+      "entrypoints": [
+        {
+          "package": ".",
+          "script": "runtime:portable"
+        }
+      ],
+      "tests": [
+        "apps/runtime/tests/acquisition-kernel-v3.test.ts",
+        "apps/runtime/tests/boundaries.test.ts",
+        "apps/runtime/tests/characterization/bun-https-lookup.test.ts",
+        "apps/runtime/tests/characterization/m6-local-tls.test.ts",
+        "apps/runtime/tests/corpus.test.ts",
+        "apps/runtime/tests/owned-crawl.test.ts",
+        "apps/runtime/tests/package-scripts.test.ts",
+        "apps/runtime/tests/query-boundary.test.ts",
+        "apps/runtime/tests/repository-search.test.ts",
+        "apps/runtime/tests/retrieval-characterization.test.ts",
+        "apps/runtime/tests/retrieval-contracts.test.ts",
+        "apps/runtime/tests/retrieve-information-v3.test.ts",
+        "apps/runtime/tests/retrieve-information.test.ts",
+        "apps/runtime/tests/runtime.test.ts"
+      ],
+      "reason": "Required portable Linux runtime verification command."
+    },
+    "darwin-compatibility": {
+      "disposition": "manual",
+      "entrypoints": [
+        {
+          "package": ".",
+          "script": "runtime:darwin-compatibility"
+        }
+      ],
+      "tests": [
+        "apps/runtime/tests/acquisition-kernel-v3.test.ts",
+        "apps/runtime/tests/boundaries.test.ts",
+        "apps/runtime/tests/characterization/bun-https-lookup.test.ts",
+        "apps/runtime/tests/characterization/m6-local-tls.test.ts",
+        "apps/runtime/tests/corpus.test.ts",
+        "apps/runtime/tests/owned-crawl.test.ts",
+        "apps/runtime/tests/package-scripts.test.ts",
+        "apps/runtime/tests/query-boundary.test.ts",
+        "apps/runtime/tests/repository-search.test.ts",
+        "apps/runtime/tests/retrieval-characterization.test.ts",
+        "apps/runtime/tests/retrieval-contracts.test.ts",
+        "apps/runtime/tests/retrieve-information-v3.test.ts",
+        "apps/runtime/tests/retrieve-information.test.ts",
+        "apps/runtime/tests/runtime.test.ts"
+      ],
+      "reason": "Manual trusted Darwin compatibility; not M7 qualification."
+    },
+    "network-denied": {
+      "disposition": "supplemental",
+      "entrypoints": [
+        {
+          "package": ".",
+          "script": "runtime:network-denied"
+        }
+      ],
+      "tests": [
+        "apps/runtime/tests/boundaries.test.ts",
+        "apps/runtime/tests/corpus.test.ts",
+        "apps/runtime/tests/owned-crawl.test.ts",
+        "apps/runtime/tests/query-boundary.test.ts",
+        "apps/runtime/tests/repository-search.test.ts",
+        "apps/runtime/tests/runtime.test.ts"
+      ],
+      "reason": "Supplemental Linux network-namespace gate outside the exact required aggregate."
+    },
+    "m7-current-candidate": {
+      "disposition": "manual",
+      "entrypoints": [
+        {
+          "package": "apps/runtime",
+          "script": "m7:test"
+        }
+      ],
+      "tests": [
+        "apps/runtime/tests/m7-native-install-id.test.ts",
+        "apps/runtime/tests/m7-release-path.test.ts",
+        "apps/runtime/tests/m7-release-utilities.test.ts",
+        "apps/runtime/tests/m7-release.test.ts"
+      ],
+      "reason": "Manual unqualified M7 source-candidate tests."
+    },
+    "owned-web-manual": {
+      "disposition": "manual",
+      "entrypoints": [
+        {
+          "package": "apps/runtime",
+          "script": "test:owned-web-qualification"
+        }
+      ],
+      "tests": [
+        "apps/runtime/tests/owned-web-qualification.test.ts"
+      ],
+      "reason": "Manual owned-web qualification only."
+    },
+    "config-load": {
+      "disposition": "required",
+      "entrypoints": [
+        {
+          "package": "packages/eslint-config",
+          "script": "verify"
+        },
+        {
+          "package": "packages/typescript-config",
+          "script": "verify"
+        }
+      ],
+      "tests": [
+        "packages/eslint-config/tests/exports.test.mjs",
+        "packages/typescript-config/tests/exports.test.mjs"
+      ],
+      "reason": "Required configuration package verification commands."
+    },
+    "inventory-status": {
+      "disposition": "required",
+      "entrypoints": [
+        {
+          "package": ".",
+          "script": "inventory:check"
+        },
+        {
+          "package": ".",
+          "script": "status:check"
+        }
+      ],
+      "tests": [
+        "tools/status/status.test.mjs",
+        "tools/verification/inventory.test.mjs",
+        "tools/verification/verification.test.mjs"
+      ],
+      "reason": "Required repository inventory and status commands."
+    },
+    "legacy-orphan-bootstrap": {
+      "disposition": "legacy-orphan",
+      "entrypoints": [],
+      "tests": [
+        "apps/plugin/opencode2/tools/bootstrap-test.mjs"
+      ],
+      "reason": "obsolete imported bootstrap harness is retained but not wired into required verification"
+    },
+    "legacy-orphan-comprehensive": {
+      "disposition": "legacy-orphan",
+      "entrypoints": [],
+      "tests": [
+        "apps/plugin/opencode2/tools/comprehensive-test.mjs"
+      ],
+      "reason": "obsolete imported comprehensive harness is retained but not wired into required verification"
+    },
+    "legacy-orphan-consolidation": {
+      "disposition": "legacy-orphan",
+      "entrypoints": [],
+      "tests": [
+        "apps/plugin/opencode2/tools/consolidation-test.mjs"
+      ],
+      "reason": "historical consolidation harness is retained but not wired into required verification"
+    },
+    "legacy-orphan-smoke": {
+      "disposition": "legacy-orphan",
+      "entrypoints": [],
+      "tests": [
+        "apps/plugin/opencode2/tools/smoke-test.mjs"
+      ],
+      "reason": "obsolete imported smoke harness is retained but not wired into required verification"
+    },
+    "legacy-orphan-identity": {
+      "disposition": "legacy-orphan",
+      "entrypoints": [],
+      "tests": [
+        "apps/plugin/opencode2/tools/identity-test.mjs"
+      ],
+      "reason": "legacy identity scanner is retained but not wired into required verification"
+    },
+    "deferred-real-host-spec": {
+      "disposition": "deferred",
+      "entrypoints": [],
+      "tests": [
+        "apps/plugin/opencode2/tests/real-host/serve-isolation.test.mjs"
+      ],
+      "reason": "standalone real-host spec is retained; the manual package command executes the authoritative suite directly"
+    },
+    "registry-smoke": {
+      "disposition": "required",
+      "entrypoints": [
+        {
+          "package": "apps/plugin/opencode2",
+          "script": "test:container:smoke"
+        }
+      ],
+      "tests": [
+        "apps/plugin/opencode2/tests/integration/functional-container-startup.test.mjs"
+      ],
+      "reason": "Required registry-container functional validation and installed-plugin setup instrumentation."
+    }
+  },
+  "tests": [
+    {
+      "path": "apps/docs/tests/config-load.test.mjs",
+      "owner": "docs",
+      "profiles": [
+        "scaffold"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/characterization/compatibility-surfaces.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/characterization/promise-tool-host-abi.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/characterization/release-manifest-dispositions.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/compile/runtime-query-contract.ts",
+      "owner": "plugin",
+      "profiles": [
+        "compile-contract"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/integration/engineering-foreground.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/integration/ephemeral-container-harness.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/integration/evidence-ingest-query.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/integration/functional-container-startup.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin",
+        "registry-smoke"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/integration/installer-concurrency.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/integration/installer-confinement.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/integration/optional-runtime-adapter.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/integration/readme-verification.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/integration/registry-package-contract.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/integration/release-candidate-install.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-acceptance-verifier.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "sdk-v2-manual"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-approved-review-set.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "sdk-v2-manual"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-archive-inventory-order.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "sdk-v2-manual"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-generated-executable-policy.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "sdk-v2-manual"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-tool-policy.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "sdk-v2-manual"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2.acceptance.ts",
+      "owner": "plugin",
+      "profiles": [
+        "sdk-v2-manual"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk.test.ts",
+      "owner": "plugin",
+      "profiles": [
+        "sdk-v1-manual"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk.ts",
+      "owner": "plugin",
+      "profiles": [
+        "sdk-v1-manual"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/qualification/verify-legacy-memory-node-api-sdk-v2.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "sdk-v2-manual"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/qualification/verify-legacy-memory-node-api-sdk.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "sdk-v1-manual"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/real-host/serve-isolation.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "deferred-real-host-spec"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/security/darwin-real-host-guard.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/security/engineering-command-security.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/security/evidence-bootstrap-security.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/security/m7-query-capability-file.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/security/release-security.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/security/search-adapter-security.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/security/workflow-pins.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/context-projection.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/engineering-command-assets.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/engineering-intent-codec.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/engineering-policy.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/event-capture.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/evidence-development.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/github-contract.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/handoff-contract.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/hook-foundation-doctor.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/hook-foundation.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/ledger-authority-archive.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/ledger-authority-domain.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/ledger-v1.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/legacy-memory-dependency-receipt.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/legacy-memory-mutant-scorer.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/legacy-memory-native-parity.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/loop-engine-v1.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/native-loop-completion.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/opencode-17595-service-compat.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/opencode-abi-pin.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/persistence-fencing.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/plugin-agent-config.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/plugin-entrypoint.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/provenance-manifest.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/provenance-resource-verification.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/real-host-suite.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/resource-hook-parity.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/web-search-timeout-child.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tests/unit/web-search.test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tools/bootstrap-test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "legacy-orphan-bootstrap"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tools/bundle-test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tools/comprehensive-test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "legacy-orphan-comprehensive"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tools/consolidation-test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "legacy-orphan-consolidation"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tools/identity-test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "legacy-orphan-identity"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tools/install-test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tools/smoke-test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "legacy-orphan-smoke"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/plugin/opencode2/tools/staged-release-test.mjs",
+      "owner": "plugin",
+      "profiles": [
+        "plugin-linux",
+        "plugin-darwin"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/runtime/tests/acquisition-kernel-v3.test.ts",
+      "owner": "runtime",
+      "profiles": [
+        "source",
+        "portable-linux",
+        "darwin-compatibility"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/runtime/tests/boundaries.test.ts",
+      "owner": "runtime",
+      "profiles": [
+        "source",
+        "portable-linux",
+        "darwin-compatibility",
+        "network-denied"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/runtime/tests/characterization/bun-https-lookup.test.ts",
+      "owner": "runtime",
+      "profiles": [
+        "source",
+        "portable-linux",
+        "darwin-compatibility"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/runtime/tests/characterization/m6-local-tls.test.ts",
+      "owner": "runtime",
+      "profiles": [
+        "source",
+        "portable-linux",
+        "darwin-compatibility"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/runtime/tests/corpus.test.ts",
+      "owner": "runtime",
+      "profiles": [
+        "source",
+        "portable-linux",
+        "darwin-compatibility",
+        "network-denied"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/runtime/tests/m7-native-install-id.test.ts",
+      "owner": "runtime",
+      "profiles": [
+        "m7-current-candidate"
+      ],
+      "platforms": [
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/runtime/tests/m7-release-path.test.ts",
+      "owner": "runtime",
+      "profiles": [
+        "m7-current-candidate"
+      ],
+      "platforms": [
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/runtime/tests/m7-release-utilities.test.ts",
+      "owner": "runtime",
+      "profiles": [
+        "m7-current-candidate"
+      ],
+      "platforms": [
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/runtime/tests/m7-release.test.ts",
+      "owner": "runtime",
+      "profiles": [
+        "m7-current-candidate"
+      ],
+      "platforms": [
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/runtime/tests/owned-crawl.test.ts",
+      "owner": "runtime",
+      "profiles": [
+        "source",
+        "portable-linux",
+        "darwin-compatibility",
+        "network-denied"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/runtime/tests/owned-web-qualification.test.ts",
+      "owner": "runtime",
+      "profiles": [
+        "owned-web-manual"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/runtime/tests/package-scripts.test.ts",
+      "owner": "runtime",
+      "profiles": [
+        "source",
+        "portable-linux",
+        "darwin-compatibility"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/runtime/tests/query-boundary.test.ts",
+      "owner": "runtime",
+      "profiles": [
+        "source",
+        "portable-linux",
+        "darwin-compatibility",
+        "network-denied"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/runtime/tests/repository-search.test.ts",
+      "owner": "runtime",
+      "profiles": [
+        "source",
+        "portable-linux",
+        "darwin-compatibility",
+        "network-denied"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/runtime/tests/retrieval-characterization.test.ts",
+      "owner": "runtime",
+      "profiles": [
+        "source",
+        "portable-linux",
+        "darwin-compatibility"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/runtime/tests/retrieval-contracts.test.ts",
+      "owner": "runtime",
+      "profiles": [
+        "source",
+        "portable-linux",
+        "darwin-compatibility"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/runtime/tests/retrieve-information-v3.test.ts",
+      "owner": "runtime",
+      "profiles": [
+        "source",
+        "portable-linux",
+        "darwin-compatibility"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/runtime/tests/retrieve-information.test.ts",
+      "owner": "runtime",
+      "profiles": [
+        "source",
+        "portable-linux",
+        "darwin-compatibility"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/runtime/tests/runtime.test.ts",
+      "owner": "runtime",
+      "profiles": [
+        "source",
+        "portable-linux",
+        "darwin-compatibility",
+        "network-denied"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/web/tests/config-load.test.mjs",
+      "owner": "web",
+      "profiles": [
+        "scaffold"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "packages/eslint-config/tests/exports.test.mjs",
+      "owner": "eslint-config",
+      "profiles": [
+        "config-load"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "packages/typescript-config/tests/exports.test.mjs",
+      "owner": "typescript-config",
+      "profiles": [
+        "config-load"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "packages/ui/tests/package-contract.test.mjs",
+      "owner": "ui",
+      "profiles": [
+        "scaffold"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "tools/status/status.test.mjs",
+      "owner": "repository",
+      "profiles": [
+        "inventory-status"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "tools/verification/inventory.test.mjs",
+      "owner": "repository",
+      "profiles": [
+        "inventory-status"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "tools/verification/verification.test.mjs",
+      "owner": "repository",
+      "profiles": [
+        "inventory-status"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    }
+  ],
+  "workflows": [
+    {
+      "path": ".github/workflows/opencode2.yml",
+      "name": "Curiosity verification",
+      "sha256": "33f3689c476e661179a26bf8a8c414bea833a8fbab9a6e0a47704cc1de5d67b5",
+      "triggers": [
+        "pull_request",
+        "push",
+        "merge_group",
+        "schedule",
+        "workflow_dispatch"
+      ],
+      "cadence": "17 5 * * 2",
+      "permissions": {
+        "contents": "read"
+      },
+      "jobs": [
+        {
+          "id": "inventory-status",
+          "condition": "github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group'",
+          "runsOn": [
+            "ubuntu-latest"
+          ],
+          "needs": [],
+          "actions": [
+            "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+            "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6"
+          ],
+          "commands": [
+            "bun run inventory:check",
+            "bun run status:check"
+          ],
+          "permissions": null
+        },
+        {
+          "id": "workspace-verification",
+          "condition": "github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group'",
+          "runsOn": [
+            "ubuntu-latest"
+          ],
+          "needs": [],
+          "permissions": null,
+          "actions": [
+            "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+            "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6"
+          ],
+          "commands": [
+            "bunx turbo run verify --filter=docs --filter=web --filter=@repo/ui --filter=@repo/eslint-config --filter=@repo/typescript-config"
+          ]
+        },
+        {
+          "id": "plugin-linux",
+          "condition": "github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group'",
+          "runsOn": [
+            "ubuntu-latest"
+          ],
+          "needs": [],
+          "actions": [
+            "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+            "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6"
+          ],
+          "commands": [
+            "bun run verify:linux"
+          ],
+          "permissions": null
+        },
+        {
+          "id": "registry-smoke",
+          "condition": "github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group'",
+          "runsOn": [
+            "ubuntu-latest"
+          ],
+          "needs": [],
+          "actions": [
+            "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+            "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6"
+          ],
+          "commands": [
+            "bun run test:container:smoke"
+          ],
+          "permissions": null
+        },
+        {
+          "id": "runtime-portable",
+          "condition": "github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group'",
+          "runsOn": [
+            "ubuntu-latest"
+          ],
+          "needs": [],
+          "actions": [
+            "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+            "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6"
+          ],
+          "commands": [
+            "rustup toolchain install 1.97.1 --profile minimal --component rustfmt,clippy",
+            "bun run runtime:portable"
+          ],
+          "permissions": null
+        },
+        {
+          "id": "runtime-network-denied",
+          "condition": "github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group'",
+          "runsOn": [
+            "ubuntu-latest"
+          ],
+          "needs": [],
+          "actions": [
+            "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+            "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6"
+          ],
+          "commands": [
+            "rustup toolchain install 1.97.1 --profile minimal",
+            "cargo fetch --locked --manifest-path apps/runtime/native/Cargo.toml",
+            "bun run runtime:network-denied"
+          ],
+          "permissions": null
+        },
+        {
+          "id": "required-gate",
+          "condition": "always() && (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group')",
+          "runsOn": [
+            "ubuntu-latest"
+          ],
+          "needs": [
+            "inventory-status",
+            "workspace-verification",
+            "plugin-linux",
+            "registry-smoke",
+            "runtime-portable"
+          ],
+          "actions": [],
+          "commands": [
+            "test \"$INVENTORY_STATUS\" = success",
+            "test \"$WORKSPACE_VERIFICATION\" = success",
+            "test \"$PLUGIN_LINUX\" = success",
+            "test \"$REGISTRY_SMOKE\" = success",
+            "test \"$RUNTIME_PORTABLE\" = success"
+          ],
+          "permissions": null
+        },
+        {
+          "id": "installer-stress",
+          "condition": "github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.installer_stress)",
+          "runsOn": [
+            "ubuntu-latest"
+          ],
+          "needs": [],
+          "actions": [
+            "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+            "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6"
+          ],
+          "commands": [
+            "bun run test:container:stress"
+          ],
+          "permissions": null
+        },
+        {
+          "id": "darwin-compatibility",
+          "condition": "github.event_name == 'workflow_dispatch' && inputs.darwin_compatibility",
+          "runsOn": [
+            "self-hosted",
+            "macOS",
+            "ARM64",
+            "curiosity-darwin-arm64"
+          ],
+          "needs": [],
+          "actions": [
+            "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+            "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6"
+          ],
+          "commands": [
+            "rustup toolchain install 1.97.1 --profile minimal --component rustfmt,clippy",
+            "CURIOSITY_TRUSTED_DARWIN_MANUAL: \"1\"",
+            "bun run runtime:darwin-compatibility",
+            "bun run verify:darwin"
+          ],
+          "permissions": null
+        }
+      ]
+    }
+  ],
+  "releaseArtifacts": [
+    {
+      "id": "plugin-registry-tarball",
+      "source": "apps/plugin/opencode2/package.json",
+      "sha256": "8bbec2a75b907aff4402885821897167f2d286b8faea76aaa5d2feb51f4ff84c",
+      "profile": "registry-package-candidate",
+      "authority": "apps/plugin/opencode2/docs/decisions/0031-registry-ready-package-and-black-box-proof.md",
+      "cadence": "per-verification",
+      "disposition": "publication-forbidden",
+      "producer": "bun pm pack --ignore-scripts",
+      "publication": "forbidden"
+    },
+    {
+      "id": "m7-historical-artifact",
+      "source": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md",
+      "sha256": "8ac26ef942dba0eccfd85742db04ee1ef843b8b9445d5c5b17e5a3eb601206cf",
+      "profile": "m7-historical",
+      "authority": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md",
+      "cadence": "immutable",
+      "disposition": "historical-only",
+      "sourceCommit": "0dfc71de02393da9aad37bc753724886c00e323c",
+      "artifactSha256": "3aa8e5ba6660cafefb3d3121ba1e652346f4019a78922a0ec689b04b32e06642",
+      "ci": false,
+      "immutable": true
+    },
+    {
+      "id": "m7-current-candidate",
+      "source": "apps/runtime/tools/m7-release.mjs",
+      "sha256": "a4688d841b90628ba57c840d2805bbb133f4e2052411cf0a79d6eecc99b3ca09",
+      "profile": "m7-current-candidate",
+      "authority": "apps/runtime/docs/decisions/0042-beta-17595-release-source-profile.md",
+      "cadence": "manual-only",
+      "disposition": "deferred",
+      "producer": "bun tools/m7-release.mjs build",
+      "status": "deferred",
+      "manualOnly": true,
+      "qualified": false
+    }
+  ],
+  "crossPackageContracts": [
+    {
+      "id": "query-types",
+      "source": "apps/plugin/opencode2/tests/compile/runtime-query-contract.ts",
+      "sha256": "27c7f2d4a9851d8cca0352cc4f8c7c283d8a15d192663727906c4108524e2a0b",
+      "profile": "compile-contract",
+      "authority": "apps/runtime/src/query.ts",
+      "cadence": "per-verification"
+    },
+    {
+      "id": "staged-query-execution",
+      "source": "tools/verification/runtime-plugin-contract.mjs",
+      "sha256": "02aadc2140488e12c49f548f424935cf46428d7a5a8d16c0f5ec4c93b27b9575",
+      "profile": "executable-contract",
+      "authority": "docs/verification/runtime-plugin-contract-v1.json",
+      "cadence": "per-verification"
+    },
+    {
+      "id": "runtime-plugin-v1",
+      "source": "docs/verification/runtime-plugin-contract-v1.json",
+      "sha256": "e706df50ee1cbc6350d1a44a70bc5365e07d28ddda95faa2656112f34af25dc0",
+      "profile": "runtime-plugin-v1",
+      "authority": "apps/runtime/src/query.ts",
+      "cadence": "per-verification"
+    },
+    {
+      "id": "native-abi",
+      "source": "tools/verification/native-abi.mjs",
+      "sha256": "f8c016eac7c3c10fdead9864d557fc7f613be85b0541deb08b78aaf16a34d6a0",
+      "profile": "native-abi",
+      "authority": "apps/runtime/native/Cargo.toml",
+      "cadence": "per-verification"
+    },
+    {
+      "id": "public-plugin-runtime-absence",
+      "source": "apps/plugin/opencode2/tests/integration/registry-package-contract.test.mjs",
+      "sha256": "26ea6886f2c2efde35f1b919ed2fe285eeb77259b8feebf841d79f83f031e8f9",
+      "profile": "package-boundary",
+      "authority": "apps/plugin/opencode2/package.json",
+      "cadence": "per-verification"
+    }
+  ],
+  "negativeBoundaries": [
+    {
+      "id": "no-publication",
+      "state": "forbidden"
+    },
+    {
+      "id": "no-deployment",
+      "state": "forbidden"
+    },
+    {
+      "id": "no-m7-ci",
+      "state": "forbidden"
+    },
+    {
+      "id": "no-sdk-v2-ci",
+      "state": "forbidden"
+    },
+    {
+      "id": "no-runtime-plugin-package-edge",
+      "state": "forbidden"
+    },
+    {
+      "id": "no-runner-service",
+      "state": "forbidden"
+    }
+  ],
+  "taskGraph": {
+    "rootTest": "node --test --test-concurrency=1 tools/status/status.test.mjs tools/verification/*.test.mjs && turbo run test",
+    "rootVerify": "bun run inventory:check && bun run status:check && turbo run verify && node tools/verification/runtime-plugin-contract.mjs --no-build",
+    "turboTasks": [
+      "build",
+      "lint",
+      "check-types",
+      "test",
+      "verify",
+      "dev"
+    ],
+    "authoritativeWorkspaces": [
+      "apps/docs",
+      "apps/plugin/opencode2",
+      "apps/runtime",
+      "apps/web",
+      "packages/eslint-config",
+      "packages/typescript-config",
+      "packages/ui"
+    ],
+    "testVerifyInputs": [
+      "$TURBO_DEFAULT$",
+      "$TURBO_ROOT$/docs/verification/inventory.json",
+      "$TURBO_ROOT$/docs/verification/schema.json",
+      "$TURBO_ROOT$/tools/verification/**",
+      "$TURBO_ROOT$/apps/runtime/tools/run-test-profile.mjs",
+      "$TURBO_ROOT$/apps/runtime/tools/verify-profile.mjs",
+      "$TURBO_ROOT$/apps/runtime/src/**",
+      "$TURBO_ROOT$/apps/runtime/package.json",
+      "$TURBO_ROOT$/apps/runtime/tsconfig.json",
+      "$TURBO_ROOT$/apps/runtime/tsconfig.types.json",
+      "$TURBO_ROOT$/apps/plugin/opencode2/src/**",
+      "$TURBO_ROOT$/apps/plugin/opencode2/package.json",
+      "$TURBO_ROOT$/apps/plugin/opencode2/tsconfig.json",
+      "$TURBO_ROOT$/apps/plugin/opencode2/tsconfig.build.json",
+      "$TURBO_ROOT$/apps/plugin/opencode2/tsconfig.contract.json"
+    ]
+  }
+}

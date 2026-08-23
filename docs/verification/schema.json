@@ -1,0 +1,289 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://curiosity.local/docs/verification/schema.json",
+  "title": "Curiosity repository verification inventory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schemaVersion",
+    "packages",
+    "workspaceEdges",
+    "cargoCrates",
+    "abiProfiles",
+    "verificationTools",
+    "testProfiles",
+    "tests",
+    "workflows",
+    "releaseArtifacts",
+    "crossPackageContracts",
+    "negativeBoundaries",
+    "taskGraph"
+  ],
+  "properties": {
+    "$schema": { "const": "./schema.json" },
+    "schemaVersion": { "const": 1 },
+    "packages": { "type": "array", "minItems": 9, "items": { "$ref": "#/$defs/package" } },
+    "workspaceEdges": { "type": "array", "items": { "$ref": "#/$defs/edge" } },
+    "cargoCrates": { "type": "array", "minItems": 3, "items": { "$ref": "#/$defs/cargo" } },
+    "abiProfiles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default", "query-only"],
+      "properties": {
+        "default": { "$ref": "#/$defs/stringArray" },
+        "query-only": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "verificationTools": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/verificationTool" } },
+    "testProfiles": { "type": "object", "minProperties": 1, "additionalProperties": { "$ref": "#/$defs/testProfile" } },
+    "tests": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/test" } },
+    "workflows": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/workflow" } },
+    "releaseArtifacts": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/releaseArtifact" } },
+    "crossPackageContracts": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/crossPackageContract" } },
+    "negativeBoundaries": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/namedRecord" } },
+    "taskGraph": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rootTest", "rootVerify", "turboTasks", "authoritativeWorkspaces", "testVerifyInputs"],
+      "properties": {
+        "rootTest": { "type": "string", "minLength": 1 },
+        "rootVerify": { "type": "string", "minLength": 1 },
+        "turboTasks": { "$ref": "#/$defs/stringArray" },
+        "authoritativeWorkspaces": { "$ref": "#/$defs/stringArray" },
+        "testVerifyInputs": { "$ref": "#/$defs/stringArray" }
+      }
+    }
+  },
+  "$defs": {
+    "path": {
+      "type": "string",
+      "pattern": "^(?:\\.|[A-Za-z0-9@._-]+(?:/[A-Za-z0-9@._-]+)*)$"
+    },
+    "stringArray": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string" }
+    },
+    "package": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "manifest", "name", "private", "workspaceMember", "role", "scripts", "exports", "bin", "files", "implicitConfigSubpaths", "dependencies", "executionMetadata"],
+      "properties": {
+        "path": { "$ref": "#/$defs/path" },
+        "manifest": { "$ref": "#/$defs/path" },
+        "name": { "type": "string", "minLength": 1 },
+        "private": { "type": "boolean" },
+        "workspaceMember": { "type": "boolean" },
+        "role": { "enum": ["root", "plugin", "runtime", "starter-app", "starter-library", "configuration", "test-fixture"] },
+        "scripts": { "type": "object", "additionalProperties": { "type": "string" } },
+        "exports": {},
+        "bin": {},
+        "files": { "$ref": "#/$defs/stringArray" },
+        "implicitConfigSubpaths": { "$ref": "#/$defs/stringArray" },
+        "dependencies": { "type": "array", "items": { "$ref": "#/$defs/packageDependency" } },
+        "executionMetadata": { "type": "array", "items": { "$ref": "#/$defs/packageExecutionMetadata" } }
+      }
+    },
+    "packageExecutionMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "path", "value", "classification", "reason"],
+      "properties": {
+        "kind": { "enum": ["lifecycle-script", "implicit-lifecycle-script", "trust-policy", "trusted-dependency", "blocked-dependency", "install-policy", "override", "patch"] },
+        "path": { "type": "string", "minLength": 1 },
+        "key": { "type": "string", "minLength": 1 },
+        "value": {},
+        "classification": { "enum": ["reviewed", "unreviewed"] },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    },
+    "packageDependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "section", "version", "classification", "protocol"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "section": { "enum": ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies", "peerDependenciesMeta", "overrides", "resolutions", "pnpm.overrides", "bundledDependencies", "bundleDependencies"] },
+        "version": { "type": "string", "minLength": 1 },
+        "classification": { "enum": ["external", "workspace"] },
+        "protocol": { "enum": ["exact", "caret", "tilde", "range", "workspace", "wildcard", "npm", "file", "link", "git", "url", "tag", "unknown"] },
+        "metadata": { "type": "string", "minLength": 1 }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to", "section", "specifier"],
+      "properties": {
+        "from": { "$ref": "#/$defs/path" },
+        "to": { "$ref": "#/$defs/path" },
+        "section": { "type": "string" },
+        "specifier": { "type": "string" }
+      }
+    },
+    "cargo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "name", "edition", "targets", "features", "dependencies"],
+      "properties": {
+        "path": { "$ref": "#/$defs/path" },
+        "name": { "type": "string" },
+        "edition": { "type": "string" },
+        "targets": { "type": "array", "items": { "$ref": "#/$defs/cargoTarget" } },
+        "features": { "type": "object", "additionalProperties": { "$ref": "#/$defs/stringArray" } },
+        "dependencies": { "type": "array", "items": { "$ref": "#/$defs/cargoDependency" } }
+      }
+    },
+    "cargoTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "name", "path", "crateTypes", "requiredFeatures"],
+      "properties": {
+        "kind": { "enum": ["lib", "bin", "example", "bench", "test", "build"] },
+        "name": { "type": "string", "minLength": 1 },
+        "path": { "$ref": "#/$defs/path" },
+        "crateTypes": { "$ref": "#/$defs/stringArray" },
+        "requiredFeatures": { "$ref": "#/$defs/stringArray" },
+        "classification": { "const": "reviewed-build-script" },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      },
+      "allOf": [{
+        "if": { "properties": { "kind": { "const": "build" } }, "required": ["kind"] },
+        "then": { "required": ["classification", "sha256"] },
+        "else": { "not": { "anyOf": [{ "required": ["classification"] }, { "required": ["sha256"] }] } }
+      }]
+    },
+    "cargoDependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "section", "declaration"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "section": { "type": "string", "pattern": "^(?:dependencies|dev-dependencies|build-dependencies|target\\..+\\.(?:dependencies|dev-dependencies|build-dependencies))$" },
+        "declaration": { "type": "string", "minLength": 1 }
+      }
+    },
+    "verificationTool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "owner", "sha256", "profiles"],
+      "properties": {
+        "path": { "$ref": "#/$defs/path" },
+        "owner": { "enum": ["repository", "plugin", "runtime"] },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "profiles": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "testProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["disposition", "entrypoints", "tests", "reason"],
+      "properties": {
+        "disposition": { "enum": ["required", "manual", "supplemental", "deferred", "legacy-orphan"] },
+        "entrypoints": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/scriptEntrypoint" } },
+        "tests": { "$ref": "#/$defs/stringArray" },
+        "reason": { "type": "string", "minLength": 1 }
+      },
+      "allOf": [{
+        "if": { "properties": { "disposition": { "const": "required" } }, "required": ["disposition"] },
+        "then": { "properties": { "entrypoints": { "minItems": 1 } } }
+      }]
+    },
+    "scriptEntrypoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["package", "script"],
+      "properties": {
+        "package": { "$ref": "#/$defs/path" },
+        "script": { "type": "string", "minLength": 1 }
+      }
+    },
+    "test": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "owner", "profiles", "platforms"],
+      "properties": {
+        "path": { "$ref": "#/$defs/path" },
+        "owner": { "enum": ["repository", "plugin", "runtime", "web", "docs", "ui", "eslint-config", "typescript-config"] },
+        "profiles": { "$ref": "#/$defs/stringArray" },
+        "platforms": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["linux", "darwin"] } }
+      }
+    },
+    "job": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "condition", "runsOn", "needs", "permissions", "actions", "commands"],
+      "properties": {
+        "id": { "type": "string" },
+        "condition": { "type": "string" },
+        "runsOn": { "$ref": "#/$defs/stringArray" },
+        "needs": { "$ref": "#/$defs/stringArray" },
+        "permissions": { "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/permissions" }] },
+        "actions": { "$ref": "#/$defs/stringArray" },
+        "commands": { "$ref": "#/$defs/stringArray" }
+      }
+    },
+    "workflow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "name", "sha256", "triggers", "cadence", "permissions", "jobs"],
+      "properties": {
+        "path": { "$ref": "#/$defs/path" },
+        "name": { "type": "string" },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "triggers": { "$ref": "#/$defs/stringArray" },
+        "cadence": { "type": "string" },
+        "permissions": { "$ref": "#/$defs/permissions" },
+        "jobs": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/job" } }
+      }
+    },
+    "permissions": {
+      "type": "object",
+      "additionalProperties": { "enum": ["read", "none"] },
+      "propertyNames": { "pattern": "^[a-z-]+$" }
+    },
+    "releaseArtifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "source", "sha256", "profile", "authority", "cadence", "disposition"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "source": { "$ref": "#/$defs/path" },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "profile": { "type": "string", "minLength": 1 },
+        "authority": { "$ref": "#/$defs/path" },
+        "cadence": { "enum": ["per-verification", "manual-only", "immutable"] },
+        "disposition": { "enum": ["publication-forbidden", "historical-only", "deferred"] },
+        "producer": { "type": "string", "minLength": 1 },
+        "publication": { "const": "forbidden" },
+        "sourceCommit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "artifactSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "ci": { "type": "boolean" },
+        "immutable": { "type": "boolean" },
+        "status": { "const": "deferred" },
+        "manualOnly": { "type": "boolean" },
+        "qualified": { "type": "boolean" }
+      }
+    },
+    "crossPackageContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "source", "sha256", "profile", "authority", "cadence"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "source": { "$ref": "#/$defs/path" },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "profile": { "type": "string", "minLength": 1 },
+        "authority": { "$ref": "#/$defs/path" },
+        "cadence": { "enum": ["per-verification", "manual-only", "immutable"] }
+      }
+    },
+    "namedRecord": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id"],
+      "properties": { "id": { "type": "string", "minLength": 1 } }
+    }
+  }
+}

@@ -8,7 +8,6 @@ const execFileAsync = promisify(execFile)
 const root = new URL("../", import.meta.url)
 const packageJson = JSON.parse(await fs.readFile(new URL("package.json", root), "utf8"))
 const installerSource = await fs.readFile(new URL("tools/install-node.mjs", root), "utf8")
-const workflow = await fs.readFile(new URL("../../../.github/workflows/opencode2.yml", root), "utf8")
 
 const legacyIdentityPattern = /bybrawe\.opencode-loop|@bybrawe\/opencode-loop|OpenCodeLoop|OpenCode Loop|opencode-loopd|OPENCODE_LOOPD|\.opencode\/opencode-loop|opencode-loop/gi
 const historicalProvenanceEvidence = new Set([
@@ -86,10 +85,4 @@ test("installer uses the new identity for its binary, plugin path, and diagnosti
   assert.doesNotMatch(installerSource, /opencode-loop(?:\.ts|\.js|\b)/)
   assert.match(installerSource, /opencode2-config(?:\.ts|\.js|\b)/)
   assert.match(installerSource, /OpenCode2 Config/)
-})
-
-test("third-party CI actions are pinned to immutable commit SHAs", () => {
-  for (const line of workflow.split("\n").filter((value) => value.includes("uses:"))) {
-    assert.match(line, /@[0-9a-f]{40}\s+#\s+v\d+(?:\.\d+(?:\.\d+)?)?$/)
-  }
 })

@@ -6,9 +6,12 @@
     "./*": "./src/*.tsx"
   },
   "scripts": {
+    "build": "rm -rf dist && tsc --emitDeclarationOnly",
     "lint": "eslint . --max-warnings 0",
     "generate:component": "turbo gen react-component",
-    "check-types": "tsc --noEmit"
+    "check-types": "tsc --noEmit",
+    "test": "node --test tests/package-contract.test.mjs",
+    "verify": "bun run lint && bun run check-types && bun run build && bun run test"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",

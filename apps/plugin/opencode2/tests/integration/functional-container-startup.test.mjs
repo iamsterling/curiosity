@@ -4,7 +4,8 @@ import os from "node:os"
 import path from "node:path"
 import test from "node:test"
 
-import { validateFunctionalHost } from "../../tools/ephemeral-container/functional-validation.mjs"
+import { validateFunctionalHost, validateInstalledPluginSetup } from "../../tools/ephemeral-container/functional-validation.mjs"
+import { EXPECTED_HOST_VERSION, EXPECTED_TOOL_IDS } from "../../tools/ephemeral-container/validation-contract.mjs"
 
 const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds))
 const waitFor = async (operation, timeout = 2_000) => {
@@ -26,6 +27,30 @@ const processAlive = (pid) => {
     throw error
   }
 }
+
+test("installed setup instrumentation proves exact tool registration schemas and safe executor behavior", async () => {
+  const temporary = await mkdtemp(path.join(os.tmpdir(), "opencode2-installed-setup-"))
+  try {
+    const result = await validateInstalledPluginSetup({
+      directory: temporary,
+      hostVersion: EXPECTED_HOST_VERSION,
+      pluginEntry: path.resolve(import.meta.dirname, "../../dist/index.js"),
+    })
+    assert.deepEqual(result.tools, {
+      count: EXPECTED_TOOL_IDS.length,
+      ids: [...EXPECTED_TOOL_IDS].sort(),
+      unique: true,
+      objectSchemas: EXPECTED_TOOL_IDS.length,
+      executors: EXPECTED_TOOL_IDS.length,
+    })
+    assert.deepEqual(result.safeExecutors, {
+      ledger_approval_status: "passed",
+      native_loop_status: "LOOP_NOT_STARTED",
+    })
+  } finally {
+    await rm(temporary, { recursive: true, force: true })
+  }
+})
 
 const faultHost = async (temporary, fault) => {
   const executable = path.join(temporary, "fault-host.mjs")

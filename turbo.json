@@ -28,6 +28,57 @@
     "check-types": {
       "dependsOn": ["^check-types"]
     },
+    "test": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/docs/verification/inventory.json",
+        "$TURBO_ROOT$/docs/verification/schema.json",
+        "$TURBO_ROOT$/tools/verification/**",
+        "$TURBO_ROOT$/apps/runtime/tools/run-test-profile.mjs",
+        "$TURBO_ROOT$/apps/runtime/tools/verify-profile.mjs",
+        "$TURBO_ROOT$/apps/runtime/src/**",
+        "$TURBO_ROOT$/apps/runtime/package.json",
+        "$TURBO_ROOT$/apps/runtime/tsconfig.json",
+        "$TURBO_ROOT$/apps/runtime/tsconfig.types.json",
+        "$TURBO_ROOT$/apps/plugin/opencode2/src/**",
+        "$TURBO_ROOT$/apps/plugin/opencode2/package.json",
+        "$TURBO_ROOT$/apps/plugin/opencode2/tsconfig.json",
+        "$TURBO_ROOT$/apps/plugin/opencode2/tsconfig.build.json",
+        "$TURBO_ROOT$/apps/plugin/opencode2/tsconfig.contract.json"
+      ],
+      "outputs": []
+    },
+    "verify": {
+      "dependsOn": ["^verify"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/docs/verification/inventory.json",
+        "$TURBO_ROOT$/docs/verification/schema.json",
+        "$TURBO_ROOT$/tools/verification/**",
+        "$TURBO_ROOT$/apps/runtime/tools/run-test-profile.mjs",
+        "$TURBO_ROOT$/apps/runtime/tools/verify-profile.mjs",
+        "$TURBO_ROOT$/apps/runtime/src/**",
+        "$TURBO_ROOT$/apps/runtime/package.json",
+        "$TURBO_ROOT$/apps/runtime/tsconfig.json",
+        "$TURBO_ROOT$/apps/runtime/tsconfig.types.json",
+        "$TURBO_ROOT$/apps/plugin/opencode2/src/**",
+        "$TURBO_ROOT$/apps/plugin/opencode2/package.json",
+        "$TURBO_ROOT$/apps/plugin/opencode2/tsconfig.json",
+        "$TURBO_ROOT$/apps/plugin/opencode2/tsconfig.build.json",
+        "$TURBO_ROOT$/apps/plugin/opencode2/tsconfig.contract.json"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        "!.next/dev/**",
+        "dist/**",
+        "native/target/debug/libcuriosity_runtime_native.dylib",
+        "native/target/debug/libcuriosity_runtime_native.so",
+        "native/target/release/libcuriosity_runtime_native.dylib",
+        "native/target/release/libcuriosity_runtime_native.so"
+      ]
+    },
     "dev": {
       "cache": false,
       "persistent": true

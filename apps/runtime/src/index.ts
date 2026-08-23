@@ -132,7 +132,7 @@ const nativeLibraryPath = (profile: "development" | "release") => profile === "r
   ? `${import.meta.dir}/../native/libcuriosity_runtime_native.${suffix}`
   : `${import.meta.dir}/../native/target/debug/libcuriosity_runtime_native.${suffix}`;
 
-type RuntimeOptions = {
+export type RuntimeOptions = {
   now?: () => number;
   libraryPath?: string;
   /** Required unless libraryPath is supplied; release never probes a development build. */
@@ -142,6 +142,17 @@ type RuntimeOptions = {
   repository?: { readonly source: "searxng-gateway"; readonly bearerToken: string };
   /** Deterministic test/embedding seam. Production uses the pinned HTTPS transport. */
   repositoryTransport?: RepositoryTransport;
+};
+
+export type QueryRuntimeOptions = RuntimeOptions & {
+  readonly stateRoot: string;
+  readonly workspaceScope: string;
+  readonly queryCapability: QueryCapability;
+};
+
+export type QueryRuntime = {
+  webSearch(input: unknown, principal: unknown): Promise<unknown> | unknown;
+  close(): void;
 };
 
 const validAbsolutePath = (value: string) => isAbsolute(value) && resolve(value) === value && Buffer.byteLength(value) <= 4_096;
@@ -185,7 +196,11 @@ const openAdminLibrary = (options: Pick<RuntimeOptions, "libraryPath" | "nativeP
 
 export const createRuntime = (options: RuntimeOptions = {}) => {
   const repository = options.repository
-    ? createSearxngGatewayAdapter({ bearerToken: options.repository.bearerToken, transport: options.repositoryTransport, now: options.now })
+    ? createSearxngGatewayAdapter({
+        bearerToken: options.repository.bearerToken,
+        ...(options.repositoryTransport ? { transport: options.repositoryTransport } : {}),
+        ...(options.now ? { now: options.now } : {}),
+      })
     : undefined;
   const library = openLibrary(options);
   const corpusConfigured = typeof options.stateRoot === "string" && validStateRoot(options.stateRoot) && validCapability(options.queryCapability);
@@ -335,7 +350,7 @@ const authorizedPrincipal = (
     sameCapability(candidate.queryCapability, queryCapability);
 };
 
-export const createQueryRuntime = (options: RuntimeOptions & { workspaceScope: string }) => {
+export const createQueryRuntime = (options: QueryRuntimeOptions) => {
   if (!validCapability(options.queryCapability) || !validStateRoot(options.stateRoot ?? "") || !validWorkspaceScope(options.workspaceScope)) throw new Error("QUERY_RUNTIME_CONFIG_INVALID");
   const queryCapability = options.queryCapability;
   const runtime = createRuntime(options);

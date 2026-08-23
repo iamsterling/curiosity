@@ -18,7 +18,8 @@ export const WAVE_1_CAPABILITY_IDS = Object.freeze([
   "runtime-m4",
   "runtime-m5",
   "runtime-m6",
-  "runtime-m7",
+  "runtime-m7-historical",
+  "runtime-m7-current",
   "runtime-unified-evidence",
   "runtime-sdk-v2",
   "starter-scaffolds",
@@ -47,7 +48,8 @@ export const WAVE_1_CAPABILITY_TITLES = Object.freeze({
   "runtime-m4": "Runtime M4 owned-crawl job operation",
   "runtime-m5": "Runtime M5 repository gateway adapter",
   "runtime-m6": "Runtime M6 fixed synthetic cell",
-  "runtime-m7": "Runtime M7 private release profile",
+  "runtime-m7-historical": "Runtime M7 immutable historical artifact",
+  "runtime-m7-current": "Runtime M7 current source candidate",
   "runtime-unified-evidence": "Unified retrieval and validated-memory design",
   "runtime-sdk-v2": "Legacy-memory Node-API SDK v2 qualification",
   "starter-scaffolds": "Web, docs, and UI starter scaffolds",
@@ -83,6 +85,7 @@ export const WAVE_1_BLOCKER_TEXT = Object.freeze({
   "coherent-candidate-required": "A coherent replacement candidate is required.",
   "platform-qualification-required": "Exact platform qualification is required.",
   "product-definition-required": "Product requirements and qualification are required.",
+  "source-requalification-required": "Changed source requires a new exact artifact qualification.",
 });
 
 export const WAVE_1_WORKSPACE_ROLES = Object.freeze({
@@ -94,14 +97,22 @@ export const WAVE_1_WORKSPACE_ROLES = Object.freeze({
 });
 
 export const WAVE_1_POLICY = Object.freeze({
-  code: "wave-1-baseline-v1",
+  code: "wave-2-verification-v1",
   authority: "This report describes validated repository state; it grants no lifecycle or release authority.",
   current: "Current requires implemented local source, sufficient local evidence, local decision authority, delivery, and applicable local qualification for the declared scope.",
   experimental: "Experimental is bounded to conditional, internal, or test-only delivery and cannot establish a consequential claim.",
   deferred: "Deferred is disabled with an explicit blocker and a NO-GO verdict.",
   retired: "Retired is a guarded negative assertion that a former surface is absent.",
   unknown: "Unknown or contradictory consequential state fails closed.",
-  consequential: "Wave 1 mechanically forbids publication, production enablement or readiness, and deployment enablement or readiness.",
+  consequential: "Wave 2 mechanically forbids publication, production enablement or readiness, and deployment enablement or readiness.",
+});
+
+export const M7_HISTORICAL_ACCEPTANCE = Object.freeze({
+  path: "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md",
+  sha256: "8ac26ef942dba0eccfd85742db04ee1ef843b8b9445d5c5b17e5a3eb601206cf",
+  indexBlob: "1f42ab03014dfa82c3076e4ad8d1f169187443b0",
+  sourceCommit: "0dfc71de02393da9aad37bc753724886c00e323c",
+  artifactSha256: "3aa8e5ba6660cafefb3d3121ba1e652346f4019a78922a0ec689b04b32e06642",
 });
 
 export const WAVE_1_RATIONALE_CODES = Object.freeze({
@@ -119,7 +130,7 @@ export const WAVE_1_HISTORICAL_SNAPSHOT = Object.freeze({
   baselineBlob: "f5313b798b1dbf8e9c56bb8ffc4136d7453b7755",
 });
 
-export const README_TEMPLATE_SHA256 = "bbe97ca93f4abac449595a600423036fdafbcda256edbc49899dba47c014daed";
+export const README_TEMPLATE_SHA256 = "86a7a44ff69620968a89b3cb0fb740e82fa6677df9dabcf2dd258b3a0f5699d8";
 
 export const SDK_ACCEPTANCE_RECEIPT = Object.freeze({
   path: "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-r4-acceptance-receipt.json",

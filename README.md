@@ -17,7 +17,7 @@ navigation, verification, contribution, provenance, and licensing guidance.
 - **Deferred:** Deferred is disabled with an explicit blocker and a NO-GO verdict.
 - **Retired:** Retired is a guarded negative assertion that a former surface is absent.
 - **Fail-closed unknowns:** Unknown or contradictory consequential state fails closed.
-- **Consequential claims:** Wave 1 mechanically forbids publication, production enablement or readiness, and deployment enablement or readiness.
+- **Consequential claims:** Wave 2 mechanically forbids publication, production enablement or readiness, and deployment enablement or readiness.
 <!-- status:policy:end -->
 
 ## Workspace map
@@ -58,7 +58,8 @@ navigation, verification, contribution, provenance, and licensing guidance.
 | [Runtime M4 owned-crawl job operation](docs/status/current.md#runtime-m4) | runtime / repository / repository, test | enabled | disabled | unpublished | disabled | qualified | **Current** | GO — Current only for the declared scope and validated local facets. |
 | [Runtime M5 repository gateway adapter](docs/status/current.md#runtime-m5) | runtime / repository / repository, test | enabled | disabled | unpublished | disabled | qualified | **Current** | GO — Current only for the declared scope and validated local facets. |
 | [Runtime M6 fixed synthetic cell](docs/status/current.md#runtime-m6) | runtime / repository / repository, test | enabled | disabled | unpublished | disabled | qualified | **Current** | GO — Current only for the declared scope and validated local facets. |
-| [Runtime M7 private release profile](docs/status/current.md#runtime-m7) | runtime / private-profile / private-release / platforms: darwin-arm64 | enabled | disabled | unpublished | disabled | qualified | **Current** | GO — Current only for the declared scope and validated local facets. |
+| [Runtime M7 immutable historical artifact](docs/status/current.md#runtime-m7-historical) | runtime / private-profile / private-release / platforms: darwin-arm64 | enabled | disabled | unpublished | disabled | qualified | **Current** | GO — Current only for the declared scope and validated local facets. |
+| [Runtime M7 current source candidate](docs/status/current.md#runtime-m7-current) | runtime / private-profile / private-release / platforms: darwin-arm64 | disabled | disabled | unpublished | disabled | unqualified | **Deferred** | NO-GO — Deferred, disabled, and blocked from consequential use. |
 | [Unified retrieval and validated-memory design](docs/status/current.md#runtime-unified-evidence) | runtime / design / — | disabled | disabled | not-applicable | disabled | unqualified | **Deferred** | NO-GO — Deferred, disabled, and blocked from consequential use. |
 | [Legacy-memory Node-API SDK v2 qualification](docs/status/current.md#runtime-sdk-v2) | runtime / test-only / test | disabled | disabled | unpublished | disabled | contradictory | **Deferred** | NO-GO — Deferred, disabled, and blocked from consequential use. |
 | [Web, docs, and UI starter scaffolds](docs/status/current.md#starter-scaffolds) | scaffolds / repository / development | conditional | disabled | unpublished | disabled | unqualified | **Experimental** | CONDITIONAL — Experimental and bounded to the declared non-consequential scope. |
@@ -72,7 +73,7 @@ navigation, verification, contribution, provenance, and licensing guidance.
 Install the pinned workspace dependencies without changing the lockfile:
 
 ```sh
-bun install --frozen-lockfile
+bun install --frozen-lockfile --ignore-scripts
 ```
 
 Then start at the boundary you intend to change:
@@ -85,15 +86,27 @@ Then start at the boundary you intend to change:
 
 ## Verification entry points
 
-The root intentionally has no aggregate `test` or `verify` task yet. Use the
-owned checks instead:
+The root tasks are non-recursive and use the reviewed Turbo graph so every
+authoritative workspace is covered once:
 
 ```sh
+bun run test
+bun run verify
+bun run inventory:check
 bun run status:check
 bun run --cwd apps/plugin/opencode2 verify
 bun run --cwd apps/plugin/opencode2 verify:linux
 bun run --cwd apps/runtime verify
 ```
+
+The plugin `verify` task is portable and never invokes the Darwin real-host
+suite. `verify:linux` fails closed off Linux; the separate `verify:darwin`
+profile requires Darwin arm64 plus `CURIOSITY_TRUSTED_DARWIN_MANUAL=1` and is
+reserved for the reviewed manual lane.
+
+See [verification tiers and CI operation](docs/verification/README.md) for the
+portable Linux, fail-closed network namespace, trusted foreground Darwin, CI
+cadence, aggregate required-gate, platform limits, and NO-GO boundaries.
 
 `status:write` is the explicit maintainer command for regenerating the canonical
 root README and `docs/status/current.md`. CI uses check mode and never rewrites
