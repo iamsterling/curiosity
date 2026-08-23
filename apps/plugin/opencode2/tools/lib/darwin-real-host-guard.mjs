@@ -39,7 +39,12 @@ export const runtimeIdentity = {
   pluginSdk: "635130e6226771c2db358921af2dd3a2c6a03e39f3c926f54f56ba8e4392506f",
 }
 
+export const assertDarwinArm64Runtime = ({ platform = process.platform, architecture = process.arch } = {}) => {
+  if (platform !== "darwin" || architecture !== "arm64") fail("REAL_HOST_DARWIN_ARM64_REQUIRED")
+}
+
 export const resolveInstalledRuntimePaths = () => {
+  assertDarwinArm64Runtime()
   const require = createRequire(import.meta.url)
   const cliPackage = require.resolve("@opencode-ai/cli/package.json")
   return {

@@ -78,9 +78,11 @@ test("verified credential-free staging makes only the prepared root traversable"
       manifest.inventory.entries.map(({ path: file }) => file),
       [
         "validation-harness/functional-validation.mjs",
+        "validation-harness/managed-service-cleanup.mjs",
         "validation-harness/package-archive.mjs",
         "validation-harness/prepared-input.mjs",
         "validation-harness/readme-setup.mjs",
+        "validation-harness/readme-verification.mjs",
         "validation-harness/registry-server.mjs",
         "validation-harness/registry-validation.mjs",
         "validation-harness/validate.mjs",

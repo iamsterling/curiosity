@@ -7,11 +7,24 @@ import path from "node:path"
 import { validateColdResolverDenial, validateFunctionalHost, validateInstalledPluginSetup } from "./functional-validation.mjs"
 import { inspectPackageArchive } from "./package-archive.mjs"
 import { extractReadmeSetup } from "./readme-setup.mjs"
+import { verifyManagedReadmePluginList } from "./readme-verification.mjs"
 import { startLoopbackRegistry } from "./registry-server.mjs"
 import { EXPECTED_COMMAND_IDS, EXPECTED_HOST_VERSION, EXPECTED_SKILL_IDS } from "./validation-contract.mjs"
 
 const digest = (contents) => createHash("sha256").update(contents).digest("hex")
 const exists = (target) => access(target).then(() => true, () => false)
+const REGISTRY_SMOKE_PHASES = Object.freeze(["installer-setup", "readme-verification", "functional-host", "setup-instrumentation"])
+
+export const advanceRegistrySmokePhase = (completed, next) => {
+  const expected = REGISTRY_SMOKE_PHASES[completed.length]
+  if (next !== expected) {
+    const error = new Error(`OPENCODE2_README_COLD_ORDER_INVALID:${JSON.stringify({ completed, expected, next })}`)
+    error.code = "OPENCODE2_README_COLD_ORDER_INVALID"
+    throw error
+  }
+  completed.push(next)
+}
+
 const capture = (command, args, options) => new Promise((resolve, reject) => {
   const child = spawn(command, args, { cwd: options.cwd, env: options.env, stdio: ["ignore", "pipe", "pipe"] })
   const stdout = []
@@ -54,7 +67,7 @@ const gitShim = async (base) => {
   return { directory, log }
 }
 
-const environment = ({ cache, configHome, data, git, home, install, origin, temporary }) => ({
+const environment = ({ cache, configHome, data, git, home, install, origin, state, temporary }) => ({
   BUN_CONFIG_REGISTRY: origin,
   BUN_INSTALL: install,
   BUN_INSTALL_CACHE_DIR: cache,
@@ -72,6 +85,7 @@ const environment = ({ cache, configHome, data, git, home, install, origin, temp
   XDG_CACHE_HOME: cache,
   XDG_CONFIG_HOME: configHome,
   XDG_DATA_HOME: data,
+  ...(state === undefined ? {} : { XDG_STATE_HOME: state }),
 })
 
 const assertAbsentSetup = async (configRoot) => {
@@ -189,6 +203,7 @@ export const validateRegistryPackageSmoke = async ({ inputRoot, prepared, valida
   const registryLog = path.join(validationRoot, "registry-requests.jsonl")
   const vcs = await gitShim(validationRoot)
   const registry = await startLoopbackRegistry({ catalogPath: prepared.catalogPath, inputRoot, logPath: registryLog })
+  const completedPhases = []
   try {
     const productRecord = prepared.product
     const productTarball = path.join(inputRoot, "registry", "tarballs", productRecord.filename)
@@ -200,13 +215,18 @@ export const validateRegistryPackageSmoke = async ({ inputRoot, prepared, valida
 
     const roots = await cleanRoots(path.join(validationRoot, "positive"), [
       "bunx-cache", "bunx-data", "bunx-home", "bunx-install", "bunx-tmp",
+      "readme-cache", "readme-data", "readme-home", "readme-install", "readme-project", "readme-state", "readme-tmp",
       "config-home", "host-cache", "host-data", "host-home", "host-install", "host-tmp", "project", "disabled-project",
     ])
     const configRoot = path.join(roots["config-home"], "opencode")
     await mkdir(configRoot, { recursive: true })
     await writeFile(path.join(configRoot, "opencode.json"), configText, { flag: "wx" })
     await assertAbsentSetup(configRoot)
-    await assertEmptyDirectories(roots, ["bunx-cache", "bunx-data", "bunx-home", "bunx-install", "bunx-tmp", "host-cache", "host-data", "host-home", "host-install", "host-tmp", "project", "disabled-project"])
+    await assertEmptyDirectories(roots, [
+      "bunx-cache", "bunx-data", "bunx-home", "bunx-install", "bunx-tmp",
+      "readme-cache", "readme-data", "readme-home", "readme-install", "readme-project", "readme-state", "readme-tmp",
+      "host-cache", "host-data", "host-home", "host-install", "host-tmp", "project", "disabled-project",
+    ])
     const bunxEnv = {
       ...environment({
         cache: roots["bunx-cache"], configHome: roots["config-home"], data: roots["bunx-data"], git: vcs.directory,
@@ -222,16 +242,44 @@ export const validateRegistryPackageSmoke = async ({ inputRoot, prepared, valida
     assert.equal(installer.code, 0, installer.stderr)
     assert.match(installer.stdout, /already configured as a package/u)
     assert.match(installer.stdout, /already pinned to @iamsterling\/opencode2-config@0\.1\.0/u)
+    advanceRegistrySmokePhase(completedPhases, "installer-setup")
+
+    const readmeEnv = environment({
+      cache: roots["readme-cache"], configHome: roots["config-home"], data: roots["readme-data"], git: vcs.directory,
+      home: roots["readme-home"], install: roots["readme-install"], origin: registry.origin,
+      state: roots["readme-state"], temporary: roots["readme-tmp"],
+    })
+    assert.notEqual(await realpath(roots["bunx-cache"]), await realpath(roots["readme-cache"]))
+    advanceRegistrySmokePhase(completedPhases, "readme-verification")
+    registry.setPhase("readme-verification")
+    const verification = await verifyManagedReadmePluginList({
+      argv: prepared.catalog.readmeSetup.verificationArgv,
+      cwd: roots["readme-project"],
+      env: { ...readmeEnv, PATH: `${vcs.directory}:${path.dirname(prepared.host)}:/usr/local/bin:/usr/bin:/bin` },
+    })
+    assert.equal(verification.managedService.baselineRegistration, false)
+    assert.deepEqual(verification.managedService.baselineServicePids, [])
+    assert.deepEqual(verification.managedService.survivorPids, [])
+    const readmeRequests = phaseProductEvidence(registry.records, "readme-verification", productRecord.name, productRecord.version)
+    assert.ok(readmeRequests.packuments >= 1, JSON.stringify(readmeRequests))
+    assert.ok(readmeRequests.tarballs >= 1, JSON.stringify(readmeRequests))
+    const readmeCached = await verifyCachedProduct({
+      allowedRoots: [roots["readme-cache"], roots["readme-data"], roots["readme-home"], roots["readme-install"], roots["readme-tmp"]],
+      packageName: productRecord.name,
+      packageVersion: productRecord.version,
+      product,
+    })
     const installed = await verifyPackageBranch({ configRoot, configText, product })
     const bunxRequests = phaseProductEvidence(registry.records, "bunx", productRecord.name, productRecord.version)
     assert.ok(bunxRequests.packuments >= 1, JSON.stringify(bunxRequests))
     assert.ok(bunxRequests.tarballs >= 1, JSON.stringify(bunxRequests))
 
+    advanceRegistrySmokePhase(completedPhases, "functional-host")
     const hostEnv = environment({
       cache: roots["host-cache"], configHome: roots["config-home"], data: roots["host-data"], git: vcs.directory,
       home: roots["host-home"], install: roots["host-install"], origin: registry.origin, temporary: roots["host-tmp"],
     })
-    assert.notEqual(await realpath(roots["bunx-cache"]), await realpath(roots["host-cache"]))
+    assert.notEqual(await realpath(roots["readme-cache"]), await realpath(roots["host-cache"]))
     registry.setPhase("host-positive")
     const runtime = await validateFunctionalHost({
       configRoot,
@@ -244,23 +292,20 @@ export const validateRegistryPackageSmoke = async ({ inputRoot, prepared, valida
     const hostRequests = phaseProductEvidence(registry.records, "host-positive", productRecord.name, productRecord.version)
     assert.ok(hostRequests.packuments >= 1, JSON.stringify(hostRequests))
     assert.ok(hostRequests.tarballs >= 1, JSON.stringify(hostRequests))
-    registry.setPhase("readme-verification")
-    const verification = await capture(prepared.catalog.readmeSetup.verificationArgv[0], prepared.catalog.readmeSetup.verificationArgv.slice(1), {
-      cwd: roots.project,
-      env: { ...hostEnv, PATH: `${vcs.directory}:${path.dirname(prepared.host)}:/usr/local/bin:/usr/bin:/bin` },
-    })
-    assert.equal(verification.code, 0, verification.stderr)
-    assert.match(verification.stdout, /iamsterling\.opencode2-config/u)
-    const cached = await verifyCachedProduct({
+    const hostCached = await verifyCachedProduct({
       allowedRoots: [roots["host-cache"], roots["host-data"], roots["host-home"], roots["host-install"], roots["host-tmp"]],
       packageName: productRecord.name,
       packageVersion: productRecord.version,
       product,
     })
+    const firstReadmeRequest = registry.records.find(({ phase }) => phase === "readme-verification")
+    const firstHostRequest = registry.records.find(({ phase }) => phase === "host-positive")
+    assert.ok(firstReadmeRequest.sequence < firstHostRequest.sequence, "OPENCODE2_README_COLD_ORDER_INVALID")
+    advanceRegistrySmokePhase(completedPhases, "setup-instrumentation")
     const setupInstrumentation = await validateInstalledPluginSetup({
       directory: path.join(validationRoot, "setup-instrumentation"),
       hostVersion: EXPECTED_HOST_VERSION,
-      pluginEntry: path.join(cached.packageRoot, "dist", "index.js"),
+      pluginEntry: path.join(hostCached.packageRoot, "dist", "index.js"),
     })
 
     const denied = await cleanRoots(path.join(validationRoot, "cold-denial"), ["cache", "config-home", "data", "home", "install", "project", "tmp"])
@@ -305,6 +350,7 @@ export const validateRegistryPackageSmoke = async ({ inputRoot, prepared, valida
         installerArgv: prepared.catalog.readmeSetup.installerArgv,
         verificationExecuted: true,
         verificationArgv: prepared.catalog.readmeSetup.verificationArgv,
+        verification,
       },
       product: { archive: product.archive, packageSpec: productMetadata.packageSpec, packedFiles: product.inventory.length },
       registry: {
@@ -313,12 +359,19 @@ export const validateRegistryPackageSmoke = async ({ inputRoot, prepared, valida
         coldDenial: denialRequests,
         dependencyTarballs: prepared.metadata.registry.dependencyTarballs,
         host: hostRequests,
+        readme: readmeRequests,
         noProxy: true,
         rejectedUninventoriedRequests: deniedFallbacks.length,
         requests: registry.records.length,
       },
-      caches: { bunxAndHostSeparate: true, openCode: cached },
+      caches: {
+        installerAndReadmeSeparate: true,
+        readmeAndFunctionalSeparate: true,
+        functional: hostCached,
+        readme: readmeCached,
+      },
       installed,
+      order: completedPhases,
       runtime,
       setupInstrumentation,
       negativeControls: { coldResolverDenial, installedDisable: runtime.negativeControl },

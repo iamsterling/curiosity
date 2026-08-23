@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url"
 import { promisify } from "node:util"
 import { capabilityReport } from "../dist/platform/real-host/index.js"
 import { PINNED_REAL_HOST_VERSION } from "../dist/platform/real-host/index.js"
-import { canonicalRoot, classifyProxyAttempts, copyVerifiedExecutable, createProxyRecorder, isolatedEnvironment, resolveInstalledRuntimePaths, sandboxProfile, scanRetainedFiles, verifyCopiedRuntimeIdentity } from "./lib/darwin-real-host-guard.mjs"
+import { assertDarwinArm64Runtime, canonicalRoot, classifyProxyAttempts, copyVerifiedExecutable, createProxyRecorder, isolatedEnvironment, resolveInstalledRuntimePaths, sandboxProfile, scanRetainedFiles, verifyCopiedRuntimeIdentity } from "./lib/darwin-real-host-guard.mjs"
 
 export { capabilityReport } from "../dist/platform/real-host/index.js"
 const execute = promisify(execFile)
@@ -106,7 +106,8 @@ const qualifyFixtures = async ({ canonical, proxy, secrets }) => {
 }
 
 export const runRealHostSuite = async () => {
-  if (process.platform !== "darwin" || !await stat("/usr/bin/sandbox-exec").then(() => true).catch(() => false)) throw new Error("REAL_HOST_DARWIN_SANDBOX_REQUIRED")
+  assertDarwinArm64Runtime()
+  if (!await stat("/usr/bin/sandbox-exec").then(() => true).catch(() => false)) throw new Error("REAL_HOST_DARWIN_SANDBOX_REQUIRED")
   const root = await mkdtemp(path.join(os.tmpdir(), "opencode2-real-host-"))
   const output = []; let child; let proxy
   const testFailure = process.env.REAL_HOST_FORCED_FAILURE

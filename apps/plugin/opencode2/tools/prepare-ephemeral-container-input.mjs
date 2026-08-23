@@ -117,9 +117,11 @@ export const stageValidationHarness = async ({ inputRoot, pluginRoot }) => {
   await mkdir(destination, { recursive: true })
   for (const file of [
     "functional-validation.mjs",
+    "managed-service-cleanup.mjs",
     "package-archive.mjs",
     "prepared-input.mjs",
     "readme-setup.mjs",
+    "readme-verification.mjs",
     "registry-server.mjs",
     "registry-validation.mjs",
     "validate.mjs",

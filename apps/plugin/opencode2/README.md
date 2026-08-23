@@ -28,7 +28,13 @@ assets without creating a duplicate local plugin wrapper:
 bunx --bun @iamsterling/opencode2-config@0.1.0
 ```
 
-Verify that OpenCode resolves and activates `iamsterling.opencode2-config`:
+Verify that OpenCode resolves and activates `iamsterling.opencode2-config`.
+After a cold first start, repeat this exact command for up to 15 seconds only
+while it exits successfully with exactly `No plugins loaded` or a subset of the
+pinned built-in inventory with no custom plugin ID. Success is exactly the
+pinned host inventory containing one `iamsterling.opencode2-config` entry; any
+malformed or unexpected ID, any error, or continued absence after the bound,
+is failure:
 
 ```sh
 opencode2 plugin list

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import { chmod, mkdtemp, realpath, rm, symlink, writeFile } from "node:fs/promises"
-import { tmpdir } from "node:os"
+import { homedir } from "node:os"
 import { join } from "node:path"
 import test from "node:test"
 import { createSearchDefinitions } from "../../dist/features/search/index.js"
@@ -19,9 +19,15 @@ const configuration = (queryCapabilityFile, seen = []) => ({
   controlledPluginIds: ["iamsterling.opencode2-config"],
 })
 
-test("M7 capability file is canonical, regular, owned, 0600, bounded, copied once, and redacted", async () => {
-  const root = await realpath(await mkdtemp(join(tmpdir(), "m7-capability-")))
+const capabilityRoot = async (prefix) => {
+  const trustedHome = await realpath(homedir())
+  const root = await realpath(await mkdtemp(join(trustedHome, prefix)))
   await chmod(root, 0o700)
+  return root
+}
+
+test("M7 capability file is canonical, regular, owned, 0600, bounded, copied once, and redacted", async () => {
+  const root = await capabilityRoot(".m7-capability-")
   const good = join(root, "query.cap")
   const link = join(root, "query-link.cap")
   const credential = ["m7", "credential", "canary", "never", "disclosed"].join("_")
@@ -56,10 +62,9 @@ test("M7 capability file is canonical, regular, owned, 0600, bounded, copied onc
 })
 
 test("M7 deployment configuration refuses credential bytes alongside a capability file", async () => {
-  const root = await realpath(await mkdtemp(join(tmpdir(), "m7-capability-both-")))
+  const root = await capabilityRoot(".m7-capability-both-")
   const file = join(root, "query.cap")
   try {
-    await chmod(root, 0o700)
     await writeFile(file, "x", { mode: 0o600 })
     const options = configuration(file)
     options.runtime.queryCapability = new Uint8Array([1])

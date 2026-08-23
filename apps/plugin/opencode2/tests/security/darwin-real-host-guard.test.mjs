@@ -3,7 +3,9 @@ import { lstat, mkdtemp, mkdir, readFile, readdir, rm, symlink, utimes, writeFil
 import os from "node:os"
 import path from "node:path"
 import test from "node:test"
-import { canonicalRoot, classifyProxyAttempts, createProxyRecorder, isolatedEnvironment, resolveInstalledRuntimePaths, scanRetainedFiles, verifyCopiedRuntimeIdentity } from "../../tools/lib/darwin-real-host-guard.mjs"
+import { assertDarwinArm64Runtime, canonicalRoot, classifyProxyAttempts, createProxyRecorder, isolatedEnvironment, resolveInstalledRuntimePaths, scanRetainedFiles, verifyCopiedRuntimeIdentity } from "../../tools/lib/darwin-real-host-guard.mjs"
+
+const isDarwinArm64 = process.platform === "darwin" && process.arch === "arm64"
 
 test("retained-file scan catches output and file credential canaries without serializing them", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "opencode2-guard-test-"))
@@ -89,7 +91,17 @@ test("retained-file scanner detects a same-size rewrite with its mtime restored"
   } finally { await rm(root, { recursive: true, force: true }) }
 })
 
-test("copied runtime identity rejects substituted CLI and plugin SDK bytes", async () => {
+test("runtime package resolution fails closed outside Darwin arm64 before resolving platform artifacts", { skip: isDarwinArm64 }, () => {
+  assert.throws(resolveInstalledRuntimePaths, { message: "REAL_HOST_DARWIN_ARM64_REQUIRED" })
+})
+
+test("Darwin arm64 runtime guard has a stable fail-closed diagnostic", () => {
+  assert.throws(() => assertDarwinArm64Runtime({ platform: "linux", architecture: "x64" }), {
+    message: "REAL_HOST_DARWIN_ARM64_REQUIRED",
+  })
+})
+
+test("copied runtime identity rejects substituted CLI and plugin SDK bytes", { skip: !isDarwinArm64 }, async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "opencode2-guard-test-"))
   try {
     const { cli, sdk } = resolveInstalledRuntimePaths()

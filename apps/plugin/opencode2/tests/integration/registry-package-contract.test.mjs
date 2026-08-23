@@ -7,6 +7,7 @@ import test from "node:test"
 
 import { inspectPackageArchive, validatePackedProduct } from "../../tools/ephemeral-container/package-archive.mjs"
 import { extractReadmeSetup } from "../../tools/ephemeral-container/readme-setup.mjs"
+import { advanceRegistrySmokePhase } from "../../tools/ephemeral-container/registry-validation.mjs"
 
 const pluginRoot = path.resolve(import.meta.dirname, "../..")
 const packageManifest = JSON.parse(await readFile(path.join(pluginRoot, "package.json"), "utf8"))
@@ -52,6 +53,22 @@ test("README has one exact config-first packaged installer contract without late
   assert.deepEqual(setup.config, { $schema: "https://opencode.ai/config.json", plugins: [packageSpec] })
   assert.deepEqual(setup.installerArgv, ["bunx", "--bun", packageSpec])
   assert.deepEqual(setup.verificationArgv, ["opencode2", "plugin", "list"])
+  assert.match(readme, /After a cold first start, repeat this exact command for up to 15 seconds only/u)
+  assert.match(readme, /exactly `No plugins loaded`/u)
+  assert.match(readme, /subset of the\s+pinned built-in inventory with no custom plugin ID/u)
+  assert.match(readme, /continued absence after the bound,\s+is failure/u)
+})
+
+test("registry smoke phase guard rejects functional host work before cold README verification", () => {
+  const completed = []
+  assert.throws(() => advanceRegistrySmokePhase(completed, "functional-host"), {
+    message: /OPENCODE2_README_COLD_ORDER_INVALID/u,
+  })
+  assert.deepEqual(completed, [])
+  for (const phase of ["installer-setup", "readme-verification", "functional-host", "setup-instrumentation"]) {
+    advanceRegistrySmokePhase(completed, phase)
+  }
+  assert.deepEqual(completed, ["installer-setup", "readme-verification", "functional-host", "setup-instrumentation"])
 })
 
 test("normal pack preserves the source manifest and excludes development/workspace surfaces", async () => {
