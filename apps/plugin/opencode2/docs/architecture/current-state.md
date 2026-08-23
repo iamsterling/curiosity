@@ -1,16 +1,79 @@
-# Current state
+# Current plugin state
 
-**Current (2026-08-12).** One `Plugin.define` composes the hook foundation and structured product tools. The hook owner registers one context hook, tool before/after hooks, and one abortable event subscription with registration disposal. Ledger v1 persists under `.opencode/opencode2-config/ledger/v1/`; capture and execution journals use adjacent versioned feature paths.
+Status in this document is qualified by capability and scope. The canonical
+machine-readable report is [`docs/status/capabilities.json`](../../../../../docs/status/capabilities.json);
+it reports source/evidence/decision facts but is not lifecycle authority.
 
-Ledger is the sole lifecycle authority. Native Loop Engine owns execution causation, deterministic prompt IDs/metadata, iteration/no-progress budgets, interruption requests, and ambiguity stops. It does not contain objectives, criteria, evidence bodies, dependency truth, completion, or archive state.
+## Composed plugin scope
 
-**Disabled/fail-closed:** native child creation/lineage (not exposed by the pinned plugin API), reload and interrupt automation, usage-token budgets, automatic compaction, concurrent setup, authoritative persistence, and any daemon/scheduled/background behavior. Observation capture may publish without a material fence. Claims, activation, reconcile, archive, and Loop continuation reject with stable diagnostics because the pinned host/filesystem boundary cannot bind the current token and epoch atomically to publication. `src/platform/real-host/index.ts` is the canonical capability report consumed by doctor, product gates, and the isolated real-host suite. ADR 0031 makes the package registry-ready and validates it only through an isolated loopback registry; actual publication and global cutover have not occurred. The source-checkout fallback remains staged and receipt-repairable.
-# Engineering intent commands
+**Current — package composition on the pinned OpenCode beta-17595 ABI.** One
+`Plugin.define` composition root installs plugin-owned agent configuration, one
+context hook, tool before/after hooks, one abortable event subscription, and the
+structured Ledger/native-loop tool surface. Search definitions are composed;
+the private runtime backend is conditional and the external live endpoint state
+is unknown. Registration cleanup is reverse-ordered; duplicate project roots
+are silently suppressed and receive no-op cleanup.
 
-**Current (2026-08-13).** Thin `/bug`, `/feature`, and `/secure` markdown assets initiate ordinary model prompts with the shared `engineering-pursuit` skill. This is useful intent-driven orchestrator guidance, not a programmatic command callback. The exact pinned host/plugin composition exposes no trusted command-origin callback, and production source has no caller from these commands into the typed engineering profile, controller, admission, or observation modules. The public Promise plugin surface remains exactly ADR 0015's 18 Ledger/Loop tools; no `engineering_*` tool is registered. Engineering durable Ledger creation has no production route. Consequential effects and production GitHub writes remain disabled.
+EventCapture is observation-only. Captured data never becomes lifecycle truth by
+being captured, rendered in docs, or listed in the status catalog.
 
-**Current limitation.** `/secure` states the exact-host limitation, but prompt text cannot enforce a typed input codec before host transcript admission. Capture redacts every `session.input.admitted` event by fixed plugin call-site policy. Raw host event type and privacy fields never select pre-hash dropping; a forged `command.secure` event is retained under the generic policy. No trusted host command callback exists, so confidential/restricted command handling is unsupported. Restricted GitHub planning rejects before constructing markers/digests. Recursive observation decoding and create-target revalidation exist as directly tested internal code.
+## Ledger authority and disabled writes
 
-**Experimental.** `src/features/engineering-intent/{profiles,controller,admission,observations,paths,review}.ts` and the engineering GitHub contract are uncomposed typed scaffolding. `startForegroundEngineeringPursuit`, `EngineeringPursuitController`, and `engineeringAdmission.start/open` have no production command caller. Admission maps provide immutable stored-record lookup and process-lifetime one-shot state only; a fresh service reports absent records and offers no durable restart replay protection. After failure, the controller selects an untried action class or stops with `ENGINEERING_ACTION_DIVERSITY_EXHAUSTED`. These modules must not be cited as Current runtime enforcement.
+**Current — lifecycle authority doctrine and bounded Ledger v1 implementation.**
+Ledger is the sole lifecycle authority. Native Loop Engine owns only execution
+causation, deterministic prompt metadata, budgets, interruption requests, and
+ambiguity stops; it does not own objectives, criteria, evidence truth,
+dependency truth, completion, or archive authority.
 
-**Deferred.** A trusted programmatic command callback, a plugin-owned restricted capture disposition, confidential secure pursuit, durable replay protection, durable engineering publication and resumability, restricted external records, public engineering tools, consequential local effects, native autonomy, and authoritative completion.
+**Deferred / disabled — authoritative material transitions without proven
+fencing.** The exact host/filesystem boundary cannot atomically bind the current
+token and epoch to publication. Activation, material claims, reconcile, archive,
+and Loop continuation therefore reject with stable diagnostics. Observation
+capture may publish only within its non-authoritative scope.
+
+`src/platform/real-host/index.ts#capabilityReport` is the mechanical source used
+by doctor, product gates, and tests. It reports reload, interrupt, compaction,
+child lineage, concurrent setup/writer election, and authoritative persistence
+as disabled. Unknown host versions disable every capability with the stable
+version-mismatch code.
+
+## Search and private runtime scope
+
+**Experimental — conditional search delivery.** `web_search` and the deprecated
+`formerhuman_search` alias return bounded untrusted evidence candidates. Local
+tests cover the fixed adapter contracts; they do not prove an external endpoint,
+deployment, or production availability.
+
+The `@curiosity/runtime/query` adapter is an optional private profile, requires
+explicit controlled plugin identity and query authority, exposes no admin
+surface, and never falls back. Its Darwin arm64 release evidence does not make
+the private runtime a normal plugin dependency or public package surface.
+
+## Internal scaffolding
+
+**Experimental — implemented but uncomposed.** Engineering-intent profiles,
+controller/admission/observation modules, development evidence custody/query/
+reconciliation, orchestration contracts, handoff compilation, external-record
+contracts, and local-effect boundaries have focused tests but no production
+composition authority. The `/bug`, `/feature`, and `/secure` markdown assets are
+ordinary model prompts, not trusted command callbacks. No `engineering_*` tool
+is registered and production GitHub/consequential local writes remain disabled.
+
+## Deferred and retired
+
+**Deferred:** trusted command-origin callbacks, confidential secure pursuit,
+durable engineering replay/publication, unified retrieval/Ledger evidence
+implementation, production/public crawling, public runtime/package delivery,
+and every broader platform or deployment claim.
+
+**Retired (not Deferred):** the imported loop runtime, mutable state authority,
+daemon/scheduler, state tool, marker protocol, and `opencode-loop-local` agent are
+absent and protected by characterization/security tests. `/loop-*` names remain
+only as thin native migration aliases or stable unsupported diagnostics.
+
+ADR 0031 establishes registry readiness through local pack and isolated loopback
+registry proof only. Actual publication, external registry state, global
+installation cutover, and deployment remain unknown and unauthorized.
+
+The [2026-08-12 foundation preflight](preflight-2026-08-12.md) is an immutable
+historical snapshot preserved at its baseline bytes; it is not current authority.

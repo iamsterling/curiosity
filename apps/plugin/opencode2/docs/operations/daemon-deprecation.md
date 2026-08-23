@@ -1,3 +1,12 @@
-# Deprecated daemon compatibility
+# Removed legacy daemon
 
-**Transitional.** `tools/loopd.mjs` preserves characterized argv and scheduler behavior for recovery evidence only. It is excluded from plugin composition, asset manifest, generic export, package files, and package binaries. No redesign, new installation, or native interface may depend on it. **Target:** remove after native real-host parity and an explicit operator-approved retirement change.
+**Retired tombstone.** `tools/loopd.mjs` has been removed from the product tree
+under ADR 0013. The imported scheduler, timer/heartbeat, shell/process behavior,
+and mutable compatibility state are absent from composition, assets, exports,
+package files, and binaries. Characterization and security tests enforce this
+negative assertion.
+
+Git history and provenance manifests retain attribution and historical paths;
+their presence is not a runtime surface. No redesign, installation, recovery
+flow, or native interface may depend on the retired daemon without a separately
+reviewed decision that explicitly supersedes this tombstone.

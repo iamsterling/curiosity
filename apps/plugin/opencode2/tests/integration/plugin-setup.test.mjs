@@ -177,7 +177,7 @@ test("setup registers functional Promise hooks and every product tool once", asy
   } finally { await rm(directory, { recursive: true, force: true }) }
 })
 
-test("project-root aliases and projectDirectory share one concurrent guard while independent projects register", async () => {
+test("duplicate project-root aliases are silently no-op suppressed while independent projects register", async () => {
   const parent = await mkdtemp(path.join(os.tmpdir(), "plugin-guards-"))
   const first = path.join(parent, "first")
   const second = path.join(parent, "second")

@@ -24,6 +24,8 @@ jobs:
         with:
           bun-version: 1.3.14
       - run: bun install --frozen-lockfile
+      - name: Check scope-qualified status truth
+        run: bun run status:check
       - run: bun run verify:linux
         working-directory: apps/plugin/opencode2
 

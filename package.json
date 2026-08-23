@@ -7,12 +7,17 @@
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types",
+    "status:check": "node --test tools/status/status.test.mjs && node tools/status/status.mjs",
+    "status:write": "node tools/status/status.mjs --write",
     "verify:legacy-memory-parity": "node apps/plugin/opencode2/tools/verify-legacy-memory-native-parity.mjs --verify-dependency-receipt && bun run --cwd apps/plugin/opencode2 build && node apps/plugin/opencode2/tools/verify-legacy-memory-native-parity.mjs --verify-baseline-blobs && node apps/plugin/opencode2/tools/verify-legacy-memory-native-parity.mjs",
     "verify:legacy-memory-node-api-sdk": "bun apps/plugin/opencode2/tests/qualification/verify-legacy-memory-node-api-sdk.mjs",
     "verify:legacy-memory-node-api-sdk-v2": "bun apps/plugin/opencode2/tests/qualification/verify-legacy-memory-node-api-sdk-v2.mjs"
   },
   "devDependencies": {
     "@curiosity/runtime": "workspace:*",
+    "ajv": "8.17.1",
+    "he": "1.2.0",
+    "marked": "12.0.2",
     "prettier": "^3.7.4",
     "turbo": "^2.10.10",
     "typescript": "5.9.2"

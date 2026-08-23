@@ -45,6 +45,7 @@
 - **Accepted (exact private Darwin/Bun/OpenCode test-only Node-API qualification with one verifier-temp empty-registration test plugin; no normal plugin composition, package surface, authority transfer, release, or production):** [ADR 0057: private Node-API SDK qualification](decisions/0057-private-node-api-sdk-qualification.md)
 - **Accepted (documentation authority for a fifth isolated control-flow observation artifact and a new v2 candidate/approval only):** [ADR 0058: fifth Node-API control-flow observation artifact](decisions/0058-fifth-node-api-control-flow-observation-artifact.md)
 - **Accepted (documentation authority for separate actual-addon isolation and controlled shared-core interleaving evidence in a replacement schema-v3 SDK-v2 candidate only):** [ADR 0059: controlled phase-core concurrency evidence](decisions/0059-controlled-phase-core-concurrency-evidence.md)
+- **Accepted (documentation authority for replacement SDK-v2 tool/environment policy only; no candidate approval or qualification):** [ADR 0060: closed SDK-v2 tool and environment policy](decisions/0060-closed-sdk-v2-tool-and-environment-policy.md)
 - **Moved / Accepted at canonical location:** [ADR 0024: durable Ledger v2 and
   capture authority](../../plugin/opencode2/docs/decisions/0024-durable-ledger-v2-and-capture-authority.md)
   ([provenance stub](decisions/moved-durable-ledger-v2-and-capture-authority.md))
@@ -99,6 +100,20 @@ ADR 0059 narrows concurrency claims: actual-addon widths prove request-local
 isolation only, while a non-addon standalone fixture may prove prescribed
 shared-core schedules only in Phase C. The two verdicts remain independent; the
 fixture is absent from all package and release surfaces.
+ADR 0060 closes replacement-candidate tool and environment policy only. It does
+not approve or qualify a candidate. Checked-in SDK-v2 approval and receipt files
+are preserved historical evidence; their supersession chain and observed policy
+conflicts make the aggregate current claim contradictory and unqualified.
+Receipt presence, including a matching candidate digest, cannot promote status.
+
+## SDK v2 adjudication
+
+**Deferred / NO-GO.** Legacy-memory Node-API SDK v2 is contradictory and
+unqualified. Historical approvals and receipts remain immutable at their
+original paths, but none is current normal-composition, package, release,
+persistence, or production authority. A coherent fresh candidate, exact platform
+qualification, valid approval topology, and a separate plugin-first authority
+decision would be required before any broader claim.
 
 ## Specifications
 

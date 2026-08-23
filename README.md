@@ -1,159 +1,126 @@
-# Turborepo starter
+# Curiosity
 
-This Turborepo starter is maintained by the Turborepo core team.
+Curiosity is a monorepo containing plugin, runtime, application, documentation,
+and workspace-package source. Canonical repository status statements are
+maintained in the [machine-readable catalog](docs/status/capabilities.json) and
+rendered into the generated blocks below and the
+[generated detail view](docs/status/current.md). Non-generated prose covers
+navigation, verification, contribution, provenance, and licensing guidance.
 
-## Using this example
+## Catalog policy
 
-Run the following command:
+<!-- status:policy:start -->
+> This report describes validated repository state; it grants no lifecycle or release authority.
 
-```sh
-npx create-turbo@latest
-```
+- **Current:** Current requires implemented local source, sufficient local evidence, local decision authority, delivery, and applicable local qualification for the declared scope.
+- **Experimental:** Experimental is bounded to conditional, internal, or test-only delivery and cannot establish a consequential claim.
+- **Deferred:** Deferred is disabled with an explicit blocker and a NO-GO verdict.
+- **Retired:** Retired is a guarded negative assertion that a former surface is absent.
+- **Fail-closed unknowns:** Unknown or contradictory consequential state fails closed.
+- **Consequential claims:** Wave 1 mechanically forbids publication, production enablement or readiness, and deployment enablement or readiness.
+<!-- status:policy:end -->
 
-## What's inside?
+## Workspace map
 
-This Turborepo includes the following packages/apps:
+<!-- status:workspace:start -->
+| Path | Package | Role | Visibility |
+| --- | --- | --- | --- |
+| `apps/plugin/opencode2` | `@iamsterling/opencode2-config` | Plugin package workspace | registry-ready; publication unknown |
+| `apps/runtime` | `@curiosity/runtime` | Runtime package workspace | private |
+| `apps/web` | `web` | Starter application workspace | private |
+| `apps/docs` | `docs` | Starter application workspace | private |
+| `packages/ui` | `@repo/ui` | Starter library workspace | private |
+| `packages/eslint-config` | `@repo/eslint-config` | Workspace configuration package | private |
+| `packages/typescript-config` | `@repo/typescript-config` | Workspace configuration package | private |
+<!-- status:workspace:end -->
 
-### Apps and Packages
+## Capability matrix
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+<!-- status:status:start -->
+| Capability | Scope | Availability | Production | Publication | Deployment | Qualification | Status | Verdict |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| [Plugin identity and agent configuration](docs/status/current.md#plugin-identity-config) | plugin / package / repository, development | enabled | disabled | unknown | disabled | qualified | **Current** | GO — Current only for the declared scope and validated local facets. |
+| [Context and tool observation capture](docs/status/current.md#plugin-hooks-event-capture) | plugin / package / repository, development | observation-only | disabled | unknown | disabled | qualified | **Current** | GO — Current only for the declared scope and validated local facets. |
+| [Ledger and native-loop tool registration](docs/status/current.md#plugin-structured-tools) | plugin / package / repository, development | enabled | disabled | unknown | disabled | qualified | **Current** | GO — Current only for the declared scope and validated local facets. |
+| [Ledger lifecycle boundary](docs/status/current.md#plugin-ledger-authority) | plugin / package / repository, development | enabled | disabled | unknown | disabled | qualified | **Current** | GO — Current only for the declared scope and validated local facets. |
+| [Lifecycle and material write boundary](docs/status/current.md#plugin-authoritative-writes) | plugin / package / — | disabled | disabled | not-applicable | disabled | unqualified | **Deferred** | NO-GO — Deferred, disabled, and blocked from consequential use. |
+| [Fail-closed lifecycle guards](docs/status/current.md#plugin-lifecycle-guards) | plugin / package / repository, development | enabled | disabled | unknown | disabled | qualified | **Current** | GO — Current only for the declared scope and validated local facets. |
+| [Mechanical real-host capability report](docs/status/current.md#plugin-capability-report) | plugin / package / repository, development, test | enabled | disabled | unknown | disabled | qualified | **Current** | GO — Current only for the declared scope and validated local facets. |
+| [Composed web-search surfaces](docs/status/current.md#plugin-search-surface) | plugin / package / development, test | conditional | disabled | unknown | disabled | conditional | **Experimental** | CONDITIONAL — Experimental and bounded to the declared non-consequential scope. |
+| [Optional private runtime search profile](docs/status/current.md#plugin-private-runtime-search) | plugin / private-profile / development, test, private-release / platforms: darwin-arm64 | conditional | disabled | unpublished | disabled | qualified | **Experimental** | CONDITIONAL — Experimental and bounded to the declared non-consequential scope. |
+| [Registry packaging readiness](docs/status/current.md#plugin-registry-readiness) | plugin / package / repository, test | enabled | disabled | unknown | disabled | qualified | **Current** | GO — Current only for the declared scope and validated local facets. |
+| [Engineering-intent scaffolding](docs/status/current.md#plugin-engineering-intent) | plugin / repository / development, test | disabled | disabled | not-applicable | disabled | conditional | **Experimental** | CONDITIONAL — Experimental and bounded to the declared non-consequential scope. |
+| [Development evidence scaffolding](docs/status/current.md#plugin-evidence-scaffolding) | plugin / repository / development, test | disabled | disabled | not-applicable | disabled | conditional | **Experimental** | CONDITIONAL — Experimental and bounded to the declared non-consequential scope. |
+| [Orchestration and handoff scaffolding](docs/status/current.md#plugin-orchestration-scaffolding) | plugin / repository / development, test | disabled | disabled | not-applicable | disabled | conditional | **Experimental** | CONDITIONAL — Experimental and bounded to the declared non-consequential scope. |
+| [Runtime M1 stateless core](docs/status/current.md#runtime-m1) | runtime / package / repository, development | enabled | disabled | unpublished | disabled | qualified | **Current** | GO — Current only for the declared scope and validated local facets. |
+| [Runtime M2 local corpus state](docs/status/current.md#runtime-m2) | runtime / package / repository, development | enabled | disabled | unpublished | disabled | qualified | **Current** | GO — Current only for the declared scope and validated local facets. |
+| [Runtime M3 query boundary](docs/status/current.md#runtime-m3) | runtime / package / repository, development | enabled | disabled | unpublished | disabled | qualified | **Current** | GO — Current only for the declared scope and validated local facets. |
+| [Runtime M4 owned-crawl job operation](docs/status/current.md#runtime-m4) | runtime / repository / repository, test | enabled | disabled | unpublished | disabled | qualified | **Current** | GO — Current only for the declared scope and validated local facets. |
+| [Runtime M5 repository gateway adapter](docs/status/current.md#runtime-m5) | runtime / repository / repository, test | enabled | disabled | unpublished | disabled | qualified | **Current** | GO — Current only for the declared scope and validated local facets. |
+| [Runtime M6 fixed synthetic cell](docs/status/current.md#runtime-m6) | runtime / repository / repository, test | enabled | disabled | unpublished | disabled | qualified | **Current** | GO — Current only for the declared scope and validated local facets. |
+| [Runtime M7 private release profile](docs/status/current.md#runtime-m7) | runtime / private-profile / private-release / platforms: darwin-arm64 | enabled | disabled | unpublished | disabled | qualified | **Current** | GO — Current only for the declared scope and validated local facets. |
+| [Unified retrieval and validated-memory design](docs/status/current.md#runtime-unified-evidence) | runtime / design / — | disabled | disabled | not-applicable | disabled | unqualified | **Deferred** | NO-GO — Deferred, disabled, and blocked from consequential use. |
+| [Legacy-memory Node-API SDK v2 qualification](docs/status/current.md#runtime-sdk-v2) | runtime / test-only / test | disabled | disabled | unpublished | disabled | contradictory | **Deferred** | NO-GO — Deferred, disabled, and blocked from consequential use. |
+| [Web, docs, and UI starter scaffolds](docs/status/current.md#starter-scaffolds) | scaffolds / repository / development | conditional | disabled | unpublished | disabled | unqualified | **Experimental** | CONDITIONAL — Experimental and bounded to the declared non-consequential scope. |
+| [Legacy loop runtime boundary](docs/status/current.md#retired-legacy-runtime) | plugin / retired / — | absent | disabled | not-applicable | disabled | not-required | **Retired** | RETIRED — Retired under guarded negative-source contracts. |
+| [Legacy loop daemon boundary](docs/status/current.md#retired-daemon) | plugin / retired / — | absent | disabled | not-applicable | disabled | not-required | **Retired** | RETIRED — Retired under guarded negative-source contracts. |
+| [Legacy marker protocol and local agent boundary](docs/status/current.md#retired-marker-agent) | plugin / retired / — | absent | disabled | not-applicable | disabled | not-required | **Retired** | RETIRED — Retired under guarded negative-source contracts. |
+<!-- status:status:end -->
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+## Setup and component documentation
 
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo build
-bun dlx turbo build
-bun exec turbo build
-```
-
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo build --filter=docs
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo build --filter=docs
-bun exec turbo build --filter=docs
-bun exec turbo build --filter=docs
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+Install the pinned workspace dependencies without changing the lockfile:
 
 ```sh
-cd my-turborepo
-turbo dev
+bun install --frozen-lockfile
 ```
 
-Without global `turbo`, use your package manager:
+Then start at the boundary you intend to change:
+
+- [Plugin README](apps/plugin/opencode2/README.md) and
+  [architecture index](apps/plugin/opencode2/docs/architecture/README.md)
+- [Runtime README](apps/runtime/README.md) and
+  [runtime architecture index](apps/runtime/docs/README.md)
+- `apps/web`, `apps/docs`, and `packages/ui` only for starter-scaffold work
+
+## Verification entry points
+
+The root intentionally has no aggregate `test` or `verify` task yet. Use the
+owned checks instead:
 
 ```sh
-cd my-turborepo
-npx turbo dev
-bun exec turbo dev
-bun exec turbo dev
+bun run status:check
+bun run --cwd apps/plugin/opencode2 verify
+bun run --cwd apps/plugin/opencode2 verify:linux
+bun run --cwd apps/runtime verify
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+`status:write` is the explicit maintainer command for regenerating the canonical
+root README and `docs/status/current.md`. CI uses check mode and never rewrites
+tracked files. Catalog and source guards require separate reviewed edits and are
+never updated by `status:write`.
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+## Contributor starting points
 
-```sh
-turbo dev --filter=web
-```
+- Status truth: `docs/status/capabilities.json`, `docs/status/schema.json`, and
+  `tools/status/`
+- Plugin composition: `apps/plugin/opencode2/src/plugin/plugin.ts`
+- Mechanical host capability report:
+  `apps/plugin/opencode2/src/platform/real-host/index.ts`
+- Runtime package boundaries: `apps/runtime/package.json`, `apps/runtime/src/`,
+  and `apps/runtime/native/`
+- Consequential decisions: each component's `docs/decisions/` index
 
-Without global `turbo`:
+Behavior changes require a focused failing test before the smallest root-cause
+fix. Do not weaken lifecycle guards or infer authority from docs, catalogs,
+receipts, package metadata, or generated output.
 
-```sh
-npx turbo dev --filter=web
-bun exec turbo dev --filter=web
-bun exec turbo dev --filter=web
-```
+## Provenance and licensing
 
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-bun exec turbo login
-bun exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-bun exec turbo link
-bun exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+The plugin preserves its OpenCode Loop import attribution and reproducible
+manifests under [`apps/plugin/opencode2/provenance/`](apps/plugin/opencode2/provenance/)
+and is licensed under its [MIT license](apps/plugin/opencode2/LICENSE). Runtime
+origin and transfer history reside in
+[`apps/runtime/provenance/`](apps/runtime/provenance/). Third-party fixtures,
+tools, research inputs, and dependencies retain their own recorded licenses;
+there is no repository-wide license grant that overrides component records.
