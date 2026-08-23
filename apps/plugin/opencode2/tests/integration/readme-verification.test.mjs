@@ -1,15 +1,26 @@
 import assert from "node:assert/strict"
-import { spawn } from "node:child_process"
-import { createServer } from "node:net"
-import { chmod, mkdir, mkdtemp, readFile, realpath, rm, symlink, writeFile } from "node:fs/promises"
+import { access, readFile, readdir, writeFile } from "node:fs/promises"
 import os from "node:os"
-import path from "node:path"
-import { createRequire } from "node:module"
 import test from "node:test"
 
 import { verifyManagedReadmePluginList } from "../../tools/ephemeral-container/readme-verification.mjs"
 import { createManagedServiceProcessTracker } from "../../tools/ephemeral-container/managed-service-cleanup.mjs"
 import { EXPECTED_README_PLUGIN_IDS } from "../../tools/ephemeral-container/validation-contract.mjs"
+import {
+  cleanupManagedProcessFixture,
+  createLongLivedChild,
+  createManagedProcessFixture,
+  fixtureEvents,
+  fixtureProcessGroupIsPresent,
+  fixtureProcessIsPresent,
+  fixtureProcessRecord,
+  releasePeriodicCommand,
+  requestFixtureSupervisor,
+  spawnLongLivedFixtureProcess,
+  stopFixtureProcess,
+  waitForFixtureEvent,
+  waitForTrackedPids,
+} from "./fixtures/managed-process-fixture.mjs"
 
 const argv = ["opencode2", "plugin", "list"]
 const cwd = "/isolated/project"
@@ -17,9 +28,6 @@ const env = Object.freeze({ HOME: "/isolated/home", PATH: "/isolated/bin:/usr/bi
 const expected = `${EXPECTED_README_PLUGIN_IDS.join("\n")}\n`
 const empty = "No plugins loaded\n"
 const result = (stdout, overrides = {}) => ({ code: 0, signal: null, stderr: "", stdout, ...overrides })
-const hostVersion = "0.0.0-beta-17595"
-const require = createRequire(import.meta.url)
-const pinnedHost = path.join(path.dirname(require.resolve("@opencode-ai/cli/package.json")), "bin", "opencode2.exe")
 
 const deterministic = (outputs, options = {}) => {
   let current = 0
@@ -152,175 +160,244 @@ test("README plugin verification preserves its original failure and appends boun
   })
 })
 
-test("managed service tracker excludes baseline services and retains reparented descendants without registration", async () => {
-  const temporary = await mkdtemp(path.join(os.tmpdir(), "opencode2-process-tracker-"))
-  const executable = path.join(temporary, "opencode2")
-  await writeFile(executable, "#!/bin/sh\nexit 0\n", { mode: 0o700 })
-  await chmod(executable, 0o700)
-  const canonicalExecutable = await realpath(executable)
-  const snapshots = [
-    [{ command: `${canonicalExecutable} serve --service`, pgid: 10, pid: 10, ppid: 1 }],
-    [
-      { command: `${canonicalExecutable} serve --service`, pgid: 10, pid: 10, ppid: 1 },
-      { command: `${canonicalExecutable} plugin list`, pgid: 20, pid: 20, ppid: 1 },
-      { command: `${canonicalExecutable} serve --service`, pgid: 30, pid: 30, ppid: 20 },
-      { command: "service-descendant", pgid: 30, pid: 31, ppid: 30 },
-    ],
-    [
-      { command: `${canonicalExecutable} serve --service`, pgid: 10, pid: 10, ppid: 1 },
-      { command: `${canonicalExecutable} serve --service`, pgid: 30, pid: 30, ppid: 1 },
-      { command: "service-descendant", pgid: 30, pid: 31, ppid: 30 },
-    ],
+const exists = (target) => access(target).then(() => true, () => false)
+
+const trackerFactory = (lifecycle) => async (context) => {
+  lifecycle.tracker = await createManagedServiceProcessTracker(context)
+  lifecycle.trackerReady = true
+  return lifecycle.tracker
+}
+
+const servicePids = (event) => [event.servicePid, event.workerPid].sort((left, right) => left - right)
+
+const assertServiceHandshake = (fixture, event) => {
+  assert.equal(event.serviceReportedParentPid, fixture.supervisorPid)
+  assert.equal(event.workerReportedParentPid, event.servicePid)
+  assert.equal(event.servicePgid, event.servicePid)
+  assert.equal(event.workerPgid, event.servicePid)
+}
+
+const assertProcessesAbsent = async (pids) => {
+  for (const pid of pids) {
+    assert.equal(await fixtureProcessIsPresent(pid), false, `PID ${pid} must be absent, not zombie or alive`)
+    assert.equal(await fixtureProcessRecord(pid), undefined)
+  }
+}
+
+const assertSupervisorReapedService = async (fixture, event) => {
+  const events = await fixtureEvents(fixture)
+  assert.equal(events.some(({ type, workerPid }) => type === "worker-reaped" && workerPid === event.workerPid), true)
+  assert.equal(events.some(({ servicePid, type }) => type === "service-reaped" && servicePid === event.servicePid), true)
+  assert.deepEqual((await requestFixtureSupervisor(fixture, { type: "status" })).activePids, [])
+  await assertProcessesAbsent(servicePids(event))
+}
+
+const assertCapturedCommandsReaped = async (fixture) => {
+  const commandPids = [...new Set((await fixtureEvents(fixture)).map(({ commandPid }) => commandPid).filter(Number.isSafeInteger))]
+  assert.equal(commandPids.length > 0, true)
+  await assertProcessesAbsent(commandPids)
+}
+
+test("long-lived child handshake failures reap the spawned process before rejecting", { skip: process.platform === "win32" }, async (context) => {
+  const original = new Error("OPENCODE2_MANAGED_PROCESS_FIXTURE_POST_HANDSHAKE_REJECTION")
+  const cases = [
+    { fault: "timeout", options: { fault: "timeout", handshakeTimeoutMs: 50 }, validate: (error) => assert.match(error.message, /HANDSHAKE_TIMEOUT/u) },
+    { fault: "stream error", options: { fault: "stream-error" }, validate: (error) => assert.equal(error.message, "OPENCODE2_MANAGED_PROCESS_FIXTURE_STREAM_ERROR") },
+    { fault: "malformed JSON", options: { fault: "malformed-json" }, validate: (error) => assert.equal(error instanceof SyntaxError, true) },
+    { fault: "PID validation", options: { fault: "pid-invalid" }, validate: (error) => assert.match(error.message, /_PID_INVALID:/u) },
+    { fault: "PPID validation", options: { fault: "ppid-invalid" }, validate: (error) => assert.match(error.message, /_PPID_INVALID:/u) },
+    { fault: "other rejection", options: { beforeReturn: async () => { throw original } }, validate: (error) => assert.equal(error, original) },
   ]
-  let index = 0
-  try {
-    const tracker = await createManagedServiceProcessTracker({
-      argv,
-      cwd: temporary,
-      env: { HOME: temporary, PATH: temporary },
-      inspect: async () => snapshots[Math.min(index++, snapshots.length - 1)],
-    })
-    await tracker.observe(20)
-    assert.deepEqual(tracker.baselineServicePids, [10])
-    assert.deepEqual((await tracker.survivors()).map(({ pid }) => pid), [30, 31])
-    assert.equal(tracker.trackedCount(), 2)
-  } finally {
-    await rm(temporary, { recursive: true, force: true })
-  }
-})
-
-const isolatedPinnedHost = async (name) => {
-  const root = await mkdtemp(path.join(os.tmpdir(), `opencode2-readme-${name}-`))
-  const roots = Object.fromEntries(["bin", "cache", "config", "data", "home", "install", "project", "state", "tmp"]
-    .map((entry) => [entry, path.join(root, entry)]))
-  await Promise.all(Object.values(roots).map((directory) => mkdir(directory, { recursive: true })))
-  await mkdir(path.join(roots.config, "opencode"), { recursive: true })
-  await mkdir(path.join(roots.state, "opencode"), { recursive: true })
-  await symlink(await realpath(pinnedHost), path.join(roots.bin, "opencode2"))
-  return {
-    env: {
-      BUN_INSTALL: roots.install,
-      BUN_INSTALL_CACHE_DIR: roots.cache,
-      BUN_TMPDIR: roots.tmp,
-      HOME: roots.home,
-      OPENCODE_CONFIG_CONTENT: JSON.stringify({ plugins: [] }),
-      OPENCODE_CONFIG_PROJECT_DISABLE: "1",
-      OPENCODE_DISABLE_FFF: "1",
-      OPENCODE_DISABLE_MODELS_FETCH: "1",
-      PATH: `${roots.bin}:/usr/local/bin:/usr/bin:/bin`,
-      TMPDIR: roots.tmp,
-      XDG_CACHE_HOME: roots.cache,
-      XDG_CONFIG_HOME: roots.config,
-      XDG_DATA_HOME: roots.data,
-      XDG_STATE_HOME: roots.state,
-    },
-    root,
-    roots,
-  }
-}
-
-const waitForLine = (stream) => new Promise((resolve, reject) => {
-  let value = ""
-  const timeout = setTimeout(() => reject(new Error("fixture server start timeout")), 5_000)
-  stream.on("data", (chunk) => {
-    value += chunk
-    const newline = value.indexOf("\n")
-    if (newline === -1) return
-    clearTimeout(timeout)
-    resolve(value.slice(0, newline))
-  })
-})
-
-const startRegisteredFixtureService = async ({ mode, roots }) => {
-  const script = `
-const http = require("node:http")
-const inventory = JSON.parse(process.argv[1])
-const mode = process.argv[2]
-const server = http.createServer((request, response) => {
-  response.setHeader("content-type", "application/json")
-  if (request.url.startsWith("/api/health")) return response.end(JSON.stringify({ healthy: true, pid: process.pid, version: ${JSON.stringify(hostVersion)} }))
-  if (request.url.startsWith("/api/plugin")) {
-    if (mode === "failure") { response.statusCode = 500; return response.end(JSON.stringify({ error: "fixture_failure" })) }
-    return response.end(JSON.stringify({ data: inventory.map((id) => ({ id })) }))
-  }
-  if (request.url.startsWith("/api/service/stop")) {
-    response.setHeader("connection", "close")
-    return response.end(JSON.stringify({ accepted: true }), () => setTimeout(() => process.exit(0), 10))
-  }
-  response.statusCode = 404
-  response.end(JSON.stringify({ error: "not_found" }))
-})
-server.listen(0, "127.0.0.1", () => console.log(server.address().port))
-`
-  const child = spawn(process.execPath, ["-e", script, JSON.stringify(EXPECTED_README_PLUGIN_IDS), mode], {
-    stdio: ["ignore", "pipe", "pipe"],
-  })
-  const port = Number(await waitForLine(child.stdout))
-  await writeFile(path.join(roots.state, "opencode", "service.json"), `${JSON.stringify({
-    id: "readme-live-fixture",
-    pid: child.pid,
-    url: `http://127.0.0.1:${port}`,
-    version: hostVersion,
-  })}\n`, { mode: 0o600 })
-  return child
-}
-
-for (const mode of ["success", "failure"]) {
-  test(`pinned host README command ${mode} path performs managed cleanup without a new service survivor`, { skip: process.platform === "win32" }, async () => {
-    const fixture = await isolatedPinnedHost(mode)
-    let service
-    try {
-      const createProcessTracker = async (context) => {
-        const tracker = await createManagedServiceProcessTracker(context)
-        service = await startRegisteredFixtureService({ mode, roots: fixture.roots })
-        return tracker
-      }
-      if (mode === "success") {
-        const evidence = await verifyManagedReadmePluginList({ argv, createProcessTracker, cwd: fixture.roots.project, env: fixture.env, timeoutMs: 5_000 })
-        assert.equal(evidence.managedService.discoveredCount > 0, true)
-        assert.equal(evidence.managedService.normalStop.succeeded, true)
-        assert.deepEqual(evidence.managedService.survivorPids, [])
-      } else {
+  const before = (await readdir(os.tmpdir())).filter((entry) => entry.startsWith("opencode2-managed-")).sort()
+  for (const fault of cases) {
+    await context.test(fault.fault, async () => {
+      let child
+      try {
         await assert.rejects(
-          verifyManagedReadmePluginList({ argv, createProcessTracker, cwd: fixture.roots.project, env: fixture.env, timeoutMs: 5_000 }),
+          createLongLivedChild(`handshake-${fault.fault}`, { ...fault.options, onSpawn: (spawned) => { child = spawned } }),
           (error) => {
-            assert.equal(error.code, "OPENCODE2_README_VERIFICATION_COMMAND_FAILED")
-            assert.equal(error.cleanup.discoveredCount > 0, true)
-            assert.deepEqual(error.cleanup.survivorPids, [])
+            fault.validate(error)
             return true
           },
         )
+        assert.equal(await fixtureProcessIsPresent(child.pid), false)
+        assert.equal(fixtureProcessGroupIsPresent(child.pid), false)
+      } finally {
+        await stopFixtureProcess(child)
       }
-      if (service.exitCode === null && service.signalCode === null) await new Promise((resolve) => service.once("close", resolve))
-    } finally {
-      if (service?.exitCode === null && service.signalCode === null) service.kill("SIGKILL")
-      await rm(fixture.root, { recursive: true, force: true })
-    }
-  })
-}
+    })
+  }
+  const after = (await readdir(os.tmpdir())).filter((entry) => entry.startsWith("opencode2-managed-")).sort()
+  assert.deepEqual(after, before)
+})
 
-test("pinned host timeout before service registration reaps every new detached service process", { skip: process.platform === "win32" }, async () => {
-  const fixture = await isolatedPinnedHost("pre-registration-timeout")
-  const occupied = createServer()
-  await new Promise((resolve, reject) => {
-    occupied.once("error", reject)
-    occupied.listen(0, "127.0.0.1", resolve)
-  })
-  const port = occupied.address().port
-  await writeFile(path.join(fixture.roots.config, "opencode", "service.json"), `${JSON.stringify({ port })}\n`, { mode: 0o600 })
+test("production capture success observes and normally stops an exact supervised service process group", { skip: process.platform === "win32" }, async (context) => {
+  const fixture = await createManagedProcessFixture("capture-success", expected)
   try {
+    assert.equal(await exists(fixture.registration), false)
+    const evidence = await verifyManagedReadmePluginList({
+      argv,
+      cwd: fixture.cwd,
+      env: fixture.env,
+      timeoutMs: 5_000,
+    })
+    const event = (await fixtureEvents(fixture)).find(({ type }) => type === "command-service-ready")
+    assertServiceHandshake(fixture, event)
+    assert.equal(evidence.managedService.baselineRegistration, false)
+    assert.equal(evidence.managedService.discoveredCount, 2)
+    assert.deepEqual(evidence.managedService.discoveredPids, servicePids(event))
+    assert.equal(evidence.managedService.normalStop.succeeded, true)
+    assert.deepEqual(evidence.managedService.survivorPids, [])
+    assert.equal(await exists(fixture.registration), false)
+    await assertSupervisorReapedService(fixture, event)
+    await assertCapturedCommandsReaped(fixture)
+    context.diagnostic(`captured command PID ${event.commandPid}; service group PIDs ${servicePids(event).join(",")} reaped`)
+  } finally {
+    await cleanupManagedProcessFixture(fixture)
+  }
+})
+
+test("production capture nonzero failure preserves its primary diagnostic while fallback reaps the exact process group", { skip: process.platform === "win32" }, async (context) => {
+  const fixture = await createManagedProcessFixture("capture-failure", expected)
+  const env = { ...fixture.env, OPENCODE2_FIXTURE_MODE: "failure", OPENCODE2_FIXTURE_STOP_MODE: "fail" }
+  let failure
+  try {
+    assert.equal(await exists(fixture.registration), false)
     await assert.rejects(
-      verifyManagedReadmePluginList({ argv, cwd: fixture.roots.project, env: fixture.env, timeoutMs: 750 }),
+      verifyManagedReadmePluginList({
+        argv,
+        cwd: fixture.cwd,
+        env,
+        timeoutMs: 5_000,
+      }),
       (error) => {
+        failure = error
         assert.equal(error.code, "OPENCODE2_README_VERIFICATION_COMMAND_FAILED")
-        assert.equal(error.cleanup.discoveredCount > 0, true)
+        assert.match(error.message, /^OPENCODE2_README_VERIFICATION_COMMAND_FAILED:/u)
+        assert.doesNotMatch(error.message, /:cleanup:/u)
+        assert.doesNotMatch(error.message, new RegExp(fixture.env.OPENCODE2_FIXTURE_SECRET, "u"))
+        assert.equal(error.cleanup.discoveredCount, 2)
+        assert.equal(error.cleanup.normalStop.code, 9)
+        assert.equal(error.cleanup.normalStop.succeeded, false)
         assert.deepEqual(error.cleanup.survivorPids, [])
         return true
       },
     )
-    await assert.rejects(readFile(path.join(fixture.roots.state, "opencode", "service.json"), "utf8"), { code: "ENOENT" })
+    const event = (await fixtureEvents(fixture)).find(({ type }) => type === "command-service-ready")
+    assertServiceHandshake(fixture, event)
+    assert.deepEqual(failure.cleanup.discoveredPids, servicePids(event))
+    const commandFailure = (await fixtureEvents(fixture)).find(({ type }) => type === "normal-stop-invoked")
+    assert.ok(commandFailure)
+    await assertSupervisorReapedService(fixture, event)
+    await assertCapturedCommandsReaped(fixture)
+    assert.equal(await exists(fixture.registration), false)
+    context.diagnostic(`failed command PID ${event.commandPid}; fallback-reaped service group PIDs ${servicePids(event).join(",")}`)
   } finally {
-    occupied.close()
-    await rm(fixture.root, { recursive: true, force: true })
+    await cleanupManagedProcessFixture(fixture)
+  }
+})
+
+test("production capture timeout kills and reaps the exact command without descendants or diagnostic replacement", { skip: process.platform === "win32" }, async (context) => {
+  const fixture = await createManagedProcessFixture("capture-timeout", expected)
+  const env = { ...fixture.env, OPENCODE2_FIXTURE_MODE: "timeout" }
+  try {
+    await assert.rejects(
+      verifyManagedReadmePluginList({ argv, cwd: fixture.cwd, env, timeoutMs: 1_000 }),
+      (error) => {
+        assert.equal(error.code, "OPENCODE2_README_VERIFICATION_COMMAND_FAILED")
+        assert.match(error.message, /^OPENCODE2_README_VERIFICATION_COMMAND_FAILED:/u)
+        assert.match(error.message, /"timedOut":true/u)
+        assert.doesNotMatch(error.message, /:cleanup:/u)
+        assert.equal(error.cleanup.discoveredCount, 0)
+        assert.deepEqual(error.cleanup.discoveredPids, [])
+        assert.equal(error.cleanup.normalStop.succeeded, true)
+        assert.deepEqual(error.cleanup.survivorPids, [])
+        return true
+      },
+    )
+    const event = (await fixtureEvents(fixture)).find(({ type }) => type === "timeout-command-ready")
+    await assertCapturedCommandsReaped(fixture)
+    context.diagnostic(`timed-out captured command PID ${event.commandPid} killed and reaped`)
+  } finally {
+    await cleanupManagedProcessFixture(fixture)
+  }
+})
+
+test("production capture periodically records a supervised process group that exits before command close", { skip: process.platform === "win32" }, async (context) => {
+  const fixture = await createManagedProcessFixture("capture-periodic", expected)
+  const lifecycle = {}
+  const env = { ...fixture.env, OPENCODE2_FIXTURE_MODE: "periodic" }
+  const verification = verifyManagedReadmePluginList({
+    argv,
+    createProcessTracker: trackerFactory(lifecycle),
+    cwd: fixture.cwd,
+    env,
+    timeoutMs: 5_000,
+  })
+  const control = (async () => {
+    const event = await waitForFixtureEvent(fixture, ({ type }) => type === "command-service-ready", "periodic service handshake")
+    assertServiceHandshake(fixture, event)
+    assert.equal(lifecycle.trackerReady, true)
+    await waitForTrackedPids(lifecycle.tracker, servicePids(event))
+    const stopped = await requestFixtureSupervisor(fixture, { type: "stop-all" })
+    assert.deepEqual(stopped.activePids, [])
+    await assertProcessesAbsent(servicePids(event))
+    await releasePeriodicCommand(fixture)
+    return event
+  })()
+  try {
+    const [evidence, event] = await Promise.all([verification, control])
+    assert.equal(evidence.managedService.discoveredCount, 2)
+    assert.deepEqual(evidence.managedService.discoveredPids, servicePids(event))
+    assert.equal(evidence.managedService.normalStop.succeeded, true)
+    assert.deepEqual(evidence.managedService.survivorPids, [])
+    await assertSupervisorReapedService(fixture, event)
+    await assertCapturedCommandsReaped(fixture)
+    context.diagnostic(`periodic observer retained exited service group PIDs ${servicePids(event).join(",")}`)
+  } finally {
+    await Promise.allSettled([verification, control])
+    await cleanupManagedProcessFixture(fixture)
+  }
+})
+
+test("baseline registration skips normal stop while production capture leaves new process-group cleanup eligible", { skip: process.platform === "win32" }, async (context) => {
+  const fixture = await createManagedProcessFixture("baseline-registration", expected)
+  const lifecycle = {}
+  let baseline
+  let unrelated
+  try {
+    baseline = await spawnLongLivedFixtureProcess("registered-baseline")
+    unrelated = await spawnLongLivedFixtureProcess("unrelated-baseline")
+    await writeFile(fixture.registration, `${JSON.stringify({ pid: baseline.pid })}\n`, { mode: 0o600 })
+    const evidence = await verifyManagedReadmePluginList({
+      argv,
+      createProcessTracker: trackerFactory(lifecycle),
+      cwd: fixture.cwd,
+      env: fixture.env,
+      timeoutMs: 5_000,
+    })
+    const event = (await fixtureEvents(fixture)).find(({ type }) => type === "command-service-ready")
+    assertServiceHandshake(fixture, event)
+    assert.equal(lifecycle.tracker.baselineRegistrationPid, baseline.pid)
+    assert.equal(evidence.managedService.baselineRegistration, true)
+    assert.equal(evidence.managedService.discoveredCount, 2)
+    assert.deepEqual(evidence.managedService.discoveredPids, servicePids(event))
+    assert.deepEqual(evidence.managedService.normalStop, { skippedBaseline: true, succeeded: false })
+    assert.deepEqual(evidence.managedService.survivorPids, [])
+    assert.equal(JSON.parse(await readFile(fixture.registration, "utf8")).pid, baseline.pid)
+    assert.equal((await fixtureEvents(fixture)).some(({ type }) => type === "normal-stop-invoked"), false)
+    await assertSupervisorReapedService(fixture, event)
+    await assertCapturedCommandsReaped(fixture)
+    const baselineRecord = await fixtureProcessRecord(baseline.pid)
+    const unrelatedRecord = await fixtureProcessRecord(unrelated.pid)
+    assert.ok(baselineRecord)
+    assert.ok(unrelatedRecord)
+    assert.equal(baselineRecord.state.startsWith("Z"), false)
+    assert.equal(unrelatedRecord.state.startsWith("Z"), false)
+    context.diagnostic(`eligible service group PIDs ${servicePids(event).join(",")} reaped; baseline PIDs ${baseline.pid},${unrelated.pid} preserved`)
+  } finally {
+    await stopFixtureProcess(baseline)
+    await stopFixtureProcess(unrelated)
+    await cleanupManagedProcessFixture(fixture)
   }
 })

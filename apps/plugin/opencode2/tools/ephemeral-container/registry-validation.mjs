@@ -25,6 +25,17 @@ export const advanceRegistrySmokePhase = (completed, next) => {
   completed.push(next)
 }
 
+export const assertManagedLifecycleEvidence = (managedService) => {
+  assert.equal(typeof managedService === "object" && managedService !== null, true)
+  assert.equal(Array.isArray(managedService.discoveredPids), true)
+  assert.equal(managedService.discoveredPids.length > 0, true)
+  assert.equal(managedService.discoveredPids.every((pid) => Number.isSafeInteger(pid) && pid > 0), true)
+  assert.equal(new Set(managedService.discoveredPids).size, managedService.discoveredPids.length)
+  assert.equal(managedService.discoveredCount, managedService.discoveredPids.length)
+  assert.equal(managedService.normalStop?.succeeded, true)
+  assert.deepEqual(managedService.survivorPids, [])
+}
+
 const capture = (command, args, options) => new Promise((resolve, reject) => {
   const child = spawn(command, args, { cwd: options.cwd, env: options.env, stdio: ["ignore", "pipe", "pipe"] })
   const stdout = []
@@ -259,7 +270,7 @@ export const validateRegistryPackageSmoke = async ({ inputRoot, prepared, valida
     })
     assert.equal(verification.managedService.baselineRegistration, false)
     assert.deepEqual(verification.managedService.baselineServicePids, [])
-    assert.deepEqual(verification.managedService.survivorPids, [])
+    assertManagedLifecycleEvidence(verification.managedService)
     const readmeRequests = phaseProductEvidence(registry.records, "readme-verification", productRecord.name, productRecord.version)
     assert.ok(readmeRequests.packuments >= 1, JSON.stringify(readmeRequests))
     assert.ok(readmeRequests.tarballs >= 1, JSON.stringify(readmeRequests))

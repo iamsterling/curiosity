@@ -7,7 +7,7 @@ import test from "node:test"
 
 import { inspectPackageArchive, validatePackedProduct } from "../../tools/ephemeral-container/package-archive.mjs"
 import { extractReadmeSetup } from "../../tools/ephemeral-container/readme-setup.mjs"
-import { advanceRegistrySmokePhase } from "../../tools/ephemeral-container/registry-validation.mjs"
+import { advanceRegistrySmokePhase, assertManagedLifecycleEvidence } from "../../tools/ephemeral-container/registry-validation.mjs"
 
 const pluginRoot = path.resolve(import.meta.dirname, "../..")
 const packageManifest = JSON.parse(await readFile(path.join(pluginRoot, "package.json"), "utf8"))
@@ -69,6 +69,30 @@ test("registry smoke phase guard rejects functional host work before cold README
     advanceRegistrySmokePhase(completed, phase)
   }
   assert.deepEqual(completed, ["installer-setup", "readme-verification", "functional-host", "setup-instrumentation"])
+})
+
+test("native registry lifecycle acceptance rejects vacuous managed cleanup evidence", () => {
+  const valid = {
+    discoveredCount: 1,
+    discoveredPids: [123],
+    normalStop: { succeeded: true },
+    survivorPids: [],
+  }
+  assert.doesNotThrow(() => assertManagedLifecycleEvidence(valid))
+  for (const invalid of [
+    undefined,
+    { ...valid, discoveredCount: 0 },
+    { ...valid, discoveredCount: 2 },
+    { ...valid, discoveredCount: 2, discoveredPids: [123, 123] },
+    { ...valid, discoveredPids: [] },
+    { ...valid, discoveredPids: undefined },
+    { ...valid, discoveredPids: [0] },
+    { ...valid, discoveredPids: [-1] },
+    { ...valid, discoveredPids: [1.5] },
+    { ...valid, discoveredPids: [Number.MAX_SAFE_INTEGER + 1] },
+    { ...valid, normalStop: { succeeded: false } },
+    { ...valid, survivorPids: [123] },
+  ]) assert.throws(() => assertManagedLifecycleEvidence(invalid), { name: "AssertionError" })
 })
 
 test("normal pack preserves the source manifest and excludes development/workspace surfaces", async () => {
