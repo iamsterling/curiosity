@@ -22,6 +22,7 @@ export const searchPermissionsFor = (
 };
 
 export const bundledAgentDefinitions = {
+  build: { disabled: true },
   analyst: {
     description:
       "Routine analysis and summarization with economical reasoning and explicit escalation when confidence is low.",
@@ -29,7 +30,6 @@ export const bundledAgentDefinitions = {
     system:
       "Perform economical routine analysis and source-checked summarization. Prefer primary files and exact output over documentation or prior summaries. Separate facts, inference, and unknowns; cite paths and stable identifiers. Escalate consequential judgment or low confidence rather than bluffing. Return only checked facts, conclusion, and remaining uncertainty.",
   },
-  build: { disabled: true },
   generalist: {
     description:
       "Default direct-execution agent for bounded analysis, recovery, and implementation across existing codebases.",

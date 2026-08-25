@@ -4,7 +4,7 @@ import { diagnose } from "../../dist/platform/doctor/index.js"
 import { PINNED_REAL_HOST_VERSION } from "../../dist/platform/real-host/index.js"
 
 const healthy = {
-  pluginApiVersion: "0.0.0-beta-17595", hostVersion: "0.0.0-beta-17595", setupCount: 1,
+  pluginApiVersion: "0.0.0-beta-18138", hostVersion: "0.0.0-beta-18138", setupCount: 1,
   agents: { orchestrator: { enabled: true, model: "provider/model" } }, defaultAgent: "orchestrator",
   subagentDepth: 3, hooks: ["session.context", "tool.execute.before", "tool.execute.after", "event.subscribe"],
   directShellDetected: false, writerState: "healthy", featureIDs: ["hook-foundation", "structured-tools"],

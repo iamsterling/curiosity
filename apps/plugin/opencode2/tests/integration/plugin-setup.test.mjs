@@ -13,12 +13,13 @@ const contextFor = (directory, log, definitions, permissionsByAgent = {}) => {
     return { dispose: async () => log.push(`dispose:${id}`) }
   }
   return {
-    app: { name: "opencode2", version: "0.0.0-beta-17595", channel: "beta" },
+    app: { name: "opencode2", version: "0.0.0-beta-18138", channel: "beta" },
     options: { directory },
     agent: {
       transform: async (callback) => {
         callback({
           default: (id) => definitions.set("agent:default", id),
+          get: () => ({}),
           remove: (id) => definitions.set(`agent:removed:${id}`, true),
           update: (id, update) => {
             const agent = {
@@ -85,8 +86,8 @@ test("setup installs the bundled agent suite and selects direct execution withou
     ])
     for (const id of ["analyst", "generalist", "implementer", "orchestrator", "reviewer", "strategist", "worker"])
       assert.deepEqual(definitions.get(`agent:${id}`).permissions.slice(-2).map(({ effect }) => effect), ["deny", "deny"], id)
-    assert.equal(definitions.has("agent:removed:build"), false)
-    assert.equal(definitions.has("agent:removed:plan"), false)
+    assert.equal(definitions.has("agent:removed:build"), true)
+    assert.equal(definitions.has("agent:removed:plan"), true)
     await cleanup?.()
   } finally { await rm(directory, { recursive: true, force: true }) }
 })
@@ -119,12 +120,12 @@ test("setup rejects an unreviewed host ABI before registering behavior", async (
   assert.deepEqual(log, [])
 })
 
-test("setup accepts the reviewed beta-17595 host ABI", async () => {
-  const directory = await mkdtemp(path.join(os.tmpdir(), "plugin-beta-17595-"))
+test("setup accepts the reviewed beta-18138 host ABI", async () => {
+  const directory = await mkdtemp(path.join(os.tmpdir(), "plugin-beta-18138-"))
   const definitions = new Map()
   try {
     const context = contextFor(directory, [], definitions)
-    context.app.version = "0.0.0-beta-17595"
+    context.app.version = "0.0.0-beta-18138"
     const cleanup = await plugin.setup(context)
     assert.equal(definitions.get("agent:default"), "generalist")
     await cleanup?.()

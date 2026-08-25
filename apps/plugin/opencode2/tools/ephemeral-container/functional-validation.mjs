@@ -161,6 +161,8 @@ export const validateInstalledPluginSetup = async ({ directory, pluginEntry, hos
       transform: async (callback) => {
         callback({
           default: (id) => agents.set("default", id),
+          get: () => ({}),
+          remove: (id) => agents.delete(id),
           update: (id, update) => {
             const agent = { id, name: id, request: { settings: {}, headers: {}, body: {} }, mode: "primary", hidden: false, permissions: [] }
             update(agent)

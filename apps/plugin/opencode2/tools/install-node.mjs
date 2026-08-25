@@ -209,7 +209,7 @@ async function ensureDependency(config) {
   pkg.dependencies = pkg.dependencies && typeof pkg.dependencies === "object" && !Array.isArray(pkg.dependencies) ? pkg.dependencies : {}
   if (!pkg.dependencies["@opencode-ai/plugin"]) {
     // The V2 plugin API is beta; match the @next channel used by opencode2.
-    pkg.dependencies["@opencode-ai/plugin"] = "0.0.0-beta-17595"
+    pkg.dependencies["@opencode-ai/plugin"] = "0.0.0-beta-18138"
     await assertSafeDestination(packagePath, { file: true })
     await writeFile(packagePath, JSON.stringify(pkg, null, 2) + "\n", "utf8")
   }

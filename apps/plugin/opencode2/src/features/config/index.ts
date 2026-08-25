@@ -4,7 +4,11 @@ import { bundledAgentDefinitions, searchPermissionsFor, type BundledAgentDefinit
 export const registerPluginConfig = async (context: OpenCodeContext): Promise<void> => {
   await context.agent.transform((agents) => {
     for (const [id, definition] of Object.entries(bundledAgentDefinitions) as Array<[string, BundledAgentDefinition]>) {
-      if (definition.disabled) continue;
+      if (definition.disabled) {
+        if (agents.get(id)) agents.remove(id);
+        continue;
+      }
+      if (!agents.get(id)) continue;
       agents.update(id, (agent) => {
         agent.description = definition.description;
         agent.mode = definition.mode ?? "all";
@@ -13,7 +17,7 @@ export const registerPluginConfig = async (context: OpenCodeContext): Promise<vo
         agent.permissions.unshift(...searchPermissionsFor(id));
       });
     }
-    agents.default("generalist");
+    if (agents.get("generalist")) agents.default("generalist");
   });
 };
 

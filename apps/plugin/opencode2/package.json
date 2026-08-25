@@ -75,12 +75,12 @@
     "access": "public"
   },
   "dependencies": {
-    "@opencode-ai/plugin": "0.0.0-beta-17595",
-    "effect": "4.0.0-beta.107"
+    "@opencode-ai/plugin": "0.0.0-beta-18138",
+    "effect": "4.0.0-rc.111"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.8",
-    "@opencode-ai/cli": "0.0.0-beta-17595",
+    "@opencode-ai/cli": "0.0.0-beta-18138",
     "@types/node": "26.2.0",
     "@typescript-eslint/parser": "^8.67.0",
     "eslint": "9.39.2",

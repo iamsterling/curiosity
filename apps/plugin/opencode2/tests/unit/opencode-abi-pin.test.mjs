@@ -4,7 +4,7 @@ import test from "node:test"
 import path from "node:path"
 import { findWorkspaceRoot } from "../../tools/workspace-root.mjs"
 
-const expected = "0.0.0-beta-17595"
+const expected = "0.0.0-beta-18138"
 const root = path.resolve(import.meta.dirname, "../..")
 const json = async (file) => JSON.parse((await readFile(file, "utf8")).replace(/,\s*([}\]])/gu, "$1"))
 
@@ -28,9 +28,9 @@ test("OpenCode host, plugin SDK, installed packages, and lockfile share the revi
   assert.equal(cli.version, expected)
   assert.equal(pkg.devDependencies["@types/node"], "26.2.0")
   assert.equal(lock.workspaces[workspacePackage].devDependencies["@types/node"], "26.2.0")
-  assert.equal(pkg.dependencies.effect, "4.0.0-beta.107")
-  assert.equal(lock.workspaces[workspacePackage].dependencies.effect, "4.0.0-beta.107")
-  assert.equal(plugin.dependencies.effect, "4.0.0-beta.107")
-  assert.equal(effect.version, "4.0.0-beta.107")
+  assert.equal(pkg.dependencies.effect, "4.0.0-rc.111")
+  assert.equal(lock.workspaces[workspacePackage].dependencies.effect, "4.0.0-rc.111")
+  assert.equal(plugin.dependencies.effect, "4.0.0-rc.111")
+  assert.equal(effect.version, "4.0.0-rc.111")
   assert.match(realHost, new RegExp(`PINNED_REAL_HOST_VERSION = ${JSON.stringify(expected)}`))
 })

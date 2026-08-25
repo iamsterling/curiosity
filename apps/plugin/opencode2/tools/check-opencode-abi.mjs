@@ -22,16 +22,16 @@ export const checkOpenCodeAbi = async ({ active = false, binary = "opencode2" } 
     readFile(path.join(root, "src/platform/real-host/index.ts"), "utf8"),
   ])
   const expected = pkg.dependencies?.["@opencode-ai/plugin"]
-  assert.equal(expected, "0.0.0-beta-17595", "plugin ABI must use the reviewed exact beta-17595 build")
+  assert.equal(expected, "0.0.0-beta-18138", "plugin ABI must use the reviewed exact beta-18138 build")
   assert.equal(pkg.devDependencies?.["@opencode-ai/cli"], expected, "repository CLI and plugin SDK pins differ")
   assert.equal(lock.workspaces?.[workspacePackage]?.dependencies?.["@opencode-ai/plugin"], expected, "plugin lock pin differs")
   assert.equal(lock.workspaces?.[workspacePackage]?.devDependencies?.["@opencode-ai/cli"], expected, "CLI lock pin differs")
   assert.equal(plugin.version, expected, "installed plugin SDK differs from package pin; run bun install")
   assert.equal(cli.version, expected, "installed CLI differs from package pin; run bun install")
-  assert.equal(pkg.dependencies?.effect, "4.0.0-beta.107", "repository Effect pin differs from reviewed M7 pin")
-  assert.equal(lock.workspaces?.[workspacePackage]?.dependencies?.effect, "4.0.0-beta.107", "Effect lock pin differs")
-  assert.equal(plugin.dependencies?.effect, "4.0.0-beta.107", "plugin SDK Effect ABI differs from reviewed M7 pin")
-  assert.equal(effect.version, "4.0.0-beta.107", "installed Effect differs from reviewed M7 pin; stage dependencies or run bun install")
+  assert.equal(pkg.dependencies?.effect, "4.0.0-rc.111", "repository Effect pin differs from reviewed OpenCode SDK pin")
+  assert.equal(lock.workspaces?.[workspacePackage]?.dependencies?.effect, "4.0.0-rc.111", "Effect lock pin differs")
+  assert.equal(plugin.dependencies?.effect, "4.0.0-rc.111", "plugin SDK Effect ABI differs from reviewed OpenCode SDK pin")
+  assert.equal(effect.version, "4.0.0-rc.111", "installed Effect differs from reviewed OpenCode SDK pin; stage dependencies or run bun install")
   assert.match(
     realHost,
     new RegExp(`PINNED_REAL_HOST_VERSION = ${JSON.stringify(expected)}`),

@@ -1,4 +1,4 @@
-export const EXPECTED_HOST_VERSION = "0.0.0-beta-17595"
+export const EXPECTED_HOST_VERSION = "0.0.0-beta-18138"
 export const EXPECTED_PLUGIN_ID = "iamsterling.opencode2-config"
 export const EXPECTED_PLUGIN_VERSION = "0.1.0"
 export const EXPECTED_DEFAULT_AGENT = "generalist"
