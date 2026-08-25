@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "custom-harness-q1-r2-candidates/v1",
+  "governingPlanSha256": "ab0b90385c7d1e4247191313488428ceb941f5734ed35d12254dfef901980ff7",
+  "effect": {
+    "package": "effect",
+    "version": "4.0.0-beta.107",
+    "sourceCommit": "3c495ae7c96d43bfc3b8020250562a194c2c895e",
+    "sourceTree": "5e77033d116402945c4115c8c3c6b8fce8ec81e8",
+    "lockIntegrity": "sha512-OoBAv8eF+yanc+C6xhgEUnWeXUSHA6ynnscYqpkAY9GSnzZWystsIjBowVqCkLpHGlnRtdIqYT3wHwpOY6JDnQ==",
+    "artifactSha256": "e3b3664b248b812eb4d6ad278817b29a803c1a7694237c367b201099b21edd4d",
+    "artifactSha512Hex": "3a8040bfc785fb26a773e0bac6180452759e5d448703aca79ec718aa990063d1929f3656cacb6c223068c15a8290ba471a59d1b5d22a613df01f0a4e63a2439d",
+    "licenseSha256": "774c3bc5924ad8ae6c5a75f1c53db13feb238ade15989625c513d07b60dedf30",
+    "importSurface": [
+      "effect/Context",
+      "effect/Effect",
+      "effect/Layer",
+      "effect/ManagedRuntime"
+    ]
+  },
+  "buildTest": {
+    "bun": {
+      "version": "1.3.14",
+      "revision": "0d9b296af33f2b851fcbf4df3e9ec89751734ba4",
+      "binarySha256": "e0c90ec15d33363e6b70713d56bc3b2c7585c17f40a0fe0f8fd9305901d4e233",
+      "artifactSha256": "d8b96221828ad6f97ac7ac0ab7e95872341af763001e8803e8267652c2652620",
+      "testRunner": "bun:test"
+    },
+    "typescript": {
+      "version": "5.9.2",
+      "sourceCommit": "5be33469d551655d878876faa9e30aa3b49f8ee9",
+      "lockIntegrity": "sha512-CWBzXQrc/qOkhidw1OzBTQuYRbfyxDXJMVJ1XNwUHGROVmuaeiEm3OslpZ1RV96d7SKKjZKrSJu3+t/xlw3R9A==",
+      "artifactSha256": "67a3bc82e822b8f45f653a80fc3a9730d23214d36c83ba85dd7f5abebee82062",
+      "compilerOptions": {
+        "lib": ["ESNext", "DOM"],
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "skipLibCheck": true,
+        "strict": true,
+        "target": "ES2023"
+      }
+    },
+    "turbo": {
+      "version": "2.10.10",
+      "sourceCommit": "ea08facfcc9185adc1096a994408bfc9114b2164",
+      "wrapperIntegrity": "sha512-/90KTW+USzvYOPmafRZHVKLBsHXQ5810Ao/HdtJYAqguIhZ+XruS6eIUjqJUDtrSxaZYynNFht68qckGKAOWTA==",
+      "wrapperArtifactSha256": "ec38dbacb9fcc5e19081169c31889f5971abd15043003b8a53f2c8e81218c023",
+      "platformIntegrity": "sha512-VZYsxZ6yjyDosUqtiroAVSXPLmx/qBxdHJgIxdMH9RyNmLdOLOWtJnYMnI4qckwCgQMK85G3fu94/xk5+iBCgw==",
+      "platformArtifactSha256": "8c2f28a74e6061dc99515c027a0c6ed404b3c0401b69475d642a6c5b3cf7f5b1",
+      "platformBinarySha256": "415bad4b27666b6ba13f37e563b4f6b02add80775588637c6bc6d0f5a161d7ce"
+    },
+    "nodeWhenInvoked": {
+      "version": "24.18.0",
+      "sourceCommit": "20da4aeadabc5b0a01e3fcf520f91df8285c68a2",
+      "binarySha256": "ee6fb0e015284d83a91e8ec5213f43a157f8a392b58555301682892ba928c04a",
+      "artifactSha256": "e1a97e14c99c803e96c7339403282ea05a499c32f8d83defe9ef5ec66f979ed1"
+    },
+    "rustCargoForRootChecksOnly": {
+      "rustVersion": "1.97.1",
+      "rustCommit": "8bab26f4f68e0e26f0bb7960be334d5b520ea452",
+      "cargoVersion": "1.97.1",
+      "cargoCommit": "c980f4866141969fab6254a680546a277789d6f0",
+      "target": "aarch64-apple-darwin",
+      "channelManifestSha256": "03569b1886ceb5c05276b50c8431ab111de944cd6140fe1fa7d821dd8e0f29cf"
+    },
+    "target": {
+      "os": "darwin",
+      "arch": "arm64",
+      "macosVersion": "27.0",
+      "macosBuild": "26A5368g"
+    }
+  },
+  "aiSdk": null,
+  "aiSdkVerdict": "REJECTED_NO_CANDIDATE",
+  "sqliteVerdict": "UNKNOWN_UNQUALIFIED",
+  "gitVerdict": "UNKNOWN_UNQUALIFIED",
+  "supervisorVerdict": "UNKNOWN_UNQUALIFIED"
+}

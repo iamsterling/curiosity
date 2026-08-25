@@ -1,0 +1,3 @@
+exitCode: 1
+expected: nonzero before root-cause fix
+command: node --test apps/plugin/opencode2/tests/unit/architecture-verifier.test.mjs

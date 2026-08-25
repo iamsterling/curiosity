@@ -1,0 +1,53 @@
+$ node --test tests/characterization/*.test.mjs tools/bundle-test.mjs && node tools/install-test.mjs
+✔ every compatibility name is a thin native adapter or stable unsupported diagnostic (12.897875ms)
+✔ legacy runtime, daemon, mutable state authority, and marker agent are absent (21.4635ms)
+✖ pinned Promise tool ABI exposes trusted agent identity but no AbortSignal (3.04425ms)
+✔ pinned adapter cancellation skips a not-started call but cannot abort an executing Promise tool (129.124167ms)
+✔ registration is disposed when the pinned adapter plugin scope closes (0.300958ms)
+✖ exported plugin.effect owns runtime search registration, execution, interruption, and teardown (0.802667ms)
+✔ the private query-only workspace package loads under the pinned Bun host runtime (81.115958ms)
+✔ every loop compatibility command has one explicit native disposition (0.793125ms)
+✔ shell compatibility is fail-closed and lifecycle aliases use native authority (0.222958ms)
+✔ exports a stable manifest and validates the isolated destination (125.280584ms)
+✔ example recommends bounded depth 3 via the OpenCode 2 key, not stale depth 2 (51.579208ms)
+✔ export requires an explicit operator overlay (28.788167ms)
+✔ reports stale exported assets with a stable code (45.910541ms)
+✔ detects missing assets, bad command references, leakage, and invalid overlay policy (46.927917ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 12
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 397.066375
+
+✖ failing tests:
+
+test at tests/characterization/promise-tool-host-abi.test.mjs:65:1
+✖ pinned Promise tool ABI exposes trusted agent identity but no AbortSignal (3.04425ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + '0.0.0-beta-18138'
+  - '0.0.0-beta-17595'
+                 ^
+  
+      at TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/characterization/promise-tool-host-abi.test.mjs:72:10)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '0.0.0-beta-18138',
+    expected: '0.0.0-beta-17595',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/characterization/promise-tool-host-abi.test.mjs:142:1
+✖ exported plugin.effect owns runtime search registration, execution, interruption, and teardown (0.802667ms)
+  TypeError: exportedPlugin.effect is not a function
+      at TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/characterization/promise-tool-host-abi.test.mjs:183:65)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+error: script "test:characterization" exited with code 1

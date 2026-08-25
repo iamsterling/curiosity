@@ -1,0 +1,8 @@
+
+effect-consumer.test.ts:
+(pass) Q1-R2-T01 uses one ordinary public Effect consumer runtime [2.33ms]
+
+ 1 pass
+ 0 fail
+ 7 expect() calls
+Ran 1 test across 1 file. [23.00ms]

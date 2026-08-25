@@ -1,0 +1,14 @@
+diff --git a/apps/plugin/opencode2/turbo.json b/apps/plugin/opencode2/turbo.json
+index d1a261a..6958ddc 100644
+--- a/apps/plugin/opencode2/turbo.json
++++ b/apps/plugin/opencode2/turbo.json
+@@ -4,6 +4,9 @@
+     "build": {
+       "outputs": ["dist/**"]
+     },
++    "test": {
++      "dependsOn": ["$TURBO_EXTENDS$", "build"]
++    },
+     "m7:prepare": {
+       "dependsOn": ["build"]
+     }

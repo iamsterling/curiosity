@@ -1,0 +1,47 @@
+# Q1-E01 candidate matrix
+
+**Evidence status:** Corrected reviewed Q1 record; remediation supersedes the
+original unsupported verdict summaries  
+**Source commit:** `8670d358f761003c49902db5f148baab0c2e6be4` plus the
+pre-existing accepted architecture inputs listed in [ENTRY.md](ENTRY.md).  
+**Lifecycle status:** Qualification evidence only; not adoption by a product,
+release, deployment, production, or security acceptance.
+
+## Verdict matrix
+
+| Candidate                                        | Exact identity                                                                                                                                               | Corrected Q1 verdict                                                                                     | Capability consequence                                                                                                                                                                               | Disposition                                                                  |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Effect composition/runtime                       | `effect@4.0.0-beta.107`; npm SHA-512 `3a8040…a2439d`; source `3c495ae7c96d43bfc3b8020250562a194c2c895e`                                                      | **INSUFFICIENT / UNKNOWN** for public package subpaths and consumer resolution                           | Probes imported/scanned internal `dist` files. They do not prove `effect/{Context,Effect,Layer,ManagedRuntime}` through package exports or a consumer install. No Effect surface is available to I1. | **DEFERRED**; exact identity observations retained, no version substitution. |
+| Build/test stack                                 | Bun `1.3.14+0d9b296af`; TypeScript `5.9.2`; Turbo and `@turbo/darwin-arm64` `2.10.10`; Bun `bun:test`; Darwin arm64 profile; Node `24.18.0` whenever invoked | **INSUFFICIENT / NOT REPRODUCIBLE** from retained Q1-T01 metadata; **NOT ACCEPTED FOR I1**               | Historical outputs are retained, but focused commands/environments/exits are elided or incomplete. Failed root lint, blocked test/build/verify, and the ignored-output escape independently fail Q1. | **DEFERRED** as observations only, not installed or added to a product.      |
+| Vercel AI SDK core/provider adapter              | No candidate selected                                                                                                                                        | **REJECTED** — `REJECTED_NO_CANDIDATE`                                                                   | Static/source-token evidence only. I7 and all provider dispatch remain blocked. The receipt proves neither a provider send nor network-zero.                                                         | **REJECTED**; no candidate/probe/credential is recorded.                     |
+| Existing SQLite Rust tuple                       | `rusqlite=0.40.2` + `libsqlite3-sys=0.38.2` `bundled` + SQLite `3.53.2` source ID `d6e03d8c…1a24`; exact lock checksums                                      | **UNKNOWN** — identity inventory only                                                                    | No storage readiness or durability claim. Q2 remains mandatory.                                                                                                                                      | **DEFERRED** to Q2.                                                          |
+| Rust toolchain identity                          | Rust `1.97.1` (`8bab26f4…`), Cargo `1.97.1` (`c980f486…`), `aarch64-apple-darwin`; observed channel/component and local digests                              | **INSUFFICIENT** as a qualified compiler/toolchain identity                                              | May inform later discovery only. The aggregate observation lacks exact command/environment/exit metadata and does not qualify supervisor behavior or crates.                                         | **DEFERRED** as identity observations only.                                  |
+| Rust supervisor: standard library only           | Rust `std` from the exact toolchain                                                                                                                          | **REJECTED** — incomplete mandatory descendant/process-group and inherited-handle mechanics              | Cannot be treated as the Phase 1 mandatory supervisor closure.                                                                                                                                       | **REJECTED** as incomplete.                                                  |
+| Rust supervisor: `std` + possible `libc@0.2.189` | Lock checksum `3eaf3ede…12f2`; MIT OR Apache-2.0; target available                                                                                           | **UNKNOWN** — features, safe wrapper/API sequence, complete closure, and Q3 behavior unresolved          | No supervisor crate is selected or adopted. Q3 must resolve the smallest exact closure.                                                                                                              | **DEFERRED** to Q3.                                                          |
+| Apple Git CLI                                    | Git `2.54.0 (Apple Git-157)`, Xcode `27.0 (27A5209h)`, actual arm64 binary SHA-256 `3dd98fff…04cb`                                                           | **UNKNOWN** — exact Apple source/license-to-running-artifact mapping unresolved; build reports no commit | Git capability remains unavailable. Q3 cannot inherit this record as behavioral or source qualification.                                                                                             | **DEFERRED**; no alternate backend added.                                    |
+
+## Work and test closure
+
+| ID     | Result                                                                                                                          | Principal retained evidence                                             |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Q1-W01 | **INSUFFICIENT** for qualification; candidate/license inventory observations retained                                           | Candidate records, [license ledger](licenses/README.md), Q1-T01         |
+| Q1-W02 | **INSUFFICIENT / UNKNOWN**; internal `dist` probes do not prove public export/consumer resolution                               | [Effect record](records/effect-4.0.0-beta.107.md), `Q1-T01/focused-*`   |
+| Q1-W03 | `REJECTED_NO_CANDIDATE`; static/source-token evidence only                                                                      | `Q1-T03/REJECTION.md`                                                   |
+| Q1-W04 | Policy and source observations retained; **INSUFFICIENT / NOT REPRODUCIBLE** as Q1-T02/T04 qualification evidence               | [provenance record](records/provenance-invalidation.md), Q1-T02, Q1-T04 |
+| Q1-T01 | **INSUFFICIENT / NOT REPRODUCIBLE**; raw logs retained and hashed                                                               | `evidence/Q1-T01/`                                                      |
+| Q1-T02 | **INSUFFICIENT / NOT REPRODUCIBLE**; source demonstrates fixture equality only                                                  | `evidence/Q1-T02/`                                                      |
+| Q1-T03 | **REJECTED_NO_CANDIDATE**; not a dynamic/network test pass                                                                      | `evidence/Q1-T03/REJECTION.md`                                          |
+| Q1-T04 | **INSUFFICIENT / NOT REPRODUCIBLE**; static observations retained                                                               | `evidence/Q1-T04/`                                                      |
+| Q1-E02 | **FAIL** — root lint failed; test/build/verify blocked; original boundary escaped into 18 ignored files, now exactly remediated | `evidence/Q1-E02/`                                                      |
+
+## Q1 exit verdict
+
+**STOPPED FAIL CLOSED.** Exact identity and historical output observations are
+retained, and the unselected AI adapter is rejected. They do not qualify Effect,
+the build/test stack, or the Rust toolchain because required evidence metadata is
+insufficient and the Effect probe bypassed public package exports. Canonical-root
+lint failed, mandatory root test/build/verify were not run after the stop, and
+the original persistent boundary escaped into 18 ignored outputs before exact
+remediation. Nothing here can satisfy an I1 entry decision. SQLite behavior,
+Rust supervisor closure/behavior, Git, providers, I1, and every later tranche
+remain unavailable.

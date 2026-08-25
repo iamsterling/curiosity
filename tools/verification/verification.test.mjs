@@ -79,7 +79,7 @@ test("verification inventory is separate from capability lifecycle status", asyn
 
 test("M7 status is split between immutable history and the unqualified source candidate", async () => {
   const status = JSON.parse(await readFile(path.join(ROOT, "docs/status/capabilities.json"), "utf8"));
-  assert.equal(status.capabilities.length, 27);
+  assert.equal(status.capabilities.length, 28);
   const historical = status.capabilities.find(({ id }) => id === "runtime-m7-historical");
   const candidate = status.capabilities.find(({ id }) => id === "runtime-m7-current");
   assert.equal(historical.status, "Current");
@@ -140,14 +140,18 @@ test("Turbo test and verify hashes include repository verification and runtime c
   }
 });
 
-test("the required workspace command reaches honest starter syntax and package contract checks", async () => {
+test("the required workspace command reaches the harness, starter syntax, and package contract checks", async () => {
   const typescript = await import("typescript");
   for (const starter of ["apps/docs", "apps/web"]) {
     const manifest = JSON.parse(await readFile(path.join(ROOT, starter, "package.json"), "utf8"));
     for (const command of ["lint", "check-types", "build", "test"])
       assert.equal(manifest.scripts.verify.match(new RegExp(`bun run ${command}(?:\\s|$)`, "gu"))?.length, 1, `${starter}:${command}`);
     const source = await readFile(path.join(ROOT, starter, "app/page.tsx"), "utf8");
-    const broken = source.replace("export default function Home()", "export default function Home(");
+    const broken = source.replace(
+      /export default (?:async )?function Home\(\)/u,
+      "export default function Home(",
+    );
+    assert.notEqual(broken, source, starter);
     const diagnostics = typescript.transpileModule(broken, {
       reportDiagnostics: true,
       compilerOptions: { jsx: typescript.JsxEmit.Preserve, module: typescript.ModuleKind.ESNext, target: typescript.ScriptTarget.ESNext },
@@ -166,6 +170,7 @@ test("the required workspace command reaches honest starter syntax and package c
   );
   const taskIds = JSON.parse(stdout).tasks.map(({ taskId }) => taskId).sort();
   assert.deepEqual(taskIds, [
+    "@curiosity/custom-harness#verify",
     "@repo/eslint-config#verify",
     "@repo/typescript-config#verify",
     "@repo/ui#verify",

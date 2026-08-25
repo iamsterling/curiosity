@@ -1,0 +1,262 @@
+$ node --test tests/unit/*.test.mjs
+✔ architecture verifier accepts the single beta-18138 Plugin.define entrypoint (65.128125ms)
+✔ context projection admits only provenance-bound closed-schema reviewer metadata (10.313917ms)
+✔ context projection rejects injected fields, duplicate bindings, stale roots, and cross-claim evidence (0.457292ms)
+✔ context projection rejects stale revisions, duplicate source identities, and rationale smuggling at indexed paths (0.6155ms)
+✔ engineering commands are thin shared-skill entrypoints (12.014833ms)
+✔ profile codec is recursively exact and policy-bound (2.04925ms)
+✔ claims are non-evidentiary and failure changes strategy without blind retry (3.127083ms)
+✔ three failures diversify concrete action classes before an explicit terminal choice (0.221333ms)
+✔ exhausting every candidate action class stops deterministically and cannot execute again (0.501541ms)
+✔ only linked fresh host observations evidence the declared criterion (4.975125ms)
+✔ observation codecs reject malformed recursive identity, enum, revision, and time values before storage (0.68275ms)
+✔ capture is idempotent and records sequence gaps and collisions (393.590208ms)
+✔ strict domain contracts preserve orthogonal state and explicit relationships (1.267ms)
+✔ identities and fixture extraction are deterministic without collapsing layers (0.789791ms)
+✔ development bootstrap is explicit and rejects production claims (1.24425ms)
+✔ anchor provides pagination, idempotency, stale conflict, restrictions, and key commitments (3.026167ms)
+✔ AES custody uses distinct random envelopes and authenticates bound AAD (247.365667ms)
+✔ custody reads fail closed on symlinks, directories, and path replacement races (157.7405ms)
+✔ custody rejects parent-directory symlink substitution before publication or read (144.379917ms)
+✔ custody rejects a FIFO without blocking (94.724166ms)
+✔ GitHub contract redacts, deduplicates, and resolves ambiguous writes by reread (5.005833ms)
+✔ restricted security never routes to issue and production is disabled (0.520084ms)
+✔ A-docs-config is a valid real JSON proposal (13.450667ms)
+✔ B-behavioral-bug is a valid real JSON proposal (2.192584ms)
+✔ C-mixed-units is a valid real JSON proposal (3.039084ms)
+✔ D-sequential is a valid real JSON proposal (0.892125ms)
+✔ F-review is a valid real JSON proposal (0.881916ms)
+✔ C rejects mutation parallelism without out-of-band authorization (1.558666ms)
+✔ E blocking ambiguity is a closed decision state with no contract (1.817583ms)
+✔ policy denial is out-of-band and terminal (0.563375ms)
+✔ unknown version returns only the unsupported-version diagnostic (1.441ms)
+✔ malformed root and nested collections never throw (0.862292ms)
+✔ duplicate IDs, enums, strings, and integer limits are rejected at exact paths (1.202208ms)
+✔ set-like scalar fields reject duplicates and tool limits are positive and bounded (1.140291ms)
+✔ path aliases and ancestor ownership are rejected (0.553459ms)
+✔ absolute and normalization-changing writable paths are rejected (1.666666ms)
+✔ repository artifact paths reject platform and locator absolute forms (2.686541ms)
+✔ hidden cycles and duplicate dependency edges are rejected (0.560375ms)
+✔ multi-hop dependency cycles, duplicate dependency IDs, and unknown units are rejected (0.262958ms)
+✔ closed schemas reject forged authority and smuggling fields (0.5195ms)
+✔ blocked decisions require questions and cannot smuggle a contract (0.5345ms)
+✔ stale summary needs matching external context-id and digest revalidation (1.572ms)
+✔ criteria reject duplicate IDs, prose-only oracle, and inappropriate evidence (0.983ms)
+✔ criteria require oracle-compatible evidence including behavioral red and green (0.675542ms)
+✔ every proposal class requires a criterion and behavioral evidence distinguishes states (2.855916ms)
+✔ quote contexts require bounded quote content and summaries require digests (0.70725ms)
+✔ retry semantics are closed by failure class (0.98525ms)
+✔ review schema excludes rationale and suspected-defect fields (1.023375ms)
+✔ H canonical digest ignores set order and preserves ordered methods (1.790625ms)
+✔ bounded mutation matrix is deterministic and never throws (14.28775ms)
+✔ skill, command, schema, and fixtures remain provider-neutral and planning-only (1.640791ms)
+✔ doctor accepts only the exact pinned host version (0.751625ms)
+✔ doctor covers compatibility, writers, hooks, features, routes, depth, drift, state, shell, and resources (0.092792ms)
+✔ doctor labels observational failures fail-open and material failures fail-closed (0.452791ms)
+✔ doctor emits stable disabled capability gates for unproven native host semantics (0.065875ms)
+✔ strict intake distinguishes duplicate, collision, reorder, and durable gaps (589.986083ms)
+✔ strict intake rejects non-durable identity and sequence without writing (33.495542ms)
+✔ reentrant intake serializes instead of surfacing writer contention (206.669208ms)
+✔ tool halves expose gaps and persisted envelopes never contain raw output (103.107292ms)
+✔ cancel and subagent events retain durable correlation without guessed identity (0.329667ms)
+✔ context projection requires trusted provenance and remains bounded (4.59225ms)
+✔ oversized context remains valid closed JSON and declares truncation (0.107333ms)
+✔ replay is deterministic and rejects a changed event (6.102292ms)
+✔ archive transaction leaves no committed or partial bundle when a boundary faults (80.879334ms)
+✔ archive transaction commits one digest-verifiable immutable bundle (63.120333ms)
+✔ the closed v1 domain strictly decodes all fourteen canonical entities (3.584917ms)
+✔ capability deltas require the exact base and scenario weakening requires bounded approval (0.425125ms)
+✔ dependency explanations are deterministic and expose cycles, blockers, and conflicts (0.668875ms)
+✔ facts cannot claim authority and proposal validation rejects fabricated completion (0.106041ms)
+✔ strict event decoding rejects future versions and unknown nested fields (0.550042ms)
+✔ canonical digests are key-order independent (5.288834ms)
+✔ activation and claim automation fail closed while commit-bound fencing is unproven (176.782709ms)
+✔ synthetic approval and artifact-only completion fail closed (75.344ms)
+✔ approval automation cannot create authority without proven persistence (88.543958ms)
+✔ intent revision writes remain disabled without commit-bound fencing (73.865416ms)
+✔ dependency receipt rejects mutated manifest (20.099625ms)
+✔ dependency receipt rejects mutated lock (21.508458ms)
+✔ dependency receipt rejects mutated receipt (23.098333ms)
+✔ dependency receipt rejects mutated tree (34.044209ms)
+✔ dependency receipt rejects mutated javascript-manifest (24.188791ms)
+✔ dependency receipt rejects mutated other-cargo-delta (17.845209ms)
+✔ mutant scorer rejects baseline-failing test (0.422083ms)
+✔ mutant scorer rejects compile-failing mutant (0.049167ms)
+✔ mutant scorer rejects unrelated test failure (0.039458ms)
+✔ mutant scorer rejects wrong vector (0.035ms)
+✔ mutant scorer rejects wrong field (0.039042ms)
+✔ mutant scorer rejects duplicate mutants (0.048458ms)
+✔ legacy native parity remains a private verification-only seam (2.35025ms)
+✔ unproved terminal events cannot begin disabled continuation (155.683709ms)
+✔ user input cannot mutate an absent disabled continuation (211.0045ms)
+✔ continuation fails closed when its journal transition cannot be fence-bound (21.641625ms)
+✔ strict journal codec rejects unknown and malformed nested state (0.865458ms)
+✔ continuation remains disabled even when preflight authority reports current (144.517667ms)
+✔ an unpersisted disabled continuation leaves nothing to restart (127.620875ms)
+✔ a claimed forward transition cannot bypass disabled persistence (100.351833ms)
+✔ interrupt automation is disabled while host semantics remain unproven (30.010333ms)
+✔ resume cannot operate without a persisted journal (92.868208ms)
+✔ resume does not dispatch when persistence is disabled (65.164708ms)
+✔ compaction cannot create a journal while persistence is disabled (149.362917ms)
+✔ unproved terminality cannot be evaluated without proven persistence (74.221125ms)
+✖ the active beta-17595 service ABI is the exact package, lock, guard, and runtime release pin (4.611792ms)
+✔ OpenCode host, plugin SDK, installed packages, and lockfile share the reviewed ABI pin (3.081834ms)
+✔ only one real process enters a material transition (253.187791ms)
+✔ stale lease cannot commit or remove a recovered writer lease (121.86875ms)
+✔ lease replacement immediately before rename prevents stale commit (104.998208ms)
+✔ lease-protected atomic publication fails closed when rename cannot bind the lease (84.934959ms)
+✔ observation publication remains available without authoritative fencing (89.998ms)
+✔ malformed nested JSON is quarantined and reports its persisted path (87.0285ms)
+✔ a direct mutation quarantines malformed JSON rather than replacing it (64.144208ms)
+✔ valid checkpoint recovers a torn pointer without accepting corrupt truth (34.189916ms)
+✔ a missing pointer recovers from its valid checkpoint (33.585042ms)
+✖ compiled plugin agent definitions match the reviewed bundle assets (3.360708ms)
+✖ entrypoint exports the default Effect plugin with a compatibility setup seam (0.9775ms)
+✖ entrypoint redacts a hostile search configuration getter before setup (0.093417ms)
+✖ artifact provenance hashes the workspace lock and records its exact OpenCode integrities (23.8115ms)
+✔ provenance includes untracked runtime sources and rejects a stale manifest after one changes (1464.922292ms)
+✔ provenance verification rejects a corrupted resource-only object (753.375083ms)
+✔ credential-free capability report is pinned and fail-closed for unsupported semantics (0.516458ms)
+✔ version mismatch disables every real-host capability with a stable code (0.075791ms)
+✔ agent prompt source bytes are lower than the preserved baseline (3.554708ms)
+✔ all prompt and resource source bytes are lower than the preserved baseline (4.7265ms)
+✔ reviewer is a mechanical findings allowlist without rationale or suspected-defect prose (0.357583ms)
+✔ research keeps bounded curiosity semantics and rejects live autonomous curiosity (0.232709ms)
+✔ command and help inventory is filesystem-generatable (3.917917ms)
+✔ owned search deadline settles and exits without unrelated handles: never-producing-body (147.843417ms)
+✔ owned search deadline settles and exits without unrelated handles: pending-cancel (134.828084ms)
+✔ owned search deadline settles and exits without unrelated handles: fetch-abort (139.398417ms)
+✔ owned search deadline settles and exits without unrelated handles: fast-success (112.839292ms)
+✔ web search uses the approved token-protected POST contract and frames results as untrusted (2.619083ms)
+✔ runtime input and configuration validation fail before network access (0.386834ms)
+✔ response policy rejects auth, throttling, upstream, redirects, media type, malformed and oversized bodies (2.652083ms)
+✔ default SearXNG semantics do not reject incidental short-token substrings (0.367ms)
+✔ oversized declared and streamed bodies reject promptly when cancellation never settles (2.120417ms)
+✔ status and media-type failures cancel unread response bodies (0.1875ms)
+✔ stream reading installs and removes one abort listener rather than retaining one per chunk (0.186334ms)
+✔ a timeout while reading cancels the response body (11.19075ms)
+✔ timeouts and transport failures have stable redacted diagnostics (21.557458ms)
+✔ neutral tool is public and the shipped branded name is a compatibility alias without setup traffic (0.235708ms)
+✔ public-web search is enforced researcher-only at execution, independent of catalog ordering (0.261291ms)
+✔ explicit runtime backend is researcher-only, no-network, identical by alias, and never falls back (0.817459ms)
+✔ runtime backend preserves only bounded validated partial failures (0.182334ms)
+✔ runtime backend rejects reflected repository credentials in public outcome fields (0.376292ms)
+✔ runtime backend rejects long repository credentials before bounded projection (0.235542ms)
+✔ runtime projection emits only bounded known fields and drops nested unknown fields (0.11175ms)
+✔ runtime Effect executor is interruptible around work and finalizes once (0.308958ms)
+✔ runtime backend rejects incomplete config and uncontrolled or duplicate plugin inventory without fallback (0.185208ms)
+✔ runtime configuration getter and proxy failures are redacted at the search boundary (0.300542ms)
+✔ runtime open exceptions are redacted before tool registration (15.18475ms)
+✔ runtime outcomes map to stable redacted adapter diagnostics without fallback (0.277667ms)
+ℹ tests 149
+ℹ suites 0
+ℹ pass 144
+ℹ fail 5
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1873.844792
+
+✖ failing tests:
+
+test at tests/unit/opencode-17595-service-compat.test.mjs:12:1
+✖ the active beta-17595 service ABI is the exact package, lock, guard, and runtime release pin (4.611792ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + '0.0.0-beta-18138'
+  - '0.0.0-beta-17595'
+                 ^
+  
+      at TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/opencode-17595-service-compat.test.mjs:24:10)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '0.0.0-beta-18138',
+    expected: '0.0.0-beta-17595',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/unit/plugin-agent-config.test.mjs:6:1
+✖ compiled plugin agent definitions match the reviewed bundle assets (3.360708ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  ... Skipped lines
+  
+    {
+      analyst: {
+        description: 'Routine analysis and summarization with economical reasoning and explicit escalation when confidence is low.',
+        mode: 'subagent',
+        system: 'Perform economical routine analysis and source-checked summarization. Prefer primary files and exact output over documentation or prior summaries. Separate facts, inference, and unknowns; cite paths and stable identifiers. Escalate consequential judgment or low confidence rather than bluffing. Return only checked facts, conclusion, and remaining uncertainty.'
+  ...
+        mode: 'primary',
+  +     system: "Default to direct execution. Preserve the user's current objective and visible issue; a recovery or continuation resumes that objective and must not substitute a stale plan, prior acceptance, or broader program. Do the smallest useful investigation or implementation before considering delegation. When a question is research-shaped and material uncertainty remains, invoke the deep-research skill: frame the decision, pursue one highest-value unresolved thread at a time, and stop at coverage, saturation, or budget exhaustion. Do not invoke it for routine edits, settled facts, or curiosity without decision value. Delegate only when the user explicitly requests it or when a bounded subtask has a stated deliverable, exclusive ownership, acceptance check, and a reason direct execution cannot complete it. For ordinary bugs, questions, edits, and recovery: use no subagents and no review unless a concrete security, correctness, or high-blast-radius risk remains after the direct attempt. State binary acceptance checks and non-goals; ask on genuine ambiguity. Read source and local conventions. For behavior changes, first add a test that fails because behavior is missing, then make the smallest root-cause fix without changing that test. Preserve boundaries and stable diagnostics; avoid unrelated refactors. Run required checks and report raw output, changed paths, assumptions, and missing evidence."
+  -     system: "Default to direct execution. Preserve the user's current objective and visible issue; a recovery or continuation resumes that objective and must not substitute a stale plan, prior acceptance, or broader program. Do the smallest useful investigation or implementation before considering delegation. Delegate only when the user explicitly requests it or when a bounded subtask has a stated deliverable, exclusive ownership, acceptance check, and a reason direct execution cannot complete it. For ordinary bugs, questions, edits, and recovery: use no subagents and no review unless a concrete security, correctness, or high-blast-radius risk remains after the direct attempt. State binary acceptance checks and non-goals; ask on genuine ambiguity. Read source and local conventions. For behavior changes, first add a test that fails because behavior is missing, then make the smallest root-cause fix without changing that test. Preserve boundaries and stable diagnostics; avoid unrelated refactors. Run required checks and report raw output, changed paths, assumptions, and missing evidence."
+      },
+      implementer: {
+        description: 'Minimal, verified implementation changes to existing code, with tests and mechanical checks.',
+        mode: 'subagent',
+        system: 'Implement a specified change with minimal verified scope. Convert intent to binary acceptance checks and clarify ambiguity. Read source and architecture boundaries. Add a failing behavior test first; for existing untested behavior add characterization before edits. Make the smallest root-cause change, preserving package boundaries and stable diagnostics. Run focused tests plus required type/lint checks and report raw output and changed paths. Do not refactor unrelated code or weaken tests.'
+  
+      at TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/plugin-agent-config.test.mjs:12:10)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { build: { disabled: true }, analyst: { description: 'Routine analysis and summarization with economical reasoning and explicit escalation when confidence is low.', mode: 'subagent', system: 'Perform economical routine analysis and source-checked summarization. Prefer primary files and exact output over documentation or prior summaries. Separate facts, inference, and unknowns; cite paths and stable identifiers. Escalate consequential judgment or low confidence rather than bluffing. Return only checked facts, conclusion, and remaining uncertainty.' }, generalist: { description: 'Default direct-execution agent for bounded analysis, recovery, and implementation across existing codebases.', mode: 'primary', system: "Default to direct execution. Preserve the user's current objective and visible issue; a recovery or continuation resumes that objective and must not substitute a stale plan, prior acceptance, or broader program. Do the smallest useful investigation or implementation before considering delegation. When a question is research-shaped and material uncertainty remains, invoke the deep-research skill: frame the decision, pursue one highest-value unresolved thread at a time, and stop at coverage, saturation, or budget exhaustion. Do not invoke it for routine edits, settled facts, or curiosity without decision value. Delegate only when the user explicitly requests it or when a bounded subtask has a stated deliverable, exclusive ownership, acceptance check, and a reason direct execution cannot complete it. For ordinary bugs, questions, edits, and recovery: use no subagents and no review unless a concrete security, correctness, or high-blast-radius risk remains after the direct attempt. State binary acceptance checks and non-goals; ask on genuine ambiguity. Read source and local conventions. For behavior changes, first add a test that fails because behavior is missing, then make the smallest root-cause fix without changing that test. Preserve boundaries and stable diagnostics; avoid unrelated refactors. Run required checks and report raw output, changed paths, assumptions, and missing evidence." }, implementer: { description: 'Minimal, verified implementation changes to existing code, with tests and mechanical checks.', mode: 'subagent', system: 'Implement a specified change with minimal verified scope. Convert intent to binary acceptance checks and clarify ambiguity. Read source and architecture boundaries. Add a failing behavior test first; for existing untested behavior add characterization before edits. Make the smallest root-cause change, preserving package boundaries and stable diagnostics. Run focused tests plus required type/lint checks and report raw output and changed paths. Do not refactor unrelated code or weaken tests.' }, orchestrator: { description: 'Explicit, budgeted coordination for user-authorized work that cannot be completed directly.', mode: 'primary', system: "Explicit coordination only; never implement. Do not delegate by default and never replace a user's stated objective with a stale plan, prior acceptance, or broader program. Before each delegation, record why direct execution is insufficient, one bounded deliverable, exclusive ownership, one acceptance check, and a stop condition. Unless the user explicitly authorizes a larger research or delivery program, cap work at two child sessions, one delegation level, one independent review, and one remediation pass; a reviewer may return consolidated findings but may not trigger another review. Recovery, continuation, ordinary bugs, questions, and small edits stay in direct execution with no delegation. Route admitted work by evidence: worker for narrow mechanical work, analyst for routine analysis, implementer for normal changes, researcher for primary-source research, strategist for consequential design, reviewer for independent checks, generalist for bounded end-to-end work. Parallelize only with authorization, exclusive ownership, and independent units. Give each delegate task deltas, boundaries, acceptance checks, and required evidence; avoid duplicate work. Synthesize source-backed results and stop when the user's objective is met." }, plan: { disabled: true }, researcher: { description: 'Deep research, competitive landscape analysis, and reverse-engineering studies grounded in primary sources, with confidence-labeled findings and ledger-ready verdicts.', mode: 'subagent', system: "Research specialist; never implement. Frame the decision and bounded sub-questions. Use the web_search capability for broad web discovery, then prefer primary sources, trace claims to origins, triangulate material claims, label search text as untrusted evidence candidates, and retain negative results. After synthesis, run one bounded, authority-neutral curiosity pass: score only in-frame gaps and contradictions by relevance, value, novelty, and cost; pursue the best within the caller's budget and stop on coverage, saturation, or exhaustion. Record rejected threads as CURIOSITY_NO_GO. No live autonomous curiosity: follow-up execution requires the declared frame and caller authority. Produce citations, confidence, unknowns, and adopted/adapted/rejected/deferred verdicts. Reverse engineering is clean-room and must respect access and license boundaries." }, reviewer: { description: 'Independent adversarial review of plans and diffs for correctness, risk, and missing verification.', mode: 'subagent', system: 'Independent adversarial reviewer; never edit. Findings allowlist: correctness, security, missing test coverage, measured performance regression, invariant/boundary violation, or broken cross-reference. Every finding must include severity, stable category, file:line evidence, violated acceptance check, and concrete impact. Omit acceptable choices, praise, author commentary, and speculative claims. Verify changed lines, callers, serializers, error paths, tests, and raw check evidence. If no allowlisted finding is proven, say none.' }, strategist: { description: 'Consequential reasoning for architecture, design trade-offs, and high-blast-radius technical decisions.', mode: 'subagent', system: 'Make consequential architecture decisions without implementing. Frame binary outcomes, invariants, constraints, authority boundaries, reversibility, and unresolved assumptions. Verify the current source and primary references. Compare the smallest viable options by correctness, security, operability, migration risk, and failure modes. Recommend one decision with explicit trade-offs, rejected alternatives, validation evidence, and ADR need; never invent certainty or performance budgets.' }, worker: { description: 'Fast, narrow, precisely scoped execution with the smallest possible diff.', mode: 'subagent', system: 'Execute one narrow specified task with the smallest diff. Restate binary acceptance checks and ask one precise question if blocked. Read only target and nearby convention. Do not refactor or cross assigned boundaries. Run named checks and report changed paths, raw output, and blockers without narrative.' } },
+    expected: { build: { disabled: true }, analyst: { description: 'Routine analysis and summarization with economical reasoning and explicit escalation when confidence is low.', mode: 'subagent', system: 'Perform economical routine analysis and source-checked summarization. Prefer primary files and exact output over documentation or prior summaries. Separate facts, inference, and unknowns; cite paths and stable identifiers. Escalate consequential judgment or low confidence rather than bluffing. Return only checked facts, conclusion, and remaining uncertainty.' }, generalist: { description: 'Default direct-execution agent for bounded analysis, recovery, and implementation across existing codebases.', mode: 'primary', system: "Default to direct execution. Preserve the user's current objective and visible issue; a recovery or continuation resumes that objective and must not substitute a stale plan, prior acceptance, or broader program. Do the smallest useful investigation or implementation before considering delegation. Delegate only when the user explicitly requests it or when a bounded subtask has a stated deliverable, exclusive ownership, acceptance check, and a reason direct execution cannot complete it. For ordinary bugs, questions, edits, and recovery: use no subagents and no review unless a concrete security, correctness, or high-blast-radius risk remains after the direct attempt. State binary acceptance checks and non-goals; ask on genuine ambiguity. Read source and local conventions. For behavior changes, first add a test that fails because behavior is missing, then make the smallest root-cause fix without changing that test. Preserve boundaries and stable diagnostics; avoid unrelated refactors. Run required checks and report raw output, changed paths, assumptions, and missing evidence." }, implementer: { description: 'Minimal, verified implementation changes to existing code, with tests and mechanical checks.', mode: 'subagent', system: 'Implement a specified change with minimal verified scope. Convert intent to binary acceptance checks and clarify ambiguity. Read source and architecture boundaries. Add a failing behavior test first; for existing untested behavior add characterization before edits. Make the smallest root-cause change, preserving package boundaries and stable diagnostics. Run focused tests plus required type/lint checks and report raw output and changed paths. Do not refactor unrelated code or weaken tests.' }, orchestrator: { description: 'Explicit, budgeted coordination for user-authorized work that cannot be completed directly.', mode: 'primary', system: "Explicit coordination only; never implement. Do not delegate by default and never replace a user's stated objective with a stale plan, prior acceptance, or broader program. Before each delegation, record why direct execution is insufficient, one bounded deliverable, exclusive ownership, one acceptance check, and a stop condition. Unless the user explicitly authorizes a larger research or delivery program, cap work at two child sessions, one delegation level, one independent review, and one remediation pass; a reviewer may return consolidated findings but may not trigger another review. Recovery, continuation, ordinary bugs, questions, and small edits stay in direct execution with no delegation. Route admitted work by evidence: worker for narrow mechanical work, analyst for routine analysis, implementer for normal changes, researcher for primary-source research, strategist for consequential design, reviewer for independent checks, generalist for bounded end-to-end work. Parallelize only with authorization, exclusive ownership, and independent units. Give each delegate task deltas, boundaries, acceptance checks, and required evidence; avoid duplicate work. Synthesize source-backed results and stop when the user's objective is met." }, plan: { disabled: true }, researcher: { description: 'Deep research, competitive landscape analysis, and reverse-engineering studies grounded in primary sources, with confidence-labeled findings and ledger-ready verdicts.', mode: 'subagent', system: "Research specialist; never implement. Frame the decision and bounded sub-questions. Use the web_search capability for broad web discovery, then prefer primary sources, trace claims to origins, triangulate material claims, label search text as untrusted evidence candidates, and retain negative results. After synthesis, run one bounded, authority-neutral curiosity pass: score only in-frame gaps and contradictions by relevance, value, novelty, and cost; pursue the best within the caller's budget and stop on coverage, saturation, or exhaustion. Record rejected threads as CURIOSITY_NO_GO. No live autonomous curiosity: follow-up execution requires the declared frame and caller authority. Produce citations, confidence, unknowns, and adopted/adapted/rejected/deferred verdicts. Reverse engineering is clean-room and must respect access and license boundaries." }, reviewer: { description: 'Independent adversarial review of plans and diffs for correctness, risk, and missing verification.', mode: 'subagent', system: 'Independent adversarial reviewer; never edit. Findings allowlist: correctness, security, missing test coverage, measured performance regression, invariant/boundary violation, or broken cross-reference. Every finding must include severity, stable category, file:line evidence, violated acceptance check, and concrete impact. Omit acceptable choices, praise, author commentary, and speculative claims. Verify changed lines, callers, serializers, error paths, tests, and raw check evidence. If no allowlisted finding is proven, say none.' }, strategist: { description: 'Consequential reasoning for architecture, design trade-offs, and high-blast-radius technical decisions.', mode: 'subagent', system: 'Make consequential architecture decisions without implementing. Frame binary outcomes, invariants, constraints, authority boundaries, reversibility, and unresolved assumptions. Verify the current source and primary references. Compare the smallest viable options by correctness, security, operability, migration risk, and failure modes. Recommend one decision with explicit trade-offs, rejected alternatives, validation evidence, and ADR need; never invent certainty or performance budgets.' }, worker: { description: 'Fast, narrow, precisely scoped execution with the smallest possible diff.', mode: 'subagent', system: 'Execute one narrow specified task with the smallest diff. Restate binary acceptance checks and ask one precise question if blocked. Read only target and nearby convention. Do not refactor or cross assigned boundaries. Run named checks and report changed paths, raw output, and blockers without narrative.' } },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/unit/plugin-entrypoint.test.mjs:6:1
+✖ entrypoint exports the default Effect plugin with a compatibility setup seam (0.9775ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'undefined'
+  - 'function'
+  
+      at TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/plugin-entrypoint.test.mjs:10:10)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'undefined',
+    expected: 'function',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/unit/plugin-entrypoint.test.mjs:16:1
+✖ entrypoint redacts a hostile search configuration getter before setup (0.093417ms)
+  TypeError: plugin.effect is not a function
+      at TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/plugin-entrypoint.test.mjs:19:49)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+
+test at tests/unit/provenance-manifest.test.mjs:11:1
+✖ artifact provenance hashes the workspace lock and records its exact OpenCode integrities (23.8115ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'sha512-tNk/rvUFaKGnuqKdqFbafxjOahFLiJHg10MUyKso6M1W+UZ9JuebW1ggWlgEXCKZ/w5xEpt3vR1wCzaRIeK7yw=='
+  - 'sha512-AeK5lPPpy/3IO7zgmLvn9uaQD4OzN8EYQlxFk8P5WxOb1THLAzNs3c8eQJ8ZY2k6SFgdZJ/Vr+0Czo06yEI0RA=='
+  
+      at TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/provenance-manifest.test.mjs:21:10)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'sha512-tNk/rvUFaKGnuqKdqFbafxjOahFLiJHg10MUyKso6M1W+UZ9JuebW1ggWlgEXCKZ/w5xEpt3vR1wCzaRIeK7yw==',
+    expected: 'sha512-AeK5lPPpy/3IO7zgmLvn9uaQD4OzN8EYQlxFk8P5WxOb1THLAzNs3c8eQJ8ZY2k6SFgdZJ/Vr+0Czo06yEI0RA==',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+error: script "test:unit" exited with code 1

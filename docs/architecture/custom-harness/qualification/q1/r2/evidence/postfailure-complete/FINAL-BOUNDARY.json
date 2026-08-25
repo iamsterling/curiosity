@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "custom-harness-q1-r2-postfailure-boundary/v1",
+  "verdict": "STOPPED_FAIL_CLOSED",
+  "rootFailure": {
+    "receipt": "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/docs/architecture/custom-harness/qualification/q1/r2/evidence/receipts/327-recovery-root-test/receipt.json",
+    "command": [
+      "/Users/sterling/.nvm/versions/node/v24.18.0/bin/bun",
+      "--no-install",
+      "--no-env-file",
+      "run",
+      "test"
+    ],
+    "exitCode": 1,
+    "stdoutSha256": "2466f5ce1d110bb3115654651c3022d724450f36b9bee654b8e2e7dc3200b57b",
+    "stderrSha256": "c380a0b573ddfbef2c0f4be852b7a027d3bdb7fdee4bce49900a6e26429f230e",
+    "missingModules": [
+      "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/core/diagnostics/diagnostic.js",
+      "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/config/agents.js",
+      "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/engineering-intent/index.js",
+      "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/evidence/index.js",
+      "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/external-records/index.js",
+      "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/hooks/context-projection.js",
+      "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/hooks/event-capture.js",
+      "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/ledger/index.js",
+      "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/loop-engine/index.js",
+      "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/search/index.js",
+      "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/index.js",
+      "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/platform/doctor/index.js",
+      "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/platform/persistence/atomic-store.js",
+      "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/platform/real-host/index.js"
+    ],
+    "cause": "The mandatory clean generated-output boundary removed apps/plugin/opencode2/dist. The package test imports its own dist files, while Turbo test depends only on dependency builds (^build), not the package's own build. The fixed command order reaches test before build.",
+    "requiredOutOfScopeFix": "Change the product/build-test graph so the plugin's canonical test creates or depends on its own dist output; Q1-R2 cannot change product scripts or turbo.json."
+  },
+  "restoration": {
+    "rootStateShapeEqual": true,
+    "restorableFieldsEqual": true,
+    "rawRootsEqual": false,
+    "rawRootsDifferenceLimitedToExcludedMetadata": true,
+    "beforeRestorableSha256": "5ed4877ba22c5d14087c8d5a497bedff4666b5db24500241d3f41ef41f405721",
+    "afterRestorableSha256": "5ed4877ba22c5d14087c8d5a497bedff4666b5db24500241d3f41ef41f405721",
+    "excludedFromExactRestorationClaim": [
+      "atimeNs",
+      "birthtimeNs",
+      "ctimeNs",
+      "dev",
+      "ino",
+      "nlink",
+      "parent-directory metadata"
+    ],
+    "trackedManifestSha256": "cc9018882649228e6514e2e0df8ba983d1a8a90a9a7361ba75c7da78d8457e10",
+    "originalQ1AggregateSha256": "e3e3434452e02370c7ad1f31fa59fbb118e0ab5360509a089340ee14bdf25936",
+    "protectedRootHashes": {
+      "bun.lock": "0656e39945e9b62c4535f0a60fb3da5a2d0206e9e0757d4226e277aba98e9075",
+      "package.json": "d45e0fcd14dd5f373fec1e131895bca2e291abc3bfe4aef1418562ee9d5b31d5",
+      "turbo.json": "d6e2e99a1ae21c2f5fd2c32a7f85089b1ae81b73c0eac7999e7a19cef2c5c549"
+    },
+    "outsideR2StatusUnchanged": true,
+    "trackedDiffEmpty": true,
+    "scratchAbsent": true
+  },
+  "receipts": {
+    "count": 121,
+    "pass": 117,
+    "fail": 4,
+    "failedReceipts": [
+      {
+        "sequence": 36,
+        "receiptId": "t01-identity-audit",
+        "verdict": "FAIL",
+        "receiptSha256": "28a2b6417a27fd2d780f582861fca832abada37938aa1e2bfa8c8bc245c73f9b"
+      },
+      {
+        "sequence": 117,
+        "receiptId": "recovery-t01-identity-audit",
+        "verdict": "FAIL",
+        "receiptSha256": "230b94cbcc3eeeaccb91db49de03b4bfe69c0438cb8a73c3834e36e6c7b984a4"
+      },
+      {
+        "sequence": 220,
+        "receiptId": "recovery-t01-typescript",
+        "verdict": "FAIL",
+        "receiptSha256": "d9a32a470dd403d9b269cca2b367533cbf01c34adf2a0675bf99847791e1c3c6"
+      },
+      {
+        "sequence": 327,
+        "receiptId": "recovery-root-test",
+        "verdict": "FAIL",
+        "receiptSha256": "8679de76b5677af958e5ead78595b9f9cd0a97f96e2e4f9b8b86d790cff0f951"
+      }
+    ],
+    "allStreamHashesValid": true
+  },
+  "unreachedByFailClosedOrder": [
+    "root build",
+    "root verify",
+    "R2 format check",
+    "R2 local-link check",
+    "120-row PLAN-E02 parser"
+  ],
+  "noI1": true,
+  "noProviderActivity": true
+}

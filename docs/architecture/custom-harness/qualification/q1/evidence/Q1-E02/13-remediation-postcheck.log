@@ -1,0 +1,111 @@
+Q1 REMEDIATION POST-CHECK
+EXPECTED_AUDITED_PATHS=18
+ABSENT apps/docs/next-env.d.ts
+ABSENT apps/web/next-env.d.ts
+ABSENT apps/docs/.next/types/cache-life.d.ts
+ABSENT apps/docs/.next/types/root-params.d.ts
+ABSENT apps/docs/.next/types/routes.d.ts
+ABSENT apps/docs/.next/types/validator.ts
+ABSENT apps/web/.next/types/cache-life.d.ts
+ABSENT apps/web/.next/types/root-params.d.ts
+ABSENT apps/web/.next/types/routes.d.ts
+ABSENT apps/web/.next/types/validator.ts
+ABSENT apps/docs/.turbo/turbo-check-types.log
+ABSENT apps/web/.turbo/turbo-check-types.log
+ABSENT apps/plugin/opencode2/.turbo/turbo-check-types.log
+ABSENT apps/plugin/opencode2/.turbo/turbo-lint.log
+ABSENT apps/runtime/.turbo/turbo-check-types.log
+ABSENT apps/runtime/.turbo/turbo-lint.log
+ABSENT packages/ui/.turbo/turbo-check-types.log
+ABSENT packages/ui/.turbo/turbo-lint.log
+ABSENT_COUNT=18
+NON_Q1_NONTARGET_FILE_STAT_SNAPSHOT_MATCH=no
+--- /private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/q1-remediation-before.uWer4E	2026-08-24 11:21:01
++++ /private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/q1-remediation-after.MqD3Ep	2026-08-24 11:21:49
+@@ -155,11 +155,6 @@
+ ./apps/docs/.next/trace-build|1499|1787574948|1787574948
+ ./apps/docs/.next/trace|5963|1787574948|1787574948
+ ./apps/docs/.next/turbopack|0|1787574948|1787574948
+-./apps/docs/.next/types/cache-life.d.ts|5905|1787586291|1787574948
+-./apps/docs/.next/types/root-params.d.ts|101|1787586291|1787574948
+-./apps/docs/.next/types/routes.d.ts|1397|1787586291|1787574948
+-./apps/docs/.next/types/validator.ts|2095|1787586291|1787574948
+-./apps/docs/.turbo/turbo-check-types.log|90|1787586292|1787575843
+ ./apps/docs/.turbo/turbo-lint.log|26|1787575843|1787575843
+ ./apps/docs/.turbo/turbo-verify.log|1090|1787574948|1787574948
+ ./apps/docs/README.md|1411|1787513748|1787513748
+@@ -171,7 +166,6 @@
+ ./apps/docs/app/page.module.css|3249|1787513748|1787513748
+ ./apps/docs/app/page.tsx|3259|1787513748|1787513748
+ ./apps/docs/eslint.config.js|138|1787513748|1787513748
+-./apps/docs/next-env.d.ts|288|1787586291|1787586291
+ ./apps/docs/next.config.js|92|1787513748|1787513748
+ ./apps/docs/package.json|781|1787513748|1787513748
+ ./apps/docs/public/file-text.svg|645|1787513748|1787513748
+@@ -184,8 +178,6 @@
+ ./apps/docs/tests/config-load.test.mjs|500|1787513748|1787513748
+ ./apps/docs/tsconfig.json|326|1787513748|1787513748
+ ./apps/plugin/opencode2/.gitignore|72|1787513748|1787513748
+-./apps/plugin/opencode2/.turbo/turbo-check-types.log|35|1787586291|1787575843
+-./apps/plugin/opencode2/.turbo/turbo-lint.log|68|1787586292|1787575843
+ ./apps/plugin/opencode2/.turbo/turbo-verify.log|32349|1787574948|1787574948
+ ./apps/plugin/opencode2/AGENTS.md|1517|1787513748|1787513748
+ ./apps/plugin/opencode2/LICENSE|1083|1787513748|1787513748
+@@ -957,8 +949,6 @@
+ ./apps/plugin/opencode2/tsconfig.contract.json|329|1787513748|1787513748
+ ./apps/plugin/opencode2/tsconfig.json|503|1787513748|1787513748
+ ./apps/plugin/opencode2/turbo.json|148|1787513748|1787513748
+-./apps/runtime/.turbo/turbo-check-types.log|15|1787586291|1787575843
+-./apps/runtime/.turbo/turbo-lint.log|672|1787586292|1787575843
+ ./apps/runtime/.turbo/turbo-verify.log|23671|1787574948|1787574948
+ ./apps/runtime/AGENTS.md|2381|1787513748|1787513748
+ ./apps/runtime/LICENSE|1083|1787513748|1787513748
+@@ -1571,11 +1561,6 @@
+ ./apps/web/.next/trace-build|1508|1787574948|1787574948
+ ./apps/web/.next/trace|5974|1787574948|1787574948
+ ./apps/web/.next/turbopack|0|1787574948|1787574948
+-./apps/web/.next/types/cache-life.d.ts|5905|1787586291|1787574948
+-./apps/web/.next/types/root-params.d.ts|101|1787586291|1787574948
+-./apps/web/.next/types/routes.d.ts|1397|1787586291|1787574948
+-./apps/web/.next/types/validator.ts|2095|1787586291|1787574948
+-./apps/web/.turbo/turbo-check-types.log|90|1787586292|1787575843
+ ./apps/web/.turbo/turbo-lint.log|26|1787575843|1787575843
+ ./apps/web/.turbo/turbo-verify.log|1092|1787574948|1787574948
+ ./apps/web/README.md|1411|1787513748|1787513748
+@@ -1587,7 +1572,6 @@
+ ./apps/web/app/page.module.css|3249|1787513748|1787513748
+ ./apps/web/app/page.tsx|3257|1787513748|1787513748
+ ./apps/web/eslint.config.js|138|1787513748|1787513748
+-./apps/web/next-env.d.ts|288|1787586291|1787586291
+ ./apps/web/next.config.js|92|1787513748|1787513748
+ ./apps/web/package.json|780|1787513748|1787513748
+ ./apps/web/public/file-text.svg|645|1787513748|1787513748
+@@ -29146,8 +29130,6 @@
+ ./packages/typescript-config/package.json|392|1787513748|1787513748
+ ./packages/typescript-config/react-library.json|136|1787513748|1787513748
+ ./packages/typescript-config/tests/exports.test.mjs|734|1787513748|1787513748
+-./packages/ui/.turbo/turbo-check-types.log|15|1787586290|1787575843
+-./packages/ui/.turbo/turbo-lint.log|28|1787586292|1787575843
+ ./packages/ui/.turbo/turbo-verify.log|405|1787574948|1787574948
+ ./packages/ui/dist/button.d.ts.map|300|1787574948|1787574948
+ ./packages/ui/dist/button.d.ts|299|1787574948|1787574948
+EXCLUDED_PREEXISTING_LOGS_BEGIN
+9e8bd518ad2bf183a6d8ec5a7f89a8050ed1e61437267a5e4b29cb6ce293e4e6  apps/docs/.turbo/turbo-lint.log
+9e8bd518ad2bf183a6d8ec5a7f89a8050ed1e61437267a5e4b29cb6ce293e4e6  apps/web/.turbo/turbo-lint.log
+EXCLUDED_PREEXISTING_LOGS_END
+PROTECTED_HASHES_BEGIN
+cc9018882649228e6514e2e0df8ba983d1a8a90a9a7361ba75c7da78d8457e10  apps/plugin/opencode2/assets/manifest.json
+0656e39945e9b62c4535f0a60fb3da5a2d0206e9e0757d4226e277aba98e9075  bun.lock
+d45e0fcd14dd5f373fec1e131895bca2e291abc3bfe4aef1418562ee9d5b31d5  package.json
+d6e2e99a1ae21c2f5fd2c32a7f85089b1ae81b73c0eac7999e7a19cef2c5c549  turbo.json
+PROTECTED_HASHES_END
+TRACKED_DIFF_EMPTY=yes
+PARENT_DIRECTORIES_REMOVED=no
+PARENT_PRESENT apps/docs/.next/types
+PARENT_PRESENT apps/web/.next/types
+PARENT_PRESENT apps/docs/.turbo
+PARENT_PRESENT apps/web/.turbo
+PARENT_PRESENT apps/plugin/opencode2/.turbo
+PARENT_PRESENT apps/runtime/.turbo
+PARENT_PRESENT packages/ui/.turbo
+ROOT_OR_QUALIFICATION_COMMAND_RERUN=no

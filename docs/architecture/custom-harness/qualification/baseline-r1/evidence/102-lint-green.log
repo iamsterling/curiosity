@@ -1,0 +1,2 @@
+$ eslint src --max-warnings=0 && node tools/verify-architecture.mjs
+Architecture verified: 68 source files, 64 assets, Effect host entrypoint

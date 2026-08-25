@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedReleaseDigest": "sha256:799468b76e8f82f98400ca3c5b2762628d649e1a3b3ffd29f47452ea8fdc2cb2",
+  "generatedReleaseDigest": "sha256:9ffca4d2da4628b8c3b3535140ab9c89810ec1a4a2abb2c70cb223c3db71b1e3",
   "assets": [
     {
       "id": "bug",
@@ -470,7 +470,7 @@
       "dependencies": [],
       "owningFeature": "platform",
       "status": "active",
-      "digest": "sha256:e295251a6603b1e082f2895cdb67dd616362a1c90871e0b24f4b3632e7f56740"
+      "digest": "sha256:88df1784576e02bce548c8e0c5cad4788a06d030a3a9287a07d911dbd13ff7a4"
     },
     {
       "id": "agents/implementer",
@@ -580,7 +580,7 @@
       "dependencies": [],
       "owningFeature": "platform",
       "status": "active",
-      "digest": "sha256:8979c8521cdb8ad1496dafc6c8a9c81623c4bdf4e8b267d31d74e88534bdce8a"
+      "digest": "sha256:5d5664703b8e3517fde0d207e7ffb502a6a7b06894395f70ffc2d84e59e4f0e0"
     },
     {
       "id": "engineering-pursuit",

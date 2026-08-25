@@ -1,0 +1,1132 @@
+✔ root README is Curiosity-authored and contains canonical status markers (2.353459ms)
+▶ schema validation rejects missing fields and invalid enums
+  ✔ required owner (61.518833ms)
+  ✔ status enum (10.643666ms)
+  ✔ additional capability property (8.27875ms)
+  ✔ bad environment array element (7.6225ms)
+  ✔ bad reference kind enum (0.513375ms)
+  ✔ schema independently rejects unsafe reference and guard paths (22.826ms)
+✔ schema validation rejects missing fields and invalid enums (112.064833ms)
+▶ repository evidence paths are confined and normalized
+  ✔ semantic reference rejection: "/etc/hosts" (0.472917ms)
+  ✔ semantic reference rejection: "../etc/hosts" (0.44875ms)
+  ✔ semantic reference rejection: "apps//runtime/file.ts" (0.357416ms)
+  ✔ semantic reference rejection: "apps/./runtime/file.ts" (0.337292ms)
+  ✔ semantic reference rejection: "apps/runtime/../plugin/file.ts" (0.576875ms)
+  ✔ semantic reference rejection: "apps/runtime/" (0.350375ms)
+  ✔ semantic reference rejection: "apps\\runtime\\file.ts" (0.308542ms)
+  ✔ semantic reference rejection: "\\\\server\\share\\file.ts" (0.28575ms)
+  ✔ semantic reference rejection: "C:\\Windows\\system.ini" (0.283667ms)
+  ✔ semantic reference rejection: "C:/Windows/system.ini" (0.29225ms)
+  ✔ semantic reference rejection: "https://example.invalid/file.ts" (0.344ms)
+  ✔ semantic reference rejection: "file:///etc/hosts" (0.397375ms)
+  ✔ semantic reference rejection: "apps/%2e%2e/%2fetc/hosts" (0.324542ms)
+  ✔ semantic reference rejection: "apps%5cruntime%5c..%5chosts" (0.354125ms)
+  ✔ semantic reference rejection: "apps/%252e%252e/file.ts" (0.386208ms)
+  ✔ semantic reference rejection: "apps/runtime/\u0000file.ts" (0.288083ms)
+  ✔ semantic reference rejection: "docs/café.md" (0.675625ms)
+  ✔ semantic guard rejection (0.365834ms)
+  ✔ verifier rejects an absolute reference before host access (0.525625ms)
+  ✔ test overlay rejects unsafe virtual paths before access (0.087375ms)
+  ✔ filesystem adapter rejects symlink escape and non-regular targets (1.769792ms)
+  ✔ filesystem adapter accepts a valid nested regular file (1.373167ms)
+✔ repository evidence paths are confined and normalized (11.400708ms)
+▶ recursive discovery fails closed on unexpected symlinks
+  ✔ outside-root symlink (0.537667ms)
+  ✔ in-root symlink (0.566167ms)
+  ✔ explicit ignored directory remains untraversed (0.946292ms)
+✔ recursive discovery fails closed on unexpected symlinks (3.31125ms)
+▶ generated writes are root-confined atomic replacements
+  ✔ exact allowlist only (1.212959ms)
+  ✔ missing allowlisted output is rejected (0.945875ms)
+  ✔ symlinked root cannot modify target bytes (1.945041ms)
+  ✔ target symlink cannot modify external bytes (1.412416ms)
+  ✔ parent symlink cannot modify external bytes (2.116ms)
+  ✔ non-directory parent is rejected (1.245709ms)
+  ✔ non-regular target is rejected (1.026167ms)
+  ✔ successful replacement is bounded and leaves no temp (17.983666ms)
+  ✔ rename fault cleans exclusive temp (5.960291ms)
+  ✔ O_NOFOLLOW portability fallback is explicit (0.043958ms)
+✔ generated writes are root-confined atomic replacements (34.292375ms)
+▶ closed Wave 1 inventory rejects omissions, duplicates, and unknown IDs
+  ✔ omitted plugin-authoritative-writes (1.220459ms)
+  ✔ omitted runtime-sdk-v2 (0.882292ms)
+  ✔ omitted retired-daemon (0.802041ms)
+  ✔ omitted retired-marker-agent (0.783292ms)
+  ✔ duplicate (0.817375ms)
+  ✔ unknown replacement (0.849625ms)
+✔ closed Wave 1 inventory rejects omissions, duplicates, and unknown IDs (5.570667ms)
+✔ capability guards must bind to that record's declared evidence (0.396708ms)
+✔ unknown observations cannot be enabled (0.331ms)
+▶ Current requires sufficient evidence and authority
+  ✔ missing evidence (0.448792ms)
+  ✔ contradictory evidence (0.353709ms)
+  ✔ unauthorized authority (0.365625ms)
+✔ Current requires sufficient evidence and authority (1.290541ms)
+▶ consequential contradictions and missing authority fail closed
+  ✔ Experimental authority unknown (0.53875ms)
+  ✔ Experimental authority forbidden (0.487167ms)
+  ✔ Experimental authority unauthorized (0.424125ms)
+  ✔ Experimental contradictory evidence (0.4165ms)
+  ✔ Experimental contradictory qualification (0.48975ms)
+  ✔ Retired contradictory evidence (0.805166ms)
+  ✔ platform qualification missing (0.49675ms)
+  ✔ implemented but unauthorized Deferred remains representable (1.396584ms)
+  ✔ missing platform qualification remains orthogonal when Deferred (0.99175ms)
+✔ consequential contradictions and missing authority fail closed (6.31375ms)
+▶ availability is scope-qualified and consequential unknowns fail closed
+  ✔ availability environment outside scope (0.34125ms)
+  ✔ production enabled outside production scope (0.287541ms)
+  ✔ production scope without production availability (0.324667ms)
+  ✔ production scope with disabled production flag (0.312ms)
+  ✔ production availability with disabled production flag (0.325917ms)
+  ✔ enabled availability cannot be nowhere (0.330125ms)
+  ✔ conditional availability cannot be nowhere (0.474041ms)
+  ✔ observation-only availability cannot be nowhere (0.314708ms)
+  ✔ observation-only availability is active in declared non-production scope (1.027875ms)
+  ✔ disabled availability cannot name an environment (1.12825ms)
+  ✔ absent availability cannot name an environment (0.738333ms)
+  ✔ absent availability is valid only nowhere (0.926292ms)
+  ✔ production enabled with evidence partial (0.313083ms)
+  ✔ production enabled with authority limited (0.28875ms)
+  ✔ production enabled with qualification conditional (0.282542ms)
+  ✔ generic repository refs cannot promote production (0.3225ms)
+  ✔ deployment enabled outside production scope (0.287084ms)
+  ✔ deployment enabled with evidence partial (0.417125ms)
+  ✔ deployment enabled with authority limited (0.323584ms)
+  ✔ deployment enabled with qualification conditional (0.269375ms)
+  ✔ Experimental deployment cannot be enabled (0.38825ms)
+  ✔ generic repository refs cannot promote deployment (0.534042ms)
+  ✔ plugin-identity-config unknown state (0.288417ms)
+  ✔ plugin-identity-config unknown production (0.279875ms)
+  ✔ plugin-search-surface unknown deployment (0.380083ms)
+  ✔ runtime-sdk-v2 unknown deployment (0.629458ms)
+  ✔ unknown authority is representable only after actual fail-closed values and blocker (0.941833ms)
+  ✔ unknown observation is representable only as disabled Deferred with a blocker (1.074167ms)
+  ✔ Deferred requires an explicit blocker (0.693084ms)
+  ✔ schema closes production environments and flags (0.223291ms)
+✔ availability is scope-qualified and consequential unknowns fail closed (15.224167ms)
+▶ Current facets require distinct appropriately guarded sources
+  ✔ missing observation refs (0.315125ms)
+  ✔ missing evidence refs (0.542666ms)
+  ✔ missing authority refs (0.265042ms)
+  ✔ missing delivery refs (0.269042ms)
+  ✔ missing qualification refs (0.27175ms)
+  ✔ evidence cannot use an observation source (0.313583ms)
+  ✔ authority cannot use an observation source (0.290542ms)
+  ✔ guard from another capability cannot bind Current evidence (0.294167ms)
+  ✔ deleting the exact evidence guard unbinds the facet (0.289ms)
+  ✔ one observation ref cannot also satisfy delivery (0.282333ms)
+  ✔ external evidence cannot establish Current (0.300292ms)
+  ✔ external authority cannot establish Current (0.270375ms)
+  ✔ external delivery cannot establish Current (0.269916ms)
+  ✔ external qualification cannot establish Current (0.256792ms)
+  ✔ external observation must remain unknown and fail closed (0.267542ms)
+✔ Current facets require distinct appropriately guarded sources (4.849625ms)
+✔ platform claims require exact qualification (0.314375ms)
+▶ Experimental and Deferred capabilities cannot be production-enabled
+  ✔ Experimental (0.404916ms)
+  ✔ Deferred (0.348333ms)
+✔ Experimental and Deferred capabilities cannot be production-enabled (0.819958ms)
+✔ receipts alone cannot promote qualification (0.635166ms)
+▶ Wave 1 mechanically forbids publication promotion
+  ✔ registry readiness (0.856333ms)
+  ✔ bogus external publication marker (0.478208ms)
+✔ Wave 1 mechanically forbids publication promotion (1.408208ms)
+▶ policy and verdict prose are closed and structurally generated
+  ✔ bogus grants-lifecycle-authority policy (0.287708ms)
+  ✔ bogus published policy (0.248333ms)
+  ✔ bogus production-ready policy (0.1935ms)
+  ✔ bogus deployment-enabled policy (0.218709ms)
+  ✔ bogus grants-lifecycle-authority rationale (0.4ms)
+  ✔ bogus published rationale (0.300416ms)
+  ✔ bogus production-ready rationale (0.268083ms)
+  ✔ bogus deployment-enabled rationale (0.244791ms)
+✔ policy and verdict prose are closed and structurally generated (2.370708ms)
+▶ source contracts detect workspace, composition, export, and capability report mismatches
+  ✔ workspace (56.224584ms)
+  ✔ composition (57.745291ms)
+  ✔ exports (56.896292ms)
+  ✔ capability report (55.484458ms)
+✔ source contracts detect workspace, composition, export, and capability report mismatches (227.944958ms)
+▶ every Wave 1 capability has a fail-closed exact source contract
+  ✔ plugin-identity-config (138.048333ms)
+  ✔ plugin-hooks-event-capture (133.191541ms)
+  ✔ plugin-structured-tools (140.923333ms)
+  ✔ plugin-ledger-authority (141.209667ms)
+  ✔ plugin-authoritative-writes (141.162ms)
+  ✔ plugin-lifecycle-guards (139.747334ms)
+  ✔ plugin-capability-report (136.143042ms)
+  ✔ plugin-search-surface (144.845542ms)
+  ✔ plugin-private-runtime-search (144.255875ms)
+  ✔ plugin-registry-readiness (149.122459ms)
+  ✔ plugin-engineering-intent (148.540541ms)
+  ✔ plugin-evidence-scaffolding (154.012583ms)
+  ✔ plugin-orchestration-scaffolding (148.981791ms)
+  ✔ runtime-m1 (147.11225ms)
+  ✔ runtime-m2 (151.963458ms)
+  ✔ runtime-m3 (184.514042ms)
+  ✔ runtime-m4 (159.975833ms)
+  ✔ runtime-m5 (148.741791ms)
+  ✔ runtime-m6 (157.436959ms)
+  ✔ runtime-m7-historical (138.859625ms)
+  ✔ runtime-m7-current (150.880875ms)
+  ✔ runtime-unified-evidence (159.550833ms)
+  ✔ runtime-sdk-v2 (120.887292ms)
+  ✔ starter-scaffolds (154.49925ms)
+  ✔ retired-legacy-runtime (79.862458ms)
+  ✔ retired-daemon (82.764667ms)
+  ✔ retired-marker-agent (89.016417ms)
+✔ every Wave 1 capability has a fail-closed exact source contract (3788.639083ms)
+▶ M5 endpoint and policy mutations invalidate the runtime-m5 review
+  ✔ endpoint (148.1625ms)
+  ✔ policy test (152.975792ms)
+✔ M5 endpoint and policy mutations invalidate the runtime-m5 review (302.136667ms)
+✔ M7 immutable acceptance and changed source candidate cannot be conflated (121.508333ms)
+✔ Current qualification evidence must execute through a required verification entrypoint (198.109334ms)
+▶ source contracts detect ADR omissions and preserve the exact historical preflight
+  ✔ ADR index (61.614375ms)
+  ✔ historical snapshot deletion (80.616625ms)
+  ✔ historical byte mutation (69.987666ms)
+  ✔ historical baseline commit zeroed (83.693917ms)
+  ✔ staged rewrite plus catalog rehash (108.370667ms)
+  ✔ CRLF-normalized checkout (308.779958ms)
+✔ source contracts detect ADR omissions and preserve the exact historical preflight (714.267125ms)
+✔ retired product surfaces fail if they reappear (82.882584ms)
+✔ unknown guarded source changes fail closed (148.715625ms)
+▶ SDK r4 acceptance receipt is decisive contradictory evidence
+  ✔ deleted (120.831375ms)
+  ✔ artifact match changed (115.41775ms)
+  ✔ profile receipt match field deleted (115.493292ms)
+  ✔ executable verdict changed (121.11825ms)
+  ✔ continuation changed (120.8805ms)
+  ✔ decision anchor deleted (117.806542ms)
+✔ SDK r4 acceptance receipt is decisive contradictory evidence (712.560125ms)
+▶ evidence fragments are meaningful canonical exact-normalized anchors
+  ✔ missing exact normalized phrase (170.255083ms)
+  ✔ invalid canonical fragment "" (0.457792ms)
+  ✔ invalid canonical fragment "---" (0.329375ms)
+  ✔ invalid canonical fragment "..." (0.285083ms)
+  ✔ invalid canonical fragment " " (0.240834ms)
+  ✔ invalid canonical fragment "test  anchor" (0.233ms)
+  ✔ invalid canonical fragment "test anchor " (0.235709ms)
+  ✔ invalid canonical fragment "te​st anchor" (0.248083ms)
+  ✔ punctuation cannot normalize to an empty match (160.316625ms)
+✔ evidence fragments are meaningful canonical exact-normalized anchors (333.062083ms)
+▶ generated current view and canonical README reject drift
+  ✔ docs/status/current.md (0.329583ms)
+  ✔ README.md (0.435333ms)
+  ✔ direct README production/publication overclaim (1.596708ms)
+  ✔ template production/publication overclaim (0.523209ms)
+  ✔ template status overclaim (0.73ms)
+  ✔ template remains-Current status assertion (0.494375ms)
+  ✔ template table status assertion (0.578334ms)
+  ✔ template table formatting-split overclaim (1.42475ms)
+  ✔ template nested list and blockquote overclaims (0.589125ms)
+  ✔ template HTML-visible overclaim (0.511208ms)
+  ✔ template inline-code overclaim (0.492584ms)
+  ✔ template markdown-split production (0.390458ms)
+  ✔ template entity-split production (0.406125ms)
+  ✔ template plain runs in production (0.403875ms)
+  ✔ template authority-grant noun phrase (0.392167ms)
+  ✔ template link-visible split production (0.461625ms)
+  ✔ template HTML-entity overclaim (0.429125ms)
+  ✔ zero-width production (0.441084ms)
+  ✔ zero-width published (0.436792ms)
+  ✔ compatibility production (0.40275ms)
+  ✔ contextual lower-case current (0.717083ms)
+  ✔ status-is lower-case current (0.576125ms)
+  ✔ neutral current-directory navigation (0.501375ms)
+  ✔ capitalized neutral Current directory (0.369ms)
+  ✔ neutral current-directory table cell (0.373375ms)
+  ✔ extra generated marker pair cannot hide a claim (0.279792ms)
+  ✔ nested generated markers are rejected (0.25975ms)
+  ✔ unknown status marker is rejected (0.245083ms)
+  ✔ unreviewed benign template mutation changes identity (0.452375ms)
+  ✔ mutable catalog prose is rejected and not rendered (2.446125ms)
+  ✔ template required neutral structure (0.480917ms)
+✔ generated current view and canonical README reject drift (35.48325ms)
+✔ new status tooling is Node 18 compatible (0.925958ms)
+▶ verification inventory fails closed for a new package and an unclassified script or export
+  ✔ new package (64.004667ms)
+  ✔ new nested package (59.101458ms)
+  ✔ script (126.198125ms)
+  ✔ export (120.234334ms)
+✔ verification inventory fails closed for a new package and an unclassified script or export (371.658833ms)
+▶ verification inventory fails closed for a new test, a skipped expected profile, and Cargo drift
+  ✔ test (228.193958ms)
+  ✔ profile mapping (276.1695ms)
+  ✔ crate (144.24175ms)
+  ✔ implicit Cargo build script (142.725084ms)
+  ✔ explicit Cargo package build script (158.932334ms)
+✔ verification inventory fails closed for a new test, a skipped expected profile, and Cargo drift (951.153708ms)
+▶ ABI and workflow action, condition, and aggregate drift fail closed
+  ✔ action (241.474042ms)
+  ✔ condition (241.275417ms)
+  ✔ aggregate (242.289208ms)
+  ✔ write-all remains forbidden after an inventory hash refresh (245.107209ms)
+  ✔ job write permission remains forbidden after an inventory hash refresh (245.631708ms)
+  ✔ required aggregate omission remains forbidden after an inventory hash refresh (249.848708ms)
+  ✔ an explicitly inventoried approved job read scope remains allowed (244.077542ms)
+✔ ABI and workflow action, condition, and aggregate drift fail closed (1711.289291ms)
+▶ dependency, Cargo target, and required record additions and omissions fail closed
+  ✔ external package dependency (111.478042ms)
+  ✔ workspace package dependency (161.285083ms)
+  ✔ inventoried mutable dependency protocol (114.775584ms)
+  ✔ override metadata (132.909291ms)
+  ✔ bundled dependency metadata (126.165833ms)
+  ✔ peer dependency metadata (117.734667ms)
+  ✔ package-manager override metadata (131.768083ms)
+  ✔ new trusted dependency requires explicit review (112.899ms)
+  ✔ a lifecycle hook cannot be laundered through a scripts inventory refresh (126.38025ms)
+  ✔ an inventoried but unreviewed trusted dependency remains forbidden (121.985209ms)
+  ✔ unsafe patch protocols remain forbidden after review (124.80925ms)
+  ✔ implicit Cargo bin (150.052042ms)
+  ✔ releaseArtifacts omission (0.509083ms)
+  ✔ crossPackageContracts omission (0.34525ms)
+✔ dependency, Cargo target, and required record additions and omissions fail closed (1534.370916ms)
+▶ Bun execution policy disables implicit trust and every CI install ignores scripts
+  ✔ default-trusted msgpackr-extract cannot be laundered through reviewed inventory metadata (119.53625ms)
+  ✔ workflow flag removal remains forbidden after an inventory hash refresh (245.991084ms)
+  ✔ Bun install aliases and wrappers remain forbidden after a workflow hash refresh (1254.546958ms)
+✔ Bun execution policy disables implicit trust and every CI install ignores scripts (1621.303625ms)
+✔ Bun and npm automatic lifecycle authority is inventoried separately from generic scripts (0.321166ms)
+✔ npm executes standalone prestart before its implicit server.js start (168.003958ms)
+▶ implicit npm execution surfaces cannot be laundered through inventory refreshes
+  ✔ prestart plus implicit server.js start (113.408625ms)
+  ✔ implicit binding.gyp install (125.462958ms)
+✔ implicit npm execution surfaces cannot be laundered through inventory refreshes (239.703167ms)
+✔ clean frozen Bun installs ignore lifecycle scripts even for a default-trusted package name (21.988625ms)
+✔ required workspace verification lane covers only starter and configuration workspaces once (0.4835ms)
+▶ required profiles close over their command graph and legacy orphan surfaces make no green claim
+  ✔ removing a required script edge cannot be laundered through an inventory refresh (229.767709ms)
+  ✔ manual Darwin real-host work cannot leak into portable or required command graphs (245.907375ms)
+✔ required profiles close over their command graph and legacy orphan surfaces make no green claim (476.186459ms)
+▶ verification tool additions and byte drift fail closed
+  ✔ new tool (168.501792ms)
+  ✔ network gate drift (156.315ms)
+  ▶ plugin verification wrapper plans and entrypoint are code-owned beyond self-hash
+    ✔ remove portable verification (164.8355ms)
+    ✔ reverse Darwin plan (157.893417ms)
+    ✔ append Darwin command (175.806458ms)
+    ✔ bypass injected executor (194.603667ms)
+    ✔ bypass CLI entrypoint (160.356334ms)
+  ✔ plugin verification wrapper plans and entrypoint are code-owned beyond self-hash (854.287125ms)
+✔ verification tool additions and byte drift fail closed (1179.651959ms)
+✔ bounded Turbo source globs cannot be weakened by refreshing the task inventory (249.504667ms)
+✔ runtime profiles cannot be conflated with M7 or SDK v2 (0.494917ms)
+✔ query types resolve to the authoritative implementation rather than a handwritten declaration (2.178ms)
+✔ current runtime documentation maps the historical query declaration range to authoritative symbols (1.100958ms)
+✔ repository exposes an executable staged plugin and runtime contract (3.103541ms)
+✔ registry smoke builds the plugin before executing installed setup evidence (0.3095ms)
+✔ versioned runtime compatibility evidence and ABI profiles are exact (1.889167ms)
+✔ verification inventory is separate from capability lifecycle status (142.116958ms)
+✔ M7 status is split between immutable history and the unqualified source candidate (0.615542ms)
+✔ Linux network denial is fail-closed and enforces the exact Rust pin (0.213583ms)
+✔ Turbo test and verify hashes include repository verification and runtime contract inputs exactly once (75.450041ms)
+✔ the required workspace command reaches honest starter syntax and package contract checks (93.64075ms)
+ℹ tests 299
+ℹ suites 0
+ℹ pass 299
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15993.090625
+
+   • Packages in scope: @curiosity/runtime, @iamsterling/opencode2-config, @repo/eslint-config, @repo/typescript-config, @repo/ui, docs, web
+   • Running test in 7 packages
+   • Remote caching disabled, using shared worktree cache
+
+@curiosity/runtime:test: cache bypass, force executing 5d3663d02ac72308
+@repo/typescript-config:test: cache bypass, force executing 1f664a9edcb95458
+@iamsterling/opencode2-config:test: cache bypass, force executing 2785c0bfbedd6979
+@repo/ui:test: cache bypass, force executing 55617cfaaaa6d0f4
+@repo/eslint-config:test: cache bypass, force executing 097b90aa177e992c
+@repo/ui:build: cache bypass, force executing 12944415311aba93
+@curiosity/runtime:test: $ bun run build:native && node tools/run-test-profile.mjs source
+@repo/ui:test: $ node --test tests/package-contract.test.mjs
+@repo/typescript-config:test: $ node --test tests/exports.test.mjs
+@iamsterling/opencode2-config:test: $ bun run test:unit && bun run test:integration && bun run test:characterization
+@repo/ui:build: $ rm -rf dist && tsc --emitDeclarationOnly
+@repo/eslint-config:test: $ node --test tests/exports.test.mjs
+@curiosity/runtime:test: $ "${CARGO:-cargo}" build --manifest-path native/Cargo.toml --locked
+@iamsterling/opencode2-config:test: $ node --test tests/unit/*.test.mjs
+@curiosity/runtime:test:    Compiling curiosity-runtime-native v0.0.0 (/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/runtime/native)
+@iamsterling/opencode2-config:test: node:internal/modules/esm/resolve:271
+@iamsterling/opencode2-config:test:     throw new ERR_MODULE_NOT_FOUND(
+@iamsterling/opencode2-config:test:           ^
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/core/diagnostics/diagnostic.js' imported from /Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/context-projection.test.mjs
+@iamsterling/opencode2-config:test:     at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+@iamsterling/opencode2-config:test:     at moduleResolve (node:internal/modules/esm/resolve:865:10)
+@iamsterling/opencode2-config:test:     at defaultResolve (node:internal/modules/esm/resolve:992:11)
+@iamsterling/opencode2-config:test:     at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+@iamsterling/opencode2-config:test:     at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+@iamsterling/opencode2-config:test:     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+@iamsterling/opencode2-config:test:     at #resolve (node:internal/modules/esm/loader:683:17)
+@iamsterling/opencode2-config:test:     at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+@iamsterling/opencode2-config:test:     at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+@iamsterling/opencode2-config:test:     at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+@iamsterling/opencode2-config:test:   code: 'ERR_MODULE_NOT_FOUND',
+@iamsterling/opencode2-config:test:   url: 'file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/core/diagnostics/diagnostic.js'
+@iamsterling/opencode2-config:test: }
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Node.js v24.18.0
+@repo/ui:test: ✔ UI wildcard exports resolve only to the reviewed starter source modules (15.875833ms)
+@iamsterling/opencode2-config:test: ✖ tests/unit/context-projection.test.mjs (74.881834ms)
+@repo/typescript-config:test: ✔ every TypeScript configuration export loads as JSON with compiler options (36.481875ms)
+@iamsterling/opencode2-config:test: ✔ engineering commands are thin shared-skill entrypoints (22.118083ms)
+@repo/ui:test: ℹ tests 1
+@repo/ui:test: ℹ suites 0
+@repo/ui:test: ℹ pass 1
+@repo/ui:test: ℹ fail 0
+@repo/ui:test: ℹ cancelled 0
+@repo/ui:test: ℹ skipped 0
+@repo/ui:test: ℹ todo 0
+@repo/ui:test: ℹ duration_ms 103.070541
+@repo/typescript-config:test: ℹ tests 1
+@repo/typescript-config:test: ℹ suites 0
+@repo/typescript-config:test: ℹ pass 1
+@repo/typescript-config:test: ℹ fail 0
+@repo/typescript-config:test: ℹ cancelled 0
+@repo/typescript-config:test: ℹ skipped 0
+@repo/typescript-config:test: ℹ todo 0
+@repo/typescript-config:test: ℹ duration_ms 106.758125
+@iamsterling/opencode2-config:test: node:internal/modules/esm/resolve:271
+@iamsterling/opencode2-config:test:     throw new ERR_MODULE_NOT_FOUND(
+@iamsterling/opencode2-config:test:           ^
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/engineering-intent/index.js' imported from /Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/engineering-intent-codec.test.mjs
+@iamsterling/opencode2-config:test:     at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+@iamsterling/opencode2-config:test:     at moduleResolve (node:internal/modules/esm/resolve:865:10)
+@iamsterling/opencode2-config:test:     at defaultResolve (node:internal/modules/esm/resolve:992:11)
+@iamsterling/opencode2-config:test:     at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+@iamsterling/opencode2-config:test:     at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+@iamsterling/opencode2-config:test:     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+@iamsterling/opencode2-config:test:     at #resolve (node:internal/modules/esm/loader:683:17)
+@iamsterling/opencode2-config:test:     at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+@iamsterling/opencode2-config:test:     at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+@iamsterling/opencode2-config:test:     at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+@iamsterling/opencode2-config:test:   code: 'ERR_MODULE_NOT_FOUND',
+@iamsterling/opencode2-config:test:   url: 'file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/engineering-intent/index.js'
+@iamsterling/opencode2-config:test: }
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Node.js v24.18.0
+@iamsterling/opencode2-config:test: ✖ tests/unit/engineering-intent-codec.test.mjs (75.584083ms)
+@iamsterling/opencode2-config:test: node:internal/modules/esm/resolve:271
+@iamsterling/opencode2-config:test:     throw new ERR_MODULE_NOT_FOUND(
+@iamsterling/opencode2-config:test:           ^
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/engineering-intent/index.js' imported from /Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/engineering-policy.test.mjs
+@iamsterling/opencode2-config:test:     at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+@iamsterling/opencode2-config:test:     at moduleResolve (node:internal/modules/esm/resolve:865:10)
+@iamsterling/opencode2-config:test:     at defaultResolve (node:internal/modules/esm/resolve:992:11)
+@iamsterling/opencode2-config:test:     at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+@iamsterling/opencode2-config:test:     at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+@iamsterling/opencode2-config:test:     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+@iamsterling/opencode2-config:test:     at #resolve (node:internal/modules/esm/loader:683:17)
+@iamsterling/opencode2-config:test:     at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+@iamsterling/opencode2-config:test:     at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+@iamsterling/opencode2-config:test:     at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+@iamsterling/opencode2-config:test:   code: 'ERR_MODULE_NOT_FOUND',
+@iamsterling/opencode2-config:test:   url: 'file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/engineering-intent/index.js'
+@iamsterling/opencode2-config:test: }
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Node.js v24.18.0
+@iamsterling/opencode2-config:test: ✖ tests/unit/engineering-policy.test.mjs (83.144583ms)
+@iamsterling/opencode2-config:test: node:internal/modules/esm/resolve:271
+@iamsterling/opencode2-config:test:     throw new ERR_MODULE_NOT_FOUND(
+@iamsterling/opencode2-config:test:           ^
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/hooks/event-capture.js' imported from /Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/event-capture.test.mjs
+@iamsterling/opencode2-config:test:     at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+@iamsterling/opencode2-config:test:     at moduleResolve (node:internal/modules/esm/resolve:865:10)
+@iamsterling/opencode2-config:test:     at defaultResolve (node:internal/modules/esm/resolve:992:11)
+@iamsterling/opencode2-config:test:     at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+@iamsterling/opencode2-config:test:     at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+@iamsterling/opencode2-config:test:     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+@iamsterling/opencode2-config:test:     at #resolve (node:internal/modules/esm/loader:683:17)
+@iamsterling/opencode2-config:test:     at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+@iamsterling/opencode2-config:test:     at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+@iamsterling/opencode2-config:test:     at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+@iamsterling/opencode2-config:test:   code: 'ERR_MODULE_NOT_FOUND',
+@iamsterling/opencode2-config:test:   url: 'file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/hooks/event-capture.js'
+@iamsterling/opencode2-config:test: }
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Node.js v24.18.0
+@iamsterling/opencode2-config:test: ✖ tests/unit/event-capture.test.mjs (75.325083ms)
+@iamsterling/opencode2-config:test: node:internal/modules/esm/resolve:271
+@iamsterling/opencode2-config:test:     throw new ERR_MODULE_NOT_FOUND(
+@iamsterling/opencode2-config:test:           ^
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/evidence/index.js' imported from /Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/evidence-development.test.mjs
+@iamsterling/opencode2-config:test:     at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+@iamsterling/opencode2-config:test:     at moduleResolve (node:internal/modules/esm/resolve:865:10)
+@iamsterling/opencode2-config:test:     at defaultResolve (node:internal/modules/esm/resolve:992:11)
+@iamsterling/opencode2-config:test:     at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+@iamsterling/opencode2-config:test:     at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+@iamsterling/opencode2-config:test:     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+@iamsterling/opencode2-config:test:     at #resolve (node:internal/modules/esm/loader:683:17)
+@iamsterling/opencode2-config:test:     at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+@iamsterling/opencode2-config:test:     at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+@iamsterling/opencode2-config:test:     at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+@iamsterling/opencode2-config:test:   code: 'ERR_MODULE_NOT_FOUND',
+@iamsterling/opencode2-config:test:   url: 'file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/evidence/index.js'
+@iamsterling/opencode2-config:test: }
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Node.js v24.18.0
+@iamsterling/opencode2-config:test: ✖ tests/unit/evidence-development.test.mjs (98.046041ms)
+@iamsterling/opencode2-config:test: node:internal/modules/esm/resolve:271
+@iamsterling/opencode2-config:test:     throw new ERR_MODULE_NOT_FOUND(
+@iamsterling/opencode2-config:test:           ^
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/external-records/index.js' imported from /Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/github-contract.test.mjs
+@iamsterling/opencode2-config:test:     at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+@iamsterling/opencode2-config:test:     at moduleResolve (node:internal/modules/esm/resolve:865:10)
+@iamsterling/opencode2-config:test:     at defaultResolve (node:internal/modules/esm/resolve:992:11)
+@iamsterling/opencode2-config:test:     at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+@iamsterling/opencode2-config:test:     at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+@iamsterling/opencode2-config:test:     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+@iamsterling/opencode2-config:test:     at #resolve (node:internal/modules/esm/loader:683:17)
+@iamsterling/opencode2-config:test:     at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+@iamsterling/opencode2-config:test:     at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+@iamsterling/opencode2-config:test:     at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+@iamsterling/opencode2-config:test:   code: 'ERR_MODULE_NOT_FOUND',
+@iamsterling/opencode2-config:test:   url: 'file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/external-records/index.js'
+@iamsterling/opencode2-config:test: }
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Node.js v24.18.0
+@iamsterling/opencode2-config:test: ✖ tests/unit/github-contract.test.mjs (77.057791ms)
+@iamsterling/opencode2-config:test: ✔ A-docs-config is a valid real JSON proposal (24.119792ms)
+@iamsterling/opencode2-config:test: ✔ B-behavioral-bug is a valid real JSON proposal (7.22825ms)
+@iamsterling/opencode2-config:test: ✔ C-mixed-units is a valid real JSON proposal (7.224917ms)
+@iamsterling/opencode2-config:test: ✔ D-sequential is a valid real JSON proposal (3.304584ms)
+@iamsterling/opencode2-config:test: ✔ F-review is a valid real JSON proposal (6.295875ms)
+@iamsterling/opencode2-config:test: ✔ C rejects mutation parallelism without out-of-band authorization (2.186667ms)
+@iamsterling/opencode2-config:test: ✔ E blocking ambiguity is a closed decision state with no contract (2.626083ms)
+@iamsterling/opencode2-config:test: ✔ policy denial is out-of-band and terminal (0.681459ms)
+@iamsterling/opencode2-config:test: ✔ unknown version returns only the unsupported-version diagnostic (0.676417ms)
+@iamsterling/opencode2-config:test: ✔ malformed root and nested collections never throw (1.422667ms)
+@iamsterling/opencode2-config:test: ✔ duplicate IDs, enums, strings, and integer limits are rejected at exact paths (1.61325ms)
+@iamsterling/opencode2-config:test: ✔ set-like scalar fields reject duplicates and tool limits are positive and bounded (2.261333ms)
+@iamsterling/opencode2-config:test: ✔ path aliases and ancestor ownership are rejected (0.856667ms)
+@iamsterling/opencode2-config:test: ✔ absolute and normalization-changing writable paths are rejected (1.610958ms)
+@iamsterling/opencode2-config:test: ✔ repository artifact paths reject platform and locator absolute forms (2.417125ms)
+@iamsterling/opencode2-config:test: ✔ hidden cycles and duplicate dependency edges are rejected (0.734708ms)
+@iamsterling/opencode2-config:test: ✔ multi-hop dependency cycles, duplicate dependency IDs, and unknown units are rejected (0.459875ms)
+@iamsterling/opencode2-config:test: ✔ closed schemas reject forged authority and smuggling fields (1.013916ms)
+@iamsterling/opencode2-config:test: ✔ blocked decisions require questions and cannot smuggle a contract (1.2655ms)
+@iamsterling/opencode2-config:test: ✔ stale summary needs matching external context-id and digest revalidation (1.689708ms)
+@iamsterling/opencode2-config:test: ✔ criteria reject duplicate IDs, prose-only oracle, and inappropriate evidence (0.736667ms)
+@iamsterling/opencode2-config:test: ✔ criteria require oracle-compatible evidence including behavioral red and green (0.591417ms)
+@iamsterling/opencode2-config:test: ✔ every proposal class requires a criterion and behavioral evidence distinguishes states (1.968625ms)
+@iamsterling/opencode2-config:test: ✔ quote contexts require bounded quote content and summaries require digests (0.498916ms)
+@iamsterling/opencode2-config:test: ✔ retry semantics are closed by failure class (0.519583ms)
+@iamsterling/opencode2-config:test: ✔ review schema excludes rationale and suspected-defect fields (0.898083ms)
+@iamsterling/opencode2-config:test: ✔ H canonical digest ignores set order and preserves ordered methods (0.764875ms)
+@iamsterling/opencode2-config:test: ✔ bounded mutation matrix is deterministic and never throws (10.203625ms)
+@iamsterling/opencode2-config:test: ✔ skill, command, schema, and fixtures remain provider-neutral and planning-only (2.486625ms)
+@iamsterling/opencode2-config:test: node:internal/modules/esm/resolve:271
+@iamsterling/opencode2-config:test:     throw new ERR_MODULE_NOT_FOUND(
+@iamsterling/opencode2-config:test:           ^
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/platform/doctor/index.js' imported from /Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/hook-foundation-doctor.test.mjs
+@iamsterling/opencode2-config:test:     at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+@iamsterling/opencode2-config:test:     at moduleResolve (node:internal/modules/esm/resolve:865:10)
+@iamsterling/opencode2-config:test:     at defaultResolve (node:internal/modules/esm/resolve:992:11)
+@iamsterling/opencode2-config:test:     at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+@iamsterling/opencode2-config:test:     at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+@iamsterling/opencode2-config:test:     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+@iamsterling/opencode2-config:test:     at #resolve (node:internal/modules/esm/loader:683:17)
+@iamsterling/opencode2-config:test:     at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+@iamsterling/opencode2-config:test:     at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+@iamsterling/opencode2-config:test:     at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+@iamsterling/opencode2-config:test:   code: 'ERR_MODULE_NOT_FOUND',
+@iamsterling/opencode2-config:test:   url: 'file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/platform/doctor/index.js'
+@iamsterling/opencode2-config:test: }
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Node.js v24.18.0
+@iamsterling/opencode2-config:test: ✖ tests/unit/hook-foundation-doctor.test.mjs (80.306667ms)
+@iamsterling/opencode2-config:test: node:internal/modules/esm/resolve:271
+@iamsterling/opencode2-config:test:     throw new ERR_MODULE_NOT_FOUND(
+@iamsterling/opencode2-config:test:           ^
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/hooks/context-projection.js' imported from /Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/hook-foundation.test.mjs
+@iamsterling/opencode2-config:test:     at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+@iamsterling/opencode2-config:test:     at moduleResolve (node:internal/modules/esm/resolve:865:10)
+@iamsterling/opencode2-config:test:     at defaultResolve (node:internal/modules/esm/resolve:992:11)
+@iamsterling/opencode2-config:test:     at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+@iamsterling/opencode2-config:test:     at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+@iamsterling/opencode2-config:test:     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+@iamsterling/opencode2-config:test:     at #resolve (node:internal/modules/esm/loader:683:17)
+@iamsterling/opencode2-config:test:     at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+@iamsterling/opencode2-config:test:     at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+@iamsterling/opencode2-config:test:     at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+@iamsterling/opencode2-config:test:   code: 'ERR_MODULE_NOT_FOUND',
+@iamsterling/opencode2-config:test:   url: 'file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/hooks/context-projection.js'
+@iamsterling/opencode2-config:test: }
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Node.js v24.18.0
+@iamsterling/opencode2-config:test: ✖ tests/unit/hook-foundation.test.mjs (70.777958ms)
+@iamsterling/opencode2-config:test: node:internal/modules/esm/resolve:271
+@iamsterling/opencode2-config:test:     throw new ERR_MODULE_NOT_FOUND(
+@iamsterling/opencode2-config:test:           ^
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/ledger/index.js' imported from /Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/ledger-authority-archive.test.mjs
+@iamsterling/opencode2-config:test:     at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+@iamsterling/opencode2-config:test:     at moduleResolve (node:internal/modules/esm/resolve:865:10)
+@iamsterling/opencode2-config:test:     at defaultResolve (node:internal/modules/esm/resolve:992:11)
+@iamsterling/opencode2-config:test:     at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+@iamsterling/opencode2-config:test:     at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+@iamsterling/opencode2-config:test:     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+@iamsterling/opencode2-config:test:     at #resolve (node:internal/modules/esm/loader:683:17)
+@iamsterling/opencode2-config:test:     at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+@iamsterling/opencode2-config:test:     at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+@iamsterling/opencode2-config:test:     at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+@iamsterling/opencode2-config:test:   code: 'ERR_MODULE_NOT_FOUND',
+@iamsterling/opencode2-config:test:   url: 'file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/ledger/index.js'
+@iamsterling/opencode2-config:test: }
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Node.js v24.18.0
+@iamsterling/opencode2-config:test: ✖ tests/unit/ledger-authority-archive.test.mjs (70.142166ms)
+@iamsterling/opencode2-config:test: node:internal/modules/esm/resolve:271
+@iamsterling/opencode2-config:test:     throw new ERR_MODULE_NOT_FOUND(
+@iamsterling/opencode2-config:test:           ^
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/ledger/index.js' imported from /Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/ledger-authority-domain.test.mjs
+@iamsterling/opencode2-config:test:     at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+@iamsterling/opencode2-config:test:     at moduleResolve (node:internal/modules/esm/resolve:865:10)
+@iamsterling/opencode2-config:test:     at defaultResolve (node:internal/modules/esm/resolve:992:11)
+@iamsterling/opencode2-config:test:     at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+@iamsterling/opencode2-config:test:     at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+@iamsterling/opencode2-config:test:     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+@iamsterling/opencode2-config:test:     at #resolve (node:internal/modules/esm/loader:683:17)
+@iamsterling/opencode2-config:test:     at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+@iamsterling/opencode2-config:test:     at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+@iamsterling/opencode2-config:test:     at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+@iamsterling/opencode2-config:test:   code: 'ERR_MODULE_NOT_FOUND',
+@iamsterling/opencode2-config:test:   url: 'file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/ledger/index.js'
+@iamsterling/opencode2-config:test: }
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Node.js v24.18.0
+@iamsterling/opencode2-config:test: ✖ tests/unit/ledger-authority-domain.test.mjs (74.331917ms)
+@iamsterling/opencode2-config:test: node:internal/modules/esm/resolve:271
+@iamsterling/opencode2-config:test:     throw new ERR_MODULE_NOT_FOUND(
+@iamsterling/opencode2-config:test:           ^
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/ledger/index.js' imported from /Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/ledger-v1.test.mjs
+@iamsterling/opencode2-config:test:     at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+@iamsterling/opencode2-config:test:     at moduleResolve (node:internal/modules/esm/resolve:865:10)
+@iamsterling/opencode2-config:test:     at defaultResolve (node:internal/modules/esm/resolve:992:11)
+@iamsterling/opencode2-config:test:     at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+@iamsterling/opencode2-config:test:     at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+@iamsterling/opencode2-config:test:     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+@iamsterling/opencode2-config:test:     at #resolve (node:internal/modules/esm/loader:683:17)
+@iamsterling/opencode2-config:test:     at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+@iamsterling/opencode2-config:test:     at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+@iamsterling/opencode2-config:test:     at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+@iamsterling/opencode2-config:test:   code: 'ERR_MODULE_NOT_FOUND',
+@iamsterling/opencode2-config:test:   url: 'file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/ledger/index.js'
+@iamsterling/opencode2-config:test: }
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Node.js v24.18.0
+@iamsterling/opencode2-config:test: ✖ tests/unit/ledger-v1.test.mjs (72.283625ms)
+@iamsterling/opencode2-config:test: ✔ dependency receipt rejects mutated manifest (2.098667ms)
+@iamsterling/opencode2-config:test: ✔ dependency receipt rejects mutated lock (0.672084ms)
+@iamsterling/opencode2-config:test: ✔ dependency receipt rejects mutated receipt (1.2205ms)
+@iamsterling/opencode2-config:test: ✔ dependency receipt rejects mutated tree (0.486542ms)
+@iamsterling/opencode2-config:test: ✔ dependency receipt rejects mutated javascript-manifest (0.69ms)
+@iamsterling/opencode2-config:test: ✔ dependency receipt rejects mutated other-cargo-delta (0.401209ms)
+@iamsterling/opencode2-config:test: ✔ mutant scorer rejects baseline-failing test (0.462833ms)
+@iamsterling/opencode2-config:test: ✔ mutant scorer rejects compile-failing mutant (0.054583ms)
+@iamsterling/opencode2-config:test: ✔ mutant scorer rejects unrelated test failure (0.045541ms)
+@iamsterling/opencode2-config:test: ✔ mutant scorer rejects wrong vector (0.036416ms)
+@iamsterling/opencode2-config:test: ✔ mutant scorer rejects wrong field (0.042625ms)
+@iamsterling/opencode2-config:test: ✔ mutant scorer rejects duplicate mutants (0.0505ms)
+@iamsterling/opencode2-config:test: ✔ legacy native parity remains a private verification-only seam (3.628167ms)
+@iamsterling/opencode2-config:test: node:internal/modules/esm/resolve:271
+@iamsterling/opencode2-config:test:     throw new ERR_MODULE_NOT_FOUND(
+@iamsterling/opencode2-config:test:           ^
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/loop-engine/index.js' imported from /Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/loop-engine-v1.test.mjs
+@iamsterling/opencode2-config:test:     at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+@iamsterling/opencode2-config:test:     at moduleResolve (node:internal/modules/esm/resolve:865:10)
+@iamsterling/opencode2-config:test:     at defaultResolve (node:internal/modules/esm/resolve:992:11)
+@iamsterling/opencode2-config:test:     at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+@iamsterling/opencode2-config:test:     at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+@iamsterling/opencode2-config:test:     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+@iamsterling/opencode2-config:test:     at #resolve (node:internal/modules/esm/loader:683:17)
+@iamsterling/opencode2-config:test:     at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+@iamsterling/opencode2-config:test:     at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+@iamsterling/opencode2-config:test:     at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+@iamsterling/opencode2-config:test:   code: 'ERR_MODULE_NOT_FOUND',
+@iamsterling/opencode2-config:test:   url: 'file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/loop-engine/index.js'
+@iamsterling/opencode2-config:test: }
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Node.js v24.18.0
+@iamsterling/opencode2-config:test: ✖ tests/unit/loop-engine-v1.test.mjs (98.759459ms)
+@iamsterling/opencode2-config:test: node:internal/modules/esm/resolve:271
+@iamsterling/opencode2-config:test:     throw new ERR_MODULE_NOT_FOUND(
+@iamsterling/opencode2-config:test:           ^
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/loop-engine/index.js' imported from /Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/native-loop-completion.test.mjs
+@iamsterling/opencode2-config:test:     at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+@iamsterling/opencode2-config:test:     at moduleResolve (node:internal/modules/esm/resolve:865:10)
+@iamsterling/opencode2-config:test:     at defaultResolve (node:internal/modules/esm/resolve:992:11)
+@iamsterling/opencode2-config:test:     at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+@iamsterling/opencode2-config:test:     at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+@iamsterling/opencode2-config:test:     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+@iamsterling/opencode2-config:test:     at #resolve (node:internal/modules/esm/loader:683:17)
+@iamsterling/opencode2-config:test:     at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+@iamsterling/opencode2-config:test:     at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+@iamsterling/opencode2-config:test:     at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+@iamsterling/opencode2-config:test:   code: 'ERR_MODULE_NOT_FOUND',
+@iamsterling/opencode2-config:test:   url: 'file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/loop-engine/index.js'
+@iamsterling/opencode2-config:test: }
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Node.js v24.18.0
+@iamsterling/opencode2-config:test: ✖ tests/unit/native-loop-completion.test.mjs (96.707ms)
+@iamsterling/opencode2-config:test: ✔ the active beta-17595 service ABI is the exact package, lock, guard, and runtime release pin (5.466208ms)
+@iamsterling/opencode2-config:test: ✔ OpenCode host, plugin SDK, installed packages, and lockfile share the reviewed ABI pin (8.955625ms)
+@iamsterling/opencode2-config:test: node:internal/modules/esm/resolve:271
+@iamsterling/opencode2-config:test:     throw new ERR_MODULE_NOT_FOUND(
+@iamsterling/opencode2-config:test:           ^
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/platform/persistence/atomic-store.js' imported from /Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/persistence-fencing.test.mjs
+@iamsterling/opencode2-config:test:     at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+@iamsterling/opencode2-config:test:     at moduleResolve (node:internal/modules/esm/resolve:865:10)
+@iamsterling/opencode2-config:test:     at defaultResolve (node:internal/modules/esm/resolve:992:11)
+@iamsterling/opencode2-config:test:     at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+@iamsterling/opencode2-config:test:     at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+@iamsterling/opencode2-config:test:     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+@iamsterling/opencode2-config:test:     at #resolve (node:internal/modules/esm/loader:683:17)
+@iamsterling/opencode2-config:test:     at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+@iamsterling/opencode2-config:test:     at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+@iamsterling/opencode2-config:test:     at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+@iamsterling/opencode2-config:test:   code: 'ERR_MODULE_NOT_FOUND',
+@iamsterling/opencode2-config:test:   url: 'file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/platform/persistence/atomic-store.js'
+@iamsterling/opencode2-config:test: }
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Node.js v24.18.0
+@iamsterling/opencode2-config:test: ✖ tests/unit/persistence-fencing.test.mjs (55.54525ms)
+@iamsterling/opencode2-config:test: node:internal/modules/esm/resolve:271
+@iamsterling/opencode2-config:test:     throw new ERR_MODULE_NOT_FOUND(
+@iamsterling/opencode2-config:test:           ^
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/config/agents.js' imported from /Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/plugin-agent-config.test.mjs
+@iamsterling/opencode2-config:test:     at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+@iamsterling/opencode2-config:test:     at moduleResolve (node:internal/modules/esm/resolve:865:10)
+@iamsterling/opencode2-config:test:     at defaultResolve (node:internal/modules/esm/resolve:992:11)
+@iamsterling/opencode2-config:test:     at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+@iamsterling/opencode2-config:test:     at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+@iamsterling/opencode2-config:test:     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+@iamsterling/opencode2-config:test:     at #resolve (node:internal/modules/esm/loader:683:17)
+@iamsterling/opencode2-config:test:     at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+@iamsterling/opencode2-config:test:     at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+@iamsterling/opencode2-config:test:     at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+@iamsterling/opencode2-config:test:   code: 'ERR_MODULE_NOT_FOUND',
+@iamsterling/opencode2-config:test:   url: 'file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/config/agents.js'
+@iamsterling/opencode2-config:test: }
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Node.js v24.18.0
+@iamsterling/opencode2-config:test: ✖ tests/unit/plugin-agent-config.test.mjs (52.143375ms)
+@iamsterling/opencode2-config:test: node:internal/modules/esm/resolve:271
+@iamsterling/opencode2-config:test:     throw new ERR_MODULE_NOT_FOUND(
+@iamsterling/opencode2-config:test:           ^
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/index.js' imported from /Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/plugin-entrypoint.test.mjs
+@iamsterling/opencode2-config:test:     at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+@iamsterling/opencode2-config:test:     at moduleResolve (node:internal/modules/esm/resolve:865:10)
+@iamsterling/opencode2-config:test:     at defaultResolve (node:internal/modules/esm/resolve:992:11)
+@iamsterling/opencode2-config:test:     at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+@iamsterling/opencode2-config:test:     at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+@iamsterling/opencode2-config:test:     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+@iamsterling/opencode2-config:test:     at #resolve (node:internal/modules/esm/loader:683:17)
+@iamsterling/opencode2-config:test:     at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+@iamsterling/opencode2-config:test:     at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+@iamsterling/opencode2-config:test:     at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+@iamsterling/opencode2-config:test:   code: 'ERR_MODULE_NOT_FOUND',
+@iamsterling/opencode2-config:test:   url: 'file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/index.js'
+@iamsterling/opencode2-config:test: }
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Node.js v24.18.0
+@iamsterling/opencode2-config:test: ✖ tests/unit/plugin-entrypoint.test.mjs (178.475666ms)
+web:test: cache bypass, force executing 6ffb7d9b6cfa2d07
+docs:test: cache bypass, force executing 42a796f423dcf53b
+web:test: $ node --test tests/config-load.test.mjs
+docs:test: $ node --test tests/config-load.test.mjs
+@iamsterling/opencode2-config:test: ✖ artifact provenance hashes the workspace lock and records its exact OpenCode integrities (29.281584ms)
+@iamsterling/opencode2-config:test: ✖ provenance includes untracked runtime sources and rejects a stale manifest after one changes (432.254333ms)
+@iamsterling/opencode2-config:test: ✔ provenance verification rejects a corrupted resource-only object (257.996583ms)
+@iamsterling/opencode2-config:test: node:internal/modules/esm/resolve:271
+@iamsterling/opencode2-config:test:     throw new ERR_MODULE_NOT_FOUND(
+@iamsterling/opencode2-config:test:           ^
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/platform/real-host/index.js' imported from /Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tools/real-host-suite.mjs
+@iamsterling/opencode2-config:test:     at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+@iamsterling/opencode2-config:test:     at moduleResolve (node:internal/modules/esm/resolve:865:10)
+@iamsterling/opencode2-config:test:     at defaultResolve (node:internal/modules/esm/resolve:992:11)
+@iamsterling/opencode2-config:test:     at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+@iamsterling/opencode2-config:test:     at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+@iamsterling/opencode2-config:test:     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+@iamsterling/opencode2-config:test:     at #resolve (node:internal/modules/esm/loader:683:17)
+@iamsterling/opencode2-config:test:     at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+@iamsterling/opencode2-config:test:     at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+@iamsterling/opencode2-config:test:     at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+@iamsterling/opencode2-config:test:   code: 'ERR_MODULE_NOT_FOUND',
+@iamsterling/opencode2-config:test:   url: 'file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/platform/real-host/index.js'
+@iamsterling/opencode2-config:test: }
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Node.js v24.18.0
+@iamsterling/opencode2-config:test: ✖ tests/unit/real-host-suite.test.mjs (76.38275ms)
+@iamsterling/opencode2-config:test: ✔ agent prompt source bytes are lower than the preserved baseline (6.215375ms)
+@iamsterling/opencode2-config:test: ✔ all prompt and resource source bytes are lower than the preserved baseline (5.629417ms)
+@iamsterling/opencode2-config:test: ✔ reviewer is a mechanical findings allowlist without rationale or suspected-defect prose (1.293125ms)
+@iamsterling/opencode2-config:test: ✔ research keeps bounded curiosity semantics and rejects live autonomous curiosity (0.5175ms)
+@iamsterling/opencode2-config:test: ✔ command and help inventory is filesystem-generatable (10.550125ms)
+@iamsterling/opencode2-config:test: ✖ owned search deadline settles and exits without unrelated handles: never-producing-body (46.731584ms)
+@iamsterling/opencode2-config:test: ✖ owned search deadline settles and exits without unrelated handles: pending-cancel (47.105792ms)
+@iamsterling/opencode2-config:test: ✖ owned search deadline settles and exits without unrelated handles: fetch-abort (64.415ms)
+@iamsterling/opencode2-config:test: ✖ owned search deadline settles and exits without unrelated handles: fast-success (43.1665ms)
+@iamsterling/opencode2-config:test: node:internal/modules/esm/resolve:271
+@iamsterling/opencode2-config:test:     throw new ERR_MODULE_NOT_FOUND(
+@iamsterling/opencode2-config:test:           ^
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/search/index.js' imported from /Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/web-search.test.mjs
+@iamsterling/opencode2-config:test:     at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+@iamsterling/opencode2-config:test:     at moduleResolve (node:internal/modules/esm/resolve:865:10)
+@iamsterling/opencode2-config:test:     at defaultResolve (node:internal/modules/esm/resolve:992:11)
+@iamsterling/opencode2-config:test:     at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+@iamsterling/opencode2-config:test:     at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+@iamsterling/opencode2-config:test:     at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+@iamsterling/opencode2-config:test:     at #resolve (node:internal/modules/esm/loader:683:17)
+@iamsterling/opencode2-config:test:     at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+@iamsterling/opencode2-config:test:     at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+@iamsterling/opencode2-config:test:     at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+@iamsterling/opencode2-config:test:   code: 'ERR_MODULE_NOT_FOUND',
+@iamsterling/opencode2-config:test:   url: 'file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/search/index.js'
+@iamsterling/opencode2-config:test: }
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: Node.js v24.18.0
+@iamsterling/opencode2-config:test: ✖ tests/unit/web-search.test.mjs (53.89875ms)
+@iamsterling/opencode2-config:test: ℹ tests 75
+@iamsterling/opencode2-config:test: ℹ suites 0
+@iamsterling/opencode2-config:test: ℹ pass 51
+@iamsterling/opencode2-config:test: ℹ fail 24
+@iamsterling/opencode2-config:test: ℹ cancelled 0
+@iamsterling/opencode2-config:test: ℹ skipped 0
+@iamsterling/opencode2-config:test: ℹ todo 0
+@iamsterling/opencode2-config:test: ℹ duration_ms 730.257541
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: ✖ failing tests:
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: test at tests/unit/context-projection.test.mjs:1:1
+@iamsterling/opencode2-config:test: ✖ tests/unit/context-projection.test.mjs (74.881834ms)
+@iamsterling/opencode2-config:test:   'test failed'
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: test at tests/unit/engineering-intent-codec.test.mjs:1:1
+@iamsterling/opencode2-config:test: ✖ tests/unit/engineering-intent-codec.test.mjs (75.584083ms)
+@iamsterling/opencode2-config:test:   'test failed'
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: test at tests/unit/engineering-policy.test.mjs:1:1
+@iamsterling/opencode2-config:test: ✖ tests/unit/engineering-policy.test.mjs (83.144583ms)
+@iamsterling/opencode2-config:test:   'test failed'
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: test at tests/unit/event-capture.test.mjs:1:1
+@iamsterling/opencode2-config:test: ✖ tests/unit/event-capture.test.mjs (75.325083ms)
+@iamsterling/opencode2-config:test:   'test failed'
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: test at tests/unit/evidence-development.test.mjs:1:1
+@iamsterling/opencode2-config:test: ✖ tests/unit/evidence-development.test.mjs (98.046041ms)
+@iamsterling/opencode2-config:test:   'test failed'
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: test at tests/unit/github-contract.test.mjs:1:1
+@iamsterling/opencode2-config:test: ✖ tests/unit/github-contract.test.mjs (77.057791ms)
+@iamsterling/opencode2-config:test:   'test failed'
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: test at tests/unit/hook-foundation-doctor.test.mjs:1:1
+@iamsterling/opencode2-config:test: ✖ tests/unit/hook-foundation-doctor.test.mjs (80.306667ms)
+@iamsterling/opencode2-config:test:   'test failed'
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: test at tests/unit/hook-foundation.test.mjs:1:1
+@iamsterling/opencode2-config:test: ✖ tests/unit/hook-foundation.test.mjs (70.777958ms)
+@iamsterling/opencode2-config:test:   'test failed'
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: test at tests/unit/ledger-authority-archive.test.mjs:1:1
+@iamsterling/opencode2-config:test: ✖ tests/unit/ledger-authority-archive.test.mjs (70.142166ms)
+@iamsterling/opencode2-config:test:   'test failed'
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: test at tests/unit/ledger-authority-domain.test.mjs:1:1
+@iamsterling/opencode2-config:test: ✖ tests/unit/ledger-authority-domain.test.mjs (74.331917ms)
+@iamsterling/opencode2-config:test:   'test failed'
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: test at tests/unit/ledger-v1.test.mjs:1:1
+@iamsterling/opencode2-config:test: ✖ tests/unit/ledger-v1.test.mjs (72.283625ms)
+@iamsterling/opencode2-config:test:   'test failed'
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: test at tests/unit/loop-engine-v1.test.mjs:1:1
+@iamsterling/opencode2-config:test: ✖ tests/unit/loop-engine-v1.test.mjs (98.759459ms)
+@iamsterling/opencode2-config:test:   'test failed'
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: test at tests/unit/native-loop-completion.test.mjs:1:1
+@iamsterling/opencode2-config:test: ✖ tests/unit/native-loop-completion.test.mjs (96.707ms)
+@iamsterling/opencode2-config:test:   'test failed'
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: test at tests/unit/persistence-fencing.test.mjs:1:1
+@iamsterling/opencode2-config:test: ✖ tests/unit/persistence-fencing.test.mjs (55.54525ms)
+@iamsterling/opencode2-config:test:   'test failed'
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: test at tests/unit/plugin-agent-config.test.mjs:1:1
+@iamsterling/opencode2-config:test: ✖ tests/unit/plugin-agent-config.test.mjs (52.143375ms)
+@iamsterling/opencode2-config:test:   'test failed'
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: test at tests/unit/plugin-entrypoint.test.mjs:1:1
+@iamsterling/opencode2-config:test: ✖ tests/unit/plugin-entrypoint.test.mjs (178.475666ms)
+@iamsterling/opencode2-config:test:   'test failed'
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: test at tests/unit/provenance-manifest.test.mjs:11:1
+@iamsterling/opencode2-config:test: ✖ artifact provenance hashes the workspace lock and records its exact OpenCode integrities (29.281584ms)
+@iamsterling/opencode2-config:test:   Error: ENOENT: no such file or directory, scandir '/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist'
+@iamsterling/opencode2-config:test:       at async readdir (node:internal/fs/promises:956:18)
+@iamsterling/opencode2-config:test:       at async walk (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tools/provenance-manifest.mjs:10:19)
+@iamsterling/opencode2-config:test:       at async buildProvenance (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tools/provenance-manifest.mjs:34:24)
+@iamsterling/opencode2-config:test:       at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/provenance-manifest.test.mjs:15:22)
+@iamsterling/opencode2-config:test:       at async Test.run (node:internal/test_runner/test:1332:7)
+@iamsterling/opencode2-config:test:       at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+@iamsterling/opencode2-config:test:     errno: -2,
+@iamsterling/opencode2-config:test:     code: 'ENOENT',
+@iamsterling/opencode2-config:test:     syscall: 'scandir',
+@iamsterling/opencode2-config:test:     path: '/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist'
+@iamsterling/opencode2-config:test:   }
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: test at tests/unit/provenance-manifest.test.mjs:25:1
+@iamsterling/opencode2-config:test: ✖ provenance includes untracked runtime sources and rejects a stale manifest after one changes (432.254333ms)
+@iamsterling/opencode2-config:test:   Error: ENOENT: no such file or directory, lstat 'dist'
+@iamsterling/opencode2-config:test:       at async lstat (node:internal/fs/promises:1029:18)
+@iamsterling/opencode2-config:test:       at async Promise.all (index 0)
+@iamsterling/opencode2-config:test:       at async checkPaths (node:internal/fs/cp/cp:77:39)
+@iamsterling/opencode2-config:test:       at async cpFn (node:internal/fs/cp/cp:66:17)
+@iamsterling/opencode2-config:test:       at async Promise.all (index 0)
+@iamsterling/opencode2-config:test:       at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/provenance-manifest.test.mjs:33:5)
+@iamsterling/opencode2-config:test:       at async Test.run (node:internal/test_runner/test:1332:7)
+@iamsterling/opencode2-config:test:       at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+@iamsterling/opencode2-config:test:     errno: -2,
+@iamsterling/opencode2-config:test:     code: 'ENOENT',
+@iamsterling/opencode2-config:test:     syscall: 'lstat',
+@iamsterling/opencode2-config:test:     path: 'dist'
+@iamsterling/opencode2-config:test:   }
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: test at tests/unit/real-host-suite.test.mjs:1:1
+@iamsterling/opencode2-config:test: ✖ tests/unit/real-host-suite.test.mjs (76.38275ms)
+@iamsterling/opencode2-config:test:   'test failed'
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: test at tests/unit/web-search-timeout-child.test.mjs:81:3
+@iamsterling/opencode2-config:test: ✖ owned search deadline settles and exits without unrelated handles: never-producing-body (46.731584ms)
+@iamsterling/opencode2-config:test:   AssertionError [ERR_ASSERTION]: node:internal/modules/esm/resolve:271
+@iamsterling/opencode2-config:test:       throw new ERR_MODULE_NOT_FOUND(
+@iamsterling/opencode2-config:test:             ^
+@iamsterling/opencode2-config:test:   
+@iamsterling/opencode2-config:test:   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/search/index.js' imported from /Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/[eval1]
+@iamsterling/opencode2-config:test:       at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+@iamsterling/opencode2-config:test:       at moduleResolve (node:internal/modules/esm/resolve:865:10)
+@iamsterling/opencode2-config:test:       at defaultResolve (node:internal/modules/esm/resolve:992:11)
+@iamsterling/opencode2-config:test:       at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+@iamsterling/opencode2-config:test:       at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+@iamsterling/opencode2-config:test:       at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+@iamsterling/opencode2-config:test:       at #resolve (node:internal/modules/esm/loader:683:17)
+@iamsterling/opencode2-config:test:       at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+@iamsterling/opencode2-config:test:       at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+@iamsterling/opencode2-config:test:       at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+@iamsterling/opencode2-config:test:     code: 'ERR_MODULE_NOT_FOUND',
+@iamsterling/opencode2-config:test:     url: 'file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/search/index.js'
+@iamsterling/opencode2-config:test:   }
+@iamsterling/opencode2-config:test:   
+@iamsterling/opencode2-config:test:   Node.js v24.18.0
+@iamsterling/opencode2-config:test:   
+@iamsterling/opencode2-config:test:   
+@iamsterling/opencode2-config:test:   1 !== 0
+@iamsterling/opencode2-config:test:   
+@iamsterling/opencode2-config:test:       at TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/web-search-timeout-child.test.mjs:84:12)
+@iamsterling/opencode2-config:test:       at async Test.run (node:internal/test_runner/test:1332:7)
+@iamsterling/opencode2-config:test:       at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+@iamsterling/opencode2-config:test:     generatedMessage: false,
+@iamsterling/opencode2-config:test:     code: 'ERR_ASSERTION',
+@iamsterling/opencode2-config:test:     actual: 1,
+@iamsterling/opencode2-config:test:     expected: 0,
+@iamsterling/opencode2-config:test:     operator: 'strictEqual',
+@iamsterling/opencode2-config:test:     diff: 'simple'
+@iamsterling/opencode2-config:test:   }
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: test at tests/unit/web-search-timeout-child.test.mjs:81:3
+@iamsterling/opencode2-config:test: ✖ owned search deadline settles and exits without unrelated handles: pending-cancel (47.105792ms)
+@iamsterling/opencode2-config:test:   AssertionError [ERR_ASSERTION]: node:internal/modules/esm/resolve:271
+@iamsterling/opencode2-config:test:       throw new ERR_MODULE_NOT_FOUND(
+@iamsterling/opencode2-config:test:             ^
+@iamsterling/opencode2-config:test:   
+@iamsterling/opencode2-config:test:   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/search/index.js' imported from /Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/[eval1]
+@iamsterling/opencode2-config:test:       at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+@iamsterling/opencode2-config:test:       at moduleResolve (node:internal/modules/esm/resolve:865:10)
+@iamsterling/opencode2-config:test:       at defaultResolve (node:internal/modules/esm/resolve:992:11)
+@iamsterling/opencode2-config:test:       at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+@iamsterling/opencode2-config:test:       at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+@iamsterling/opencode2-config:test:       at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+@iamsterling/opencode2-config:test:       at #resolve (node:internal/modules/esm/loader:683:17)
+@iamsterling/opencode2-config:test:       at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+@iamsterling/opencode2-config:test:       at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+@iamsterling/opencode2-config:test:       at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+@iamsterling/opencode2-config:test:     code: 'ERR_MODULE_NOT_FOUND',
+@iamsterling/opencode2-config:test:     url: 'file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/search/index.js'
+@iamsterling/opencode2-config:test:   }
+@iamsterling/opencode2-config:test:   
+@iamsterling/opencode2-config:test:   Node.js v24.18.0
+@iamsterling/opencode2-config:test:   
+@iamsterling/opencode2-config:test:   
+@iamsterling/opencode2-config:test:   1 !== 0
+@iamsterling/opencode2-config:test:   
+@iamsterling/opencode2-config:test:       at TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/web-search-timeout-child.test.mjs:84:12)
+@iamsterling/opencode2-config:test:       at async Test.run (node:internal/test_runner/test:1332:7)
+@iamsterling/opencode2-config:test:       at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+@iamsterling/opencode2-config:test:     generatedMessage: false,
+@iamsterling/opencode2-config:test:     code: 'ERR_ASSERTION',
+@iamsterling/opencode2-config:test:     actual: 1,
+@iamsterling/opencode2-config:test:     expected: 0,
+@iamsterling/opencode2-config:test:     operator: 'strictEqual',
+@iamsterling/opencode2-config:test:     diff: 'simple'
+@iamsterling/opencode2-config:test:   }
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: test at tests/unit/web-search-timeout-child.test.mjs:81:3
+@iamsterling/opencode2-config:test: ✖ owned search deadline settles and exits without unrelated handles: fetch-abort (64.415ms)
+@iamsterling/opencode2-config:test:   AssertionError [ERR_ASSERTION]: node:internal/modules/esm/resolve:271
+@iamsterling/opencode2-config:test:       throw new ERR_MODULE_NOT_FOUND(
+@iamsterling/opencode2-config:test:             ^
+@iamsterling/opencode2-config:test:   
+@iamsterling/opencode2-config:test:   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/search/index.js' imported from /Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/[eval1]
+@iamsterling/opencode2-config:test:       at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+@iamsterling/opencode2-config:test:       at moduleResolve (node:internal/modules/esm/resolve:865:10)
+@iamsterling/opencode2-config:test:       at defaultResolve (node:internal/modules/esm/resolve:992:11)
+@iamsterling/opencode2-config:test:       at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+@iamsterling/opencode2-config:test:       at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+@iamsterling/opencode2-config:test:       at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+@iamsterling/opencode2-config:test:       at #resolve (node:internal/modules/esm/loader:683:17)
+@iamsterling/opencode2-config:test:       at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+@iamsterling/opencode2-config:test:       at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+@iamsterling/opencode2-config:test:       at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+@iamsterling/opencode2-config:test:     code: 'ERR_MODULE_NOT_FOUND',
+@iamsterling/opencode2-config:test:     url: 'file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/search/index.js'
+@iamsterling/opencode2-config:test:   }
+@iamsterling/opencode2-config:test:   
+@iamsterling/opencode2-config:test:   Node.js v24.18.0
+@iamsterling/opencode2-config:test:   
+@iamsterling/opencode2-config:test:   
+@iamsterling/opencode2-config:test:   1 !== 0
+@iamsterling/opencode2-config:test:   
+@iamsterling/opencode2-config:test:       at TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/web-search-timeout-child.test.mjs:84:12)
+@iamsterling/opencode2-config:test:       at async Test.run (node:internal/test_runner/test:1332:7)
+@iamsterling/opencode2-config:test:       at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+@iamsterling/opencode2-config:test:     generatedMessage: false,
+@iamsterling/opencode2-config:test:     code: 'ERR_ASSERTION',
+@iamsterling/opencode2-config:test:     actual: 1,
+@iamsterling/opencode2-config:test:     expected: 0,
+@iamsterling/opencode2-config:test:     operator: 'strictEqual',
+@iamsterling/opencode2-config:test:     diff: 'simple'
+@iamsterling/opencode2-config:test:   }
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: test at tests/unit/web-search-timeout-child.test.mjs:81:3
+@iamsterling/opencode2-config:test: ✖ owned search deadline settles and exits without unrelated handles: fast-success (43.1665ms)
+@iamsterling/opencode2-config:test:   AssertionError [ERR_ASSERTION]: node:internal/modules/esm/resolve:271
+@iamsterling/opencode2-config:test:       throw new ERR_MODULE_NOT_FOUND(
+@iamsterling/opencode2-config:test:             ^
+@iamsterling/opencode2-config:test:   
+@iamsterling/opencode2-config:test:   Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/search/index.js' imported from /Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/[eval1]
+@iamsterling/opencode2-config:test:       at finalizeResolution (node:internal/modules/esm/resolve:271:11)
+@iamsterling/opencode2-config:test:       at moduleResolve (node:internal/modules/esm/resolve:865:10)
+@iamsterling/opencode2-config:test:       at defaultResolve (node:internal/modules/esm/resolve:992:11)
+@iamsterling/opencode2-config:test:       at #cachedDefaultResolve (node:internal/modules/esm/loader:701:20)
+@iamsterling/opencode2-config:test:       at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:721:38)
+@iamsterling/opencode2-config:test:       at ModuleLoader.resolveSync (node:internal/modules/esm/loader:759:56)
+@iamsterling/opencode2-config:test:       at #resolve (node:internal/modules/esm/loader:683:17)
+@iamsterling/opencode2-config:test:       at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:603:35)
+@iamsterling/opencode2-config:test:       at ModuleJob.syncLink (node:internal/modules/esm/module_job:163:33)
+@iamsterling/opencode2-config:test:       at ModuleJob.link (node:internal/modules/esm/module_job:253:17) {
+@iamsterling/opencode2-config:test:     code: 'ERR_MODULE_NOT_FOUND',
+@iamsterling/opencode2-config:test:     url: 'file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/search/index.js'
+@iamsterling/opencode2-config:test:   }
+@iamsterling/opencode2-config:test:   
+@iamsterling/opencode2-config:test:   Node.js v24.18.0
+@iamsterling/opencode2-config:test:   
+@iamsterling/opencode2-config:test:   
+@iamsterling/opencode2-config:test:   1 !== 0
+@iamsterling/opencode2-config:test:   
+@iamsterling/opencode2-config:test:       at TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/web-search-timeout-child.test.mjs:84:12)
+@iamsterling/opencode2-config:test:       at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+@iamsterling/opencode2-config:test:       at async Test.run (node:internal/test_runner/test:1332:7)
+@iamsterling/opencode2-config:test:       at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+@iamsterling/opencode2-config:test:     generatedMessage: false,
+@iamsterling/opencode2-config:test:     code: 'ERR_ASSERTION',
+@iamsterling/opencode2-config:test:     actual: 1,
+@iamsterling/opencode2-config:test:     expected: 0,
+@iamsterling/opencode2-config:test:     operator: 'strictEqual',
+@iamsterling/opencode2-config:test:     diff: 'simple'
+@iamsterling/opencode2-config:test:   }
+@iamsterling/opencode2-config:test: 
+@iamsterling/opencode2-config:test: test at tests/unit/web-search.test.mjs:1:1
+@iamsterling/opencode2-config:test: ✖ tests/unit/web-search.test.mjs (53.89875ms)
+@iamsterling/opencode2-config:test:   'test failed'
+web:test: ✔ web starter configuration and page source load without a product capability claim (2.416417ms)
+@iamsterling/opencode2-config:test: error: script "test:unit" exited with code 1
+@iamsterling/opencode2-config:test: error: script "test" exited with code 1
+web:test: ℹ tests 1
+web:test: ℹ suites 0
+web:test: ℹ pass 1
+web:test: ℹ fail 0
+web:test: ℹ cancelled 0
+web:test: ℹ skipped 0
+web:test: ℹ todo 0
+web:test: ℹ duration_ms 63.128833
+@repo/eslint-config:test: 
+@repo/eslint-config:test: Interrupted while running:
+@repo/eslint-config:test: 
+@repo/eslint-config:test: ⚠ tests/exports.test.mjs (tests/exports.test.mjs:1:1)
+docs:test: 
+docs:test: Interrupted while running:
+docs:test: 
+docs:test: ⚠ tests/config-load.test.mjs (tests/config-load.test.mjs:1:1)
+docs:test: ✖ tests/config-load.test.mjs (62.436959ms)
+docs:test: ℹ tests 1
+docs:test: ℹ suites 0
+docs:test: ℹ pass 0
+docs:test: ℹ fail 0
+docs:test: ℹ cancelled 1
+docs:test: ℹ skipped 0
+docs:test: ℹ todo 0
+docs:test: ℹ duration_ms 66.191584
+docs:test: 
+docs:test: ✖ failing tests:
+docs:test: 
+docs:test: test at tests/config-load.test.mjs:1:1
+docs:test: ✖ tests/config-load.test.mjs (62.436959ms)
+docs:test:   'Promise resolution is still pending but the event loop has already resolved'
+@repo/eslint-config:test: ✖ tests/exports.test.mjs (749.900917ms)
+@repo/eslint-config:test: ℹ tests 1
+@repo/eslint-config:test: ℹ suites 0
+@repo/eslint-config:test: ℹ pass 0
+@repo/eslint-config:test: ℹ fail 0
+@repo/eslint-config:test: ℹ cancelled 1
+@repo/eslint-config:test: ℹ skipped 0
+@repo/eslint-config:test: ℹ todo 0
+@repo/eslint-config:test: ℹ duration_ms 753.660625
+@repo/eslint-config:test: 
+@repo/eslint-config:test: ✖ failing tests:
+@repo/eslint-config:test: 
+@repo/eslint-config:test: test at tests/exports.test.mjs:1:1
+@repo/eslint-config:test: ✖ tests/exports.test.mjs (749.900917ms)
+@repo/eslint-config:test:   'Promise resolution is still pending but the event loop has already resolved'
+docs:test: error: script "test" exited with code 1
+@repo/eslint-config:test: error: script "test" exited with code 1
+
+ Tasks:    3 successful, 8 total
+Cached:    0 cached, 8 total
+  Time:    941ms 
+Failed:    @iamsterling/opencode2-config#test
+

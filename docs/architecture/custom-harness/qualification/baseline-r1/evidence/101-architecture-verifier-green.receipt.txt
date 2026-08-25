@@ -1,0 +1,2 @@
+exitCode: 0
+command: node --test apps/plugin/opencode2/tests/unit/architecture-verifier.test.mjs

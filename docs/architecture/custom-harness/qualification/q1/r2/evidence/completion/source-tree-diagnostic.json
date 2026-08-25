@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "custom-harness-q1-r2-source-tree-diagnostic/v1",
+  "expectedSha1": "5e77033d116402945c4115c8c3c6b8fce8ec81e8",
+  "repositoryRootSha1": "5e77033d116402945c4115c8c3c6b8fce8ec81e8",
+  "effectPackageSha1": "f9e093fc5e4c117da836f6abd5be3cdf4c12efe1",
+  "matches": [
+    {
+      "scope": "repository-root",
+      "sha": "5e77033d116402945c4115c8c3c6b8fce8ec81e8"
+    }
+  ],
+  "rule": "The retained sourceTree field is accepted only when the recomputed Git tree of an explicitly named archive scope equals it exactly."
+}

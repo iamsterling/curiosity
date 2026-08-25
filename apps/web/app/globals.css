@@ -1,13 +1,6 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #f4f0ea;
+  --foreground: #201c18;
 }
 
 html,
@@ -19,6 +12,15 @@ body {
 body {
   color: var(--foreground);
   background: var(--background);
+  background-image:
+    radial-gradient(circle at 10% 0%, rgb(255 255 255 / 80%), transparent 36%),
+    linear-gradient(rgb(105 91 73 / 4%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(105 91 73 / 4%) 1px, transparent 1px);
+  background-size:
+    auto,
+    32px 32px,
+    32px 32px;
+  font-family: var(--font-geist-sans), sans-serif;
 }
 
 * {
@@ -30,21 +32,4 @@ body {
 a {
   color: inherit;
   text-decoration: none;
-}
-
-.imgDark {
-  display: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
-
-  .imgLight {
-    display: none;
-  }
-  .imgDark {
-    display: unset;
-  }
 }

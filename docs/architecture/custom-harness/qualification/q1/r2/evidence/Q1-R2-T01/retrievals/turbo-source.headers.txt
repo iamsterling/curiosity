@@ -1,0 +1,16 @@
+HTTP/2 200 
+access-control-allow-origin: https://render.githubusercontent.com
+content-disposition: attachment; filename=turborepo-ea08facfcc9185adc1096a994408bfc9114b2164.tar.gz
+content-security-policy: default-src 'none'; style-src 'unsafe-inline'; sandbox
+content-type: application/x-gzip
+cross-origin-resource-policy: cross-origin
+etag: "3a95efbd01c0ba2c2989d5e3b22d1ebc277dff3d1f49651ab376c6d2052a2c1c"
+strict-transport-security: max-age=31536000
+vary: Authorization,Accept-Encoding
+x-content-type-options: nosniff
+x-frame-options: deny
+x-xss-protection: 1; mode=block
+date: Tue, 25 Aug 2026 00:07:23 GMT
+x-github-request-id: E6AA:3EE543:1D7AD4:2AEA7F:6A8CDCBA
+x-github-edge-region: iad
+

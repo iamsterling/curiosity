@@ -1,4 +1,5 @@
 export const WAVE_1_CAPABILITY_IDS = Object.freeze([
+  "custom-harness-vertical-slice",
   "plugin-identity-config",
   "plugin-hooks-event-capture",
   "plugin-structured-tools",
@@ -29,6 +30,7 @@ export const WAVE_1_CAPABILITY_IDS = Object.freeze([
 ]);
 
 export const WAVE_1_CAPABILITY_TITLES = Object.freeze({
+  "custom-harness-vertical-slice": "Independent harness vertical slice",
   "plugin-identity-config": "Plugin identity and agent configuration",
   "plugin-hooks-event-capture": "Context and tool observation capture",
   "plugin-structured-tools": "Ledger and native-loop tool registration",
@@ -65,30 +67,45 @@ export const WAVE_1_ASSERTION_CODES = Object.freeze({
 });
 
 export const WAVE_1_ASSERTION_TEXT = Object.freeze({
-  "validated-positive": "Positive assertion under the validated facets and declared scope.",
-  "scope-limited": "Limited assertion; the structured scope and facet states remain controlling.",
-  "validated-negative": "Negative assertion under the validated absence or fail-closed facets.",
+  "validated-positive":
+    "Positive assertion under the validated facets and declared scope.",
+  "scope-limited":
+    "Limited assertion; the structured scope and facet states remain controlling.",
+  "validated-negative":
+    "Negative assertion under the validated absence or fail-closed facets.",
 });
 
 export const WAVE_1_BLOCKER_TEXT = Object.freeze({
-  "authoritative-fencing-required": "Commit-bound authority fencing is required.",
-  "host-persistence-qualification-required": "Host persistence semantics require qualification.",
-  "live-endpoint-qualification-required": "Live endpoint state requires separate qualification.",
-  "broader-delivery-authority-required": "Broader delivery requires separate authority.",
-  "publication-review-required": "Publication requires a separate reviewed decision.",
-  "trusted-command-callback-required": "A trusted command callback is required.",
+  "authoritative-fencing-required":
+    "Commit-bound authority fencing is required.",
+  "host-persistence-qualification-required":
+    "Host persistence semantics require qualification.",
+  "live-endpoint-qualification-required":
+    "Live endpoint state requires separate qualification.",
+  "broader-delivery-authority-required":
+    "Broader delivery requires separate authority.",
+  "publication-review-required":
+    "Publication requires a separate reviewed decision.",
+  "trusted-command-callback-required":
+    "A trusted command callback is required.",
   "durable-replay-required": "Durable replay protection is required.",
   "composition-authority-required": "Composition requires separate authority.",
   "ledger-fencing-required": "Ledger schema and fencing gates are required.",
   "unresolved-design-decisions": "Unresolved design decisions remain blocking.",
-  "implementation-authority-required": "Implementation requires separate authority.",
-  "coherent-candidate-required": "A coherent replacement candidate is required.",
-  "platform-qualification-required": "Exact platform qualification is required.",
-  "product-definition-required": "Product requirements and qualification are required.",
-  "source-requalification-required": "Changed source requires a new exact artifact qualification.",
+  "implementation-authority-required":
+    "Implementation requires separate authority.",
+  "coherent-candidate-required":
+    "A coherent replacement candidate is required.",
+  "platform-qualification-required":
+    "Exact platform qualification is required.",
+  "product-definition-required":
+    "Product requirements and qualification are required.",
+  "source-requalification-required":
+    "Changed source requires a new exact artifact qualification.",
 });
 
 export const WAVE_1_WORKSPACE_ROLES = Object.freeze({
+  harness: "Independent authority harness workspace",
   plugin: "Plugin package workspace",
   runtime: "Runtime package workspace",
   "starter-app": "Starter application workspace",
@@ -98,13 +115,19 @@ export const WAVE_1_WORKSPACE_ROLES = Object.freeze({
 
 export const WAVE_1_POLICY = Object.freeze({
   code: "wave-2-verification-v1",
-  authority: "This report describes validated repository state; it grants no lifecycle or release authority.",
-  current: "Current requires implemented local source, sufficient local evidence, local decision authority, delivery, and applicable local qualification for the declared scope.",
-  experimental: "Experimental is bounded to conditional, internal, or test-only delivery and cannot establish a consequential claim.",
-  deferred: "Deferred is disabled with an explicit blocker and a NO-GO verdict.",
-  retired: "Retired is a guarded negative assertion that a former surface is absent.",
+  authority:
+    "This report describes validated repository state; it grants no lifecycle or release authority.",
+  current:
+    "Current requires implemented local source, sufficient local evidence, local decision authority, delivery, and applicable local qualification for the declared scope.",
+  experimental:
+    "Experimental is bounded to conditional, internal, or test-only delivery and cannot establish a consequential claim.",
+  deferred:
+    "Deferred is disabled with an explicit blocker and a NO-GO verdict.",
+  retired:
+    "Retired is a guarded negative assertion that a former surface is absent.",
   unknown: "Unknown or contradictory consequential state fails closed.",
-  consequential: "Wave 2 mechanically forbids publication, production enablement or readiness, and deployment enablement or readiness.",
+  consequential:
+    "Wave 2 mechanically forbids publication, production enablement or readiness, and deployment enablement or readiness.",
 });
 
 export const M7_HISTORICAL_ACCEPTANCE = Object.freeze({
@@ -112,7 +135,8 @@ export const M7_HISTORICAL_ACCEPTANCE = Object.freeze({
   sha256: "8ac26ef942dba0eccfd85742db04ee1ef843b8b9445d5c5b17e5a3eb601206cf",
   indexBlob: "1f42ab03014dfa82c3076e4ad8d1f169187443b0",
   sourceCommit: "0dfc71de02393da9aad37bc753724886c00e323c",
-  artifactSha256: "3aa8e5ba6660cafefb3d3121ba1e652346f4019a78922a0ec689b04b32e06642",
+  artifactSha256:
+    "3aa8e5ba6660cafefb3d3121ba1e652346f4019a78922a0ec689b04b32e06642",
 });
 
 export const WAVE_1_RATIONALE_CODES = Object.freeze({
@@ -130,12 +154,19 @@ export const WAVE_1_HISTORICAL_SNAPSHOT = Object.freeze({
   baselineBlob: "f5313b798b1dbf8e9c56bb8ffc4136d7453b7755",
 });
 
-export const README_TEMPLATE_SHA256 = "86a7a44ff69620968a89b3cb0fb740e82fa6677df9dabcf2dd258b3a0f5699d8";
+export const README_TEMPLATE_SHA256 =
+  "86a7a44ff69620968a89b3cb0fb740e82fa6677df9dabcf2dd258b3a0f5699d8";
 
 export const SDK_ACCEPTANCE_RECEIPT = Object.freeze({
   path: "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-r4-acceptance-receipt.json",
   sha256: "24e9d7418d025417037254470e4edc42c90869bfa17e9f96e5421918ba4a95e2",
-  profiles: Object.freeze(["normal", "panic", "allocationFailure", "queueFailure", "controlFlowObservation"]),
+  profiles: Object.freeze([
+    "normal",
+    "panic",
+    "allocationFailure",
+    "queueFailure",
+    "controlFlowObservation",
+  ]),
   executableVerdicts: Object.freeze([
     "promiseOutcomesObserved",
     "parityBytesMatched",
@@ -156,9 +187,21 @@ export const SDK_ACCEPTANCE_RECEIPT = Object.freeze({
 
 export const SDK_STATUS_ANCHORS = Object.freeze([
   ["observation", "receipt", `${SDK_ACCEPTANCE_RECEIPT.path}#reproduction`],
-  ["observation", "decision", "apps/runtime/docs/decisions/0060-closed-sdk-v2-tool-and-environment-policy.md#Decision"],
+  [
+    "observation",
+    "decision",
+    "apps/runtime/docs/decisions/0060-closed-sdk-v2-tool-and-environment-policy.md#Decision",
+  ],
   ["evidence", "receipt", `${SDK_ACCEPTANCE_RECEIPT.path}#reproduction`],
-  ["evidence", "decision", "apps/plugin/opencode2/docs/decisions/0030-closed-sdk-v2-tool-policy-companion.md#Decision"],
-  ["authority", "decision", "apps/runtime/docs/decisions/0060-closed-sdk-v2-tool-and-environment-policy.md#Status"],
+  [
+    "evidence",
+    "decision",
+    "apps/plugin/opencode2/docs/decisions/0030-closed-sdk-v2-tool-policy-companion.md#Decision",
+  ],
+  [
+    "authority",
+    "decision",
+    "apps/runtime/docs/decisions/0060-closed-sdk-v2-tool-and-environment-policy.md#Status",
+  ],
   ["qualification", "receipt", `${SDK_ACCEPTANCE_RECEIPT.path}#reproduction`],
 ]);

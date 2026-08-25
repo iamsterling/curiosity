@@ -1,0 +1,48 @@
+{
+  "name": "@curiosity/custom-harness",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "curiosity-harness": "./dist/tui.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./thread-projections": {
+      "types": "./dist/thread-projections.d.ts",
+      "import": "./dist/thread-projections.js"
+    },
+    "./thread-projections/node": {
+      "types": "./dist/thread-projections-node.d.ts",
+      "import": "./dist/thread-projections-node.js"
+    }
+  },
+  "scripts": {
+    "build:supervisor": "cargo build --manifest-path native/supervisor/Cargo.toml --locked",
+    "build": "bun run build:supervisor && tsc -p tsconfig.build.json",
+    "check-types": "tsc --noEmit",
+    "lint": "cargo fmt --manifest-path native/supervisor/Cargo.toml --check && cargo clippy --manifest-path native/supervisor/Cargo.toml --locked --all-targets -- -D warnings && node tools/verify-architecture.mjs",
+    "test": "bun run build:supervisor && cargo test --manifest-path native/supervisor/Cargo.toml --locked && bun test tests/*.test.ts",
+    "tui": "bun run build:supervisor && bun src/tui.ts",
+    "verify": "bun run check-types && bun run lint && bun run build && bun run test"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "3.0.113",
+    "@ai-sdk/google": "3.0.113",
+    "@ai-sdk/openai": "3.0.101",
+    "@ai-sdk/openai-compatible": "2.0.72",
+    "@openai-oauth/ai-sdk": "2.0.0",
+    "@openai-oauth/local": "2.0.0",
+    "ai": "6.0.266",
+    "effect": "4.0.0-rc.111",
+    "marked": "12.0.2",
+    "marked-terminal": "7.3.0"
+  },
+  "devDependencies": {
+    "@types/bun": "1.3.14",
+    "typescript": "5.9.2"
+  }
+}

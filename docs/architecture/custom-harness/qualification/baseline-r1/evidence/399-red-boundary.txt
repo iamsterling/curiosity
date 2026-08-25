@@ -1,0 +1,4 @@
+preparationExitCode: 0
+redTestExitCode: 1
+restoreExitCode: 0
+compareExitCode: 0

@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "custom-harness-q1-r3-inventory-comparison/v1",
+  "before": "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/docs/architecture/custom-harness/qualification/baseline-r1/evidence/010-generated-before.json",
+  "after": "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/docs/architecture/custom-harness/qualification/baseline-r1/evidence/091-generated-after.json",
+  "beforeRestorableSha256": "c943d7f95ed2b450ae832404018c15a3fcda4b7781307c11d63943002cc8d113",
+  "afterRestorableSha256": "c943d7f95ed2b450ae832404018c15a3fcda4b7781307c11d63943002cc8d113",
+  "rootsEqual": false,
+  "restorableFieldsEqual": true,
+  "excludedFromExactRestorationClaim": [
+    "atimeNs",
+    "birthtimeNs",
+    "ctimeNs",
+    "dev",
+    "ino",
+    "nlink",
+    "parent-directory metadata"
+  ]
+}

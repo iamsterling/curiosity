@@ -1,0 +1,49 @@
+✖ architecture verifier accepts the single beta-18138 Plugin.define entrypoint (42.883375ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 92.357
+
+✖ failing tests:
+
+test at apps/plugin/opencode2/tests/unit/architecture-verifier.test.mjs:10:1
+✖ architecture verifier accepts the single beta-18138 Plugin.define entrypoint (42.883375ms)
+  Error: Command failed: /Users/sterling/.nvm/versions/node/v24.18.0/bin/node tools/verify-architecture.mjs
+  node:internal/modules/run_main:107
+      triggerUncaughtException(
+      ^
+  
+  AssertionError [ERR_ASSERTION]: the entrypoint must define one Promise compatibility setup and one Effect host plugin
+  
+  1 !== 2
+  
+      at file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tools/verify-architecture.mjs:13:8 {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+  
+  Node.js v24.18.0
+  
+      at genericNodeError (node:internal/errors:985:15)
+      at wrappedFn (node:internal/errors:539:14)
+      at ChildProcess.exithandler (node:child_process:417:12)
+      at ChildProcess.emit (node:events:509:28)
+      at maybeClose (node:internal/child_process:1124:16)
+      at Socket.<anonymous> (node:internal/child_process:481:11)
+      at Socket.emit (node:events:509:28)
+      at Pipe.<anonymous> (node:net:351:12) {
+    code: 1,
+    killed: false,
+    signal: null,
+    cmd: '/Users/sterling/.nvm/versions/node/v24.18.0/bin/node tools/verify-architecture.mjs',
+    stdout: '',
+    stderr: "node:internal/modules/run_main:107\n    triggerUncaughtException(\n    ^\n\nAssertionError [ERR_ASSERTION]: the entrypoint must define one Promise compatibility setup and one Effect host plugin\n\n1 !== 2\n\n    at file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tools/verify-architecture.mjs:13:8 {\n  generatedMessage: false,\n  code: 'ERR_ASSERTION',\n  actual: 1,\n  expected: 2,\n  operator: 'strictEqual',\n  diff: 'simple'\n}\n\nNode.js v24.18.0\n"
+  }

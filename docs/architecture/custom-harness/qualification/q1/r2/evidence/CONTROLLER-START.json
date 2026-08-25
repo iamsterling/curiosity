@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "custom-harness-q1-r2-controller-start/v1",
+  "startedUtc": "2026-08-25T00:07:10.479Z",
+  "cwd": "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab",
+  "argv": [
+    "/Users/sterling/.nvm/versions/node/v24.18.0/bin/node",
+    "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/docs/architecture/custom-harness/qualification/q1/r2/probes/execute-r2.mjs"
+  ],
+  "executablePath": "/Users/sterling/.nvm/versions/node/v24.18.0/bin/node",
+  "executableRealpath": "/Users/sterling/.nvm/versions/node/v24.18.0/bin/node",
+  "executableSha256": "ee6fb0e015284d83a91e8ec5213f43a157f8a392b58555301682892ba928c04a",
+  "environment": {
+    "mode": "env-i",
+    "credentialScrubbed": true,
+    "entries": [
+      "__CF_USER_TEXT_ENCODING=0x1F5:0x0:0x0",
+      "HOME=/var/empty",
+      "LC_ALL=C",
+      "PATH=/usr/bin:/bin",
+      "TMPDIR=/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/tmp",
+      "TZ=UTC"
+    ],
+    "sha256": "bdd312bb9a8422cbfb309ff8352bb06443a66776962ae14b20cc6ce5a1f45a14"
+  },
+  "authorizationSha256": "5259595a5dd60212a67b9e1d154d3c5f9ce743107ac608d79683d0c574d76b2d",
+  "planSha256": "ab0b90385c7d1e4247191313488428ceb941f5734ed35d12254dfef901980ff7",
+  "recoveryObservation": {
+    "scratchAbsentBeforeStart": true,
+    "priorPersistentStateContainedSetupInputsAndProbesOnly": true,
+    "priorEvidenceDirectoryAbsent": true
+  }
+}

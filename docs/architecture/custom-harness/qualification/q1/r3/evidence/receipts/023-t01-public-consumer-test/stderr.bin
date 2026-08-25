@@ -1,0 +1,8 @@
+
+effect-consumer.test.ts:
+(pass) Q1-R3-T01 corrected public consumer remains one runtime [2.36ms]
+
+ 1 pass
+ 0 fail
+ 7 expect() calls
+Ran 1 test across 1 file. [23.00ms]

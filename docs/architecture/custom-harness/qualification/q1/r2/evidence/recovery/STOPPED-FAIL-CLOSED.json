@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "custom-harness-q1-r2-recovery-stopped/v1",
+  "verdict": "STOPPED_FAIL_CLOSED",
+  "stoppedUtc": "2026-08-25T00:38:39.097Z",
+  "failure": "Error: recovery command failed: recovery-t01-identity-audit\n    at run (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/docs/architecture/custom-harness/qualification/q1/r2/probes/execute-r2-recovery.mjs:96:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/docs/architecture/custom-harness/qualification/q1/r2/probes/execute-r2-recovery.mjs:463:3",
+  "recoveryReceipts": 18,
+  "scratchAbsent": true,
+  "noI1": true
+}

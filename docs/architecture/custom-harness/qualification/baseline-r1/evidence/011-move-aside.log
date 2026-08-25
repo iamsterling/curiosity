@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "custom-harness-q1-r3-move-aside/v1",
+  "repositoryDevice": "16777234",
+  "scratchDevice": "16777234",
+  "sameFilesystem": true,
+  "actions": [
+    {
+      "path": ".turbo",
+      "action": "confirmed-absent"
+    },
+    {
+      "path": "apps/docs/.next",
+      "action": "renamed-to-backup"
+    },
+    {
+      "path": "apps/docs/.turbo",
+      "action": "renamed-to-backup"
+    },
+    {
+      "path": "apps/docs/next-env.d.ts",
+      "action": "confirmed-absent"
+    },
+    {
+      "path": "apps/web/.next",
+      "action": "renamed-to-backup"
+    },
+    {
+      "path": "apps/web/.turbo",
+      "action": "renamed-to-backup"
+    },
+    {
+      "path": "apps/web/next-env.d.ts",
+      "action": "confirmed-absent"
+    },
+    {
+      "path": "apps/plugin/opencode2/.turbo",
+      "action": "renamed-to-backup"
+    },
+    {
+      "path": "apps/plugin/opencode2/dist",
+      "action": "renamed-to-backup"
+    },
+    {
+      "path": "apps/plugin/opencode2/assets/manifest.json",
+      "action": "renamed-and-seeded-working-copy"
+    },
+    {
+      "path": "apps/runtime/.turbo",
+      "action": "renamed-to-backup"
+    },
+    {
+      "path": "apps/runtime/native/target",
+      "action": "renamed-to-backup"
+    },
+    {
+      "path": "packages/eslint-config/.turbo",
+      "action": "renamed-to-backup"
+    },
+    {
+      "path": "packages/typescript-config/.turbo",
+      "action": "renamed-to-backup"
+    },
+    {
+      "path": "packages/ui/.turbo",
+      "action": "renamed-to-backup"
+    },
+    {
+      "path": "packages/ui/dist",
+      "action": "renamed-to-backup"
+    },
+    {
+      "path": "apps/runtime/src/turbo-future-source-fixture.ts",
+      "action": "confirmed-absent"
+    }
+  ]
+}

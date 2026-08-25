@@ -1,0 +1,23 @@
+
+   • Packages in scope: @curiosity/runtime, @iamsterling/opencode2-config, @repo/eslint-config, @repo/typescript-config, @repo/ui, docs, web
+   • Running lint in 7 packages
+   • Remote caching disabled, using shared worktree cache
+
+@repo/ui:lint: cache bypass, force executing 2099048dbdec635e
+@curiosity/runtime:lint: cache bypass, force executing 60f2758b97e7d707
+@iamsterling/opencode2-config:lint: cache bypass, force executing 852998c203ff564d
+@curiosity/runtime:lint: $ (if [ -n "${CARGO_FMT:-}" ]; then "$CARGO_FMT" --manifest-path native/Cargo.toml --check; else cargo fmt --manifest-path native/Cargo.toml --check; fi) && (if [ -n "${CARGO_CLIPPY:-}" ]; then "$CARGO_CLIPPY" clippy --manifest-path native/Cargo.toml --locked --all-targets -- -D warnings; else cargo clippy --manifest-path native/Cargo.toml --locked --all-targets -- -D warnings; fi)
+@repo/ui:lint: $ eslint . --max-warnings 0
+@iamsterling/opencode2-config:lint: $ eslint src --max-warnings=0 && node tools/verify-architecture.mjs
+@curiosity/runtime:lint:     Checking curiosity-runtime-native v0.0.0 (/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/runtime/native)
+@curiosity/runtime:lint:     Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.49s
+docs:lint: cache bypass, force executing a46461fcbd59089c
+web:lint: cache bypass, force executing 5a8ce61c87af7557
+docs:lint: $ eslint --max-warnings 0
+web:lint: $ eslint --max-warnings 0
+@iamsterling/opencode2-config:lint: Architecture verified: 68 source files, 64 assets, Effect host entrypoint
+
+ Tasks:    5 successful, 5 total
+Cached:    0 cached, 5 total
+  Time:    1.875s 
+

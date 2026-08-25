@@ -1,0 +1,2 @@
+$ biome format src package.json tsconfig.json tsconfig.build.json biome.json assets/manifest.json
+Checked 71 files in 13ms. No fixes applied.

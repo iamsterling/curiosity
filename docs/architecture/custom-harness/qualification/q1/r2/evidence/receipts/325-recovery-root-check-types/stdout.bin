@@ -1,0 +1,25 @@
+
+   • Packages in scope: @curiosity/runtime, @iamsterling/opencode2-config, @repo/eslint-config, @repo/typescript-config, @repo/ui, docs, web
+   • Running check-types in 7 packages
+   • Remote caching disabled, using shared worktree cache
+
+@curiosity/runtime:check-types: cache bypass, force executing ca0cadf27c307430
+@iamsterling/opencode2-config:check-types: cache bypass, force executing 1f748fc992dc250f
+@repo/ui:check-types: cache bypass, force executing 7462c7f2ba7f44e5
+@curiosity/runtime:check-types: $ tsc --noEmit
+@iamsterling/opencode2-config:check-types: $ bun run typecheck
+@repo/ui:check-types: $ tsc --noEmit
+@iamsterling/opencode2-config:check-types: $ tsc --noEmit
+docs:check-types: cache bypass, force executing 33f74bc74e3efbbe
+web:check-types: cache bypass, force executing c31c4a88ad8e00d2
+docs:check-types: $ next typegen && tsc --noEmit
+web:check-types: $ next typegen && tsc --noEmit
+web:check-types: Generating route types...
+docs:check-types: Generating route types...
+docs:check-types: ✓ Types generated successfully
+web:check-types: ✓ Types generated successfully
+
+ Tasks:    5 successful, 5 total
+Cached:    0 cached, 5 total
+  Time:    1.433s 
+

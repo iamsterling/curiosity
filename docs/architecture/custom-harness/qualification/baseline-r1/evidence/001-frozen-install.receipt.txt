@@ -1,0 +1,6 @@
+command: env -i ... bun --no-env-file install --frozen-lockfile --ignore-scripts
+exitCode: 0
+bunLockBeforeSha256: d27a3bec8e08463f711cd3ca8606910a6ae4038eb5fe78e515078cc020cc11ee
+bunLockAfterSha256: d27a3bec8e08463f711cd3ca8606910a6ae4038eb5fe78e515078cc020cc11ee
+credentialEnvironment: absent
+lifecycleScripts: disabled

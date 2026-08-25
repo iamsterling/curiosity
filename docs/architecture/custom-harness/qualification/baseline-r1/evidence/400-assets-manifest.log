@@ -1,0 +1,2 @@
+$ node tools/generate-asset-manifest.mjs && biome format --write assets/manifest.json
+Formatted 1 file in 6ms. Fixed 1 file.

@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "custom-harness-q1-r2-restore/v1",
+  "actions": [
+    {
+      "path": "apps/runtime/src/turbo-future-source-fixture.ts",
+      "action": "restored-absence"
+    },
+    {
+      "path": "packages/ui/dist",
+      "action": "retained-generated-output"
+    },
+    {
+      "path": "packages/ui/dist",
+      "action": "restored-preexisting-output"
+    },
+    {
+      "path": "packages/ui/.turbo",
+      "action": "retained-generated-output"
+    },
+    {
+      "path": "packages/ui/.turbo",
+      "action": "restored-preexisting-output"
+    },
+    {
+      "path": "packages/typescript-config/.turbo",
+      "action": "retained-generated-output"
+    },
+    {
+      "path": "packages/typescript-config/.turbo",
+      "action": "restored-preexisting-output"
+    },
+    {
+      "path": "packages/eslint-config/.turbo",
+      "action": "retained-generated-output"
+    },
+    {
+      "path": "packages/eslint-config/.turbo",
+      "action": "restored-preexisting-output"
+    },
+    {
+      "path": "apps/runtime/native/target",
+      "action": "retained-generated-output"
+    },
+    {
+      "path": "apps/runtime/native/target",
+      "action": "restored-preexisting-output"
+    },
+    {
+      "path": "apps/runtime/.turbo",
+      "action": "retained-generated-output"
+    },
+    {
+      "path": "apps/runtime/.turbo",
+      "action": "restored-preexisting-output"
+    },
+    {
+      "path": "apps/plugin/opencode2/assets/manifest.json",
+      "action": "retained-generated-output"
+    },
+    {
+      "path": "apps/plugin/opencode2/assets/manifest.json",
+      "action": "restored-preexisting-output"
+    },
+    {
+      "path": "apps/plugin/opencode2/dist",
+      "action": "restored-preexisting-output"
+    },
+    {
+      "path": "apps/plugin/opencode2/.turbo",
+      "action": "retained-generated-output"
+    },
+    {
+      "path": "apps/plugin/opencode2/.turbo",
+      "action": "restored-preexisting-output"
+    },
+    {
+      "path": "apps/web/next-env.d.ts",
+      "action": "retained-generated-output"
+    },
+    {
+      "path": "apps/web/next-env.d.ts",
+      "action": "restored-absence"
+    },
+    {
+      "path": "apps/web/.turbo",
+      "action": "retained-generated-output"
+    },
+    {
+      "path": "apps/web/.turbo",
+      "action": "restored-preexisting-output"
+    },
+    {
+      "path": "apps/web/.next",
+      "action": "retained-generated-output"
+    },
+    {
+      "path": "apps/web/.next",
+      "action": "restored-preexisting-output"
+    },
+    {
+      "path": "apps/docs/next-env.d.ts",
+      "action": "retained-generated-output"
+    },
+    {
+      "path": "apps/docs/next-env.d.ts",
+      "action": "restored-absence"
+    },
+    {
+      "path": "apps/docs/.turbo",
+      "action": "retained-generated-output"
+    },
+    {
+      "path": "apps/docs/.turbo",
+      "action": "restored-preexisting-output"
+    },
+    {
+      "path": "apps/docs/.next",
+      "action": "retained-generated-output"
+    },
+    {
+      "path": "apps/docs/.next",
+      "action": "restored-preexisting-output"
+    },
+    {
+      "path": ".turbo",
+      "action": "restored-absence"
+    }
+  ],
+  "generatedOutputsRetainedUntilScratchCleanup": true
+}

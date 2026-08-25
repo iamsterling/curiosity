@@ -1,0 +1,5 @@
+# Postfailure audit notes
+
+- The first postfailure audit created receipt directory `405-postfailure-scratch-absent`, then the receipt wrapper rejected the nonexistent macOS path `/usr/bin/test` before spawning a child or writing a receipt. The corrected command used `/bin/test`; receipts 415 and 425 retain its passing output. The empty directory is preserved rather than hidden.
+- The second audit completed receipts 410-415, then its controller rejected `rootsEqual: false`. The retained comparison proves this field includes metadata explicitly excluded from the exact-restoration claim. The controller was corrected to require equal root state/entry-count shape and equal configured restorable fields. The completed audit is `FINAL-BOUNDARY.json`; both restorable SHA-256 values are `5ed4877ba22c5d14087c8d5a497bedff4666b5db24500241d3f41ef41f405721`.
+- These postfailure audit defects occurred after the mandatory root-test failure and do not change the binary `STOPPED_FAIL_CLOSED` verdict. No product command was spawned by the first defect, and all structured receipt stream hashes validate.

@@ -1,0 +1,87 @@
+▶ verification inventory fails closed for a new package and an unclassified script or export
+  ✔ new package (95.294ms)
+  ✔ new nested package (65.056041ms)
+  ✔ script (130.420541ms)
+  ✔ export (119.897167ms)
+✔ verification inventory fails closed for a new package and an unclassified script or export (413.064208ms)
+▶ verification inventory fails closed for a new test, a skipped expected profile, and Cargo drift
+  ✔ test (220.604125ms)
+  ✔ profile mapping (246.628ms)
+  ✔ crate (143.518083ms)
+  ✔ implicit Cargo build script (143.935167ms)
+  ✔ explicit Cargo package build script (150.262833ms)
+✔ verification inventory fails closed for a new test, a skipped expected profile, and Cargo drift (905.791792ms)
+▶ ABI and workflow action, condition, and aggregate drift fail closed
+  ✔ action (235.120458ms)
+  ✔ condition (252.056541ms)
+  ✔ aggregate (243.242375ms)
+  ✔ write-all remains forbidden after an inventory hash refresh (294.257834ms)
+  ✔ job write permission remains forbidden after an inventory hash refresh (236.833541ms)
+  ✔ required aggregate omission remains forbidden after an inventory hash refresh (252.195958ms)
+  ✔ an explicitly inventoried approved job read scope remains allowed (244.853084ms)
+✔ ABI and workflow action, condition, and aggregate drift fail closed (1760.039458ms)
+▶ dependency, Cargo target, and required record additions and omissions fail closed
+  ✔ external package dependency (110.642541ms)
+  ✔ workspace package dependency (134.042375ms)
+  ✔ inventoried mutable dependency protocol (120.073084ms)
+  ✔ override metadata (122.140125ms)
+  ✔ bundled dependency metadata (124.458916ms)
+  ✔ peer dependency metadata (118.830458ms)
+  ✔ package-manager override metadata (122.818291ms)
+  ✔ new trusted dependency requires explicit review (118.243375ms)
+  ✔ a lifecycle hook cannot be laundered through a scripts inventory refresh (126.443458ms)
+  ✔ an inventoried but unreviewed trusted dependency remains forbidden (146.867584ms)
+  ✔ unsafe patch protocols remain forbidden after review (127.794ms)
+  ✔ implicit Cargo bin (151.551667ms)
+  ✔ releaseArtifacts omission (0.664083ms)
+  ✔ crossPackageContracts omission (0.362ms)
+✔ dependency, Cargo target, and required record additions and omissions fail closed (1526.149625ms)
+▶ Bun execution policy disables implicit trust and every CI install ignores scripts
+  ✔ default-trusted msgpackr-extract cannot be laundered through reviewed inventory metadata (109.875291ms)
+  ✔ workflow flag removal remains forbidden after an inventory hash refresh (246.966625ms)
+  ✔ Bun install aliases and wrappers remain forbidden after a workflow hash refresh (1199.214833ms)
+✔ Bun execution policy disables implicit trust and every CI install ignores scripts (1557.225334ms)
+✔ Bun and npm automatic lifecycle authority is inventoried separately from generic scripts (0.347417ms)
+✔ npm executes standalone prestart before its implicit server.js start (177.103125ms)
+▶ implicit npm execution surfaces cannot be laundered through inventory refreshes
+  ✔ prestart plus implicit server.js start (137.561125ms)
+  ✔ implicit binding.gyp install (137.088833ms)
+✔ implicit npm execution surfaces cannot be laundered through inventory refreshes (275.300875ms)
+✔ clean frozen Bun installs ignore lifecycle scripts even for a default-trusted package name (24.554792ms)
+✔ required workspace verification lane covers only starter and configuration workspaces once (0.545542ms)
+▶ required profiles close over their command graph and legacy orphan surfaces make no green claim
+  ✔ removing a required script edge cannot be laundered through an inventory refresh (246.777875ms)
+  ✔ manual Darwin real-host work cannot leak into portable or required command graphs (252.678083ms)
+✔ required profiles close over their command graph and legacy orphan surfaces make no green claim (499.969541ms)
+▶ verification tool additions and byte drift fail closed
+  ✔ new tool (153.1185ms)
+  ✔ network gate drift (161.750291ms)
+  ▶ plugin verification wrapper plans and entrypoint are code-owned beyond self-hash
+    ✔ remove portable verification (161.657708ms)
+    ✔ reverse Darwin plan (157.933416ms)
+    ✔ append Darwin command (160.538125ms)
+    ✔ bypass injected executor (161.894958ms)
+    ✔ bypass CLI entrypoint (152.177667ms)
+  ✔ plugin verification wrapper plans and entrypoint are code-owned beyond self-hash (794.942375ms)
+✔ verification tool additions and byte drift fail closed (1110.323125ms)
+✔ bounded Turbo source globs cannot be weakened by refreshing the task inventory (243.410959ms)
+✔ runtime profiles cannot be conflated with M7 or SDK v2 (0.500917ms)
+✔ query types resolve to the authoritative implementation rather than a handwritten declaration (2.219917ms)
+✔ current runtime documentation maps the historical query declaration range to authoritative symbols (1.220959ms)
+✔ repository exposes an executable staged plugin and runtime contract (2.829416ms)
+✔ registry smoke builds the plugin before executing installed setup evidence (0.270833ms)
+✔ versioned runtime compatibility evidence and ABI profiles are exact (1.918917ms)
+✔ verification inventory is separate from capability lifecycle status (141.386958ms)
+✔ M7 status is split between immutable history and the unqualified source candidate (0.812ms)
+✔ Linux network denial is fail-closed and enforces the exact Rust pin (0.308625ms)
+✔ Turbo test and verify hashes include repository verification and runtime contract inputs exactly once (241.646459ms)
+✔ the required workspace command reaches honest starter syntax and package contract checks (97.592792ms)
+ℹ tests 69
+ℹ suites 0
+ℹ pass 69
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 9231.002708
+verification inventory passed (9 packages, 10 verification tools, 97 test files, 1 workflow; 76 required test files; 0 unexecuted required tests)

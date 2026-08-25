@@ -1,0 +1,6 @@
+effect-consumer-probe.ts(62,3): error TS2775: Assertions require every name in the call target to be declared with an explicit type annotation.
+effect-consumer-probe.ts(63,3): error TS2775: Assertions require every name in the call target to be declared with an explicit type annotation.
+effect-consumer-probe.ts(64,3): error TS2775: Assertions require every name in the call target to be declared with an explicit type annotation.
+effect-consumer-probe.ts(65,3): error TS2775: Assertions require every name in the call target to be declared with an explicit type annotation.
+effect-consumer-probe.ts(67,3): error TS2775: Assertions require every name in the call target to be declared with an explicit type annotation.
+effect-consumer-probe.ts(76,3): error TS2775: Assertions require every name in the call target to be declared with an explicit type annotation.

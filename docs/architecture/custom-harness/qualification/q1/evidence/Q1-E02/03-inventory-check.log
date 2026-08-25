@@ -1,0 +1,98 @@
+COMMAND: /Users/sterling/.nvm/versions/node/v24.18.0/bin/bun --no-install --no-env-file run inventory:check
+START_UTC=2026-08-24T15:44:31Z
+BUN=1.3.14
+BUN_REVISION=1.3.14+0d9b296af
+NODE=v24.18.0
+RUSTC=rustc 1.97.1 (8bab26f4f 2026-07-14)
+CARGO=cargo 1.97.1 (c980f4866 2026-06-30)
+ENV_CONTROLS=credential-empty HOME/TMP/XDG scratch; no-install; no-env-file; Cargo offline; Turbo force/telemetry/notifier controls
+$ node --test --test-concurrency=1 tools/verification/*.test.mjs && node tools/verification/inventory.mjs
+▶ verification inventory fails closed for a new package and an unclassified script or export
+  ✔ new package (83.143625ms)
+  ✔ new nested package (73.504792ms)
+  ✔ script (164.622458ms)
+  ✔ export (155.616417ms)
+✔ verification inventory fails closed for a new package and an unclassified script or export (480.080875ms)
+▶ verification inventory fails closed for a new test, a skipped expected profile, and Cargo drift
+  ✔ test (283.720458ms)
+  ✔ profile mapping (297.620625ms)
+  ✔ crate (194.230583ms)
+  ✔ implicit Cargo build script (173.40875ms)
+  ✔ explicit Cargo package build script (179.019042ms)
+✔ verification inventory fails closed for a new test, a skipped expected profile, and Cargo drift (1128.817375ms)
+▶ ABI and workflow action, condition, and aggregate drift fail closed
+  ✔ action (298.196458ms)
+  ✔ condition (296.939875ms)
+  ✔ aggregate (299.494ms)
+  ✔ write-all remains forbidden after an inventory hash refresh (282.475584ms)
+  ✔ job write permission remains forbidden after an inventory hash refresh (296.291125ms)
+  ✔ required aggregate omission remains forbidden after an inventory hash refresh (301.061167ms)
+  ✔ an explicitly inventoried approved job read scope remains allowed (287.170125ms)
+✔ ABI and workflow action, condition, and aggregate drift fail closed (2063.039292ms)
+▶ dependency, Cargo target, and required record additions and omissions fail closed
+  ✔ external package dependency (163.494125ms)
+  ✔ workspace package dependency (150.04075ms)
+  ✔ inventoried mutable dependency protocol (154.975167ms)
+  ✔ override metadata (152.267167ms)
+  ✔ bundled dependency metadata (159.653834ms)
+  ✔ peer dependency metadata (151.056875ms)
+  ✔ package-manager override metadata (149.96175ms)
+  ✔ new trusted dependency requires explicit review (154.60675ms)
+  ✔ a lifecycle hook cannot be laundered through a scripts inventory refresh (165.169917ms)
+  ✔ an inventoried but unreviewed trusted dependency remains forbidden (149.26875ms)
+  ✔ unsafe patch protocols remain forbidden after review (153.013791ms)
+  ✔ implicit Cargo bin (191.122625ms)
+  ✔ releaseArtifacts omission (0.683ms)
+  ✔ crossPackageContracts omission (0.370083ms)
+✔ dependency, Cargo target, and required record additions and omissions fail closed (1896.890042ms)
+▶ Bun execution policy disables implicit trust and every CI install ignores scripts
+  ✔ default-trusted msgpackr-extract cannot be laundered through reviewed inventory metadata (146.445833ms)
+  ✔ workflow flag removal remains forbidden after an inventory hash refresh (296.026833ms)
+  ✔ Bun install aliases and wrappers remain forbidden after a workflow hash refresh (1444.274958ms)
+✔ Bun execution policy disables implicit trust and every CI install ignores scripts (1887.866917ms)
+✔ Bun and npm automatic lifecycle authority is inventoried separately from generic scripts (0.299ms)
+✔ npm executes standalone prestart before its implicit server.js start (165.122833ms)
+▶ implicit npm execution surfaces cannot be laundered through inventory refreshes
+  ✔ prestart plus implicit server.js start (153.460833ms)
+  ✔ implicit binding.gyp install (155.790667ms)
+✔ implicit npm execution surfaces cannot be laundered through inventory refreshes (310.03525ms)
+✔ clean frozen Bun installs ignore lifecycle scripts even for a default-trusted package name (31.372833ms)
+✔ required workspace verification lane covers only starter and configuration workspaces once (0.503333ms)
+▶ required profiles close over their command graph and legacy orphan surfaces make no green claim
+  ✔ removing a required script edge cannot be laundered through an inventory refresh (289.5325ms)
+  ✔ manual Darwin real-host work cannot leak into portable or required command graphs (284.682833ms)
+✔ required profiles close over their command graph and legacy orphan surfaces make no green claim (574.665833ms)
+▶ verification tool additions and byte drift fail closed
+  ✔ new tool (181.865667ms)
+  ✔ network gate drift (192.957959ms)
+  ▶ plugin verification wrapper plans and entrypoint are code-owned beyond self-hash
+    ✔ remove portable verification (190.815917ms)
+    ✔ reverse Darwin plan (203.666458ms)
+    ✔ append Darwin command (183.44775ms)
+    ✔ bypass injected executor (201.633125ms)
+    ✔ bypass CLI entrypoint (196.991417ms)
+  ✔ plugin verification wrapper plans and entrypoint are code-owned beyond self-hash (977.305667ms)
+✔ verification tool additions and byte drift fail closed (1363.264125ms)
+✔ bounded Turbo source globs cannot be weakened by refreshing the task inventory (286.377375ms)
+✔ runtime profiles cannot be conflated with M7 or SDK v2 (0.56625ms)
+✔ query types resolve to the authoritative implementation rather than a handwritten declaration (2.490583ms)
+✔ current runtime documentation maps the historical query declaration range to authoritative symbols (1.140625ms)
+✔ repository exposes an executable staged plugin and runtime contract (2.784459ms)
+✔ registry smoke builds the plugin before executing installed setup evidence (0.2695ms)
+✔ versioned runtime compatibility evidence and ABI profiles are exact (1.792458ms)
+✔ verification inventory is separate from capability lifecycle status (138.240959ms)
+✔ M7 status is split between immutable history and the unqualified source candidate (0.819416ms)
+✔ Linux network denial is fail-closed and enforces the exact Rust pin (0.252541ms)
+✔ Turbo test and verify hashes include repository verification and runtime contract inputs exactly once (104.412ms)
+✔ the required workspace command reaches honest starter syntax and package contract checks (98.97325ms)
+ℹ tests 69
+ℹ suites 0
+ℹ pass 69
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10777.275416
+verification inventory passed (9 packages, 10 verification tools, 97 test files, 1 workflow; 76 required test files; 0 unexecuted required tests)
+END_UTC=2026-08-24T15:44:42Z
+EXIT=0

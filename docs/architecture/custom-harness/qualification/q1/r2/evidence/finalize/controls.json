@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "custom-harness-q1-r2-controls/v1",
+  "verdict": "PASS",
+  "automaticUpdateCommandsExecuted": [],
+  "packageManagerInstallsExecuted": [],
+  "providerOrAiRetrievals": [],
+  "providerOrAiDynamicTests": [],
+  "effectLicenseSha256": "774c3bc5924ad8ae6c5a75f1c53db13feb238ade15989625c513d07b60dedf30",
+  "publicEffectImports": [
+    "effect/Context",
+    "effect/Effect",
+    "effect/Layer",
+    "effect/ManagedRuntime"
+  ],
+  "copiedMaterial": {
+    "projectAuthoredProbeFiles": [
+      "probes/effect-consumer-probe-r2.ts",
+      "probes/effect-consumer-r2.test.ts"
+    ],
+    "thirdPartySourceCopiedIntoProbeFiles": false,
+    "retainedThirdPartyLicenseBytesChanged": false
+  },
+  "protectedHashes": {
+    "bun.lock": "0656e39945e9b62c4535f0a60fb3da5a2d0206e9e0757d4226e277aba98e9075",
+    "package.json": "d45e0fcd14dd5f373fec1e131895bca2e291abc3bfe4aef1418562ee9d5b31d5",
+    "turbo.json": "d6e2e99a1ae21c2f5fd2c32a7f85089b1ae81b73c0eac7999e7a19cef2c5c549"
+  },
+  "turboWrapperObservation": {
+    "exactPlatformBinaryForced": true,
+    "fallbackInstallPathNotSelected": true
+  }
+}

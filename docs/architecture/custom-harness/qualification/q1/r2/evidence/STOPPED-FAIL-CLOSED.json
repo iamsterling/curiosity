@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "custom-harness-q1-r2-stopped/v1",
+  "verdict": "STOPPED_FAIL_CLOSED",
+  "stoppedUtc": "2026-08-25T00:07:36.670Z",
+  "failure": "Error: command failed closed: t01-identity-audit\n    at run (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/docs/architecture/custom-harness/qualification/q1/r2/probes/execute-r2.mjs:207:11)\n    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at async file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/docs/architecture/custom-harness/qualification/q1/r2/probes/execute-r2.mjs:592:3",
+  "receiptsRetained": 36,
+  "scratchAbsent": true,
+  "noI1": true
+}

@@ -9,10 +9,11 @@
     "start": "next start",
     "lint": "eslint --max-warnings 0",
     "check-types": "next typegen && tsc --noEmit",
-    "test": "node --test tests/config-load.test.mjs",
+    "test": "node --test tests/config-load.test.mjs tests/thread-projection.test.mjs",
     "verify": "bun run lint && bun run check-types && bun run build && bun run test"
   },
   "dependencies": {
+    "@curiosity/custom-harness": "workspace:*",
     "@repo/ui": "*",
     "next": "16.3.0",
     "react": "^19.2.0",

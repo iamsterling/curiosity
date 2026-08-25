@@ -1,0 +1,20 @@
+HTTP/2 200 
+x-amz-id-2: 7TnfPUM8WcuC4EN+yFmHhuXilH3F/gcE8MrnYzNPaqsOPWePS96h6ZKAq36AEDTWeuI504pG2h8=
+x-amz-request-id: PN6Q2FWW141NP8DJ
+last-modified: Thu, 16 Jul 2026 12:26:34 GMT
+etag: "5fbbdd3e09e6ba4de35e4b700590da8f"
+x-amz-storage-class: INTELLIGENT_TIERING
+x-amz-server-side-encryption: AES256
+x-amz-version-id: _HLwxFBcGHPjYTwCHP8W0Qj6IRyRXryq
+content-type: binary/octet-stream
+server: AmazonS3
+accept-ranges: bytes
+date: Tue, 25 Aug 2026 00:07:33 GMT
+via: 1.1 varnish
+age: 80339
+x-served-by: cache-dfw-kdfw8210046-DFW
+x-cache: HIT
+x-cache-hits: 235
+x-timer: S1787616454.931150,VS0,VE0
+content-length: 91
+

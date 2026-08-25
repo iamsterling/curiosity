@@ -1,0 +1,35 @@
+✔ entrypoint exports one beta-18138 Promise plugin (0.533375ms)
+✖ entrypoint redacts a hostile search configuration getter before setup (0.511708ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 142.375583
+
+✖ failing tests:
+
+test at apps/plugin/opencode2/tests/unit/plugin-entrypoint.test.mjs:13:1
+✖ entrypoint redacts a hostile search configuration getter before setup (0.511708ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + undefined
+  - 'WEB_SEARCH_RUNTIME_CONFIG_INVALID'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/plugin-entrypoint.test.mjs:20:12)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tests/unit/plugin-entrypoint.test.mjs:19:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: 'WEB_SEARCH_RUNTIME_CONFIG_INVALID',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

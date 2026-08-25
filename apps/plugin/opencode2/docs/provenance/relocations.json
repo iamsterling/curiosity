@@ -9,7 +9,7 @@
     {
       "historicalPath": "config/agents/generalist.json",
       "currentPath": "assets/config/agents/generalist.json",
-      "currentDigest": "sha256:e295251a6603b1e082f2895cdb67dd616362a1c90871e0b24f4b3632e7f56740"
+      "currentDigest": "sha256:88df1784576e02bce548c8e0c5cad4788a06d030a3a9287a07d911dbd13ff7a4"
     },
     {
       "historicalPath": "config/agents/analyst.json",
@@ -54,7 +54,7 @@
     {
       "historicalPath": "skills/deep-research/SKILL.md",
       "currentPath": "assets/skills/deep-research/SKILL.md",
-      "currentDigest": "sha256:8979c8521cdb8ad1496dafc6c8a9c81623c4bdf4e8b267d31d74e88534bdce8a"
+      "currentDigest": "sha256:5d5664703b8e3517fde0d207e7ffb502a6a7b06894395f70ffc2d84e59e4f0e0"
     },
     {
       "historicalPath": "skills/competitive-analysis/SKILL.md",
@@ -300,7 +300,7 @@
     {
       "historicalPath": "scripts/install-node.mjs",
       "currentPath": "tools/install-node.mjs",
-      "currentDigest": "sha256:d06bd7835e82f6e3f87445641d11ada59a97a6528cba41308bbff3be1296966a"
+      "currentDigest": "sha256:44a09de062cf5c9b55c3d6843f58480b86e4a05c4ce33cd252de2cf8f1bd4b1e"
     },
     {
       "historicalPath": "scripts/state-tool.mjs",

@@ -1,0 +1,1612 @@
+-rw-r--r--@ 1 sterling  staff  - 24989 Aug 23 14:35 /Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/assets/manifest.json
+	com.apple.provenance	   11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/docs/.next:
+total 456
+-rw-r--r--@  1 sterling  staff  -     21 Aug 24 07:35 BUILD_ID
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -    138 Aug 24 07:35 app-path-routes-manifest.json
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -    607 Aug 24 07:35 build-manifest.json
+	com.apple.provenance	    11 
+drwxr-xr-x@  5 sterling  staff  -    160 Aug 24 07:35 diagnostics
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -    111 Aug 24 07:35 export-marker.json
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -    366 Aug 24 07:35 fallback-build-manifest.json
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -   1193 Aug 24 07:35 images-manifest.json
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -  12592 Aug 24 07:35 next-minimal-server.js.nft.json
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  - 141247 Aug 24 07:35 next-server.js.nft.json
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -     20 Aug 24 07:35 package.json
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -   3472 Aug 24 07:35 prerender-manifest.json
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -   9874 Aug 24 07:35 required-server-files.js
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -   9845 Aug 24 07:35 required-server-files.json
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -   1723 Aug 24 07:35 routes-manifest.json
+	com.apple.provenance	    11 
+drwxr-xr-x@ 16 sterling  staff  -    512 Aug 24 07:35 server
+	com.apple.provenance	    11 
+drwxr-xr-x@  5 sterling  staff  -    160 Aug 24 07:35 static
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -   5963 Aug 24 07:35 trace
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -   1499 Aug 24 07:35 trace-build
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -      0 Aug 24 07:35 turbopack
+	com.apple.provenance	    11 
+drwxr-xr-x@  2 sterling  staff  -     64 Aug 24 11:21 types
+	com.apple.provenance	    11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/docs/.next/diagnostics:
+total 24
+-rw-r--r--@ 1 sterling  staff  -  93 Aug 24 07:35 build-diagnostics.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  -  37 Aug 24 07:35 framework.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 748 Aug 24 07:35 route-bundle-stats.json
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/docs/.next/server:
+total 88
+drwxr-xr-x@ 24 sterling  staff  - 768 Aug 24 07:35 app
+	com.apple.provenance	 11 
+-rw-r--r--@  1 sterling  staff  - 182 Aug 24 07:35 app-paths-manifest.json
+	com.apple.provenance	 11 
+drwxr-xr-x@ 11 sterling  staff  - 352 Aug 24 07:35 chunks
+	com.apple.provenance	 11 
+-rw-r--r--@  1 sterling  staff  -  37 Aug 24 07:35 functions-config-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@  1 sterling  staff  -  48 Aug 24 07:35 interception-route-rewrite-manifest.js
+	com.apple.provenance	 11 
+-rw-r--r--@  1 sterling  staff  - 639 Aug 24 07:35 middleware-build-manifest.js
+	com.apple.provenance	 11 
+-rw-r--r--@  1 sterling  staff  -  83 Aug 24 07:35 middleware-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@  1 sterling  staff  - 476 Aug 24 07:35 next-font-manifest.js
+	com.apple.provenance	 11 
+-rw-r--r--@  1 sterling  staff  - 414 Aug 24 07:35 next-font-manifest.json
+	com.apple.provenance	 11 
+drwxr-xr-x@  4 sterling  staff  - 128 Aug 24 07:35 pages
+	com.apple.provenance	 11 
+-rw-r--r--@  1 sterling  staff  -  58 Aug 24 07:35 pages-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@  1 sterling  staff  - 491 Aug 24 07:35 prefetch-hints.json
+	com.apple.provenance	 11 
+-rw-r--r--@  1 sterling  staff  - 138 Aug 24 07:35 server-reference-manifest.js
+	com.apple.provenance	 11 
+-rw-r--r--@  1 sterling  staff  -  97 Aug 24 07:35 server-reference-manifest.json
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/docs/.next/server/app:
+total 288
+drwxr-xr-x@ 7 sterling  staff  -   224 Aug 24 07:35 _global-error
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  9133 Aug 24 07:35 _global-error.html
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   421 Aug 24 07:35 _global-error.meta
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  4945 Aug 24 07:35 _global-error.rsc
+	com.apple.provenance	   11 
+drwxr-xr-x@ 5 sterling  staff  -   160 Aug 24 07:35 _global-error.segments
+	com.apple.provenance	   11 
+drwxr-xr-x@ 7 sterling  staff  -   224 Aug 24 07:35 _not-found
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  8206 Aug 24 07:35 _not-found.html
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   517 Aug 24 07:35 _not-found.meta
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  5297 Aug 24 07:35 _not-found.rsc
+	com.apple.provenance	   11 
+drwxr-xr-x@ 5 sterling  staff  -   160 Aug 24 07:35 _not-found.segments
+	com.apple.provenance	   11 
+drwxr-xr-x@ 6 sterling  staff  -   192 Aug 24 07:35 favicon.ico
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 25931 Aug 24 07:35 favicon.ico.body
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   211 Aug 24 07:35 favicon.ico.meta
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 12300 Aug 24 07:35 index.html
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   362 Aug 24 07:35 index.meta
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  7045 Aug 24 07:35 index.rsc
+	com.apple.provenance	   11 
+drwxr-xr-x@ 5 sterling  staff  -   160 Aug 24 07:35 index.segments
+	com.apple.provenance	   11 
+drwxr-xr-x@ 7 sterling  staff  -   224 Aug 24 07:35 page
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   868 Aug 24 07:35 page.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -    53 Aug 24 07:35 page.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 17083 Aug 24 07:35 page.js.nft.json
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  5761 Aug 24 07:35 page_client-reference-manifest.js
+	com.apple.provenance	   11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/docs/.next/server/app/_global-error:
+total 72
+drwxr-xr-x@ 7 sterling  staff  -   224 Aug 24 07:35 page
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   560 Aug 24 07:35 page.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -    53 Aug 24 07:35 page.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 16687 Aug 24 07:35 page.js.nft.json
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  4153 Aug 24 07:35 page_client-reference-manifest.js
+	com.apple.provenance	   11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/docs/.next/server/app/_global-error/page:
+total 40
+-rw-r--r--@ 1 sterling  staff  -  56 Aug 24 07:35 app-paths-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 459 Aug 24 07:35 build-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  -  94 Aug 24 07:35 next-font-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  -   2 Aug 24 07:35 react-loadable-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  -  30 Aug 24 07:35 server-reference-manifest.json
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/docs/.next/server/app/_global-error.segments:
+total 40
+-rw-r--r--@ 1 sterling  staff  - 4649 Aug 24 07:35 __PAGE__.segment.rsc
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 4945 Aug 24 07:35 _full.segment.rsc
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  195 Aug 24 07:35 _tree.segment.rsc
+	com.apple.provenance	  11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/docs/.next/server/app/_not-found:
+total 72
+drwxr-xr-x@ 7 sterling  staff  -   224 Aug 24 07:35 page
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   764 Aug 24 07:35 page.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -    53 Aug 24 07:35 page.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 17066 Aug 24 07:35 page.js.nft.json
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  4421 Aug 24 07:35 page_client-reference-manifest.js
+	com.apple.provenance	   11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/docs/.next/server/app/_not-found/page:
+total 40
+-rw-r--r--@ 1 sterling  staff  -  50 Aug 24 07:35 app-paths-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 459 Aug 24 07:35 build-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 260 Aug 24 07:35 next-font-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  -   2 Aug 24 07:35 react-loadable-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  -  30 Aug 24 07:35 server-reference-manifest.json
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/docs/.next/server/app/_not-found.segments:
+total 24
+-rw-r--r--@ 1 sterling  staff  - 5297 Aug 24 07:35 _full.segment.rsc
+	com.apple.provenance	  11 
+drwxr-xr-x@ 3 sterling  staff  -   96 Aug 24 07:35 _not-found
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  327 Aug 24 07:35 _tree.segment.rsc
+	com.apple.provenance	  11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/docs/.next/server/app/_not-found.segments/_not-found:
+total 16
+-rw-r--r--@ 1 sterling  staff  - 4403 Aug 24 07:35 __PAGE__.segment.rsc
+	com.apple.provenance	  11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/docs/.next/server/app/favicon.ico:
+total 48
+drwxr-xr-x@ 4 sterling  staff  -   128 Aug 24 07:35 route
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   330 Aug 24 07:35 route.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -    53 Aug 24 07:35 route.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 16232 Aug 24 07:35 route.js.nft.json
+	com.apple.provenance	   11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/docs/.next/server/app/favicon.ico/route:
+total 16
+-rw-r--r--@ 1 sterling  staff  -  54 Aug 24 07:35 app-paths-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 255 Aug 24 07:35 build-manifest.json
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/docs/.next/server/app/index.segments:
+total 40
+-rw-r--r--@ 1 sterling  staff  - 6249 Aug 24 07:35 __PAGE__.segment.rsc
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 7045 Aug 24 07:35 _full.segment.rsc
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  513 Aug 24 07:35 _tree.segment.rsc
+	com.apple.provenance	  11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/docs/.next/server/app/page:
+total 40
+-rw-r--r--@ 1 sterling  staff  -  28 Aug 24 07:35 app-paths-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 459 Aug 24 07:35 build-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 249 Aug 24 07:35 next-font-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  -   2 Aug 24 07:35 react-loadable-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  -  30 Aug 24 07:35 server-reference-manifest.json
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/docs/.next/server/chunks:
+total 2400
+-rw-r--r--@  1 sterling  staff  -   1426 Aug 24 07:35 [externals]__0l8ei7u._.js
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -     51 Aug 24 07:35 [externals]__0l8ei7u._.js.map
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  - 213272 Aug 24 07:35 [root-of-the-server]__0bsw5rq._.js
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  - 903333 Aug 24 07:35 [root-of-the-server]__0bsw5rq._.js.map
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -  32200 Aug 24 07:35 [turbopack]_runtime.js
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -  55280 Aug 24 07:35 [turbopack]_runtime.js.map
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -    148 Aug 24 07:35 apps_docs__next-internal_server_app_favicon_ico_route_actions_0zvey-z.js
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -     51 Aug 24 07:35 apps_docs__next-internal_server_app_favicon_ico_route_actions_0zvey-z.js.map
+	com.apple.provenance	    11 
+drwxr-xr-x@ 46 sterling  staff  -   1472 Aug 24 07:35 ssr
+	com.apple.provenance	    11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/docs/.next/server/chunks/ssr:
+total 6384
+-rw-r--r--@ 1 sterling  staff  -   52520 Aug 24 07:35 0pc4_next_dist_1_51phe._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -  986195 Aug 24 07:35 0pc4_next_dist_1_51phe._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -   24997 Aug 24 07:35 0pc4_next_dist_1s0app4._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -  137158 Aug 24 07:35 0pc4_next_dist_1s0app4._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    2522 Aug 24 07:35 0pc4_next_dist_client_components_0jwpmwt._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    4473 Aug 24 07:35 0pc4_next_dist_client_components_0jwpmwt._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -     652 Aug 24 07:35 0pc4_next_dist_client_components_builtin_forbidden_0_c_e--.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -     677 Aug 24 07:35 0pc4_next_dist_client_components_builtin_forbidden_0_c_e--.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -     382 Aug 24 07:35 0pc4_next_dist_client_components_builtin_global-error_00kpx9l.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    3318 Aug 24 07:35 0pc4_next_dist_client_components_builtin_global-error_00kpx9l.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -     663 Aug 24 07:35 0pc4_next_dist_client_components_builtin_unauthorized_0jxg9hu.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -     696 Aug 24 07:35 0pc4_next_dist_client_components_builtin_unauthorized_0jxg9hu.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -     193 Aug 24 07:35 1u71_@swc_helpers_cjs__interop_require_default_cjs_1-orzhy._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -     555 Aug 24 07:35 1u71_@swc_helpers_cjs__interop_require_default_cjs_1-orzhy._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    8015 Aug 24 07:35 [root-of-the-server]__0_azmbw._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -   15306 Aug 24 07:35 [root-of-the-server]__0_azmbw._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    3867 Aug 24 07:35 [root-of-the-server]__0af9e76._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    6060 Aug 24 07:35 [root-of-the-server]__0af9e76._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    8250 Aug 24 07:35 [root-of-the-server]__0peadz5._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -   12724 Aug 24 07:35 [root-of-the-server]__0peadz5._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    1569 Aug 24 07:35 [root-of-the-server]__10efw-8._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    2942 Aug 24 07:35 [root-of-the-server]__10efw-8._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    4208 Aug 24 07:35 [root-of-the-server]__19th-44._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    9059 Aug 24 07:35 [root-of-the-server]__19th-44._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -  217010 Aug 24 07:35 [root-of-the-server]__1m7iamh._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  - 1334849 Aug 24 07:35 [root-of-the-server]__1m7iamh._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    3106 Aug 24 07:35 [root-of-the-server]__1wymezi._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    7348 Aug 24 07:35 [root-of-the-server]__1wymezi._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -   32210 Aug 24 07:35 [turbopack]_runtime.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -   55280 Aug 24 07:35 [turbopack]_runtime.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -   16010 Aug 24 07:35 _0ukahee._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -   93888 Aug 24 07:35 _0ukahee._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -   12728 Aug 24 07:35 _1k3zzc5._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -   79433 Aug 24 07:35 _1k3zzc5._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -     149 Aug 24 07:35 apps_docs__next-internal_server_app__global-error_page_actions_08t-l56.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -      51 Aug 24 07:35 apps_docs__next-internal_server_app__global-error_page_actions_08t-l56.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -     146 Aug 24 07:35 apps_docs__next-internal_server_app__not-found_page_actions_1kieotm.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -      51 Aug 24 07:35 apps_docs__next-internal_server_app__not-found_page_actions_1kieotm.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -     135 Aug 24 07:35 apps_docs__next-internal_server_app_page_actions_0kzs0bw.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -      51 Aug 24 07:35 apps_docs__next-internal_server_app_page_actions_0kzs0bw.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -     985 Aug 24 07:35 apps_docs_app_1q763xg._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    3342 Aug 24 07:35 apps_docs_app_1q763xg._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    6520 Aug 24 07:35 node_modules__bun_0m5p34h._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -   12443 Aug 24 07:35 node_modules__bun_0m5p34h._.js.map
+	com.apple.provenance	     11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/docs/.next/server/pages:
+total 48
+-rw-r--r--@ 1 sterling  staff  - 8206 Aug 24 07:35 404.html
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 9133 Aug 24 07:35 500.html
+	com.apple.provenance	  11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/docs/.next/static:
+total 0
+drwxr-xr-x@  5 sterling  staff  - 160 Aug 24 07:35 C1RwXRODktavJbn4ck9BK
+	com.apple.provenance	 11 
+drwxr-xr-x@ 11 sterling  staff  - 352 Aug 24 07:35 chunks
+	com.apple.provenance	 11 
+drwxr-xr-x@  5 sterling  staff  - 160 Aug 24 07:35 media
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/docs/.next/static/C1RwXRODktavJbn4ck9BK:
+total 24
+-rw-r--r--@ 1 sterling  staff  - 219 Aug 24 07:35 _buildManifest.js
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  -  96 Aug 24 07:35 _clientMiddlewareManifest.js
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  -  80 Aug 24 07:35 _ssgManifest.js
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/docs/.next/static/chunks:
+total 1176
+-rw-r--r--@ 1 sterling  staff  - 112594 Aug 24 07:35 0cz1d0mv5g_q7.js
+	com.apple.provenance	    11 
+-rw-r--r--@ 1 sterling  staff  -   1392 Aug 24 07:35 0f4fx9kkvgc-9.css
+	com.apple.provenance	    11 
+-rw-r--r--@ 1 sterling  staff  -  14385 Aug 24 07:35 0jd46711mtice.js
+	com.apple.provenance	    11 
+-rw-r--r--@ 1 sterling  staff  - 176563 Aug 24 07:35 0u_cjp0gitdl5.js
+	com.apple.provenance	    11 
+-rw-r--r--@ 1 sterling  staff  -  22180 Aug 24 07:35 0vn9h29wmi4xu.js
+	com.apple.provenance	    11 
+-rw-r--r--@ 1 sterling  staff  -   3012 Aug 24 07:35 0vti4mbshfi7h.css
+	com.apple.provenance	    11 
+-rw-r--r--@ 1 sterling  staff  - 228840 Aug 24 07:35 0zt8rzb3r8bn6.js
+	com.apple.provenance	    11 
+-rw-r--r--@ 1 sterling  staff  -  15741 Aug 24 07:35 3jfn582d3ztyk.js
+	com.apple.provenance	    11 
+-rw-r--r--@ 1 sterling  staff  -   9619 Aug 24 07:35 turbopack-3zuo5juolxask.js
+	com.apple.provenance	    11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/docs/.next/static/media:
+total 328
+-rw-r--r--@ 1 sterling  staff  - 67864 Aug 24 07:35 GeistMonoVF-s.p.1lv5tp2fpjxdz.woff
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 66268 Aug 24 07:35 GeistVF-s.p.0e569l9b0bre8.woff
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 25931 Aug 24 07:35 favicon.2vob68tjqpejf.ico
+	com.apple.provenance	   11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/docs/.next/types:
+total 0
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/docs/.turbo:
+total 16
+-rw-r--r--@ 1 sterling  staff  -   26 Aug 24 07:50 turbo-lint.log
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 1090 Aug 24 07:35 turbo-verify.log
+	com.apple.provenance	  11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/.turbo:
+total 64
+-rw-r--r--@ 1 sterling  staff  - 32349 Aug 24 07:35 turbo-verify.log
+	com.apple.provenance	   11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist:
+total 120
+drwxr-xr-x@  6 sterling  staff  -   192 Aug 24 07:35 cli
+	com.apple.provenance	   11 
+drwxr-xr-x@  8 sterling  staff  -   256 Aug 24 07:35 core
+	com.apple.provenance	   11 
+drwxr-xr-x@ 14 sterling  staff  -   448 Aug 24 07:35 features
+	com.apple.provenance	   11 
+-rw-r--r--@  1 sterling  staff  -    81 Aug 24 07:35 index.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@  1 sterling  staff  -   145 Aug 24 07:35 index.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@  1 sterling  staff  -    79 Aug 24 07:35 index.js
+	com.apple.provenance	   11 
+-rw-r--r--@  1 sterling  staff  -   143 Aug 24 07:35 index.js.map
+	com.apple.provenance	   11 
+drwxr-xr-x@ 10 sterling  staff  -   320 Aug 24 07:35 platform
+	com.apple.provenance	   11 
+drwxr-xr-x@ 19 sterling  staff  -   608 Aug 24 07:35 plugin
+	com.apple.provenance	   11 
+-rw-r--r--@  1 sterling  staff  - 43417 Aug 24 07:35 provenance.json
+	com.apple.provenance	   11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/cli:
+total 32
+-rw-r--r--@ 1 sterling  staff  - 137 Aug 24 07:35 index.d.ts
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 143 Aug 24 07:35 index.d.ts.map
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 135 Aug 24 07:35 index.js
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 141 Aug 24 07:35 index.js.map
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/core:
+total 0
+drwxr-xr-x@ 6 sterling  staff  - 192 Aug 24 07:35 canonical
+	com.apple.provenance	 11 
+drwxr-xr-x@ 6 sterling  staff  - 192 Aug 24 07:35 diagnostics
+	com.apple.provenance	 11 
+drwxr-xr-x@ 6 sterling  staff  - 192 Aug 24 07:35 identity
+	com.apple.provenance	 11 
+drwxr-xr-x@ 6 sterling  staff  - 192 Aug 24 07:35 ports
+	com.apple.provenance	 11 
+drwxr-xr-x@ 6 sterling  staff  - 192 Aug 24 07:35 schema
+	com.apple.provenance	 11 
+drwxr-xr-x@ 6 sterling  staff  - 192 Aug 24 07:35 trust
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/core/canonical:
+total 32
+-rw-r--r--@ 1 sterling  staff  -  165 Aug 24 07:35 index.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  227 Aug 24 07:35 index.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  687 Aug 24 07:35 index.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 1008 Aug 24 07:35 index.js.map
+	com.apple.provenance	  11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/core/diagnostics:
+total 32
+-rw-r--r--@ 1 sterling  staff  - 283 Aug 24 07:35 diagnostic.d.ts
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 395 Aug 24 07:35 diagnostic.d.ts.map
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 289 Aug 24 07:35 diagnostic.js
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 403 Aug 24 07:35 diagnostic.js.map
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/core/identity:
+total 32
+-rw-r--r--@ 1 sterling  staff  - 158 Aug 24 07:35 index.d.ts
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 156 Aug 24 07:35 index.d.ts.map
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 156 Aug 24 07:35 index.js
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 154 Aug 24 07:35 index.js.map
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/core/ports:
+total 32
+-rw-r--r--@ 1 sterling  staff  - 155 Aug 24 07:35 index.d.ts
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 153 Aug 24 07:35 index.d.ts.map
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 153 Aug 24 07:35 index.js
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 151 Aug 24 07:35 index.js.map
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/core/schema:
+total 32
+-rw-r--r--@ 1 sterling  staff  - 156 Aug 24 07:35 index.d.ts
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 154 Aug 24 07:35 index.d.ts.map
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 154 Aug 24 07:35 index.js
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 152 Aug 24 07:35 index.js.map
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/core/trust:
+total 32
+-rw-r--r--@ 1 sterling  staff  - 155 Aug 24 07:35 index.d.ts
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 153 Aug 24 07:35 index.d.ts.map
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 153 Aug 24 07:35 index.js
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 151 Aug 24 07:35 index.js.map
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features:
+total 0
+drwxr-xr-x@ 10 sterling  staff  -  320 Aug 24 07:35 config
+	com.apple.provenance	  11 
+drwxr-xr-x@ 38 sterling  staff  - 1216 Aug 24 07:35 engineering-intent
+	com.apple.provenance	  11 
+drwxr-xr-x@ 46 sterling  staff  - 1472 Aug 24 07:35 evidence
+	com.apple.provenance	  11 
+drwxr-xr-x@ 14 sterling  staff  -  448 Aug 24 07:35 external-records
+	com.apple.provenance	  11 
+drwxr-xr-x@ 10 sterling  staff  -  320 Aug 24 07:35 handoff
+	com.apple.provenance	  11 
+drwxr-xr-x@ 18 sterling  staff  -  576 Aug 24 07:35 hooks
+	com.apple.provenance	  11 
+drwxr-xr-x@ 14 sterling  staff  -  448 Aug 24 07:35 ledger
+	com.apple.provenance	  11 
+drwxr-xr-x@ 18 sterling  staff  -  576 Aug 24 07:35 local-effects
+	com.apple.provenance	  11 
+drwxr-xr-x@ 14 sterling  staff  -  448 Aug 24 07:35 loop-engine
+	com.apple.provenance	  11 
+drwxr-xr-x@  6 sterling  staff  -  192 Aug 24 07:35 orchestration
+	com.apple.provenance	  11 
+drwxr-xr-x@ 18 sterling  staff  -  576 Aug 24 07:35 search
+	com.apple.provenance	  11 
+drwxr-xr-x@  6 sterling  staff  -  192 Aug 24 07:35 tools
+	com.apple.provenance	  11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/config:
+total 80
+-rw-r--r--@ 1 sterling  staff  - 6750 Aug 24 07:35 agents.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  648 Aug 24 07:35 agents.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 6198 Aug 24 07:35 agents.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 1248 Aug 24 07:35 agents.js.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  273 Aug 24 07:35 index.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  292 Aug 24 07:35 index.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  847 Aug 24 07:35 index.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  935 Aug 24 07:35 index.js.map
+	com.apple.provenance	  11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/engineering-intent:
+total 360
+-rw-r--r--@ 1 sterling  staff  - 3057 Aug 24 07:35 admission.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 2756 Aug 24 07:35 admission.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 7455 Aug 24 07:35 admission.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 7074 Aug 24 07:35 admission.js.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 3163 Aug 24 07:35 codec.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 1581 Aug 24 07:35 codec.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 7620 Aug 24 07:35 codec.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 6579 Aug 24 07:35 codec.js.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 2412 Aug 24 07:35 controller.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 2093 Aug 24 07:35 controller.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 6688 Aug 24 07:35 controller.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 6472 Aug 24 07:35 controller.js.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  280 Aug 24 07:35 index.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  310 Aug 24 07:35 index.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  278 Aug 24 07:35 index.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  308 Aug 24 07:35 index.js.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 1453 Aug 24 07:35 observations.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 1522 Aug 24 07:35 observations.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 6271 Aug 24 07:35 observations.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 6033 Aug 24 07:35 observations.js.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  294 Aug 24 07:35 paths.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  229 Aug 24 07:35 paths.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 4351 Aug 24 07:35 paths.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 3984 Aug 24 07:35 paths.js.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  412 Aug 24 07:35 policy.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  464 Aug 24 07:35 policy.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  525 Aug 24 07:35 policy.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  602 Aug 24 07:35 policy.js.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  871 Aug 24 07:35 profiles.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  793 Aug 24 07:35 profiles.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 2977 Aug 24 07:35 profiles.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 2713 Aug 24 07:35 profiles.js.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  746 Aug 24 07:35 review.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  477 Aug 24 07:35 review.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 2829 Aug 24 07:35 review.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 2741 Aug 24 07:35 review.js.map
+	com.apple.provenance	  11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/evidence:
+total 512
+-rw-r--r--@ 1 sterling  staff  -  2269 Aug 24 07:35 anchor.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  2072 Aug 24 07:35 anchor.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  7817 Aug 24 07:35 anchor.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  7574 Aug 24 07:35 anchor.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   906 Aug 24 07:35 configuration.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   844 Aug 24 07:35 configuration.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  1372 Aug 24 07:35 configuration.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  1114 Aug 24 07:35 configuration.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  2149 Aug 24 07:35 custody.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  2153 Aug 24 07:35 custody.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 15288 Aug 24 07:35 custody.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 14582 Aug 24 07:35 custody.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  1421 Aug 24 07:35 development-harness.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   589 Aug 24 07:35 development-harness.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  4002 Aug 24 07:35 development-harness.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  3580 Aug 24 07:35 development-harness.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   209 Aug 24 07:35 diagnostics.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   281 Aug 24 07:35 diagnostics.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   293 Aug 24 07:35 diagnostics.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   430 Aug 24 07:35 diagnostics.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  2555 Aug 24 07:35 domain.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  2317 Aug 24 07:35 domain.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  6668 Aug 24 07:35 domain.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  6824 Aug 24 07:35 domain.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   884 Aug 24 07:35 identity.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   875 Aug 24 07:35 identity.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  1632 Aug 24 07:35 identity.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  1932 Aug 24 07:35 identity.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  1675 Aug 24 07:35 index.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  1313 Aug 24 07:35 index.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  1047 Aug 24 07:35 index.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   835 Aug 24 07:35 index.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  3092 Aug 24 07:35 ingest.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  2681 Aug 24 07:35 ingest.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 11048 Aug 24 07:35 ingest.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 10050 Aug 24 07:35 ingest.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  2049 Aug 24 07:35 query.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  1786 Aug 24 07:35 query.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 11612 Aug 24 07:35 query.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 11369 Aug 24 07:35 query.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  1028 Aug 24 07:35 reconciliation.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   873 Aug 24 07:35 reconciliation.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  4787 Aug 24 07:35 reconciliation.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  4140 Aug 24 07:35 reconciliation.js.map
+	com.apple.provenance	   11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/external-records:
+total 112
+-rw-r--r--@ 1 sterling  staff  - 1103 Aug 24 07:35 contracts.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 1232 Aug 24 07:35 contracts.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -   48 Aug 24 07:35 contracts.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  142 Aug 24 07:35 contracts.js.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 1576 Aug 24 07:35 github-policy.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  963 Aug 24 07:35 github-policy.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 5896 Aug 24 07:35 github-policy.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 6466 Aug 24 07:35 github-policy.js.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  103 Aug 24 07:35 index.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  180 Aug 24 07:35 index.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  101 Aug 24 07:35 index.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  178 Aug 24 07:35 index.js.map
+	com.apple.provenance	  11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/handoff:
+total 168
+-rw-r--r--@ 1 sterling  staff  -   614 Aug 24 07:35 compiler.d.mts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   190 Aug 24 07:35 compiler.d.mts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 28305 Aug 24 07:35 compiler.mjs
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 30186 Aug 24 07:35 compiler.mjs.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   122 Aug 24 07:35 index.d.mts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   129 Aug 24 07:35 index.d.mts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   120 Aug 24 07:35 index.mjs
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   192 Aug 24 07:35 index.mjs.map
+	com.apple.provenance	   11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/hooks:
+total 208
+-rw-r--r--@ 1 sterling  staff  -   244 Aug 24 07:35 context-projection.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   334 Aug 24 07:35 context-projection.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 10030 Aug 24 07:35 context-projection.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 10784 Aug 24 07:35 context-projection.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  1927 Aug 24 07:35 event-capture.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  1999 Aug 24 07:35 event-capture.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  4473 Aug 24 07:35 event-capture.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  4757 Aug 24 07:35 event-capture.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   170 Aug 24 07:35 index.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   213 Aug 24 07:35 index.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   192 Aug 24 07:35 index.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   254 Aug 24 07:35 index.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   350 Aug 24 07:35 open-code-hooks.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   372 Aug 24 07:35 open-code-hooks.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  9000 Aug 24 07:35 open-code-hooks.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  8276 Aug 24 07:35 open-code-hooks.js.map
+	com.apple.provenance	   11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/ledger:
+total 240
+-rw-r--r--@ 1 sterling  staff  -   518 Aug 24 07:35 archive.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   591 Aug 24 07:35 archive.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  1733 Aug 24 07:35 archive.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  1915 Aug 24 07:35 archive.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  2314 Aug 24 07:35 domain.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  2208 Aug 24 07:35 domain.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 12513 Aug 24 07:35 domain.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 12891 Aug 24 07:35 domain.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  6310 Aug 24 07:35 index.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  6515 Aug 24 07:35 index.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 22953 Aug 24 07:35 index.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 23173 Aug 24 07:35 index.js.map
+	com.apple.provenance	   11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/local-effects:
+total 128
+-rw-r--r--@ 1 sterling  staff  -  502 Aug 24 07:35 contracts.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  532 Aug 24 07:35 contracts.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  182 Aug 24 07:35 contracts.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  240 Aug 24 07:35 contracts.js.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  128 Aug 24 07:35 index.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  198 Aug 24 07:35 index.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  126 Aug 24 07:35 index.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  196 Aug 24 07:35 index.js.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  354 Aug 24 07:35 runner.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  420 Aug 24 07:35 runner.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  450 Aug 24 07:35 runner.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  555 Aug 24 07:35 runner.js.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  345 Aug 24 07:35 workspace.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  286 Aug 24 07:35 workspace.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 1629 Aug 24 07:35 workspace.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 1672 Aug 24 07:35 workspace.js.map
+	com.apple.provenance	  11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/loop-engine:
+total 160
+-rw-r--r--@ 1 sterling  staff  -  2658 Aug 24 07:35 index.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  2650 Aug 24 07:35 index.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 14623 Aug 24 07:35 index.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 12604 Aug 24 07:35 index.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  1875 Aug 24 07:35 journal.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  1919 Aug 24 07:35 journal.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  5404 Aug 24 07:35 journal.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  5496 Aug 24 07:35 journal.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   563 Aug 24 07:35 ports.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   577 Aug 24 07:35 ports.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -    44 Aug 24 07:35 ports.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   129 Aug 24 07:35 ports.js.map
+	com.apple.provenance	   11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/orchestration:
+total 32
+-rw-r--r--@ 1 sterling  staff  - 169 Aug 24 07:35 index.d.ts
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 221 Aug 24 07:35 index.d.ts.map
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 121 Aug 24 07:35 index.js
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 228 Aug 24 07:35 index.js.map
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/search:
+total 200
+-rw-r--r--@ 1 sterling  staff  -   664 Aug 24 07:35 core.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   711 Aug 24 07:35 core.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  2617 Aug 24 07:35 core.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  3162 Aug 24 07:35 core.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  2721 Aug 24 07:35 index.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   907 Aug 24 07:35 index.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  2941 Aug 24 07:35 index.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  2469 Aug 24 07:35 index.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  1741 Aug 24 07:35 runtime-adapter.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  1212 Aug 24 07:35 runtime-adapter.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 17943 Aug 24 07:35 runtime-adapter.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 16076 Aug 24 07:35 runtime-adapter.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   591 Aug 24 07:35 searxng-adapter.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   673 Aug 24 07:35 searxng-adapter.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  7287 Aug 24 07:35 searxng-adapter.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  6969 Aug 24 07:35 searxng-adapter.js.map
+	com.apple.provenance	   11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/features/tools:
+total 72
+-rw-r--r--@ 1 sterling  staff  -   252 Aug 24 07:35 index.d.ts
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   292 Aug 24 07:35 index.d.ts.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 13091 Aug 24 07:35 index.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 10811 Aug 24 07:35 index.js.map
+	com.apple.provenance	   11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/platform:
+total 0
+drwxr-xr-x@ 6 sterling  staff  - 192 Aug 24 07:35 assets
+	com.apple.provenance	 11 
+drwxr-xr-x@ 6 sterling  staff  - 192 Aug 24 07:35 config
+	com.apple.provenance	 11 
+drwxr-xr-x@ 6 sterling  staff  - 192 Aug 24 07:35 doctor
+	com.apple.provenance	 11 
+drwxr-xr-x@ 6 sterling  staff  - 192 Aug 24 07:35 github
+	com.apple.provenance	 11 
+drwxr-xr-x@ 6 sterling  staff  - 192 Aug 24 07:35 install
+	com.apple.provenance	 11 
+drwxr-xr-x@ 6 sterling  staff  - 192 Aug 24 07:35 persistence
+	com.apple.provenance	 11 
+drwxr-xr-x@ 6 sterling  staff  - 192 Aug 24 07:35 real-host
+	com.apple.provenance	 11 
+drwxr-xr-x@ 6 sterling  staff  - 192 Aug 24 07:35 release
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/platform/assets:
+total 32
+-rw-r--r--@ 1 sterling  staff  - 128 Aug 24 07:35 index.d.ts
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 158 Aug 24 07:35 index.d.ts.map
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 126 Aug 24 07:35 index.js
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 156 Aug 24 07:35 index.js.map
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/platform/config:
+total 32
+-rw-r--r--@ 1 sterling  staff  - 128 Aug 24 07:35 index.d.ts
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 158 Aug 24 07:35 index.d.ts.map
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 126 Aug 24 07:35 index.js
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 156 Aug 24 07:35 index.js.map
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/platform/doctor:
+total 32
+-rw-r--r--@ 1 sterling  staff  - 1190 Aug 24 07:35 index.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 1239 Aug 24 07:35 index.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 3167 Aug 24 07:35 index.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 3247 Aug 24 07:35 index.js.map
+	com.apple.provenance	  11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/platform/github:
+total 32
+-rw-r--r--@ 1 sterling  staff  - 246 Aug 24 07:35 port.d.ts
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 201 Aug 24 07:35 port.d.ts.map
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 161 Aug 24 07:35 port.js
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 209 Aug 24 07:35 port.js.map
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/platform/install:
+total 56
+-rw-r--r--@ 1 sterling  staff  -  866 Aug 24 07:35 index.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  889 Aug 24 07:35 index.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 8067 Aug 24 07:35 index.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 8500 Aug 24 07:35 index.js.map
+	com.apple.provenance	  11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/platform/persistence:
+total 48
+-rw-r--r--@ 1 sterling  staff  - 1145 Aug 24 07:35 atomic-store.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 1191 Aug 24 07:35 atomic-store.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 7018 Aug 24 07:35 atomic-store.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 7785 Aug 24 07:35 atomic-store.js.map
+	com.apple.provenance	  11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/platform/real-host:
+total 32
+-rw-r--r--@ 1 sterling  staff  -  916 Aug 24 07:35 index.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  671 Aug 24 07:35 index.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 1052 Aug 24 07:35 index.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  963 Aug 24 07:35 index.js.map
+	com.apple.provenance	  11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/platform/release:
+total 32
+-rw-r--r--@ 1 sterling  staff  -  545 Aug 24 07:35 index.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  608 Aug 24 07:35 index.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 2553 Aug 24 07:35 index.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 2874 Aug 24 07:35 index.js.map
+	com.apple.provenance	  11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/plugin:
+total 128
+-rw-r--r--@ 1 sterling  staff  -  268 Aug 24 07:35 compose.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  283 Aug 24 07:35 compose.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  770 Aug 24 07:35 compose.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  856 Aug 24 07:35 compose.js.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  410 Aug 24 07:35 contracts.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  526 Aug 24 07:35 contracts.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -   83 Aug 24 07:35 contracts.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  161 Aug 24 07:35 contracts.js.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  378 Aug 24 07:35 lifecycle.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  419 Aug 24 07:35 lifecycle.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 1277 Aug 24 07:35 lifecycle.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 1430 Aug 24 07:35 lifecycle.js.map
+	com.apple.provenance	  11 
+drwxr-xr-x@ 6 sterling  staff  -  192 Aug 24 07:35 open-code
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  448 Aug 24 07:35 plugin.d.ts
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  263 Aug 24 07:35 plugin.d.ts.map
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 2938 Aug 24 07:35 plugin.js
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 2754 Aug 24 07:35 plugin.js.map
+	com.apple.provenance	  11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/dist/plugin/open-code:
+total 32
+-rw-r--r--@ 1 sterling  staff  - 176 Aug 24 07:35 context.d.ts
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 298 Aug 24 07:35 context.d.ts.map
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  -  81 Aug 24 07:35 context.js
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 170 Aug 24 07:35 context.js.map
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/runtime/.turbo:
+total 48
+-rw-r--r--@ 1 sterling  staff  - 23671 Aug 24 07:35 turbo-verify.log
+	com.apple.provenance	   11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/runtime/native/target:
+total 0
+drwxr-xr-x@ 3 sterling  staff  - 96 Aug 24 07:35 debug
+	com.apple.provenance	11 
+drwxr-xr-x@ 3 sterling  staff  - 96 Aug 24 07:35 release
+	com.apple.provenance	11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/runtime/native/target/debug:
+total 2144
+-rwxr-xr-x@ 1 sterling  staff  - 1095968 Aug 24 07:35 libcuriosity_runtime_native.dylib
+	com.apple.provenance	     11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/runtime/native/target/release:
+total 880
+-rwxr-xr-x@ 1 sterling  staff  - 449552 Aug 24 07:35 libcuriosity_runtime_native.dylib
+	com.apple.provenance	    11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/web/.next:
+total 456
+-rw-r--r--@  1 sterling  staff  -     21 Aug 24 07:35 BUILD_ID
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -    138 Aug 24 07:35 app-path-routes-manifest.json
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -    607 Aug 24 07:35 build-manifest.json
+	com.apple.provenance	    11 
+drwxr-xr-x@  5 sterling  staff  -    160 Aug 24 07:35 diagnostics
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -    111 Aug 24 07:35 export-marker.json
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -    366 Aug 24 07:35 fallback-build-manifest.json
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -   1193 Aug 24 07:35 images-manifest.json
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -  12592 Aug 24 07:35 next-minimal-server.js.nft.json
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  - 141247 Aug 24 07:35 next-server.js.nft.json
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -     20 Aug 24 07:35 package.json
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -   3472 Aug 24 07:35 prerender-manifest.json
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -   9872 Aug 24 07:35 required-server-files.js
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -   9843 Aug 24 07:35 required-server-files.json
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -   1723 Aug 24 07:35 routes-manifest.json
+	com.apple.provenance	    11 
+drwxr-xr-x@ 16 sterling  staff  -    512 Aug 24 07:35 server
+	com.apple.provenance	    11 
+drwxr-xr-x@  5 sterling  staff  -    160 Aug 24 07:35 static
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -   5974 Aug 24 07:35 trace
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -   1508 Aug 24 07:35 trace-build
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -      0 Aug 24 07:35 turbopack
+	com.apple.provenance	    11 
+drwxr-xr-x@  2 sterling  staff  -     64 Aug 24 11:21 types
+	com.apple.provenance	    11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/web/.next/diagnostics:
+total 24
+-rw-r--r--@ 1 sterling  staff  -  93 Aug 24 07:35 build-diagnostics.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  -  37 Aug 24 07:35 framework.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 748 Aug 24 07:35 route-bundle-stats.json
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/web/.next/server:
+total 88
+drwxr-xr-x@ 24 sterling  staff  - 768 Aug 24 07:35 app
+	com.apple.provenance	 11 
+-rw-r--r--@  1 sterling  staff  - 182 Aug 24 07:35 app-paths-manifest.json
+	com.apple.provenance	 11 
+drwxr-xr-x@ 11 sterling  staff  - 352 Aug 24 07:35 chunks
+	com.apple.provenance	 11 
+-rw-r--r--@  1 sterling  staff  -  37 Aug 24 07:35 functions-config-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@  1 sterling  staff  -  48 Aug 24 07:35 interception-route-rewrite-manifest.js
+	com.apple.provenance	 11 
+-rw-r--r--@  1 sterling  staff  - 639 Aug 24 07:35 middleware-build-manifest.js
+	com.apple.provenance	 11 
+-rw-r--r--@  1 sterling  staff  -  83 Aug 24 07:35 middleware-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@  1 sterling  staff  - 474 Aug 24 07:35 next-font-manifest.js
+	com.apple.provenance	 11 
+-rw-r--r--@  1 sterling  staff  - 412 Aug 24 07:35 next-font-manifest.json
+	com.apple.provenance	 11 
+drwxr-xr-x@  4 sterling  staff  - 128 Aug 24 07:35 pages
+	com.apple.provenance	 11 
+-rw-r--r--@  1 sterling  staff  -  58 Aug 24 07:35 pages-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@  1 sterling  staff  - 491 Aug 24 07:35 prefetch-hints.json
+	com.apple.provenance	 11 
+-rw-r--r--@  1 sterling  staff  - 138 Aug 24 07:35 server-reference-manifest.js
+	com.apple.provenance	 11 
+-rw-r--r--@  1 sterling  staff  -  97 Aug 24 07:35 server-reference-manifest.json
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/web/.next/server/app:
+total 288
+drwxr-xr-x@ 7 sterling  staff  -   224 Aug 24 07:35 _global-error
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  9133 Aug 24 07:35 _global-error.html
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   421 Aug 24 07:35 _global-error.meta
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  4945 Aug 24 07:35 _global-error.rsc
+	com.apple.provenance	   11 
+drwxr-xr-x@ 5 sterling  staff  -   160 Aug 24 07:35 _global-error.segments
+	com.apple.provenance	   11 
+drwxr-xr-x@ 7 sterling  staff  -   224 Aug 24 07:35 _not-found
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  8206 Aug 24 07:35 _not-found.html
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   517 Aug 24 07:35 _not-found.meta
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  5297 Aug 24 07:35 _not-found.rsc
+	com.apple.provenance	   11 
+drwxr-xr-x@ 5 sterling  staff  -   160 Aug 24 07:35 _not-found.segments
+	com.apple.provenance	   11 
+drwxr-xr-x@ 6 sterling  staff  -   192 Aug 24 07:35 favicon.ico
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 25931 Aug 24 07:35 favicon.ico.body
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   211 Aug 24 07:35 favicon.ico.meta
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 12297 Aug 24 07:35 index.html
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   362 Aug 24 07:35 index.meta
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  7043 Aug 24 07:35 index.rsc
+	com.apple.provenance	   11 
+drwxr-xr-x@ 5 sterling  staff  -   160 Aug 24 07:35 index.segments
+	com.apple.provenance	   11 
+drwxr-xr-x@ 7 sterling  staff  -   224 Aug 24 07:35 page
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   866 Aug 24 07:35 page.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -    53 Aug 24 07:35 page.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 17081 Aug 24 07:35 page.js.nft.json
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  5757 Aug 24 07:35 page_client-reference-manifest.js
+	com.apple.provenance	   11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/web/.next/server/app/_global-error:
+total 72
+drwxr-xr-x@ 7 sterling  staff  -   224 Aug 24 07:35 page
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   559 Aug 24 07:35 page.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -    53 Aug 24 07:35 page.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 16686 Aug 24 07:35 page.js.nft.json
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  4153 Aug 24 07:35 page_client-reference-manifest.js
+	com.apple.provenance	   11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/web/.next/server/app/_global-error/page:
+total 40
+-rw-r--r--@ 1 sterling  staff  -  56 Aug 24 07:35 app-paths-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 459 Aug 24 07:35 build-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  -  94 Aug 24 07:35 next-font-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  -   2 Aug 24 07:35 react-loadable-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  -  30 Aug 24 07:35 server-reference-manifest.json
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/web/.next/server/app/_global-error.segments:
+total 40
+-rw-r--r--@ 1 sterling  staff  - 4649 Aug 24 07:35 __PAGE__.segment.rsc
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 4945 Aug 24 07:35 _full.segment.rsc
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  195 Aug 24 07:35 _tree.segment.rsc
+	com.apple.provenance	  11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/web/.next/server/app/_not-found:
+total 72
+drwxr-xr-x@ 7 sterling  staff  -   224 Aug 24 07:35 page
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   762 Aug 24 07:35 page.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -    53 Aug 24 07:35 page.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 17064 Aug 24 07:35 page.js.nft.json
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -  4419 Aug 24 07:35 page_client-reference-manifest.js
+	com.apple.provenance	   11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/web/.next/server/app/_not-found/page:
+total 40
+-rw-r--r--@ 1 sterling  staff  -  50 Aug 24 07:35 app-paths-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 459 Aug 24 07:35 build-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 259 Aug 24 07:35 next-font-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  -   2 Aug 24 07:35 react-loadable-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  -  30 Aug 24 07:35 server-reference-manifest.json
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/web/.next/server/app/_not-found.segments:
+total 24
+-rw-r--r--@ 1 sterling  staff  - 5297 Aug 24 07:35 _full.segment.rsc
+	com.apple.provenance	  11 
+drwxr-xr-x@ 3 sterling  staff  -   96 Aug 24 07:35 _not-found
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  327 Aug 24 07:35 _tree.segment.rsc
+	com.apple.provenance	  11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/web/.next/server/app/_not-found.segments/_not-found:
+total 16
+-rw-r--r--@ 1 sterling  staff  - 4403 Aug 24 07:35 __PAGE__.segment.rsc
+	com.apple.provenance	  11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/web/.next/server/app/favicon.ico:
+total 48
+drwxr-xr-x@ 4 sterling  staff  -   128 Aug 24 07:35 route
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -   329 Aug 24 07:35 route.js
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  -    53 Aug 24 07:35 route.js.map
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 16231 Aug 24 07:35 route.js.nft.json
+	com.apple.provenance	   11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/web/.next/server/app/favicon.ico/route:
+total 16
+-rw-r--r--@ 1 sterling  staff  -  54 Aug 24 07:35 app-paths-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 255 Aug 24 07:35 build-manifest.json
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/web/.next/server/app/index.segments:
+total 40
+-rw-r--r--@ 1 sterling  staff  - 6247 Aug 24 07:35 __PAGE__.segment.rsc
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 7043 Aug 24 07:35 _full.segment.rsc
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  -  513 Aug 24 07:35 _tree.segment.rsc
+	com.apple.provenance	  11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/web/.next/server/app/page:
+total 40
+-rw-r--r--@ 1 sterling  staff  -  28 Aug 24 07:35 app-paths-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 459 Aug 24 07:35 build-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 248 Aug 24 07:35 next-font-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  -   2 Aug 24 07:35 react-loadable-manifest.json
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  -  30 Aug 24 07:35 server-reference-manifest.json
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/web/.next/server/chunks:
+total 2400
+-rw-r--r--@  1 sterling  staff  -   1426 Aug 24 07:35 [externals]__0l8ei7u._.js
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -     51 Aug 24 07:35 [externals]__0l8ei7u._.js.map
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  - 213271 Aug 24 07:35 [root-of-the-server]__1cfubdo._.js
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  - 903331 Aug 24 07:35 [root-of-the-server]__1cfubdo._.js.map
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -  32200 Aug 24 07:35 [turbopack]_runtime.js
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -  55280 Aug 24 07:35 [turbopack]_runtime.js.map
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -    147 Aug 24 07:35 apps_web__next-internal_server_app_favicon_ico_route_actions_0u51f7q.js
+	com.apple.provenance	    11 
+-rw-r--r--@  1 sterling  staff  -     51 Aug 24 07:35 apps_web__next-internal_server_app_favicon_ico_route_actions_0u51f7q.js.map
+	com.apple.provenance	    11 
+drwxr-xr-x@ 46 sterling  staff  -   1472 Aug 24 07:35 ssr
+	com.apple.provenance	    11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/web/.next/server/chunks/ssr:
+total 6384
+-rw-r--r--@ 1 sterling  staff  -   52520 Aug 24 07:35 0pc4_next_dist_1_51phe._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -  986195 Aug 24 07:35 0pc4_next_dist_1_51phe._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -   24997 Aug 24 07:35 0pc4_next_dist_1s0app4._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -  137158 Aug 24 07:35 0pc4_next_dist_1s0app4._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    2522 Aug 24 07:35 0pc4_next_dist_client_components_0jwpmwt._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    4473 Aug 24 07:35 0pc4_next_dist_client_components_0jwpmwt._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -     652 Aug 24 07:35 0pc4_next_dist_client_components_builtin_forbidden_0_c_e--.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -     677 Aug 24 07:35 0pc4_next_dist_client_components_builtin_forbidden_0_c_e--.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -     382 Aug 24 07:35 0pc4_next_dist_client_components_builtin_global-error_00kpx9l.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    3318 Aug 24 07:35 0pc4_next_dist_client_components_builtin_global-error_00kpx9l.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -     663 Aug 24 07:35 0pc4_next_dist_client_components_builtin_unauthorized_0jxg9hu.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -     696 Aug 24 07:35 0pc4_next_dist_client_components_builtin_unauthorized_0jxg9hu.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -     193 Aug 24 07:35 1u71_@swc_helpers_cjs__interop_require_default_cjs_1-orzhy._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -     555 Aug 24 07:35 1u71_@swc_helpers_cjs__interop_require_default_cjs_1-orzhy._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    8015 Aug 24 07:35 [root-of-the-server]__0_azmbw._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -   15306 Aug 24 07:35 [root-of-the-server]__0_azmbw._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    4211 Aug 24 07:35 [root-of-the-server]__0w4ar5-._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    9057 Aug 24 07:35 [root-of-the-server]__0w4ar5-._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    3869 Aug 24 07:35 [root-of-the-server]__0wfpvlb._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    6057 Aug 24 07:35 [root-of-the-server]__0wfpvlb._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    1569 Aug 24 07:35 [root-of-the-server]__10efw-8._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    2942 Aug 24 07:35 [root-of-the-server]__10efw-8._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -  217010 Aug 24 07:35 [root-of-the-server]__1m7iamh._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  - 1334849 Aug 24 07:35 [root-of-the-server]__1m7iamh._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    3106 Aug 24 07:35 [root-of-the-server]__1wymezi._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    7348 Aug 24 07:35 [root-of-the-server]__1wymezi._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    8254 Aug 24 07:35 [root-of-the-server]__21bc1w1._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -   12723 Aug 24 07:35 [root-of-the-server]__21bc1w1._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -   32210 Aug 24 07:35 [turbopack]_runtime.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -   55280 Aug 24 07:35 [turbopack]_runtime.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -   16010 Aug 24 07:35 _0ukahee._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -   93888 Aug 24 07:35 _0ukahee._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -   12726 Aug 24 07:35 _1f7j9_d._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -   79429 Aug 24 07:35 _1f7j9_d._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -     148 Aug 24 07:35 apps_web__next-internal_server_app__global-error_page_actions_1vxuwj7.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -      51 Aug 24 07:35 apps_web__next-internal_server_app__global-error_page_actions_1vxuwj7.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -     145 Aug 24 07:35 apps_web__next-internal_server_app__not-found_page_actions_0iqyci7.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -      51 Aug 24 07:35 apps_web__next-internal_server_app__not-found_page_actions_0iqyci7.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -     134 Aug 24 07:35 apps_web__next-internal_server_app_page_actions_1agtzgh.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -      51 Aug 24 07:35 apps_web__next-internal_server_app_page_actions_1agtzgh.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -     984 Aug 24 07:35 apps_web_app_1obcu1z._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    3337 Aug 24 07:35 apps_web_app_1obcu1z._.js.map
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -    6520 Aug 24 07:35 node_modules__bun_0m5p34h._.js
+	com.apple.provenance	     11 
+-rw-r--r--@ 1 sterling  staff  -   12443 Aug 24 07:35 node_modules__bun_0m5p34h._.js.map
+	com.apple.provenance	     11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/web/.next/server/pages:
+total 48
+-rw-r--r--@ 1 sterling  staff  - 8206 Aug 24 07:35 404.html
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 9133 Aug 24 07:35 500.html
+	com.apple.provenance	  11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/web/.next/static:
+total 0
+drwxr-xr-x@  5 sterling  staff  - 160 Aug 24 07:35 SPUmx36SXQ4yYJTGCqQh5
+	com.apple.provenance	 11 
+drwxr-xr-x@ 11 sterling  staff  - 352 Aug 24 07:35 chunks
+	com.apple.provenance	 11 
+drwxr-xr-x@  5 sterling  staff  - 160 Aug 24 07:35 media
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/web/.next/static/SPUmx36SXQ4yYJTGCqQh5:
+total 24
+-rw-r--r--@ 1 sterling  staff  - 219 Aug 24 07:35 _buildManifest.js
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  -  96 Aug 24 07:35 _clientMiddlewareManifest.js
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  -  80 Aug 24 07:35 _ssgManifest.js
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/web/.next/static/chunks:
+total 1176
+-rw-r--r--@ 1 sterling  staff  - 112594 Aug 24 07:35 0cz1d0mv5g_q7.js
+	com.apple.provenance	    11 
+-rw-r--r--@ 1 sterling  staff  -  14385 Aug 24 07:35 0jd46711mtice.js
+	com.apple.provenance	    11 
+-rw-r--r--@ 1 sterling  staff  - 176563 Aug 24 07:35 0u_cjp0gitdl5.js
+	com.apple.provenance	    11 
+-rw-r--r--@ 1 sterling  staff  -  22180 Aug 24 07:35 0vn9h29wmi4xu.js
+	com.apple.provenance	    11 
+-rw-r--r--@ 1 sterling  staff  - 228840 Aug 24 07:35 0zt8rzb3r8bn6.js
+	com.apple.provenance	    11 
+-rw-r--r--@ 1 sterling  staff  -   3012 Aug 24 07:35 1c_qmyuvvom9m.css
+	com.apple.provenance	    11 
+-rw-r--r--@ 1 sterling  staff  -   1392 Aug 24 07:35 2fd93-3d8cbm2.css
+	com.apple.provenance	    11 
+-rw-r--r--@ 1 sterling  staff  -  15741 Aug 24 07:35 3jfn582d3ztyk.js
+	com.apple.provenance	    11 
+-rw-r--r--@ 1 sterling  staff  -   9619 Aug 24 07:35 turbopack-3zuo5juolxask.js
+	com.apple.provenance	    11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/web/.next/static/media:
+total 328
+-rw-r--r--@ 1 sterling  staff  - 67864 Aug 24 07:35 GeistMonoVF-s.p.1lv5tp2fpjxdz.woff
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 66268 Aug 24 07:35 GeistVF-s.p.0e569l9b0bre8.woff
+	com.apple.provenance	   11 
+-rw-r--r--@ 1 sterling  staff  - 25931 Aug 24 07:35 favicon.2vob68tjqpejf.ico
+	com.apple.provenance	   11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/web/.next/types:
+total 0
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/web/.turbo:
+total 16
+-rw-r--r--@ 1 sterling  staff  -   26 Aug 24 07:50 turbo-lint.log
+	com.apple.provenance	  11 
+-rw-r--r--@ 1 sterling  staff  - 1092 Aug 24 07:35 turbo-verify.log
+	com.apple.provenance	  11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/packages/eslint-config/.turbo:
+total 8
+-rw-r--r--@ 1 sterling  staff  - 248 Aug 24 07:35 turbo-verify.log
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/packages/typescript-config/.turbo:
+total 8
+-rw-r--r--@ 1 sterling  staff  - 257 Aug 24 07:35 turbo-verify.log
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/packages/ui/.turbo:
+total 8
+-rw-r--r--@ 1 sterling  staff  - 405 Aug 24 07:35 turbo-verify.log
+	com.apple.provenance	 11 
+
+/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/packages/ui/dist:
+total 48
+-rw-r--r--@ 1 sterling  staff  - 299 Aug 24 07:35 button.d.ts
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 300 Aug 24 07:35 button.d.ts.map
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 247 Aug 24 07:35 card.d.ts
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 368 Aug 24 07:35 card.d.ts.map
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 197 Aug 24 07:35 code.d.ts
+	com.apple.provenance	 11 
+-rw-r--r--@ 1 sterling  staff  - 298 Aug 24 07:35 code.d.ts.map
+	com.apple.provenance	 11 

@@ -1,0 +1,16 @@
+HTTP/2 200 
+access-control-allow-origin: https://render.githubusercontent.com
+content-disposition: attachment; filename=bun-0d9b296af33f2b851fcbf4df3e9ec89751734ba4.tar.gz
+content-security-policy: default-src 'none'; style-src 'unsafe-inline'; sandbox
+content-type: application/x-gzip
+cross-origin-resource-policy: cross-origin
+etag: "ee479b9ca2926cb35ce75ec854bab9839fd257596279cd17b57a89c4eb09c902"
+strict-transport-security: max-age=31536000
+vary: Authorization,Accept-Encoding
+x-content-type-options: nosniff
+x-frame-options: deny
+x-xss-protection: 1; mode=block
+date: Tue, 25 Aug 2026 00:07:27 GMT
+x-github-request-id: E6AE:3EE543:1D7B9F:2AEBBE:6A8CDCBE
+x-github-edge-region: iad
+

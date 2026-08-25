@@ -16,16 +16,17 @@
 
 | Capability | Scope | Availability | Status | Verdict |
 | --- | --- | --- | --- | --- |
-| [Plugin identity and agent configuration](#plugin-identity-config) | plugin / package / repository, development | enabled | **Current** | GO |
-| [Context and tool observation capture](#plugin-hooks-event-capture) | plugin / package / repository, development | observation-only | **Current** | GO |
-| [Ledger and native-loop tool registration](#plugin-structured-tools) | plugin / package / repository, development | enabled | **Current** | GO |
-| [Ledger lifecycle boundary](#plugin-ledger-authority) | plugin / package / repository, development | enabled | **Current** | GO |
+| [Independent harness vertical slice](#custom-harness-vertical-slice) | harness / package / repository, development / platforms: darwin-arm64 | enabled | **Current** | GO |
+| [Plugin identity and agent configuration](#plugin-identity-config) | plugin / package / repository, development | conditional | **Experimental** | CONDITIONAL |
+| [Context and tool observation capture](#plugin-hooks-event-capture) | plugin / package / repository, development | conditional | **Experimental** | CONDITIONAL |
+| [Ledger and native-loop tool registration](#plugin-structured-tools) | plugin / package / repository, development | conditional | **Experimental** | CONDITIONAL |
+| [Ledger lifecycle boundary](#plugin-ledger-authority) | plugin / package / repository, development | conditional | **Experimental** | CONDITIONAL |
 | [Lifecycle and material write boundary](#plugin-authoritative-writes) | plugin / package / — | disabled | **Deferred** | NO-GO |
-| [Fail-closed lifecycle guards](#plugin-lifecycle-guards) | plugin / package / repository, development | enabled | **Current** | GO |
-| [Mechanical real-host capability report](#plugin-capability-report) | plugin / package / repository, development, test | enabled | **Current** | GO |
+| [Fail-closed lifecycle guards](#plugin-lifecycle-guards) | plugin / package / repository, development | conditional | **Experimental** | CONDITIONAL |
+| [Mechanical real-host capability report](#plugin-capability-report) | plugin / package / repository, development, test | conditional | **Experimental** | CONDITIONAL |
 | [Composed web-search surfaces](#plugin-search-surface) | plugin / package / development, test | conditional | **Experimental** | CONDITIONAL |
-| [Optional private runtime search profile](#plugin-private-runtime-search) | plugin / private-profile / development, test, private-release / platforms: darwin-arm64 | conditional | **Experimental** | CONDITIONAL |
-| [Registry packaging readiness](#plugin-registry-readiness) | plugin / package / repository, test | enabled | **Current** | GO |
+| [Optional private runtime search profile](#plugin-private-runtime-search) | plugin / private-profile / development, test, private-release / platforms: darwin-arm64 | disabled | **Deferred** | NO-GO |
+| [Registry packaging readiness](#plugin-registry-readiness) | plugin / package / repository, test | conditional | **Experimental** | CONDITIONAL |
 | [Engineering-intent scaffolding](#plugin-engineering-intent) | plugin / repository / development, test | disabled | **Experimental** | CONDITIONAL |
 | [Development evidence scaffolding](#plugin-evidence-scaffolding) | plugin / repository / development, test | disabled | **Experimental** | CONDITIONAL |
 | [Orchestration and handoff scaffolding](#plugin-orchestration-scaffolding) | plugin / repository / development, test | disabled | **Experimental** | CONDITIONAL |
@@ -44,93 +45,115 @@
 | [Legacy loop daemon boundary](#retired-daemon) | plugin / retired / — | absent | **Retired** | RETIRED |
 | [Legacy marker protocol and local agent boundary](#retired-marker-agent) | plugin / retired / — | absent | **Retired** | RETIRED |
 
-<a id="plugin-identity-config"></a>
-## Plugin identity and agent configuration
+<a id="custom-harness-vertical-slice"></a>
+## Independent harness vertical slice
 
 - **Status / verdict:** Current / GO — Current only for the declared scope and validated local facets.
-- **Owners:** plugin
-- **Scope:** plugin / package / repository, development
-- **Constraint count:** 1
+- **Owners:** harness
+- **Scope:** harness / package / repository, development / platforms: darwin-arm64
+- **Constraint count:** 17
 - **Assertion:** positive; Positive assertion under the validated facets and declared scope.
 - **Observation:** implemented
 - **Evidence:** sufficient
 - **Authority:** authorized
-- **Delivery:** composed
-- **Qualification:** qualified; platforms: —
-- **Availability:** enabled; environments: repository, development; production: disabled; publication: unknown; deployment: disabled
+- **Delivery:** exported
+- **Qualification:** qualified; platforms: darwin-arm64
+- **Availability:** enabled; environments: repository, development; production: disabled; publication: unpublished; deployment: disabled
 - **Blockers:** —
-- **Observation refs:** source: `apps/plugin/opencode2/src/plugin/plugin.ts#promisePlugin`<br>source: `apps/plugin/opencode2/src/features/config/index.ts#pluginConfigFeature`
-- **Assertion refs:** test: `apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs#setup installs the bundled agent suite and selects orchestrator without user config`
-- **Evidence refs:** test: `apps/plugin/opencode2/tests/unit/plugin-entrypoint.test.mjs#entrypoint exports the default Effect plugin with a compatibility setup seam`
-- **Authority refs:** decision: `apps/plugin/opencode2/docs/decisions/0005-product-identity.md#Product identity and peer boundaries`
-- **Delivery refs:** source: `apps/plugin/opencode2/src/plugin/plugin.ts#composed`
-- **Qualification refs:** test: `apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs#setup accepts the reviewed beta-17595 host ABI`
+- **Observation refs:** source: `apps/custom-harness/src/kernel/runtime.ts#createCuriosityHarness`<br>source: `apps/custom-harness/src/kernel/plugin.ts#StaticPluginCatalog`
+- **Assertion refs:** test: `apps/custom-harness/tests/architecture.test.ts#keeps SQLite writes inside the sealed authority boundary`<br>test: `apps/custom-harness/tests/architecture.test.ts#keeps semantic plugins capability-free`
+- **Evidence refs:** test: `apps/custom-harness/tests/authority.test.ts#authenticates one command commits one event and rebuilds a read-only projection after restart`<br>test: `apps/custom-harness/tests/tui.test.ts#accepts a prompt immediately and streams through a signed chat turn`<br>test: `apps/custom-harness/tests/chat.test.ts#persists the prompt streams the provider result and recovers completion`<br>test: `apps/custom-harness/tests/chat.test.ts#records a failed turn without fabricating an assistant message`<br>test: `apps/custom-harness/tests/chat.test.ts#streams through the AI SDK OpenAI-compatible adapter`<br>test: `apps/custom-harness/tests/plugin-catalog.test.ts#orders dependencies deterministically and derives one stable digest`<br>test: `apps/custom-harness/tests/plugin-catalog.test.ts#rejects missing mismatched and cyclic dependencies`<br>test: `apps/custom-harness/tests/tui.test.ts#renders completed Markdown with terminal structure`<br>test: `apps/custom-harness/tests/tui.test.ts#matches the five OpenCode and Crush acceptance frames`<br>test: `apps/custom-harness/tests/tui.test.ts#advances restrained braille animations without changing geometry`<br>test: `apps/custom-harness/tests/action-reaction.test.ts#reclaims an interrupted pure reaction and commits its action exactly once`<br>test: `apps/custom-harness/tests/attempt-governance.test.ts#fences an older generation quarantines its receipt and preserves immutable snapshots`<br>test: `apps/custom-harness/tests/content-tools.test.ts#keeps read-only tool and network search calls as durable denied proposals`<br>test: `apps/custom-harness/tests/intelligence-projections.test.ts#replays equivalent bounded views while keeping evidence and resolution non-authoritative`<br>test: `apps/custom-harness/tests/prompt-assembler.test.ts#drops whole optional blocks deterministically and denies required overflow`<br>test: `apps/custom-harness/tests/prompt-context.test.ts#sends digest-bound system and durable context blocks before conversation messages`<br>test: `apps/custom-harness/tests/qualification-status.test.ts#reports the candidate profile without production mutation remote or platform overclaims`<br>test: `apps/custom-harness/tests/workflow-orchestration.test.ts#runs one bounded child and denies child capability widening`
+- **Authority refs:** decision: `docs/architecture/custom-harness/decisions/ADR-011-direct-build-and-host-decoupling.md#Decision`
+- **Delivery refs:** source: `apps/custom-harness/package.json#thread-projections/node`
+- **Qualification refs:** test: `apps/custom-harness/tests/supervisor.test.ts#completes a nonce-bound versioned handshake with every host capability disabled`
 
-<a id="plugin-hooks-event-capture"></a>
-## Context and tool observation capture
+<a id="plugin-identity-config"></a>
+## Plugin identity and agent configuration
 
-- **Status / verdict:** Current / GO — Current only for the declared scope and validated local facets.
+- **Status / verdict:** Experimental / CONDITIONAL — Experimental and bounded to the declared non-consequential scope.
 - **Owners:** plugin
 - **Scope:** plugin / package / repository, development
 - **Constraint count:** 2
 - **Assertion:** limited; Limited assertion; the structured scope and facet states remain controlling.
 - **Observation:** implemented
-- **Evidence:** sufficient
-- **Authority:** authorized
-- **Delivery:** composed
-- **Qualification:** qualified; platforms: —
-- **Availability:** observation-only; environments: repository, development; production: disabled; publication: unknown; deployment: disabled
-- **Blockers:** —
+- **Evidence:** partial
+- **Authority:** limited
+- **Delivery:** conditional
+- **Qualification:** unqualified; platforms: —
+- **Availability:** conditional; environments: repository, development; production: disabled; publication: unknown; deployment: disabled
+- **Blockers:** Changed source requires a new exact artifact qualification.
+- **Observation refs:** source: `apps/plugin/opencode2/src/plugin/plugin.ts#promisePlugin`<br>source: `apps/plugin/opencode2/src/features/config/index.ts#pluginConfigFeature`
+- **Assertion refs:** test: `apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs#setup accepts the reviewed beta-18138 host ABI`
+- **Evidence refs:** test: `apps/plugin/opencode2/tests/unit/plugin-entrypoint.test.mjs#entrypoint exports the default Effect plugin with a compatibility setup seam`
+- **Authority refs:** decision: `apps/plugin/opencode2/docs/decisions/0005-product-identity.md#Product identity and peer boundaries`
+- **Delivery refs:** source: `apps/plugin/opencode2/src/plugin/plugin.ts#composed`
+- **Qualification refs:** —
+
+<a id="plugin-hooks-event-capture"></a>
+## Context and tool observation capture
+
+- **Status / verdict:** Experimental / CONDITIONAL — Experimental and bounded to the declared non-consequential scope.
+- **Owners:** plugin
+- **Scope:** plugin / package / repository, development
+- **Constraint count:** 2
+- **Assertion:** limited; Limited assertion; the structured scope and facet states remain controlling.
+- **Observation:** implemented
+- **Evidence:** partial
+- **Authority:** limited
+- **Delivery:** conditional
+- **Qualification:** unqualified; platforms: —
+- **Availability:** conditional; environments: repository, development; production: disabled; publication: unknown; deployment: disabled
+- **Blockers:** Changed source requires a new exact artifact qualification.
 - **Observation refs:** source: `apps/plugin/opencode2/src/features/hooks/open-code-hooks.ts#registerOpenCodeHooks`<br>source: `apps/plugin/opencode2/src/features/hooks/event-capture.ts#EventCapture`
 - **Assertion refs:** section: `apps/plugin/opencode2/docs/architecture/current-state.md#Composed plugin scope`
 - **Evidence refs:** test: `apps/plugin/opencode2/tests/unit/event-capture.test.mjs#capture is idempotent and records sequence gaps and collisions`
 - **Authority refs:** decision: `apps/plugin/opencode2/docs/decisions/0012-ledger-native-product.md#ADR 0012 Ledger authority and native loop product`
 - **Delivery refs:** source: `apps/plugin/opencode2/src/features/hooks/index.ts#hookFoundationFeature`
-- **Qualification refs:** test: `apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs#setup registers functional Promise hooks and every product tool once`
+- **Qualification refs:** —
 
 <a id="plugin-structured-tools"></a>
 ## Ledger and native-loop tool registration
 
-- **Status / verdict:** Current / GO — Current only for the declared scope and validated local facets.
+- **Status / verdict:** Experimental / CONDITIONAL — Experimental and bounded to the declared non-consequential scope.
 - **Owners:** plugin
 - **Scope:** plugin / package / repository, development
 - **Constraint count:** 1
 - **Assertion:** limited; Limited assertion; the structured scope and facet states remain controlling.
 - **Observation:** implemented
-- **Evidence:** sufficient
-- **Authority:** authorized
-- **Delivery:** composed
-- **Qualification:** qualified; platforms: —
-- **Availability:** enabled; environments: repository, development; production: disabled; publication: unknown; deployment: disabled
-- **Blockers:** —
+- **Evidence:** partial
+- **Authority:** limited
+- **Delivery:** conditional
+- **Qualification:** unqualified; platforms: —
+- **Availability:** conditional; environments: repository, development; production: disabled; publication: unknown; deployment: disabled
+- **Blockers:** Changed source requires a new exact artifact qualification.
 - **Observation refs:** source: `apps/plugin/opencode2/src/features/tools/index.ts#structuredToolsFeature`
 - **Assertion refs:** test: `apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs#setup registers functional Promise hooks and every product tool once`
 - **Evidence refs:** test: `apps/plugin/opencode2/tests/unit/ledger-v1.test.mjs#activation and claim automation fail closed while commit-bound fencing is unproven`
 - **Authority refs:** decision: `apps/plugin/opencode2/docs/decisions/0012-ledger-native-product.md#ADR 0012 Ledger authority and native loop product`
 - **Delivery refs:** source: `apps/plugin/opencode2/src/plugin/plugin.ts#composed`
-- **Qualification refs:** test: `apps/plugin/opencode2/tests/integration/functional-container-startup.test.mjs#installed setup instrumentation proves exact tool registration schemas and safe executor behavior`
+- **Qualification refs:** —
 
 <a id="plugin-ledger-authority"></a>
 ## Ledger lifecycle boundary
 
-- **Status / verdict:** Current / GO — Current only for the declared scope and validated local facets.
+- **Status / verdict:** Experimental / CONDITIONAL — Experimental and bounded to the declared non-consequential scope.
 - **Owners:** plugin
 - **Scope:** plugin / package / repository, development
 - **Constraint count:** 2
 - **Assertion:** limited; Limited assertion; the structured scope and facet states remain controlling.
 - **Observation:** implemented
-- **Evidence:** sufficient
-- **Authority:** authorized
-- **Delivery:** composed
-- **Qualification:** qualified; platforms: —
-- **Availability:** enabled; environments: repository, development; production: disabled; publication: unknown; deployment: disabled
-- **Blockers:** —
+- **Evidence:** partial
+- **Authority:** limited
+- **Delivery:** conditional
+- **Qualification:** unqualified; platforms: —
+- **Availability:** conditional; environments: repository, development; production: disabled; publication: unknown; deployment: disabled
+- **Blockers:** Changed source requires a new exact artifact qualification.
 - **Observation refs:** source: `apps/plugin/opencode2/src/features/ledger/index.ts#Ledger`
 - **Assertion refs:** section: `apps/plugin/opencode2/docs/architecture/current-state.md#Ledger authority and disabled writes`
 - **Evidence refs:** test: `apps/plugin/opencode2/tests/unit/ledger-authority-domain.test.mjs#facts cannot claim authority and proposal validation rejects fabricated completion`
 - **Authority refs:** decision: `apps/plugin/opencode2/docs/decisions/0012-ledger-native-product.md#ADR 0012 Ledger authority and native loop product`
 - **Delivery refs:** source: `apps/plugin/opencode2/src/features/tools/index.ts#definitions`
-- **Qualification refs:** test: `apps/plugin/opencode2/tests/unit/ledger-v1.test.mjs#synthetic approval and artifact-only completion fail closed`
+- **Qualification refs:** —
 
 <a id="plugin-authoritative-writes"></a>
 ## Lifecycle and material write boundary
@@ -146,7 +169,7 @@
 - **Delivery:** absent
 - **Qualification:** unqualified; platforms: —
 - **Availability:** disabled; environments: —; production: disabled; publication: not-applicable; deployment: disabled
-- **Blockers:** Commit-bound authority fencing is required. Host persistence semantics require qualification.
+- **Blockers:** Commit-bound authority fencing is required. Host persistence semantics require qualification. Changed source requires a new exact artifact qualification.
 - **Observation refs:** source: `apps/plugin/opencode2/src/platform/real-host/index.ts#authoritativePersistence`
 - **Assertion refs:** test: `apps/plugin/opencode2/tests/unit/persistence-fencing.test.mjs#lease-protected atomic publication fails closed when rename cannot bind the lease`
 - **Evidence refs:** test: `apps/plugin/opencode2/tests/unit/ledger-v1.test.mjs#intent revision writes remain disabled without commit-bound fencing`
@@ -157,46 +180,46 @@
 <a id="plugin-lifecycle-guards"></a>
 ## Fail-closed lifecycle guards
 
-- **Status / verdict:** Current / GO — Current only for the declared scope and validated local facets.
+- **Status / verdict:** Experimental / CONDITIONAL — Experimental and bounded to the declared non-consequential scope.
 - **Owners:** plugin
 - **Scope:** plugin / package / repository, development
 - **Constraint count:** 2
-- **Assertion:** positive; Positive assertion under the validated facets and declared scope.
+- **Assertion:** limited; Limited assertion; the structured scope and facet states remain controlling.
 - **Observation:** implemented
-- **Evidence:** sufficient
-- **Authority:** authorized
-- **Delivery:** composed
-- **Qualification:** qualified; platforms: —
-- **Availability:** enabled; environments: repository, development; production: disabled; publication: unknown; deployment: disabled
-- **Blockers:** —
+- **Evidence:** partial
+- **Authority:** limited
+- **Delivery:** conditional
+- **Qualification:** unqualified; platforms: —
+- **Availability:** conditional; environments: repository, development; production: disabled; publication: unknown; deployment: disabled
+- **Blockers:** Changed source requires a new exact artifact qualification.
 - **Observation refs:** source: `apps/plugin/opencode2/src/plugin/lifecycle.ts#projectRootKey`<br>source: `apps/plugin/opencode2/src/platform/doctor/index.ts#doctor`
 - **Assertion refs:** test: `apps/plugin/opencode2/tests/unit/hook-foundation-doctor.test.mjs#doctor emits stable disabled capability gates for unproven native host semantics`<br>test: `apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs#duplicate project-root aliases are silently no-op suppressed while independent projects register`
 - **Evidence refs:** test: `apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs#failed setup rolls registrations back in reverse and releases duplicate guard`
 - **Authority refs:** decision: `apps/plugin/opencode2/docs/decisions/0014-release-candidate-authority-and-fencing.md#Decision`
 - **Delivery refs:** source: `apps/plugin/opencode2/src/plugin/plugin.ts#setup`
-- **Qualification refs:** test: `apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs#setup rejects an unreviewed host ABI before registering behavior`
+- **Qualification refs:** —
 
 <a id="plugin-capability-report"></a>
 ## Mechanical real-host capability report
 
-- **Status / verdict:** Current / GO — Current only for the declared scope and validated local facets.
+- **Status / verdict:** Experimental / CONDITIONAL — Experimental and bounded to the declared non-consequential scope.
 - **Owners:** plugin
 - **Scope:** plugin / package / repository, development, test
-- **Constraint count:** 2
-- **Assertion:** negative; Negative assertion under the validated absence or fail-closed facets.
+- **Constraint count:** 3
+- **Assertion:** limited; Limited assertion; the structured scope and facet states remain controlling.
 - **Observation:** implemented
-- **Evidence:** sufficient
-- **Authority:** authorized
-- **Delivery:** composed
-- **Qualification:** qualified; platforms: —
-- **Availability:** enabled; environments: repository, development, test; production: disabled; publication: unknown; deployment: disabled
-- **Blockers:** —
+- **Evidence:** partial
+- **Authority:** limited
+- **Delivery:** conditional
+- **Qualification:** unqualified; platforms: —
+- **Availability:** conditional; environments: repository, development, test; production: disabled; publication: unknown; deployment: disabled
+- **Blockers:** Changed source requires a new exact artifact qualification.
 - **Observation refs:** source: `apps/plugin/opencode2/src/platform/real-host/index.ts#capabilityReport`
 - **Assertion refs:** test: `apps/plugin/opencode2/tests/unit/real-host-suite.test.mjs#credential-free capability report is pinned and fail-closed for unsupported semantics`
 - **Evidence refs:** test: `apps/plugin/opencode2/tests/unit/real-host-suite.test.mjs#version mismatch disables every real-host capability with a stable code`
 - **Authority refs:** decision: `apps/plugin/opencode2/docs/decisions/0025-beta-17595-plugin-abi.md#ADR 0025 exact beta-17595 plugin ABI`
 - **Delivery refs:** source: `apps/plugin/opencode2/src/features/hooks/open-code-hooks.ts#capabilityReport`
-- **Qualification refs:** test: `apps/plugin/opencode2/tests/unit/hook-foundation-doctor.test.mjs#doctor labels observational failures fail-open and material failures fail-closed`
+- **Qualification refs:** —
 
 <a id="plugin-search-surface"></a>
 ## Composed web-search surfaces
@@ -212,7 +235,7 @@
 - **Delivery:** conditional
 - **Qualification:** conditional; platforms: —
 - **Availability:** conditional; environments: development, test; production: disabled; publication: unknown; deployment: disabled
-- **Blockers:** Live endpoint state requires separate qualification.
+- **Blockers:** Live endpoint state requires separate qualification. Changed source requires a new exact artifact qualification.
 - **Observation refs:** source: `apps/plugin/opencode2/src/features/search/index.ts#createSearchDefinitions`
 - **Assertion refs:** test: `apps/plugin/opencode2/tests/unit/web-search.test.mjs#neutral tool is public and the shipped branded name is a compatibility alias without setup traffic`
 - **Evidence refs:** test: `apps/plugin/opencode2/tests/unit/web-search.test.mjs#web search uses the approved token-protected POST contract and frames results as untrusted`
@@ -223,7 +246,7 @@
 <a id="plugin-private-runtime-search"></a>
 ## Optional private runtime search profile
 
-- **Status / verdict:** Experimental / CONDITIONAL — Experimental and bounded to the declared non-consequential scope.
+- **Status / verdict:** Deferred / NO-GO — Deferred, disabled, and blocked from consequential use.
 - **Owners:** plugin, runtime
 - **Scope:** plugin / private-profile / development, test, private-release / platforms: darwin-arm64
 - **Constraint count:** 3
@@ -231,38 +254,38 @@
 - **Observation:** implemented
 - **Evidence:** partial
 - **Authority:** limited
-- **Delivery:** conditional
-- **Qualification:** qualified; platforms: darwin-arm64
-- **Availability:** conditional; environments: development, test, private-release; production: disabled; publication: unpublished; deployment: disabled
-- **Blockers:** Broader delivery requires separate authority.
+- **Delivery:** absent
+- **Qualification:** unqualified; platforms: —
+- **Availability:** disabled; environments: —; production: disabled; publication: unpublished; deployment: disabled
+- **Blockers:** Broader delivery requires separate authority. Changed source requires a new exact artifact qualification.
 - **Observation refs:** source: `apps/plugin/opencode2/src/features/search/runtime-adapter.ts#createRuntimeSearchExecutor`
 - **Assertion refs:** test: `apps/plugin/opencode2/tests/security/search-adapter-security.test.mjs#runtime adapter imports only the query package and contains no admin surface`
 - **Evidence refs:** test: `apps/plugin/opencode2/tests/characterization/promise-tool-host-abi.test.mjs#the private query-only workspace package loads under the pinned Bun host runtime`
 - **Authority refs:** decision: `apps/plugin/opencode2/docs/decisions/0022-m7-private-opencode-adapter.md#Decision`
-- **Delivery refs:** source: `apps/plugin/opencode2/src/plugin/plugin.ts#runtimeSearchOptions`
-- **Qualification refs:** test: `apps/plugin/opencode2/tests/security/m7-query-capability-file.test.mjs#M7 capability file is canonical regular owned 0600 bounded copied once and redacted`
+- **Delivery refs:** source: `apps/plugin/opencode2/src/plugin/plugin.ts#composeFeatures`
+- **Qualification refs:** —
 
 <a id="plugin-registry-readiness"></a>
 ## Registry packaging readiness
 
-- **Status / verdict:** Current / GO — Current only for the declared scope and validated local facets.
+- **Status / verdict:** Experimental / CONDITIONAL — Experimental and bounded to the declared non-consequential scope.
 - **Owners:** plugin
 - **Scope:** plugin / package / repository, test
 - **Constraint count:** 2
 - **Assertion:** limited; Limited assertion; the structured scope and facet states remain controlling.
 - **Observation:** implemented
-- **Evidence:** sufficient
-- **Authority:** authorized
-- **Delivery:** registry-ready
-- **Qualification:** qualified; platforms: —
-- **Availability:** enabled; environments: repository, test; production: disabled; publication: unknown; deployment: disabled
-- **Blockers:** Publication requires a separate reviewed decision.
+- **Evidence:** partial
+- **Authority:** limited
+- **Delivery:** conditional
+- **Qualification:** unqualified; platforms: —
+- **Availability:** conditional; environments: repository, test; production: disabled; publication: unknown; deployment: disabled
+- **Blockers:** Publication requires a separate reviewed decision. Changed source requires a new exact artifact qualification.
 - **Observation refs:** source: `apps/plugin/opencode2/package.json#exports`
 - **Assertion refs:** decision: `apps/plugin/opencode2/docs/decisions/0031-registry-ready-package-and-black-box-proof.md#Consequences`
 - **Evidence refs:** test: `apps/plugin/opencode2/tests/integration/registry-package-contract.test.mjs#normal pack preserves the source manifest and excludes development/workspace surfaces`
 - **Authority refs:** decision: `apps/plugin/opencode2/docs/decisions/0031-registry-ready-package-and-black-box-proof.md#Decision`
 - **Delivery refs:** test: `apps/plugin/opencode2/tests/integration/ephemeral-container-harness.test.mjs#functional setup contract is explicit unique and aligned with checked-in release assets`
-- **Qualification refs:** test: `apps/plugin/opencode2/tests/integration/readme-verification.test.mjs#README plugin verification retries exact cold-empty output then accepts only the expected inventory`
+- **Qualification refs:** —
 
 <a id="plugin-engineering-intent"></a>
 ## Engineering-intent scaffolding
@@ -278,7 +301,7 @@
 - **Delivery:** internal
 - **Qualification:** conditional; platforms: —
 - **Availability:** disabled; environments: —; production: disabled; publication: not-applicable; deployment: disabled
-- **Blockers:** A trusted command callback is required. Durable replay protection is required. Composition requires separate authority.
+- **Blockers:** A trusted command callback is required. Durable replay protection is required. Composition requires separate authority. Changed source requires a new exact artifact qualification.
 - **Observation refs:** source: `apps/plugin/opencode2/src/features/engineering-intent/controller.ts#EngineeringPursuitController`
 - **Assertion refs:** section: `apps/plugin/opencode2/docs/architecture/current-state.md#Internal scaffolding`
 - **Evidence refs:** test: `apps/plugin/opencode2/tests/integration/engineering-foreground.test.mjs#pinned host denies authority minting and every consequential admission`
@@ -300,7 +323,7 @@
 - **Delivery:** internal
 - **Qualification:** conditional; platforms: —
 - **Availability:** disabled; environments: —; production: disabled; publication: not-applicable; deployment: disabled
-- **Blockers:** Ledger schema and fencing gates are required. Composition requires separate authority.
+- **Blockers:** Ledger schema and fencing gates are required. Composition requires separate authority. Changed source requires a new exact artifact qualification.
 - **Observation refs:** source: `apps/plugin/opencode2/src/features/evidence/index.ts#evidenceFeature`
 - **Assertion refs:** test: `apps/plugin/opencode2/tests/unit/evidence-development.test.mjs#development bootstrap is explicit and rejects production claims`
 - **Evidence refs:** test: `apps/plugin/opencode2/tests/integration/evidence-ingest-query.test.mjs#ingest crash boundaries converge and pre-commit work is universally ineligible`
@@ -322,7 +345,7 @@
 - **Delivery:** internal
 - **Qualification:** conditional; platforms: —
 - **Availability:** disabled; environments: —; production: disabled; publication: not-applicable; deployment: disabled
-- **Blockers:** Composition requires separate authority.
+- **Blockers:** Composition requires separate authority. Changed source requires a new exact artifact qualification.
 - **Observation refs:** source: `apps/plugin/opencode2/src/features/orchestration/index.ts#orchestrationFeature`<br>source: `apps/plugin/opencode2/src/features/handoff/index.mjs#compileHandoff`
 - **Assertion refs:** test: `apps/plugin/opencode2/tests/unit/handoff-contract.test.mjs#skill command schema and fixtures remain provider-neutral and planning-only`
 - **Evidence refs:** test: `apps/plugin/opencode2/tests/unit/handoff-contract.test.mjs#policy denial is out-of-band and terminal`

@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "custom-harness-q1-r3-generated-surfaces/v1",
+  "paths": [
+    ".turbo",
+    "apps/docs/.next",
+    "apps/docs/.turbo",
+    "apps/docs/next-env.d.ts",
+    "apps/web/.next",
+    "apps/web/.turbo",
+    "apps/web/next-env.d.ts",
+    "apps/plugin/opencode2/.turbo",
+    "apps/plugin/opencode2/dist",
+    "apps/plugin/opencode2/assets/manifest.json",
+    "apps/runtime/.turbo",
+    "apps/runtime/native/target",
+    "packages/eslint-config/.turbo",
+    "packages/typescript-config/.turbo",
+    "packages/ui/.turbo",
+    "packages/ui/dist",
+    "apps/runtime/src/turbo-future-source-fixture.ts"
+  ],
+  "trackedWorkingCopyPath": "apps/plugin/opencode2/assets/manifest.json",
+  "knownTransientPath": "apps/runtime/src/turbo-future-source-fixture.ts",
+  "restorableFields": [
+    "type",
+    "bytes",
+    "sha256",
+    "mode",
+    "uid",
+    "gid",
+    "mtimeNs",
+    "flags",
+    "aclDigest",
+    "xattrs",
+    "symlinkTarget"
+  ],
+  "observedButNotRestorableByRename": [
+    "ctimeNs",
+    "parent-directory metadata",
+    "inode when a working copy is used"
+  ]
+}
