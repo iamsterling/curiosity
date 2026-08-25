@@ -1,0 +1,2 @@
+exitCode: 0
+command: bun --no-install --no-env-file run --cwd apps/plugin/opencode2 typecheck

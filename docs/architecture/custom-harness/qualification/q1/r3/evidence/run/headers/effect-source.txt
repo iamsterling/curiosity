@@ -1,0 +1,16 @@
+HTTP/2 200 
+access-control-allow-origin: https://render.githubusercontent.com
+content-disposition: attachment; filename=effect-3c495ae7c96d43bfc3b8020250562a194c2c895e.tar.gz
+content-security-policy: default-src 'none'; style-src 'unsafe-inline'; sandbox
+content-type: application/x-gzip
+cross-origin-resource-policy: cross-origin
+etag: "b9fa77e801ce4ed2940d9f57af143214578e6af288cd94645f34938188cbbf97"
+strict-transport-security: max-age=31536000
+vary: Authorization,Accept-Encoding
+x-content-type-options: nosniff
+x-frame-options: deny
+x-xss-protection: 1; mode=block
+date: Tue, 25 Aug 2026 05:03:05 GMT
+x-github-request-id: CF15:188B36:784DD7:12CB227:6A8D2208
+x-github-edge-region: iad
+

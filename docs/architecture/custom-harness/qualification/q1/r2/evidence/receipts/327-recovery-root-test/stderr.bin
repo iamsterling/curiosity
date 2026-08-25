@@ -1,0 +1,5 @@
+$ node --test --test-concurrency=1 tools/status/status.test.mjs tools/verification/*.test.mjs && turbo run test
+@iamsterling/opencode2-config#test:  ERROR  command (/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2) /Users/sterling/.nvm/versions/node/v24.18.0/bin/bun run test exited (1)
+ WARNING  no output files found for task @repo/ui#build. Please check your `outputs` key in `turbo.json`
+ ERROR  run failed: command  exited (1)
+error: script "test" exited with code 1

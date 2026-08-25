@@ -1,0 +1,20 @@
+$ eslint src --max-warnings=0 && node tools/verify-architecture.mjs
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: the entrypoint must define one Promise compatibility setup and one Effect host plugin
+
+1 !== 2
+
+    at file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/plugin/opencode2/tools/verify-architecture.mjs:13:8 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 1,
+  expected: 2,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0
+error: script "lint" exited with code 1

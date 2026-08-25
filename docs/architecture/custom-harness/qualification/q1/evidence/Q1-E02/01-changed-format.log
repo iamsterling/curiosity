@@ -1,0 +1,12 @@
+COMMAND: /Users/sterling/.nvm/versions/node/v24.18.0/bin/node node_modules/prettier/bin/prettier.cjs --check docs/architecture/custom-harness/qualification/q1/ENTRY.md docs/architecture/custom-harness/qualification/q1/Q1-E01-candidate-matrix.md docs/architecture/custom-harness/qualification/q1/licenses/README.md docs/architecture/custom-harness/qualification/q1/probes/build-stack.test.ts docs/architecture/custom-harness/qualification/q1/probes/effect-composition.test.ts docs/architecture/custom-harness/qualification/q1/probes/effect-composition.ts docs/architecture/custom-harness/qualification/q1/probes/effect-import-boundary.test.ts docs/architecture/custom-harness/qualification/q1/probes/invalidation.test.ts docs/architecture/custom-harness/qualification/q1/probes/records-completeness.test.ts docs/architecture/custom-harness/qualification/q1/probes/check-local-links.mjs docs/architecture/custom-harness/qualification/q1/probes/tsconfig.json docs/architecture/custom-harness/qualification/q1/probes/fixtures/qualified-input.json docs/architecture/custom-harness/qualification/q1/records/ai-sdk.md docs/architecture/custom-harness/qualification/q1/records/build-test-stack.md docs/architecture/custom-harness/qualification/q1/records/curiosity-ledger.md docs/architecture/custom-harness/qualification/q1/records/effect-4.0.0-beta.107.md docs/architecture/custom-harness/qualification/q1/records/git-backends.md docs/architecture/custom-harness/qualification/q1/records/provenance-invalidation.md docs/architecture/custom-harness/qualification/q1/records/rust-toolchain-supervisor.md docs/architecture/custom-harness/qualification/q1/records/source-ledger.md docs/architecture/custom-harness/qualification/q1/records/sqlite-rust-tuple.md docs/architecture/custom-harness/qualification/q1/evidence/Q1-T01/RESULT.md docs/architecture/custom-harness/qualification/q1/evidence/Q1-T02/RESULT.md docs/architecture/custom-harness/qualification/q1/evidence/Q1-T03/REJECTION.md docs/architecture/custom-harness/qualification/q1/evidence/Q1-T04/RESULT.md
+START_UTC=2026-08-24T15:44:30Z
+BUN=1.3.14
+BUN_REVISION=1.3.14+0d9b296af
+NODE=v24.18.0
+RUSTC=rustc 1.97.1 (8bab26f4f 2026-07-14)
+CARGO=cargo 1.97.1 (c980f4866 2026-06-30)
+ENV_CONTROLS=credential-empty HOME/TMP/XDG scratch; no-install; no-env-file; Cargo offline; Turbo force/telemetry/notifier controls
+Checking formatting...
+All matched files use Prettier code style!
+END_UTC=2026-08-24T15:44:31Z
+EXIT=0

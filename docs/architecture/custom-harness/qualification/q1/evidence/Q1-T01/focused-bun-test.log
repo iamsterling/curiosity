@@ -1,0 +1,32 @@
+$ env -i ... bun --no-install --no-env-file test q1 probes (retained final)
+bun test v1.3.14 (0d9b296a)
+
+docs/architecture/custom-harness/qualification/q1/probes/effect-import-boundary.test.ts:
+(pass) Q1-W02 Effect dependency boundary > the selected stable composition subpaths have no external runtime import [16.42ms]
+(pass) Q1-W02 Effect dependency boundary > the plugin pin and lock artifact resolve to one physical Effect package [0.76ms]
+
+docs/architecture/custom-harness/qualification/q1/probes/effect-composition.test.ts:
+(pass) Q1-W02 exact Effect composition boundary > one ManagedRuntime owns one cached application layer and closes once [1.96ms]
+
+docs/architecture/custom-harness/qualification/q1/probes/build-stack.test.ts:
+(pass) Q1 build and test identity > the executing Bun runtime is the exact selected built-in test runner [0.01ms]
+(pass) Q1 build and test identity > the exact TypeScript and Turbo artifacts execute [94.48ms]
+(pass) Q1 build and test identity > package manifests retain the exact selected identities [0.54ms]
+
+docs/architecture/custom-harness/qualification/q1/probes/records-completeness.test.ts:
+(pass) Q1-T01 retained-record completeness > every bounded candidate has a verdict record [0.20ms]
+(pass) Q1-T01 retained-record completeness > qualified candidate license and notice bytes match retained digests [0.51ms]
+(pass) Q1-T01 retained-record completeness > qualified lock integrities remain present at the canonical root [0.15ms]
+
+docs/architecture/custom-harness/qualification/q1/probes/invalidation.test.ts:
+(pass) Q1-T02 qualification invalidation > unchanged exact input remains current [0.06ms]
+(pass) Q1-T02 qualification invalidation > changed pin invalidates the qualification [0.02ms]
+(pass) Q1-T02 qualification invalidation > changed feature/import surface invalidates the qualification [0.01ms]
+(pass) Q1-T02 qualification invalidation > changed source digest invalidates the qualification [0.01ms]
+(pass) Q1-T02 qualification invalidation > changed platform artifact invalidates the qualification [0.01ms]
+(pass) Q1-T02 qualification invalidation > changed platform invalidates the qualification [0.01ms]
+
+ 15 pass
+ 0 fail
+ 35 expect() calls
+Ran 15 tests across 5 files. [149.00ms]

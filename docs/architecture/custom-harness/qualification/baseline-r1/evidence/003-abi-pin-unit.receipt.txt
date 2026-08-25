@@ -1,0 +1,2 @@
+exitCode: 0
+command: /Users/sterling/.nvm/versions/node/v24.18.0/bin/node --test apps/plugin/opencode2/tests/unit/opencode-abi-pin.test.mjs

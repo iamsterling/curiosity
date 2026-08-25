@@ -4,7 +4,14 @@
   "title": "Curiosity scope-qualified capability status",
   "type": "object",
   "additionalProperties": false,
-  "required": ["$schema", "schemaVersion", "policy", "workspaces", "sourceContracts", "capabilities"],
+  "required": [
+    "$schema",
+    "schemaVersion",
+    "policy",
+    "workspaces",
+    "sourceContracts",
+    "capabilities"
+  ],
   "properties": {
     "$schema": { "const": "./schema.json" },
     "schemaVersion": { "const": 1 },
@@ -42,8 +49,22 @@
       "additionalProperties": false,
       "required": ["kind", "ref"],
       "properties": {
-        "kind": { "enum": ["source", "test", "decision", "section", "receipt", "external"] },
-        "ref": { "allOf": [{ "$ref": "#/$defs/repositoryReference" }, { "type": "string", "pattern": "^(?!.*(?:#L[0-9]+|:line-[0-9]+))" }] }
+        "kind": {
+          "enum": [
+            "source",
+            "test",
+            "decision",
+            "section",
+            "receipt",
+            "external"
+          ]
+        },
+        "ref": {
+          "allOf": [
+            { "$ref": "#/$defs/repositoryReference" },
+            { "type": "string", "pattern": "^(?!.*(?:#L[0-9]+|:line-[0-9]+))" }
+          ]
+        }
       }
     },
     "refs": {
@@ -55,16 +76,39 @@
       "additionalProperties": false,
       "required": ["path", "name", "kind", "private"],
       "properties": {
-        "path": { "allOf": [{ "$ref": "#/$defs/repositoryPath" }, { "type": "string", "pattern": "^(apps|packages)/" }] },
+        "path": {
+          "allOf": [
+            { "$ref": "#/$defs/repositoryPath" },
+            { "type": "string", "pattern": "^(apps|packages)/" }
+          ]
+        },
         "name": { "type": "string", "minLength": 1 },
-        "kind": { "enum": ["plugin", "runtime", "starter-app", "starter-library", "configuration"] },
+        "kind": {
+          "enum": [
+            "harness",
+            "plugin",
+            "runtime",
+            "starter-app",
+            "starter-library",
+            "configuration"
+          ]
+        },
         "private": { "type": "boolean" }
       }
     },
     "sourceContracts": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["composition", "exports", "capabilityReport", "adrIndexes", "historicalSnapshots", "retiredSurfaces", "forbiddenProductPatterns", "guardedSources"],
+      "required": [
+        "composition",
+        "exports",
+        "capabilityReport",
+        "adrIndexes",
+        "historicalSnapshots",
+        "retiredSurfaces",
+        "forbiddenProductPatterns",
+        "guardedSources"
+      ],
       "properties": {
         "composition": {
           "type": "object",
@@ -72,7 +116,11 @@
           "required": ["path", "features", "entryExport"],
           "properties": {
             "path": { "$ref": "#/$defs/repositoryPath" },
-            "features": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+            "features": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string" }
+            },
             "entryExport": { "$ref": "#/$defs/repositoryReference" }
           }
         },
@@ -82,7 +130,11 @@
           "required": ["path", "keys"],
           "properties": {
             "path": { "$ref": "#/$defs/repositoryPath" },
-            "keys": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+            "keys": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string" }
+            }
           }
         },
         "capabilityReport": {
@@ -116,7 +168,11 @@
             "required": ["path", "required"],
             "properties": {
               "path": { "$ref": "#/$defs/repositoryPath" },
-              "required": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+              "required": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "type": "string" }
+              }
             }
           }
         },
@@ -129,14 +185,19 @@
             "additionalProperties": false,
             "required": ["path", "classification", "authority", "historyRule"],
             "properties": {
-              "path": { "const": "apps/plugin/opencode2/docs/architecture/preflight-2026-08-12.md" },
+              "path": {
+                "const": "apps/plugin/opencode2/docs/architecture/preflight-2026-08-12.md"
+              },
               "classification": { "const": "immutable-historical" },
               "authority": { "const": "not-current" },
               "historyRule": { "const": "fixed-baseline-index-blob" }
             }
           }
         },
-        "retiredSurfaces": { "type": "array", "items": { "$ref": "#/$defs/repositoryPath" } },
+        "retiredSurfaces": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/repositoryPath" }
+        },
         "forbiddenProductPatterns": {
           "type": "array",
           "items": {
@@ -144,7 +205,10 @@
             "additionalProperties": false,
             "required": ["roots", "patterns"],
             "properties": {
-              "roots": { "type": "array", "items": { "$ref": "#/$defs/repositoryPath" } },
+              "roots": {
+                "type": "array",
+                "items": { "$ref": "#/$defs/repositoryPath" }
+              },
               "patterns": { "type": "array", "items": { "type": "string" } }
             }
           }
@@ -167,13 +231,42 @@
     "scope": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["product", "level", "environments", "platforms", "constraints"],
+      "required": [
+        "product",
+        "level",
+        "environments",
+        "platforms",
+        "constraints"
+      ],
       "properties": {
-        "product": { "enum": ["repository", "plugin", "runtime", "scaffolds"] },
-        "level": { "enum": ["repository", "package", "private-profile", "test-only", "design", "retired"] },
-        "environments": { "type": "array", "uniqueItems": true, "items": { "enum": ["repository", "development", "test", "private-release"] } },
-        "platforms": { "type": "array", "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9.-]+$" } },
-        "constraints": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+        "product": {
+          "enum": ["repository", "harness", "plugin", "runtime", "scaffolds"]
+        },
+        "level": {
+          "enum": [
+            "repository",
+            "package",
+            "private-profile",
+            "test-only",
+            "design",
+            "retired"
+          ]
+        },
+        "environments": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": ["repository", "development", "test", "private-release"]
+          }
+        },
+        "platforms": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9.-]+$" }
+        },
+        "constraints": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
       }
     },
     "guard": {
@@ -202,17 +295,47 @@
     "capability": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "owners", "scope", "observation", "assertion", "evidence", "authority", "delivery", "qualification", "availability", "status", "verdict", "blockerCodes", "guards"],
+      "required": [
+        "id",
+        "owners",
+        "scope",
+        "observation",
+        "assertion",
+        "evidence",
+        "authority",
+        "delivery",
+        "qualification",
+        "availability",
+        "status",
+        "verdict",
+        "blockerCodes",
+        "guards"
+      ],
       "properties": {
         "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
-        "owners": { "type": "array", "minItems": 1, "items": { "enum": ["repository", "plugin", "runtime", "scaffolds"] } },
+        "owners": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "enum": ["repository", "harness", "plugin", "runtime", "scaffolds"]
+          }
+        },
         "scope": { "$ref": "#/$defs/scope" },
         "observation": {
           "type": "object",
           "additionalProperties": false,
           "required": ["state", "refs"],
           "properties": {
-            "state": { "enum": ["implemented", "partial", "absent", "design-only", "unknown", "contradictory"] },
+            "state": {
+              "enum": [
+                "implemented",
+                "partial",
+                "absent",
+                "design-only",
+                "unknown",
+                "contradictory"
+              ]
+            },
             "refs": { "$ref": "#/$defs/refs" }
           }
         },
@@ -222,7 +345,13 @@
           "required": ["state", "code", "refs"],
           "properties": {
             "state": { "enum": ["positive", "limited", "negative"] },
-            "code": { "enum": ["validated-positive", "scope-limited", "validated-negative"] },
+            "code": {
+              "enum": [
+                "validated-positive",
+                "scope-limited",
+                "validated-negative"
+              ]
+            },
             "refs": { "$ref": "#/$defs/refs" }
           }
         },
@@ -231,7 +360,15 @@
           "additionalProperties": false,
           "required": ["state", "refs"],
           "properties": {
-            "state": { "enum": ["sufficient", "partial", "missing", "contradictory", "not-required"] },
+            "state": {
+              "enum": [
+                "sufficient",
+                "partial",
+                "missing",
+                "contradictory",
+                "not-required"
+              ]
+            },
             "refs": { "$ref": "#/$defs/refs" }
           }
         },
@@ -240,7 +377,16 @@
           "additionalProperties": false,
           "required": ["state", "refs"],
           "properties": {
-            "state": { "enum": ["authorized", "limited", "unauthorized", "forbidden", "unknown", "not-required"] },
+            "state": {
+              "enum": [
+                "authorized",
+                "limited",
+                "unauthorized",
+                "forbidden",
+                "unknown",
+                "not-required"
+              ]
+            },
             "refs": { "$ref": "#/$defs/refs" }
           }
         },
@@ -249,7 +395,20 @@
           "additionalProperties": false,
           "required": ["state", "refs"],
           "properties": {
-            "state": { "enum": ["composed", "exported", "registry-ready", "private-release", "conditional", "internal", "test-only", "design-only", "absent", "retired"] },
+            "state": {
+              "enum": [
+                "composed",
+                "exported",
+                "registry-ready",
+                "private-release",
+                "conditional",
+                "internal",
+                "test-only",
+                "design-only",
+                "absent",
+                "retired"
+              ]
+            },
             "refs": { "$ref": "#/$defs/refs" }
           }
         },
@@ -258,7 +417,16 @@
           "additionalProperties": false,
           "required": ["state", "platforms", "refs"],
           "properties": {
-            "state": { "enum": ["qualified", "conditional", "unqualified", "contradictory", "unknown", "not-required"] },
+            "state": {
+              "enum": [
+                "qualified",
+                "conditional",
+                "unqualified",
+                "contradictory",
+                "unknown",
+                "not-required"
+              ]
+            },
             "platforms": { "type": "array", "items": { "type": "string" } },
             "refs": { "$ref": "#/$defs/refs" }
           }
@@ -266,33 +434,88 @@
         "availability": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["state", "environments", "production", "publication", "deployment"],
+          "required": [
+            "state",
+            "environments",
+            "production",
+            "publication",
+            "deployment"
+          ],
           "properties": {
-            "state": { "enum": ["enabled", "observation-only", "conditional", "disabled", "absent", "unknown", "not-applicable"] },
-            "environments": { "type": "array", "uniqueItems": true, "items": { "enum": ["repository", "development", "test", "private-release"] } },
+            "state": {
+              "enum": [
+                "enabled",
+                "observation-only",
+                "conditional",
+                "disabled",
+                "absent",
+                "unknown",
+                "not-applicable"
+              ]
+            },
+            "environments": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "enum": ["repository", "development", "test", "private-release"]
+              }
+            },
             "production": { "const": "disabled" },
-            "publication": { "enum": ["unpublished", "unknown", "not-applicable"] },
+            "publication": {
+              "enum": ["unpublished", "unknown", "not-applicable"]
+            },
             "deployment": { "const": "disabled" }
           },
           "allOf": [
             {
-              "if": { "properties": { "state": { "enum": ["enabled", "observation-only", "conditional"] } }, "required": ["state"] },
-              "then": { "properties": { "environments": { "type": "array", "minItems": 1 } } }
+              "if": {
+                "properties": {
+                  "state": {
+                    "enum": ["enabled", "observation-only", "conditional"]
+                  }
+                },
+                "required": ["state"]
+              },
+              "then": {
+                "properties": {
+                  "environments": { "type": "array", "minItems": 1 }
+                }
+              }
             },
             {
-              "if": { "properties": { "state": { "enum": ["disabled", "absent", "unknown", "not-applicable"] } }, "required": ["state"] },
-              "then": { "properties": { "environments": { "type": "array", "maxItems": 0 } } }
+              "if": {
+                "properties": {
+                  "state": {
+                    "enum": ["disabled", "absent", "unknown", "not-applicable"]
+                  }
+                },
+                "required": ["state"]
+              },
+              "then": {
+                "properties": {
+                  "environments": { "type": "array", "maxItems": 0 }
+                }
+              }
             }
           ]
         },
-        "status": { "enum": ["Current", "Experimental", "Deferred", "Retired"] },
+        "status": {
+          "enum": ["Current", "Experimental", "Deferred", "Retired"]
+        },
         "verdict": {
           "type": "object",
           "additionalProperties": false,
           "required": ["decision", "rationaleCode"],
           "properties": {
             "decision": { "enum": ["GO", "CONDITIONAL", "NO-GO", "RETIRED"] },
-            "rationaleCode": { "enum": ["scope-qualified-current", "bounded-experimental", "fail-closed-deferred", "verified-retirement"] }
+            "rationaleCode": {
+              "enum": [
+                "scope-qualified-current",
+                "bounded-experimental",
+                "fail-closed-deferred",
+                "verified-retirement"
+              ]
+            }
           }
         },
         "blockerCodes": {
@@ -318,7 +541,11 @@
             ]
           }
         },
-        "guards": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/guard" } }
+        "guards": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/guard" }
+        }
       },
       "allOf": [
         {
@@ -336,7 +563,9 @@
             "properties": {
               "availability": {
                 "type": "object",
-                "properties": { "environments": { "type": "array", "maxItems": 0 } },
+                "properties": {
+                  "environments": { "type": "array", "maxItems": 0 }
+                },
                 "required": ["environments"]
               }
             }

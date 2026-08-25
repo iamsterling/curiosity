@@ -1,0 +1,188 @@
+{
+  "schemaVersion": "custom-harness-q1-r2-retrievals/v1",
+  "policy": {
+    "method": "GET",
+    "protocol": "https",
+    "redirectProtocol": "https",
+    "credentials": false,
+    "search": false,
+    "latest": false,
+    "mutableBranch": false,
+    "providerHost": false,
+    "packageManagerInstall": false
+  },
+  "retrievals": [
+    {
+      "id": "effect-metadata",
+      "url": "https://registry.npmjs.org/effect/4.0.0-beta.107",
+      "file": "effect-4.0.0-beta.107.metadata.json",
+      "expectedSha256": "fd3bde57290c96a36c06416e781fe8788499fffed01aff8d49ec7dbcf64de069"
+    },
+    {
+      "id": "effect-artifact",
+      "url": "https://registry.npmjs.org/effect/-/effect-4.0.0-beta.107.tgz",
+      "file": "effect-4.0.0-beta.107.tgz",
+      "expectedSha256": "e3b3664b248b812eb4d6ad278817b29a803c1a7694237c367b201099b21edd4d"
+    },
+    {
+      "id": "effect-attestations",
+      "url": "https://registry.npmjs.org/-/npm/v1/attestations/effect@4.0.0-beta.107",
+      "file": "effect-4.0.0-beta.107.attestations.json",
+      "expectedSha256": null,
+      "semanticExpectation": {
+        "package": "pkg:npm/effect@4.0.0-beta.107",
+        "subjectSha512": "3a8040bfc785fb26a773e0bac6180452759e5d448703aca79ec718aa990063d1929f3656cacb6c223068c15a8290ba471a59d1b5d22a613df01f0a4e63a2439d",
+        "sourceCommit": "3c495ae7c96d43bfc3b8020250562a194c2c895e"
+      }
+    },
+    {
+      "id": "effect-source",
+      "url": "https://codeload.github.com/Effect-TS/effect/tar.gz/3c495ae7c96d43bfc3b8020250562a194c2c895e",
+      "file": "effect-source-3c495ae7c96d43bfc3b8020250562a194c2c895e.tar.gz",
+      "expectedSha256": "70a73fbeeb1ac1a3bf761b2b3236375a50b4585e602a4097ac71f65850edfe92"
+    },
+    {
+      "id": "effect-license",
+      "url": "https://raw.githubusercontent.com/Effect-TS/effect/3c495ae7c96d43bfc3b8020250562a194c2c895e/LICENSE",
+      "file": "effect-LICENSE-3c495ae7",
+      "expectedSha256": "774c3bc5924ad8ae6c5a75f1c53db13feb238ade15989625c513d07b60dedf30"
+    },
+    {
+      "id": "typescript-metadata",
+      "url": "https://registry.npmjs.org/typescript/5.9.2",
+      "file": "typescript-5.9.2.metadata.json",
+      "expectedSha256": "5730be39074baf5ee194cb90f87422d84f92addef4f5b02644cd1dbab305d2e5"
+    },
+    {
+      "id": "typescript-artifact",
+      "url": "https://registry.npmjs.org/typescript/-/typescript-5.9.2.tgz",
+      "file": "typescript-5.9.2.tgz",
+      "expectedSha256": "67a3bc82e822b8f45f653a80fc3a9730d23214d36c83ba85dd7f5abebee82062"
+    },
+    {
+      "id": "typescript-source",
+      "url": "https://codeload.github.com/microsoft/TypeScript/tar.gz/5be33469d551655d878876faa9e30aa3b49f8ee9",
+      "file": "typescript-source-5be33469d551655d878876faa9e30aa3b49f8ee9.tar.gz",
+      "expectedSha256": "161b4a901e4044b6ad68512546fd2fe676bd3d28b2e31559d84672e0dd19017c"
+    },
+    {
+      "id": "turbo-metadata",
+      "url": "https://registry.npmjs.org/turbo/2.10.10",
+      "file": "turbo-2.10.10.metadata.json",
+      "expectedSha256": "e5bd4b49b3369e162cfa1b6ad6bdaff611a3cb9270e14afee2ea21f0d54fc304"
+    },
+    {
+      "id": "turbo-artifact",
+      "url": "https://registry.npmjs.org/turbo/-/turbo-2.10.10.tgz",
+      "file": "turbo-2.10.10.tgz",
+      "expectedSha256": "ec38dbacb9fcc5e19081169c31889f5971abd15043003b8a53f2c8e81218c023"
+    },
+    {
+      "id": "turbo-platform-metadata",
+      "url": "https://registry.npmjs.org/@turbo%2fdarwin-arm64/2.10.10",
+      "file": "turbo-darwin-arm64-2.10.10.metadata.json",
+      "expectedSha256": "c14c2f2a97c465537551aadb18c8b9a5b52c2f169b1467f8db15397dd8828405"
+    },
+    {
+      "id": "turbo-platform-artifact",
+      "url": "https://registry.npmjs.org/@turbo/darwin-arm64/-/darwin-arm64-2.10.10.tgz",
+      "file": "turbo-darwin-arm64-2.10.10.tgz",
+      "expectedSha256": "8c2f28a74e6061dc99515c027a0c6ed404b3c0401b69475d642a6c5b3cf7f5b1"
+    },
+    {
+      "id": "turbo-attestations",
+      "url": "https://registry.npmjs.org/-/npm/v1/attestations/turbo@2.10.10",
+      "file": "turbo-2.10.10.attestations.json",
+      "expectedSha256": null,
+      "semanticExpectation": {
+        "package": "pkg:npm/turbo@2.10.10",
+        "subjectSha512": "ffdd0a4d6f944b3bd838f99a7d164754a2c1b075d0e7cd74028fc776d25802a82e22167e5ebb92e9e2148ea2540edad2c5a658ca734586debca9c9062803964c",
+        "sourceCommit": "ea08facfcc9185adc1096a994408bfc9114b2164"
+      }
+    },
+    {
+      "id": "turbo-platform-attestations",
+      "url": "https://registry.npmjs.org/-/npm/v1/attestations/@turbo%2fdarwin-arm64@2.10.10",
+      "file": "turbo-darwin-arm64-2.10.10.attestations.json",
+      "expectedSha256": null,
+      "semanticExpectation": {
+        "package": "pkg:npm/%40turbo/darwin-arm64@2.10.10",
+        "subjectSha512": "55962cc59eb28f20e8b14aad8aba005525cf2e6c7fa81c5d1c9808c5d307f51c8d98b74e2ce5ad26760c9c8e2a724c0281030af391b77eef78ff1939fa204283",
+        "sourceCommit": "ea08facfcc9185adc1096a994408bfc9114b2164"
+      }
+    },
+    {
+      "id": "turbo-source",
+      "url": "https://codeload.github.com/vercel/turborepo/tar.gz/ea08facfcc9185adc1096a994408bfc9114b2164",
+      "file": "turborepo-source-ea08facfcc9185adc1096a994408bfc9114b2164.tar.gz",
+      "expectedSha256": "6fcb7458b1c5d7cc3977d8274041f48e56132e421862fafea325bf1275f9eb39"
+    },
+    {
+      "id": "turbo-license",
+      "url": "https://raw.githubusercontent.com/vercel/turborepo/ea08facfcc9185adc1096a994408bfc9114b2164/LICENSE",
+      "file": "turborepo-LICENSE-ea08facf",
+      "expectedSha256": "f7ac4712aa30551de5b97b30215010515d783638107f207bcce32a85bfffc05e"
+    },
+    {
+      "id": "bun-commit",
+      "url": "https://api.github.com/repos/oven-sh/bun/commits/0d9b296af",
+      "file": "bun-commit-0d9b296af.json",
+      "expectedSha256": null,
+      "semanticExpectation": {
+        "sourceCommit": "0d9b296af33f2b851fcbf4df3e9ec89751734ba4"
+      }
+    },
+    {
+      "id": "bun-source",
+      "url": "https://codeload.github.com/oven-sh/bun/tar.gz/0d9b296af33f2b851fcbf4df3e9ec89751734ba4",
+      "file": "bun-source-0d9b296af33f2b851fcbf4df3e9ec89751734ba4.tar.gz",
+      "expectedSha256": "aa045c1f3ddd3eb41ed8452d8a73eaab3b3322386416ebb1b160a6af6978d3e5"
+    },
+    {
+      "id": "bun-artifact",
+      "url": "https://github.com/oven-sh/bun/releases/download/bun-v1.3.14/bun-darwin-aarch64.zip",
+      "file": "bun-darwin-aarch64-1.3.14.zip",
+      "expectedSha256": "d8b96221828ad6f97ac7ac0ab7e95872341af763001e8803e8267652c2652620"
+    },
+    {
+      "id": "bun-license",
+      "url": "https://raw.githubusercontent.com/oven-sh/bun/0d9b296af33f2b851fcbf4df3e9ec89751734ba4/LICENSE.md",
+      "file": "bun-LICENSE-0d9b296af.md",
+      "expectedSha256": "2c6160ec8fb853f7e8f97d9b249e756c9b0ac44860a68b6bf4f1b0bcbc5c3741"
+    },
+    {
+      "id": "node-artifact",
+      "url": "https://nodejs.org/download/release/v24.18.0/node-v24.18.0-darwin-arm64.tar.gz",
+      "file": "node-v24.18.0-darwin-arm64.tar.gz",
+      "expectedSha256": "e1a97e14c99c803e96c7339403282ea05a499c32f8d83defe9ef5ec66f979ed1"
+    },
+    {
+      "id": "node-checksums",
+      "url": "https://nodejs.org/download/release/v24.18.0/SHASUMS256.txt",
+      "file": "node-v24.18.0-SHASUMS256.txt",
+      "expectedSha256": null,
+      "semanticExpectation": {
+        "line": "e1a97e14c99c803e96c7339403282ea05a499c32f8d83defe9ef5ec66f979ed1  node-v24.18.0-darwin-arm64.tar.gz"
+      }
+    },
+    {
+      "id": "rust-channel",
+      "url": "https://static.rust-lang.org/dist/channel-rust-1.97.1.toml",
+      "file": "channel-rust-1.97.1.toml",
+      "expectedSha256": "03569b1886ceb5c05276b50c8431ab111de944cd6140fe1fa7d821dd8e0f29cf"
+    },
+    {
+      "id": "rust-channel-checksum",
+      "url": "https://static.rust-lang.org/dist/channel-rust-1.97.1.toml.sha256",
+      "file": "channel-rust-1.97.1.toml.sha256",
+      "expectedSha256": null,
+      "semanticExpectation": {
+        "linePrefix": "03569b1886ceb5c05276b50c8431ab111de944cd6140fe1fa7d821dd8e0f29cf"
+      }
+    }
+  ],
+  "negativeResultsRetainedWithoutRerun": [
+    "Apple Git exact tag-source attempts returned HTTP 404 in original Q1; Git remains UNKNOWN and is not needed for Q1-R2 exit.",
+    "Kubernetes-types package/source lacked bundled license text; it is outside the selected runtime import closure and remains unenabled."
+  ]
+}

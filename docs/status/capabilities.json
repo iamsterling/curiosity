@@ -5,35 +5,101 @@
     "code": "wave-2-verification-v1"
   },
   "workspaces": [
-    { "path": "apps/plugin/opencode2", "name": "@iamsterling/opencode2-config", "kind": "plugin", "private": false },
-    { "path": "apps/runtime", "name": "@curiosity/runtime", "kind": "runtime", "private": true },
-    { "path": "apps/web", "name": "web", "kind": "starter-app", "private": true },
-    { "path": "apps/docs", "name": "docs", "kind": "starter-app", "private": true },
-    { "path": "packages/ui", "name": "@repo/ui", "kind": "starter-library", "private": true },
-    { "path": "packages/eslint-config", "name": "@repo/eslint-config", "kind": "configuration", "private": true },
-    { "path": "packages/typescript-config", "name": "@repo/typescript-config", "kind": "configuration", "private": true }
+    {
+      "path": "apps/custom-harness",
+      "name": "@curiosity/custom-harness",
+      "kind": "harness",
+      "private": true
+    },
+    {
+      "path": "apps/plugin/opencode2",
+      "name": "@iamsterling/opencode2-config",
+      "kind": "plugin",
+      "private": false
+    },
+    {
+      "path": "apps/runtime",
+      "name": "@curiosity/runtime",
+      "kind": "runtime",
+      "private": true
+    },
+    {
+      "path": "apps/web",
+      "name": "web",
+      "kind": "starter-app",
+      "private": true
+    },
+    {
+      "path": "apps/docs",
+      "name": "docs",
+      "kind": "starter-app",
+      "private": true
+    },
+    {
+      "path": "packages/ui",
+      "name": "@repo/ui",
+      "kind": "starter-library",
+      "private": true
+    },
+    {
+      "path": "packages/eslint-config",
+      "name": "@repo/eslint-config",
+      "kind": "configuration",
+      "private": true
+    },
+    {
+      "path": "packages/typescript-config",
+      "name": "@repo/typescript-config",
+      "kind": "configuration",
+      "private": true
+    }
   ],
   "sourceContracts": {
     "composition": {
       "path": "apps/plugin/opencode2/src/plugin/plugin.ts",
-      "features": ["pluginConfigFeature", "hookFoundationFeature", "structuredToolsFeature"],
+      "features": [
+        "pluginConfigFeature",
+        "hookFoundationFeature",
+        "structuredToolsFeature"
+      ],
       "entryExport": "apps/plugin/opencode2/src/index.ts#default"
     },
     "exports": {
       "path": "apps/plugin/opencode2/package.json",
-      "keys": [".", "./server"]
+      "keys": [
+        ".",
+        "./server"
+      ]
     },
     "capabilityReport": {
       "path": "apps/plugin/opencode2/src/platform/real-host/index.ts",
       "export": "capabilityReport",
-      "pinnedVersion": "0.0.0-beta-17595",
+      "pinnedVersion": "0.0.0-beta-18138",
       "capabilities": {
-        "reload": { "status": "disabled", "code": "REAL_HOST_RELOAD_UNPROVEN" },
-        "interrupt": { "status": "disabled", "code": "REAL_HOST_INTERRUPT_UNPROVEN" },
-        "compaction": { "status": "disabled", "code": "REAL_HOST_COMPACTION_UNSUPPORTED" },
-        "childLineage": { "status": "disabled", "code": "REAL_HOST_CHILD_LINEAGE_UNSUPPORTED" },
-        "concurrentSetup": { "status": "disabled", "code": "REAL_HOST_WRITER_ELECTION_UNPROVEN" },
-        "authoritativePersistence": { "status": "disabled", "code": "PERSISTENCE_AUTOMATION_UNSUPPORTED" }
+        "reload": {
+          "status": "disabled",
+          "code": "REAL_HOST_RELOAD_UNPROVEN"
+        },
+        "interrupt": {
+          "status": "disabled",
+          "code": "REAL_HOST_INTERRUPT_UNPROVEN"
+        },
+        "compaction": {
+          "status": "disabled",
+          "code": "REAL_HOST_COMPACTION_UNSUPPORTED"
+        },
+        "childLineage": {
+          "status": "disabled",
+          "code": "REAL_HOST_CHILD_LINEAGE_UNSUPPORTED"
+        },
+        "concurrentSetup": {
+          "status": "disabled",
+          "code": "REAL_HOST_WRITER_ELECTION_UNPROVEN"
+        },
+        "authoritativePersistence": {
+          "status": "disabled",
+          "code": "PERSISTENCE_AUTOMATION_UNSUPPORTED"
+        }
       }
     },
     "adrIndexes": [
@@ -47,7 +113,9 @@
       },
       {
         "path": "apps/runtime/docs/README.md",
-        "required": ["0060-closed-sdk-v2-tool-and-environment-policy.md"]
+        "required": [
+          "0060-closed-sdk-v2-tool-and-environment-policy.md"
+        ]
       }
     ],
     "historicalSnapshots": [
@@ -66,454 +134,3467 @@
     ],
     "forbiddenProductPatterns": [
       {
-        "roots": ["apps/plugin/opencode2/src", "apps/plugin/opencode2/assets"],
-        "patterns": ["opencode-loop-local", "\\[opencode-loop:"]
+        "roots": [
+          "apps/plugin/opencode2/src",
+          "apps/plugin/opencode2/assets"
+        ],
+        "patterns": [
+          "opencode-loop-local",
+          "\\[opencode-loop:"
+        ]
       }
     ],
     "guardedSources": [
-      { "path": "package.json", "sha256": "d45e0fcd14dd5f373fec1e131895bca2e291abc3bfe4aef1418562ee9d5b31d5" },
-      { "path": "apps/plugin/opencode2/package.json", "sha256": "8bbec2a75b907aff4402885821897167f2d286b8faea76aaa5d2feb51f4ff84c" },
-      { "path": "apps/plugin/opencode2/src/index.ts", "sha256": "5e352d675e5d12f80fbc31bd38e3ae28f2a0c5d5e1de33e8fc5078d5bc9f9a65" },
-      { "path": "apps/plugin/opencode2/src/plugin/plugin.ts", "sha256": "e1349089fd24623accdfc3def40e3fa6ff11eb2a30b14d450fc8d81bf03d43fb" },
-      { "path": "apps/plugin/opencode2/src/platform/real-host/index.ts", "sha256": "2314f93021c0ecad109f2ea88c427abd1709b2277e147ef75557f2831d340ceb" },
-      { "path": "apps/runtime/package.json", "sha256": "03e967ba66faad296920d6abb0e91ede3cc671a248583cb17492643138d64d40" },
-      { "path": "apps/runtime/src/index.ts", "sha256": "5c6da5642e12edb078c3ab755b72a2d83aac3fa549f4302c313c702b3b18fe84" },
-      { "path": "apps/runtime/src/query.ts", "sha256": "775c0412047e10c912cb891bac67da0162cc1c9cf1992a5b52a24d8e2eda82e4" },
-      { "path": "apps/runtime/src/admin.ts", "sha256": "839b16ffed0d13cfcdbbdfbc2f6bc112591c37e2d192f6bb7108be150e1b0db4" }
+      {
+        "path": "package.json",
+        "sha256": "d45e0fcd14dd5f373fec1e131895bca2e291abc3bfe4aef1418562ee9d5b31d5"
+      },
+      {
+        "path": "apps/plugin/opencode2/package.json",
+        "sha256": "c00485b5af4f88382169fb97dcec2c48bd63d44e22c8b4209b62a7b6dca7f6d9"
+      },
+      {
+        "path": "apps/plugin/opencode2/src/index.ts",
+        "sha256": "5e352d675e5d12f80fbc31bd38e3ae28f2a0c5d5e1de33e8fc5078d5bc9f9a65"
+      },
+      {
+        "path": "apps/plugin/opencode2/src/plugin/plugin.ts",
+        "sha256": "47fa921e0069405baa231f491a1051ff4eb589e10f103f6d3c5b04186ee16217"
+      },
+      {
+        "path": "apps/plugin/opencode2/src/platform/real-host/index.ts",
+        "sha256": "28e9c8b9df36a6c40c223f94cdb4a93d7288b8b7f0b4215df9e07de01f4d9b03"
+      },
+      {
+        "path": "apps/runtime/package.json",
+        "sha256": "03e967ba66faad296920d6abb0e91ede3cc671a248583cb17492643138d64d40"
+      },
+      {
+        "path": "apps/runtime/src/index.ts",
+        "sha256": "5c6da5642e12edb078c3ab755b72a2d83aac3fa549f4302c313c702b3b18fe84"
+      },
+      {
+        "path": "apps/runtime/src/query.ts",
+        "sha256": "775c0412047e10c912cb891bac67da0162cc1c9cf1992a5b52a24d8e2eda82e4"
+      },
+      {
+        "path": "apps/runtime/src/admin.ts",
+        "sha256": "839b16ffed0d13cfcdbbdfbc2f6bc112591c37e2d192f6bb7108be150e1b0db4"
+      }
     ]
   },
   "capabilities": [
     {
-      "id": "plugin-identity-config",
-      "owners": ["plugin"],
-      "scope": { "product": "plugin", "level": "package", "environments": ["repository", "development"], "platforms": [], "constraints": ["OpenCode beta-17595 ABI"] },
-      "observation": { "state": "implemented", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/plugin/plugin.ts#promisePlugin" }, { "kind": "source", "ref": "apps/plugin/opencode2/src/features/config/index.ts#pluginConfigFeature" }] },
-      "assertion": { "state": "positive", "code": "validated-positive", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs#setup installs the bundled agent suite and selects orchestrator without user config" }] },
-      "evidence": { "state": "sufficient", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/unit/plugin-entrypoint.test.mjs#entrypoint exports the default Effect plugin with a compatibility setup seam" }] },
-      "authority": { "state": "authorized", "refs": [{ "kind": "decision", "ref": "apps/plugin/opencode2/docs/decisions/0005-product-identity.md#Product identity and peer boundaries" }] },
-      "delivery": { "state": "composed", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/plugin/plugin.ts#composed" }] },
-      "qualification": { "state": "qualified", "platforms": [], "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs#setup accepts the reviewed beta-17595 host ABI" }] },
-      "availability": { "state": "enabled", "environments": ["repository", "development"], "production": "disabled", "publication": "unknown", "deployment": "disabled" },
+      "id": "custom-harness-vertical-slice",
+      "owners": [
+        "harness"
+      ],
+      "scope": {
+        "product": "harness",
+        "level": "package",
+        "environments": [
+          "repository",
+          "development"
+        ],
+        "platforms": [
+          "darwin-arm64"
+        ],
+        "constraints": [
+          "authenticated plugin-owned command admission through one sealed command port",
+          "sealed ABI v2 stock plugin catalog with manifest contribution dependency and workflow validation plus deterministic catalog identity",
+          "one Effect ManagedRuntime authority",
+          "immutable SQLite events actions attempts gates workflow steps and replayable read-only projections",
+          "mandatory Rust supervisor with host capabilities disabled",
+          "provider calls use immutable attempt snapshots physical-call accounting cancellation generation fencing and stale-receipt quarantine",
+          "native agents bounded context observations Ledger evidence skills prompt commands and proposal-only read tools remain plugin-owned",
+          "finite loops and delegation use kernel budgets child capability ceilings cancellation propagation and terminal checks",
+          "candidate capability status reports unqualified mutation Git sandbox remote publication deployment production mobile and hard-reset surfaces unavailable",
+          "provider calls limited to static AI SDK 6 adapters with no model-initiated tool execution",
+          "real-host provider delivery remains unqualified",
+          "no release deployment production tool Git sandbox or remote-access claim",
+          "operator TUI is a projection and signed command client only",
+          "alternate-screen terminal projection renders bounded streamed and completed Markdown without OpenTUI",
+          "responsive OpenCode-style splash composer transcript error and compact frames are cell-geometry tested",
+          "provider work animation changes one braille cell at a bounded cadence and supports explicit reduced motion",
+          "displayed OpenAI effort is forwarded as provider options and persisted with completion metadata"
+        ]
+      },
+      "observation": {
+        "state": "implemented",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/custom-harness/src/kernel/runtime.ts#createCuriosityHarness"
+          },
+          {
+            "kind": "source",
+            "ref": "apps/custom-harness/src/kernel/plugin.ts#StaticPluginCatalog"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "positive",
+        "code": "validated-positive",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/architecture.test.ts#keeps SQLite writes inside the sealed authority boundary"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/architecture.test.ts#keeps semantic plugins capability-free"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "sufficient",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/authority.test.ts#authenticates one command commits one event and rebuilds a read-only projection after restart"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/tui.test.ts#accepts a prompt immediately and streams through a signed chat turn"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/chat.test.ts#persists the prompt streams the provider result and recovers completion"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/chat.test.ts#records a failed turn without fabricating an assistant message"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/chat.test.ts#streams through the AI SDK OpenAI-compatible adapter"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/plugin-catalog.test.ts#orders dependencies deterministically and derives one stable digest"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/plugin-catalog.test.ts#rejects missing mismatched and cyclic dependencies"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/tui.test.ts#renders completed Markdown with terminal structure"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/tui.test.ts#matches the five OpenCode and Crush acceptance frames"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/tui.test.ts#advances restrained braille animations without changing geometry"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/action-reaction.test.ts#reclaims an interrupted pure reaction and commits its action exactly once"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/attempt-governance.test.ts#fences an older generation quarantines its receipt and preserves immutable snapshots"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/content-tools.test.ts#keeps read-only tool and network search calls as durable denied proposals"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/intelligence-projections.test.ts#replays equivalent bounded views while keeping evidence and resolution non-authoritative"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/prompt-assembler.test.ts#drops whole optional blocks deterministically and denies required overflow"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/prompt-context.test.ts#sends digest-bound system and durable context blocks before conversation messages"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/qualification-status.test.ts#reports the candidate profile without production mutation remote or platform overclaims"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/workflow-orchestration.test.ts#runs one bounded child and denies child capability widening"
+          }
+        ]
+      },
+      "authority": {
+        "state": "authorized",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "docs/architecture/custom-harness/decisions/ADR-011-direct-build-and-host-decoupling.md#Decision"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "exported",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/custom-harness/package.json#thread-projections/node"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "qualified",
+        "platforms": [
+          "darwin-arm64"
+        ],
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/supervisor.test.ts#completes a nonce-bound versioned handshake with every host capability disabled"
+          }
+        ]
+      },
+      "availability": {
+        "state": "enabled",
+        "environments": [
+          "repository",
+          "development"
+        ],
+        "production": "disabled",
+        "publication": "unpublished",
+        "deployment": "disabled"
+      },
       "status": "Current",
-      "verdict": { "decision": "GO", "rationaleCode": "scope-qualified-current" },
+      "verdict": {
+        "decision": "GO",
+        "rationaleCode": "scope-qualified-current"
+      },
       "blockerCodes": [],
-      "guards": [{"path":"apps/plugin/opencode2/src/features/config/index.ts","mode":"exact","sha256":"2342f5f1e6461a6eb0e55138c06b2ebf0e62e5e56368081cfa0ad02ad9bd404e"},{"path":"apps/plugin/opencode2/src/plugin/plugin.ts","mode":"exact","sha256":"e1349089fd24623accdfc3def40e3fa6ff11eb2a30b14d450fc8d81bf03d43fb"},{"path":"apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs","mode":"exact","sha256":"7d2a84dd9828412acfd1f094993dfb91cf070f83b126b37e53bc687d759ce305"},{"path":"apps/plugin/opencode2/tests/unit/plugin-entrypoint.test.mjs","mode":"exact","sha256":"484649da7f999e28b6d0178e3171b01017d2e91355db2e2631cbf0947a02a5c9"},{"path":"apps/plugin/opencode2/docs/decisions/0005-product-identity.md","mode":"exact","sha256":"aabe7c6ba42730f18644900c5a3356ab23e841d8ec7ee2b9d85f26befa268a3e"}]
+      "guards": [
+        {
+          "path": "apps/custom-harness/src/kernel/runtime.ts",
+          "mode": "exact",
+          "sha256": "0ea995fe217de0fb474331cbc39e5af4808ce3ba3b3e347a3047ecf8f3472454"
+        },
+        {
+          "path": "apps/custom-harness/tests/authority.test.ts",
+          "mode": "exact",
+          "sha256": "8de381b922935f91552e24dd1a8e2710beec66f1877c69ec5980d571cc5f1f9d"
+        },
+        {
+          "path": "docs/architecture/custom-harness/decisions/ADR-011-direct-build-and-host-decoupling.md",
+          "mode": "exact",
+          "sha256": "0932b22c3f53d86fa9e6570066191b700ce42139963a90a8eff865444347cb8e"
+        },
+        {
+          "path": "apps/custom-harness/package.json",
+          "mode": "exact",
+          "sha256": "024e6e890690c37389d05ebc6afdd27f6a60b7b0676fe8385b59d93c52d2fbca"
+        },
+        {
+          "path": "apps/custom-harness/tests/supervisor.test.ts",
+          "mode": "exact",
+          "sha256": "9d76f9111e3773158783655e5372b6882f48d0bbc1593e4d1da1cb3f52e064c8"
+        },
+        {
+          "path": "apps/custom-harness/tests/architecture.test.ts",
+          "mode": "exact",
+          "sha256": "aec75b5cb18b3579a31b753dc61ce5819380f46150c129fcaae8e1c086e6963c"
+        },
+          {
+            "path": "apps/custom-harness/src/tui/session.ts",
+            "mode": "exact",
+            "sha256": "642d4c44ad3012de53b31000056d157bee3adff9cbba9245548519f2df72f428"
+        },
+          {
+            "path": "apps/custom-harness/tests/tui.test.ts",
+            "mode": "exact",
+            "sha256": "6690213947f5bdc6c52bb399ddf8742ac6e3b0a205e1d1b62658563dd997a962"
+        },
+          {
+            "path": "apps/custom-harness/src/tui.ts",
+            "mode": "exact",
+            "sha256": "a0c2b526ae67ff16d01b0d1d3b40774be34ef4e2cc2afe6de850bf0c108b49ab"
+        },
+        {
+          "path": "apps/custom-harness/src/tui/config.ts",
+          "mode": "exact",
+          "sha256": "c5114d7bb705f710115868ef19936a33ab277bee5c69d7bfe6a879a7dcec8fa6"
+        },
+        {
+          "path": "apps/custom-harness/src/kernel/authority.ts",
+          "mode": "exact",
+          "sha256": "a0e3b4b33bdf589abd3c3c2390584507e4b17711e813a78c6e91372db20bbd5a"
+        },
+        {
+          "path": "apps/custom-harness/src/plugins/chat.ts",
+          "mode": "exact",
+          "sha256": "ca9b9d4538340b35b36acb2c4b2869c719a8f65e09b0576959bc2a0938f6c68d"
+        },
+        {
+          "path": "apps/custom-harness/src/kernel/plugin.ts",
+          "mode": "exact",
+          "sha256": "25f3d442aeef5b7fb0e71b892d69aac7d693c4802e15dea48cfae4b1f87e0371"
+        },
+        {
+          "path": "apps/custom-harness/tests/plugin-catalog.test.ts",
+          "mode": "exact",
+          "sha256": "2e11fc8e9d53576043aaef5c0fc4c23c375c6dd64cea39ac4225e5e5ebc3ae18"
+        },
+        {
+          "path": "apps/custom-harness/src/providers/ai-sdk.ts",
+          "mode": "exact",
+          "sha256": "9db2acf4da7d33d7a6ce2694acb462ce488907b2b10d25e0fe14cf4e3ae9c7c4"
+        },
+        {
+          "path": "apps/custom-harness/tests/chat.test.ts",
+          "mode": "exact",
+          "sha256": "961be68ffa739df36c86f8346950eb3a041d8d447a129a078f24f09359f67ae1"
+        },
+        {
+          "path": "apps/custom-harness/src/kernel/text-generator.ts",
+          "mode": "exact",
+          "sha256": "f96d420acd7558b8139e8deb9297e59ee673e6f5cbd7be53f98318cac42973d1"
+        },
+        {
+          "path": "apps/custom-harness/src/projection/chat-projection.ts",
+          "mode": "exact",
+          "sha256": "bf3a6863b2fa6117b2869ee767908c0e233aff26b663ea4d5c79af8cca0fb285"
+        },
+        {
+          "path": "apps/custom-harness/src/tui/markdown.ts",
+          "mode": "exact",
+          "sha256": "4d62d3c3a4d749a7d5f046162df34a520456e7e718089f3008d2cc2535e226d9"
+        },
+        {
+          "path": "apps/custom-harness/src/tui/terminal-text.ts",
+          "mode": "exact",
+          "sha256": "161774cfc692b96a61c801e8cdee12c9a3f11c99fadd74c08010c66a5435b04f"
+        },
+          {
+            "path": "apps/custom-harness/src/tui/theme.ts",
+            "mode": "exact",
+            "sha256": "62dacebed4afdd1aba98dd0c9870918da4dfb2712b8848d518e27ca37fe21fce"
+          },
+          {
+            "path": "apps/custom-harness/src/tui/composer-view.ts",
+            "mode": "exact",
+            "sha256": "c1f19bdfe962bb38eae30739f0dbec4532c753006500b6f6ce6263857c565ca6"
+          },
+          {
+            "path": "apps/custom-harness/src/tui/frame-text.ts",
+            "mode": "exact",
+            "sha256": "123aa189c0af31bee5d3c7ffbcea3c10bfddc45e9f1e0c3e6556877844279fa9"
+          },
+          {
+            "path": "apps/custom-harness/src/tui/frame-types.ts",
+            "mode": "exact",
+            "sha256": "81edddd35b95f2b60059bbb6b6031bc9d8419bb1ead79c024c14e325e0724c00"
+          },
+          {
+            "path": "apps/custom-harness/src/tui/frame.ts",
+            "mode": "exact",
+            "sha256": "b2e0970b269390bda993a5a70da1e1afee9892a387e37f91699c3cf83d463c61"
+          },
+          {
+            "path": "apps/custom-harness/src/tui/screen-terminal.ts",
+            "mode": "exact",
+            "sha256": "89a0794f219bdf362ca327ddc94ec4f49424aca77da38e427847d2f766486716"
+          },
+          {
+            "path": "apps/custom-harness/src/tui/session-turn.ts",
+            "mode": "exact",
+             "sha256": "3a342fee4e46878e0b6c26fcd290551fd2fc9915e91315afdff67f532894874d"
+          },
+          {
+            "path": "apps/custom-harness/src/tui/transcript-view.ts",
+            "mode": "exact",
+            "sha256": "64f5642ee3a01510fa4990d95d6d0e9f4c5c23fcb46e9bc1f3abf614d274a3c5"
+          },
+          {
+            "path": "apps/custom-harness/src/tui/animation.ts",
+            "mode": "exact",
+            "sha256": "0916559dac2b05d690591e07512d272606b74fc56bceea9e78a9f2a04d4a5002"
+        },
+        {
+          "path": "apps/custom-harness/src/types/marked-terminal.d.ts",
+          "mode": "exact",
+          "sha256": "f1a5e850d612676924bcf6fb36fb71ad8bfd4b55603fd6e9a76c0d9bd91769af"
+        },
+        {
+          "path": "apps/custom-harness/tests/action-reaction.test.ts",
+          "mode": "exact",
+          "sha256": "f3c087bc1a52f7b9bee2479e90e3c5c72154371fd19635d1c6f53e3e4ff067dc"
+        },
+        {
+          "path": "apps/custom-harness/tests/attempt-governance.test.ts",
+          "mode": "exact",
+          "sha256": "3355a790047eb318e467fb7cfc1922b8ab255e41b45c77be9d2449d88aed86ce"
+        },
+        {
+          "path": "apps/custom-harness/tests/content-tools.test.ts",
+          "mode": "exact",
+          "sha256": "e6e561c8e896b94d859b9b7d14637cf08cfcbc66a8a833a1f357a171d1f2f56d"
+        },
+        {
+          "path": "apps/custom-harness/tests/intelligence-projections.test.ts",
+          "mode": "exact",
+          "sha256": "58eb62d0ff42657a794e04eb98cc1260ddb95150679046856f6f26a5ca5ca672"
+        },
+        {
+          "path": "apps/custom-harness/tests/prompt-assembler.test.ts",
+          "mode": "exact",
+          "sha256": "dd604b5bd78a4b60a33b4534332d0b7ad78ddce61d7630afaf5021bb8447d665"
+        },
+        {
+          "path": "apps/custom-harness/tests/prompt-context.test.ts",
+          "mode": "exact",
+          "sha256": "dbdd450251d490c9eb42f45cb08f74ba199b280832a5be8d2d172e778423d2e9"
+        },
+        {
+          "path": "apps/custom-harness/tests/qualification-status.test.ts",
+          "mode": "exact",
+          "sha256": "44191f5a144bd5630fd430b200ea7217178f0549e4c2473d8d421368ff531847"
+        },
+        {
+          "path": "apps/custom-harness/tests/workflow-orchestration.test.ts",
+          "mode": "exact",
+          "sha256": "7d7464979eba6477a7a8e8f8aa9933c1eee4b6a2bf170d61161853306afac3ff"
+        }
+      ]
+    },
+    {
+      "id": "plugin-identity-config",
+      "owners": [
+        "plugin"
+      ],
+      "scope": {
+        "product": "plugin",
+        "level": "package",
+        "environments": [
+          "repository",
+          "development"
+        ],
+        "platforms": [],
+        "constraints": [
+          "OpenCode beta-18138 adapter ABI",
+          "real-host requalification not completed"
+        ]
+      },
+      "observation": {
+        "state": "implemented",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/plugin/plugin.ts#promisePlugin"
+          },
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/features/config/index.ts#pluginConfigFeature"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "limited",
+        "code": "scope-limited",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs#setup accepts the reviewed beta-18138 host ABI"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "partial",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/unit/plugin-entrypoint.test.mjs#entrypoint exports the default Effect plugin with a compatibility setup seam"
+          }
+        ]
+      },
+      "authority": {
+        "state": "limited",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/plugin/opencode2/docs/decisions/0005-product-identity.md#Product identity and peer boundaries"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "conditional",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/plugin/plugin.ts#composed"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "unqualified",
+        "platforms": [],
+        "refs": []
+      },
+      "availability": {
+        "state": "conditional",
+        "environments": [
+          "repository",
+          "development"
+        ],
+        "production": "disabled",
+        "publication": "unknown",
+        "deployment": "disabled"
+      },
+      "status": "Experimental",
+      "verdict": {
+        "decision": "CONDITIONAL",
+        "rationaleCode": "bounded-experimental"
+      },
+      "blockerCodes": [
+        "source-requalification-required"
+      ],
+      "guards": [
+        {
+          "path": "apps/plugin/opencode2/src/features/config/index.ts",
+          "mode": "exact",
+          "sha256": "625c7be0c933fd6dd8b302dfcaab21825fd075a53bb1b745376fe7c35aae9734"
+        },
+        {
+          "path": "apps/plugin/opencode2/src/plugin/plugin.ts",
+          "mode": "exact",
+          "sha256": "47fa921e0069405baa231f491a1051ff4eb589e10f103f6d3c5b04186ee16217"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs",
+          "mode": "exact",
+          "sha256": "4fc33aa4b23f66881c9331b780fd97c9eb9b43dba459c7d049174c39f20c2392"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/unit/plugin-entrypoint.test.mjs",
+          "mode": "exact",
+          "sha256": "484649da7f999e28b6d0178e3171b01017d2e91355db2e2631cbf0947a02a5c9"
+        },
+        {
+          "path": "apps/plugin/opencode2/docs/decisions/0005-product-identity.md",
+          "mode": "exact",
+          "sha256": "aabe7c6ba42730f18644900c5a3356ab23e841d8ec7ee2b9d85f26befa268a3e"
+        }
+      ]
     },
     {
       "id": "plugin-hooks-event-capture",
-      "owners": ["plugin"],
-      "scope": { "product": "plugin", "level": "package", "environments": ["repository", "development"], "platforms": [], "constraints": ["observation-only event capture", "redacted payloads"] },
-      "observation": { "state": "implemented", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/features/hooks/open-code-hooks.ts#registerOpenCodeHooks" }, { "kind": "source", "ref": "apps/plugin/opencode2/src/features/hooks/event-capture.ts#EventCapture" }] },
-      "assertion": { "state": "limited", "code": "scope-limited", "refs": [{ "kind": "section", "ref": "apps/plugin/opencode2/docs/architecture/current-state.md#Composed plugin scope" }] },
-      "evidence": { "state": "sufficient", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/unit/event-capture.test.mjs#capture is idempotent and records sequence gaps and collisions" }] },
-      "authority": { "state": "authorized", "refs": [{ "kind": "decision", "ref": "apps/plugin/opencode2/docs/decisions/0012-ledger-native-product.md#ADR 0012 Ledger authority and native loop product" }] },
-      "delivery": { "state": "composed", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/features/hooks/index.ts#hookFoundationFeature" }] },
-      "qualification": { "state": "qualified", "platforms": [], "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs#setup registers functional Promise hooks and every product tool once" }] },
-      "availability": { "state": "observation-only", "environments": ["repository", "development"], "production": "disabled", "publication": "unknown", "deployment": "disabled" },
-      "status": "Current",
-      "verdict": { "decision": "GO", "rationaleCode": "scope-qualified-current" },
-      "blockerCodes": [],
-      "guards": [{"path":"apps/plugin/opencode2/src/features/hooks/event-capture.ts","mode":"exact","sha256":"1af843b7ede004cb855c5567d7416033684e4ffa1f05abac33070642e322c80c"},{"path":"apps/plugin/opencode2/src/features/hooks/open-code-hooks.ts","mode":"exact","sha256":"1ede1d60809c4a7396be037c5d799f1c91ab57e5385b3ceb406af6236aef34e9"},{"path":"apps/plugin/opencode2/tests/unit/event-capture.test.mjs","mode":"exact","sha256":"3e5abf01d16762406ba8c77776032c22950fc3e334b82d9d91f7b0db0d15e933"},{"path":"apps/plugin/opencode2/docs/decisions/0012-ledger-native-product.md","mode":"exact","sha256":"63f31dda664ea883c04d8974aec902d75638a3a24892e6933e45b4a67fe16ef7"},{"path":"apps/plugin/opencode2/src/features/hooks/index.ts","mode":"exact","sha256":"61fcb7734b62a1f58772d6841acdec709a83dfb17259b65c5277a00143a6f39c"},{"path":"apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs","mode":"exact","sha256":"7d2a84dd9828412acfd1f094993dfb91cf070f83b126b37e53bc687d759ce305"}]
+      "owners": [
+        "plugin"
+      ],
+      "scope": {
+        "product": "plugin",
+        "level": "package",
+        "environments": [
+          "repository",
+          "development"
+        ],
+        "platforms": [],
+        "constraints": [
+          "observation-only event capture",
+          "redacted payloads"
+        ]
+      },
+      "observation": {
+        "state": "implemented",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/features/hooks/open-code-hooks.ts#registerOpenCodeHooks"
+          },
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/features/hooks/event-capture.ts#EventCapture"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "limited",
+        "code": "scope-limited",
+        "refs": [
+          {
+            "kind": "section",
+            "ref": "apps/plugin/opencode2/docs/architecture/current-state.md#Composed plugin scope"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "partial",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/unit/event-capture.test.mjs#capture is idempotent and records sequence gaps and collisions"
+          }
+        ]
+      },
+      "authority": {
+        "state": "limited",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/plugin/opencode2/docs/decisions/0012-ledger-native-product.md#ADR 0012 Ledger authority and native loop product"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "conditional",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/features/hooks/index.ts#hookFoundationFeature"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "unqualified",
+        "platforms": [],
+        "refs": []
+      },
+      "availability": {
+        "state": "conditional",
+        "environments": [
+          "repository",
+          "development"
+        ],
+        "production": "disabled",
+        "publication": "unknown",
+        "deployment": "disabled"
+      },
+      "status": "Experimental",
+      "verdict": {
+        "decision": "CONDITIONAL",
+        "rationaleCode": "bounded-experimental"
+      },
+      "blockerCodes": [
+        "source-requalification-required"
+      ],
+      "guards": [
+        {
+          "path": "apps/plugin/opencode2/src/features/hooks/event-capture.ts",
+          "mode": "exact",
+          "sha256": "1af843b7ede004cb855c5567d7416033684e4ffa1f05abac33070642e322c80c"
+        },
+        {
+          "path": "apps/plugin/opencode2/src/features/hooks/open-code-hooks.ts",
+          "mode": "exact",
+          "sha256": "1ede1d60809c4a7396be037c5d799f1c91ab57e5385b3ceb406af6236aef34e9"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/unit/event-capture.test.mjs",
+          "mode": "exact",
+          "sha256": "3e5abf01d16762406ba8c77776032c22950fc3e334b82d9d91f7b0db0d15e933"
+        },
+        {
+          "path": "apps/plugin/opencode2/docs/decisions/0012-ledger-native-product.md",
+          "mode": "exact",
+          "sha256": "63f31dda664ea883c04d8974aec902d75638a3a24892e6933e45b4a67fe16ef7"
+        },
+        {
+          "path": "apps/plugin/opencode2/src/features/hooks/index.ts",
+          "mode": "exact",
+          "sha256": "61fcb7734b62a1f58772d6841acdec709a83dfb17259b65c5277a00143a6f39c"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs",
+          "mode": "exact",
+          "sha256": "4fc33aa4b23f66881c9331b780fd97c9eb9b43dba459c7d049174c39f20c2392"
+        }
+      ]
     },
     {
       "id": "plugin-structured-tools",
-      "owners": ["plugin"],
-      "scope": { "product": "plugin", "level": "package", "environments": ["repository", "development"], "platforms": [], "constraints": ["proposal and fail-closed lifecycle semantics"] },
-      "observation": { "state": "implemented", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/features/tools/index.ts#structuredToolsFeature" }] },
-      "assertion": { "state": "limited", "code": "scope-limited", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs#setup registers functional Promise hooks and every product tool once" }] },
-      "evidence": { "state": "sufficient", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/unit/ledger-v1.test.mjs#activation and claim automation fail closed while commit-bound fencing is unproven" }] },
-      "authority": { "state": "authorized", "refs": [{ "kind": "decision", "ref": "apps/plugin/opencode2/docs/decisions/0012-ledger-native-product.md#ADR 0012 Ledger authority and native loop product" }] },
-      "delivery": { "state": "composed", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/plugin/plugin.ts#composed" }] },
-      "qualification": { "state": "qualified", "platforms": [], "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/integration/functional-container-startup.test.mjs#installed setup instrumentation proves exact tool registration schemas and safe executor behavior" }] },
-      "availability": { "state": "enabled", "environments": ["repository", "development"], "production": "disabled", "publication": "unknown", "deployment": "disabled" },
-      "status": "Current",
-      "verdict": { "decision": "GO", "rationaleCode": "scope-qualified-current" },
-      "blockerCodes": [],
-      "guards": [{"path":"apps/plugin/opencode2/src/features/tools/index.ts","mode":"exact","sha256":"1df74ef171f925cb6b52bee8bca608bccf916151162133a7622343566f662a4d"},{"path":"apps/plugin/opencode2/src/plugin/plugin.ts","mode":"exact","sha256":"e1349089fd24623accdfc3def40e3fa6ff11eb2a30b14d450fc8d81bf03d43fb"},{"path":"apps/plugin/opencode2/tests/unit/ledger-v1.test.mjs","mode":"exact","sha256":"99cdfbc7e28627a61b5fbd6d58576718c752659eb30c19ab9074e54e4f2878ee"},{"path":"apps/plugin/opencode2/docs/decisions/0012-ledger-native-product.md","mode":"exact","sha256":"63f31dda664ea883c04d8974aec902d75638a3a24892e6933e45b4a67fe16ef7"},{"path":"apps/plugin/opencode2/tests/integration/functional-container-startup.test.mjs","mode":"exact","sha256":"2993c7c7574fa4ed9454797647f75421a3a7c4ad40257e2d825839d550f4392a"},{"path":"apps/plugin/opencode2/tools/ephemeral-container/functional-validation.mjs","mode":"exact","sha256":"1dde9417b008949d9f15ce4abe30d8f19b3fa2a7ad2e87b3f81d78ef30b2ba44"}]
+      "owners": [
+        "plugin"
+      ],
+      "scope": {
+        "product": "plugin",
+        "level": "package",
+        "environments": [
+          "repository",
+          "development"
+        ],
+        "platforms": [],
+        "constraints": [
+          "proposal and fail-closed lifecycle semantics"
+        ]
+      },
+      "observation": {
+        "state": "implemented",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/features/tools/index.ts#structuredToolsFeature"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "limited",
+        "code": "scope-limited",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs#setup registers functional Promise hooks and every product tool once"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "partial",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/unit/ledger-v1.test.mjs#activation and claim automation fail closed while commit-bound fencing is unproven"
+          }
+        ]
+      },
+      "authority": {
+        "state": "limited",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/plugin/opencode2/docs/decisions/0012-ledger-native-product.md#ADR 0012 Ledger authority and native loop product"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "conditional",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/plugin/plugin.ts#composed"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "unqualified",
+        "platforms": [],
+        "refs": []
+      },
+      "availability": {
+        "state": "conditional",
+        "environments": [
+          "repository",
+          "development"
+        ],
+        "production": "disabled",
+        "publication": "unknown",
+        "deployment": "disabled"
+      },
+      "status": "Experimental",
+      "verdict": {
+        "decision": "CONDITIONAL",
+        "rationaleCode": "bounded-experimental"
+      },
+      "blockerCodes": [
+        "source-requalification-required"
+      ],
+      "guards": [
+        {
+          "path": "apps/plugin/opencode2/src/features/tools/index.ts",
+          "mode": "exact",
+          "sha256": "1df74ef171f925cb6b52bee8bca608bccf916151162133a7622343566f662a4d"
+        },
+        {
+          "path": "apps/plugin/opencode2/src/plugin/plugin.ts",
+          "mode": "exact",
+          "sha256": "47fa921e0069405baa231f491a1051ff4eb589e10f103f6d3c5b04186ee16217"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/unit/ledger-v1.test.mjs",
+          "mode": "exact",
+          "sha256": "99cdfbc7e28627a61b5fbd6d58576718c752659eb30c19ab9074e54e4f2878ee"
+        },
+        {
+          "path": "apps/plugin/opencode2/docs/decisions/0012-ledger-native-product.md",
+          "mode": "exact",
+          "sha256": "63f31dda664ea883c04d8974aec902d75638a3a24892e6933e45b4a67fe16ef7"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/integration/functional-container-startup.test.mjs",
+          "mode": "exact",
+          "sha256": "2993c7c7574fa4ed9454797647f75421a3a7c4ad40257e2d825839d550f4392a"
+        },
+        {
+          "path": "apps/plugin/opencode2/tools/ephemeral-container/functional-validation.mjs",
+          "mode": "exact",
+          "sha256": "764ada2217cd4ebac23b32b4339fe67ca0f630c249aa06a9e86df7ea75057274"
+        }
+      ]
     },
     {
       "id": "plugin-ledger-authority",
-      "owners": ["plugin"],
-      "scope": { "product": "plugin", "level": "package", "environments": ["repository", "development"], "platforms": [], "constraints": ["Ledger v1 is sole lifecycle authority", "EventCapture is observation-only"] },
-      "observation": { "state": "implemented", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/features/ledger/index.ts#Ledger" }] },
-      "assertion": { "state": "limited", "code": "scope-limited", "refs": [{ "kind": "section", "ref": "apps/plugin/opencode2/docs/architecture/current-state.md#Ledger authority and disabled writes" }] },
-      "evidence": { "state": "sufficient", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/unit/ledger-authority-domain.test.mjs#facts cannot claim authority and proposal validation rejects fabricated completion" }] },
-      "authority": { "state": "authorized", "refs": [{ "kind": "decision", "ref": "apps/plugin/opencode2/docs/decisions/0012-ledger-native-product.md#ADR 0012 Ledger authority and native loop product" }] },
-      "delivery": { "state": "composed", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/features/tools/index.ts#definitions" }] },
-      "qualification": { "state": "qualified", "platforms": [], "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/unit/ledger-v1.test.mjs#synthetic approval and artifact-only completion fail closed" }] },
-      "availability": { "state": "enabled", "environments": ["repository", "development"], "production": "disabled", "publication": "unknown", "deployment": "disabled" },
-      "status": "Current",
-      "verdict": { "decision": "GO", "rationaleCode": "scope-qualified-current" },
-      "blockerCodes": [],
-      "guards": [{"path":"apps/plugin/opencode2/src/features/ledger/index.ts","mode":"exact","sha256":"358396971fb1e58269c550fb5ab107a47af258295308a8343ad9e9740410a2d6"},{"path":"apps/plugin/opencode2/tests/unit/ledger-authority-domain.test.mjs","mode":"exact","sha256":"9055b1dd7419dbf2838c4463975c64ea97c0606841889e524c910d07e6e58f6f"},{"path":"apps/plugin/opencode2/tests/unit/ledger-v1.test.mjs","mode":"exact","sha256":"99cdfbc7e28627a61b5fbd6d58576718c752659eb30c19ab9074e54e4f2878ee"},{"path":"apps/plugin/opencode2/docs/decisions/0012-ledger-native-product.md","mode":"exact","sha256":"63f31dda664ea883c04d8974aec902d75638a3a24892e6933e45b4a67fe16ef7"},{"path":"apps/plugin/opencode2/src/features/tools/index.ts","mode":"exact","sha256":"1df74ef171f925cb6b52bee8bca608bccf916151162133a7622343566f662a4d"}]
+      "owners": [
+        "plugin"
+      ],
+      "scope": {
+        "product": "plugin",
+        "level": "package",
+        "environments": [
+          "repository",
+          "development"
+        ],
+        "platforms": [],
+        "constraints": [
+          "Ledger v1 is sole lifecycle authority",
+          "EventCapture is observation-only"
+        ]
+      },
+      "observation": {
+        "state": "implemented",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/features/ledger/index.ts#Ledger"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "limited",
+        "code": "scope-limited",
+        "refs": [
+          {
+            "kind": "section",
+            "ref": "apps/plugin/opencode2/docs/architecture/current-state.md#Ledger authority and disabled writes"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "partial",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/unit/ledger-authority-domain.test.mjs#facts cannot claim authority and proposal validation rejects fabricated completion"
+          }
+        ]
+      },
+      "authority": {
+        "state": "limited",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/plugin/opencode2/docs/decisions/0012-ledger-native-product.md#ADR 0012 Ledger authority and native loop product"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "conditional",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/features/tools/index.ts#definitions"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "unqualified",
+        "platforms": [],
+        "refs": []
+      },
+      "availability": {
+        "state": "conditional",
+        "environments": [
+          "repository",
+          "development"
+        ],
+        "production": "disabled",
+        "publication": "unknown",
+        "deployment": "disabled"
+      },
+      "status": "Experimental",
+      "verdict": {
+        "decision": "CONDITIONAL",
+        "rationaleCode": "bounded-experimental"
+      },
+      "blockerCodes": [
+        "source-requalification-required"
+      ],
+      "guards": [
+        {
+          "path": "apps/plugin/opencode2/src/features/ledger/index.ts",
+          "mode": "exact",
+          "sha256": "358396971fb1e58269c550fb5ab107a47af258295308a8343ad9e9740410a2d6"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/unit/ledger-authority-domain.test.mjs",
+          "mode": "exact",
+          "sha256": "9055b1dd7419dbf2838c4463975c64ea97c0606841889e524c910d07e6e58f6f"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/unit/ledger-v1.test.mjs",
+          "mode": "exact",
+          "sha256": "99cdfbc7e28627a61b5fbd6d58576718c752659eb30c19ab9074e54e4f2878ee"
+        },
+        {
+          "path": "apps/plugin/opencode2/docs/decisions/0012-ledger-native-product.md",
+          "mode": "exact",
+          "sha256": "63f31dda664ea883c04d8974aec902d75638a3a24892e6933e45b4a67fe16ef7"
+        },
+        {
+          "path": "apps/plugin/opencode2/src/features/tools/index.ts",
+          "mode": "exact",
+          "sha256": "1df74ef171f925cb6b52bee8bca608bccf916151162133a7622343566f662a4d"
+        }
+      ]
     },
     {
       "id": "plugin-authoritative-writes",
-      "owners": ["plugin"],
-      "scope": { "product": "plugin", "level": "package", "environments": [], "platforms": [], "constraints": ["requires commit-bound current token and epoch fencing"] },
-      "observation": { "state": "absent", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/platform/real-host/index.ts#authoritativePersistence" }] },
-      "assertion": { "state": "negative", "code": "validated-negative", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/unit/persistence-fencing.test.mjs#lease-protected atomic publication fails closed when rename cannot bind the lease" }] },
-      "evidence": { "state": "sufficient", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/unit/ledger-v1.test.mjs#intent revision writes remain disabled without commit-bound fencing" }] },
-      "authority": { "state": "unauthorized", "refs": [{ "kind": "decision", "ref": "apps/plugin/opencode2/docs/decisions/0014-release-candidate-authority-and-fencing.md#Decision" }] },
-      "delivery": { "state": "absent", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/platform/real-host/index.ts#unsupportedCapabilities" }] },
-      "qualification": { "state": "unqualified", "platforms": [], "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/unit/native-loop-completion.test.mjs#continuation remains disabled even when preflight authority reports current" }] },
-      "availability": { "state": "disabled", "environments": [], "production": "disabled", "publication": "not-applicable", "deployment": "disabled" },
+      "owners": [
+        "plugin"
+      ],
+      "scope": {
+        "product": "plugin",
+        "level": "package",
+        "environments": [],
+        "platforms": [],
+        "constraints": [
+          "requires commit-bound current token and epoch fencing"
+        ]
+      },
+      "observation": {
+        "state": "absent",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/platform/real-host/index.ts#authoritativePersistence"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "negative",
+        "code": "validated-negative",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/unit/persistence-fencing.test.mjs#lease-protected atomic publication fails closed when rename cannot bind the lease"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "sufficient",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/unit/ledger-v1.test.mjs#intent revision writes remain disabled without commit-bound fencing"
+          }
+        ]
+      },
+      "authority": {
+        "state": "unauthorized",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/plugin/opencode2/docs/decisions/0014-release-candidate-authority-and-fencing.md#Decision"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "absent",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/platform/real-host/index.ts#unsupportedCapabilities"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "unqualified",
+        "platforms": [],
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/unit/native-loop-completion.test.mjs#continuation remains disabled even when preflight authority reports current"
+          }
+        ]
+      },
+      "availability": {
+        "state": "disabled",
+        "environments": [],
+        "production": "disabled",
+        "publication": "not-applicable",
+        "deployment": "disabled"
+      },
       "status": "Deferred",
-      "verdict": { "decision": "NO-GO", "rationaleCode": "fail-closed-deferred" },
-      "blockerCodes": ["authoritative-fencing-required", "host-persistence-qualification-required"],
-      "guards": [{"path":"apps/plugin/opencode2/src/platform/real-host/index.ts","mode":"exact","sha256":"2314f93021c0ecad109f2ea88c427abd1709b2277e147ef75557f2831d340ceb"},{"path":"apps/plugin/opencode2/tests/unit/persistence-fencing.test.mjs","mode":"exact","sha256":"f3800259978a639a28dc716f453c14451f9e5fc84e4e42a91a361e4db0d945b0"},{"path":"apps/plugin/opencode2/tests/unit/native-loop-completion.test.mjs","mode":"exact","sha256":"767712ebd86695d2bcaeb94cd7b57b6400fba063cf233183e710ae9e0e185831"}]
+      "verdict": {
+        "decision": "NO-GO",
+        "rationaleCode": "fail-closed-deferred"
+      },
+      "blockerCodes": [
+        "authoritative-fencing-required",
+        "host-persistence-qualification-required",
+        "source-requalification-required"
+      ],
+      "guards": [
+        {
+          "path": "apps/plugin/opencode2/src/platform/real-host/index.ts",
+          "mode": "exact",
+          "sha256": "28e9c8b9df36a6c40c223f94cdb4a93d7288b8b7f0b4215df9e07de01f4d9b03"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/unit/persistence-fencing.test.mjs",
+          "mode": "exact",
+          "sha256": "f3800259978a639a28dc716f453c14451f9e5fc84e4e42a91a361e4db0d945b0"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/unit/native-loop-completion.test.mjs",
+          "mode": "exact",
+          "sha256": "767712ebd86695d2bcaeb94cd7b57b6400fba063cf233183e710ae9e0e185831"
+        }
+      ]
     },
     {
       "id": "plugin-lifecycle-guards",
-      "owners": ["plugin"],
-      "scope": { "product": "plugin", "level": "package", "environments": ["repository", "development"], "platforms": [], "constraints": ["stable disabled diagnostics", "duplicate-root setup is silently suppressed with no-op cleanup"] },
-      "observation": { "state": "implemented", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/plugin/lifecycle.ts#projectRootKey" }, { "kind": "source", "ref": "apps/plugin/opencode2/src/platform/doctor/index.ts#doctor" }] },
-      "assertion": { "state": "positive", "code": "validated-positive", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/unit/hook-foundation-doctor.test.mjs#doctor emits stable disabled capability gates for unproven native host semantics" }, { "kind": "test", "ref": "apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs#duplicate project-root aliases are silently no-op suppressed while independent projects register" }] },
-      "evidence": { "state": "sufficient", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs#failed setup rolls registrations back in reverse and releases duplicate guard" }] },
-      "authority": { "state": "authorized", "refs": [{ "kind": "decision", "ref": "apps/plugin/opencode2/docs/decisions/0014-release-candidate-authority-and-fencing.md#Decision" }] },
-      "delivery": { "state": "composed", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/plugin/plugin.ts#setup" }] },
-      "qualification": { "state": "qualified", "platforms": [], "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs#setup rejects an unreviewed host ABI before registering behavior" }] },
-      "availability": { "state": "enabled", "environments": ["repository", "development"], "production": "disabled", "publication": "unknown", "deployment": "disabled" },
-      "status": "Current",
-      "verdict": { "decision": "GO", "rationaleCode": "scope-qualified-current" },
-      "blockerCodes": [],
-      "guards": [{"path":"apps/plugin/opencode2/src/plugin/lifecycle.ts","mode":"exact","sha256":"95de810155ae591da46a255e2e759db32f93fe9f35560bdffff8c2cd1a5fef76"},{"path":"apps/plugin/opencode2/src/plugin/plugin.ts","mode":"exact","sha256":"e1349089fd24623accdfc3def40e3fa6ff11eb2a30b14d450fc8d81bf03d43fb"},{"path":"apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs","mode":"exact","sha256":"7d2a84dd9828412acfd1f094993dfb91cf070f83b126b37e53bc687d759ce305"},{"path":"apps/plugin/opencode2/src/platform/doctor/index.ts","mode":"exact","sha256":"fcaf4b3a714796e4862d93e2da05ead286cc16bc33c75bddce6246d6fb6a1f21"},{"path":"apps/plugin/opencode2/docs/decisions/0014-release-candidate-authority-and-fencing.md","mode":"exact","sha256":"5a00bfc300bd30cc95dae9fd3d22f95d8e9e8e0f5e1a5524f575739a66489b9a"}]
+      "owners": [
+        "plugin"
+      ],
+      "scope": {
+        "product": "plugin",
+        "level": "package",
+        "environments": [
+          "repository",
+          "development"
+        ],
+        "platforms": [],
+        "constraints": [
+          "stable disabled diagnostics",
+          "duplicate-root setup is silently suppressed with no-op cleanup"
+        ]
+      },
+      "observation": {
+        "state": "implemented",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/plugin/lifecycle.ts#projectRootKey"
+          },
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/platform/doctor/index.ts#doctor"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "limited",
+        "code": "scope-limited",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/unit/hook-foundation-doctor.test.mjs#doctor emits stable disabled capability gates for unproven native host semantics"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs#duplicate project-root aliases are silently no-op suppressed while independent projects register"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "partial",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs#failed setup rolls registrations back in reverse and releases duplicate guard"
+          }
+        ]
+      },
+      "authority": {
+        "state": "limited",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/plugin/opencode2/docs/decisions/0014-release-candidate-authority-and-fencing.md#Decision"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "conditional",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/plugin/plugin.ts#setup"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "unqualified",
+        "platforms": [],
+        "refs": []
+      },
+      "availability": {
+        "state": "conditional",
+        "environments": [
+          "repository",
+          "development"
+        ],
+        "production": "disabled",
+        "publication": "unknown",
+        "deployment": "disabled"
+      },
+      "status": "Experimental",
+      "verdict": {
+        "decision": "CONDITIONAL",
+        "rationaleCode": "bounded-experimental"
+      },
+      "blockerCodes": [
+        "source-requalification-required"
+      ],
+      "guards": [
+        {
+          "path": "apps/plugin/opencode2/src/plugin/lifecycle.ts",
+          "mode": "exact",
+          "sha256": "95de810155ae591da46a255e2e759db32f93fe9f35560bdffff8c2cd1a5fef76"
+        },
+        {
+          "path": "apps/plugin/opencode2/src/plugin/plugin.ts",
+          "mode": "exact",
+          "sha256": "47fa921e0069405baa231f491a1051ff4eb589e10f103f6d3c5b04186ee16217"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs",
+          "mode": "exact",
+          "sha256": "4fc33aa4b23f66881c9331b780fd97c9eb9b43dba459c7d049174c39f20c2392"
+        },
+        {
+          "path": "apps/plugin/opencode2/src/platform/doctor/index.ts",
+          "mode": "exact",
+          "sha256": "fcaf4b3a714796e4862d93e2da05ead286cc16bc33c75bddce6246d6fb6a1f21"
+        },
+        {
+          "path": "apps/plugin/opencode2/docs/decisions/0014-release-candidate-authority-and-fencing.md",
+          "mode": "exact",
+          "sha256": "5a00bfc300bd30cc95dae9fd3d22f95d8e9e8e0f5e1a5524f575739a66489b9a"
+        }
+      ]
     },
     {
       "id": "plugin-capability-report",
-      "owners": ["plugin"],
-      "scope": { "product": "plugin", "level": "package", "environments": ["repository", "development", "test"], "platforms": [], "constraints": ["OpenCode beta-17595", "all consequential host capabilities disabled"] },
-      "observation": { "state": "implemented", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/platform/real-host/index.ts#capabilityReport" }] },
-      "assertion": { "state": "negative", "code": "validated-negative", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/unit/real-host-suite.test.mjs#credential-free capability report is pinned and fail-closed for unsupported semantics" }] },
-      "evidence": { "state": "sufficient", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/unit/real-host-suite.test.mjs#version mismatch disables every real-host capability with a stable code" }] },
-      "authority": { "state": "authorized", "refs": [{ "kind": "decision", "ref": "apps/plugin/opencode2/docs/decisions/0025-beta-17595-plugin-abi.md#ADR 0025 exact beta-17595 plugin ABI" }] },
-      "delivery": { "state": "composed", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/features/hooks/open-code-hooks.ts#capabilityReport" }] },
-      "qualification": { "state": "qualified", "platforms": [], "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/unit/hook-foundation-doctor.test.mjs#doctor labels observational failures fail-open and material failures fail-closed" }] },
-      "availability": { "state": "enabled", "environments": ["repository", "development", "test"], "production": "disabled", "publication": "unknown", "deployment": "disabled" },
-      "status": "Current",
-      "verdict": { "decision": "GO", "rationaleCode": "scope-qualified-current" },
-      "blockerCodes": [],
-      "guards": [{"path":"apps/plugin/opencode2/src/platform/real-host/index.ts","mode":"exact","sha256":"2314f93021c0ecad109f2ea88c427abd1709b2277e147ef75557f2831d340ceb"},{"path":"apps/plugin/opencode2/tests/unit/real-host-suite.test.mjs","mode":"exact","sha256":"1d6cefdf5f756a7c2dbc829ca841e30a15f30e943662e0f4661b8c590d0f7996"},{"path":"apps/plugin/opencode2/tests/unit/hook-foundation-doctor.test.mjs","mode":"exact","sha256":"82f0c3a5a64be4874874ee0718e36a0ec8bbd1cfd87fe00360004ba19129ab7b"},{"path":"apps/plugin/opencode2/docs/decisions/0025-beta-17595-plugin-abi.md","mode":"exact","sha256":"dcfd7a73e1a9fb0c0e40a96e5d4f58bf84fefd1315fbf1aa4ebac704257ad927"},{"path":"apps/plugin/opencode2/src/features/hooks/open-code-hooks.ts","mode":"exact","sha256":"1ede1d60809c4a7396be037c5d799f1c91ab57e5385b3ceb406af6236aef34e9"}]
+      "owners": [
+        "plugin"
+      ],
+      "scope": {
+        "product": "plugin",
+        "level": "package",
+        "environments": [
+          "repository",
+          "development",
+          "test"
+        ],
+        "platforms": [],
+        "constraints": [
+          "OpenCode beta-18138 adapter ABI",
+          "all consequential host capabilities disabled",
+          "real-host requalification not completed"
+        ]
+      },
+      "observation": {
+        "state": "implemented",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/platform/real-host/index.ts#capabilityReport"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "limited",
+        "code": "scope-limited",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/unit/real-host-suite.test.mjs#credential-free capability report is pinned and fail-closed for unsupported semantics"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "partial",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/unit/real-host-suite.test.mjs#version mismatch disables every real-host capability with a stable code"
+          }
+        ]
+      },
+      "authority": {
+        "state": "limited",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/plugin/opencode2/docs/decisions/0025-beta-17595-plugin-abi.md#ADR 0025 exact beta-17595 plugin ABI"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "conditional",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/features/hooks/open-code-hooks.ts#capabilityReport"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "unqualified",
+        "platforms": [],
+        "refs": []
+      },
+      "availability": {
+        "state": "conditional",
+        "environments": [
+          "repository",
+          "development",
+          "test"
+        ],
+        "production": "disabled",
+        "publication": "unknown",
+        "deployment": "disabled"
+      },
+      "status": "Experimental",
+      "verdict": {
+        "decision": "CONDITIONAL",
+        "rationaleCode": "bounded-experimental"
+      },
+      "blockerCodes": [
+        "source-requalification-required"
+      ],
+      "guards": [
+        {
+          "path": "apps/plugin/opencode2/src/platform/real-host/index.ts",
+          "mode": "exact",
+          "sha256": "28e9c8b9df36a6c40c223f94cdb4a93d7288b8b7f0b4215df9e07de01f4d9b03"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/unit/real-host-suite.test.mjs",
+          "mode": "exact",
+          "sha256": "07c5c21d31578fae67273253200d96618caca9360780c12ceed47df31dd90018"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/unit/hook-foundation-doctor.test.mjs",
+          "mode": "exact",
+          "sha256": "362ca31c8fb0191141b5b8425b738f965f750832db8bbdb4652609eb2d5d008d"
+        },
+        {
+          "path": "apps/plugin/opencode2/docs/decisions/0025-beta-17595-plugin-abi.md",
+          "mode": "exact",
+          "sha256": "dcfd7a73e1a9fb0c0e40a96e5d4f58bf84fefd1315fbf1aa4ebac704257ad927"
+        },
+        {
+          "path": "apps/plugin/opencode2/src/features/hooks/open-code-hooks.ts",
+          "mode": "exact",
+          "sha256": "1ede1d60809c4a7396be037c5d799f1c91ab57e5385b3ceb406af6236aef34e9"
+        }
+      ]
     },
     {
       "id": "plugin-search-surface",
-      "owners": ["plugin"],
-      "scope": { "product": "plugin", "level": "package", "environments": ["development", "test"], "platforms": [], "constraints": ["web_search plus deprecated formerhuman_search alias", "untrusted bounded results"] },
-      "observation": { "state": "implemented", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/features/search/index.ts#createSearchDefinitions" }] },
-      "assertion": { "state": "limited", "code": "scope-limited", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/unit/web-search.test.mjs#neutral tool is public and the shipped branded name is a compatibility alias without setup traffic" }] },
-      "evidence": { "state": "partial", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/unit/web-search.test.mjs#web search uses the approved token-protected POST contract and frames results as untrusted" }] },
-      "authority": { "state": "limited", "refs": [{ "kind": "decision", "ref": "apps/plugin/opencode2/docs/decisions/0021-m3-effect-runtime-search-adapter.md#Decision" }] },
-      "delivery": { "state": "conditional", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/features/search/searxng-adapter.ts#executeSearxngSearch" }] },
-      "qualification": { "state": "conditional", "platforms": [], "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/unit/web-search.test.mjs#timeouts and transport failures have stable redacted diagnostics" }] },
-      "availability": { "state": "conditional", "environments": ["development", "test"], "production": "disabled", "publication": "unknown", "deployment": "disabled" },
+      "owners": [
+        "plugin"
+      ],
+      "scope": {
+        "product": "plugin",
+        "level": "package",
+        "environments": [
+          "development",
+          "test"
+        ],
+        "platforms": [],
+        "constraints": [
+          "web_search plus deprecated formerhuman_search alias",
+          "untrusted bounded results"
+        ]
+      },
+      "observation": {
+        "state": "implemented",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/features/search/index.ts#createSearchDefinitions"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "limited",
+        "code": "scope-limited",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/unit/web-search.test.mjs#neutral tool is public and the shipped branded name is a compatibility alias without setup traffic"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "partial",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/unit/web-search.test.mjs#web search uses the approved token-protected POST contract and frames results as untrusted"
+          }
+        ]
+      },
+      "authority": {
+        "state": "limited",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/plugin/opencode2/docs/decisions/0021-m3-effect-runtime-search-adapter.md#Decision"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "conditional",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/features/search/searxng-adapter.ts#executeSearxngSearch"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "conditional",
+        "platforms": [],
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/unit/web-search.test.mjs#timeouts and transport failures have stable redacted diagnostics"
+          }
+        ]
+      },
+      "availability": {
+        "state": "conditional",
+        "environments": [
+          "development",
+          "test"
+        ],
+        "production": "disabled",
+        "publication": "unknown",
+        "deployment": "disabled"
+      },
       "status": "Experimental",
-      "verdict": { "decision": "CONDITIONAL", "rationaleCode": "bounded-experimental" },
-      "blockerCodes": ["live-endpoint-qualification-required"],
-      "guards": [{"path":"apps/plugin/opencode2/src/features/search/index.ts","mode":"exact","sha256":"170ab5bce4a51b76ff8aa23a4913ff7f54af135d66829c26a627c8372919503e"},{"path":"apps/plugin/opencode2/src/features/search/searxng-adapter.ts","mode":"exact","sha256":"981e80aa760a42dd11a2d98c61dc1f912cbc3ebe532fd2c982df27379536d45c"},{"path":"apps/plugin/opencode2/tests/unit/web-search.test.mjs","mode":"exact","sha256":"5c58d88c3a08c00ae465469fa84b3df9448c4dac1bea642c8b12f02787eb8a38"}]
+      "verdict": {
+        "decision": "CONDITIONAL",
+        "rationaleCode": "bounded-experimental"
+      },
+      "blockerCodes": [
+        "live-endpoint-qualification-required",
+        "source-requalification-required"
+      ],
+      "guards": [
+        {
+          "path": "apps/plugin/opencode2/src/features/search/index.ts",
+          "mode": "exact",
+          "sha256": "b65eb2cd052daf862dea708bfcbe98e14981082698e7fa49df24ef0da8a0857b"
+        },
+        {
+          "path": "apps/plugin/opencode2/src/features/search/searxng-adapter.ts",
+          "mode": "exact",
+          "sha256": "981e80aa760a42dd11a2d98c61dc1f912cbc3ebe532fd2c982df27379536d45c"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/unit/web-search.test.mjs",
+          "mode": "exact",
+          "sha256": "646c989dd10233062b27e630b45fb71a024d8808fa64b055aab4d940a1ca9d43"
+        }
+      ]
     },
     {
       "id": "plugin-private-runtime-search",
-      "owners": ["plugin", "runtime"],
-      "scope": { "product": "plugin", "level": "private-profile", "environments": ["development", "test", "private-release"], "platforms": ["darwin-arm64"], "constraints": ["private @curiosity/runtime/query", "explicit controlled plugin identity", "external 0600 capability file for release profile"] },
-      "observation": { "state": "implemented", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/features/search/runtime-adapter.ts#createRuntimeSearchExecutor" }] },
-      "assertion": { "state": "limited", "code": "scope-limited", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/security/search-adapter-security.test.mjs#runtime adapter imports only the query package and contains no admin surface" }] },
-      "evidence": { "state": "partial", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/characterization/promise-tool-host-abi.test.mjs#the private query-only workspace package loads under the pinned Bun host runtime" }] },
-      "authority": { "state": "limited", "refs": [{ "kind": "decision", "ref": "apps/plugin/opencode2/docs/decisions/0022-m7-private-opencode-adapter.md#Decision" }] },
-      "delivery": { "state": "conditional", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/plugin/plugin.ts#runtimeSearchOptions" }] },
-      "qualification": { "state": "qualified", "platforms": ["darwin-arm64"], "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/security/m7-query-capability-file.test.mjs#M7 capability file is canonical regular owned 0600 bounded copied once and redacted" }] },
-      "availability": { "state": "conditional", "environments": ["development", "test", "private-release"], "production": "disabled", "publication": "unpublished", "deployment": "disabled" },
-      "status": "Experimental",
-      "verdict": { "decision": "CONDITIONAL", "rationaleCode": "bounded-experimental" },
-      "blockerCodes": ["broader-delivery-authority-required"],
-      "guards": [{"path":"apps/plugin/opencode2/src/features/search/runtime-adapter.ts","mode":"exact","sha256":"4d3f7ed45d6b0513f7278688feac590e7cc0db48c6c6a22b5da3bdc70e5ad218"},{"path":"apps/plugin/opencode2/tests/security/search-adapter-security.test.mjs","mode":"exact","sha256":"00a3e8ae4125dce2210a421e40e00ce08a9c20010d8fa54661b37931f5f77e58"},{"path":"apps/plugin/opencode2/tests/security/m7-query-capability-file.test.mjs","mode":"exact","sha256":"be2998ab037ffb3f037110dfe5180df43c16d07cc18e57dd268a36499d33741c"}]
+      "owners": [
+        "plugin",
+        "runtime"
+      ],
+      "scope": {
+        "product": "plugin",
+        "level": "private-profile",
+        "environments": [
+          "development",
+          "test",
+          "private-release"
+        ],
+        "platforms": [
+          "darwin-arm64"
+        ],
+        "constraints": [
+          "private @curiosity/runtime/query",
+          "explicit controlled plugin identity",
+          "external 0600 capability file for release profile"
+        ]
+      },
+      "observation": {
+        "state": "implemented",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/features/search/runtime-adapter.ts#createRuntimeSearchExecutor"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "limited",
+        "code": "scope-limited",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/security/search-adapter-security.test.mjs#runtime adapter imports only the query package and contains no admin surface"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "partial",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/characterization/promise-tool-host-abi.test.mjs#the private query-only workspace package loads under the pinned Bun host runtime"
+          }
+        ]
+      },
+      "authority": {
+        "state": "limited",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/plugin/opencode2/docs/decisions/0022-m7-private-opencode-adapter.md#Decision"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "absent",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/plugin/plugin.ts#composeFeatures"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "unqualified",
+        "platforms": [],
+        "refs": []
+      },
+      "availability": {
+        "state": "disabled",
+        "environments": [],
+        "production": "disabled",
+        "publication": "unpublished",
+        "deployment": "disabled"
+      },
+      "status": "Deferred",
+      "verdict": {
+        "decision": "NO-GO",
+        "rationaleCode": "fail-closed-deferred"
+      },
+      "blockerCodes": [
+        "broader-delivery-authority-required",
+        "source-requalification-required"
+      ],
+      "guards": [
+        {
+          "path": "apps/plugin/opencode2/src/features/search/runtime-adapter.ts",
+          "mode": "exact",
+          "sha256": "4d3f7ed45d6b0513f7278688feac590e7cc0db48c6c6a22b5da3bdc70e5ad218"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/security/search-adapter-security.test.mjs",
+          "mode": "exact",
+          "sha256": "00a3e8ae4125dce2210a421e40e00ce08a9c20010d8fa54661b37931f5f77e58"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/security/m7-query-capability-file.test.mjs",
+          "mode": "exact",
+          "sha256": "be2998ab037ffb3f037110dfe5180df43c16d07cc18e57dd268a36499d33741c"
+        }
+      ]
     },
     {
       "id": "plugin-registry-readiness",
-      "owners": ["plugin"],
-      "scope": { "product": "plugin", "level": "package", "environments": ["repository", "test"], "platforms": [], "constraints": ["version 0.1.0", "isolated loopback registry proof"] },
-      "observation": { "state": "implemented", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/package.json#exports" }] },
-      "assertion": { "state": "limited", "code": "scope-limited", "refs": [{ "kind": "decision", "ref": "apps/plugin/opencode2/docs/decisions/0031-registry-ready-package-and-black-box-proof.md#Consequences" }] },
-      "evidence": { "state": "sufficient", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/integration/registry-package-contract.test.mjs#normal pack preserves the source manifest and excludes development/workspace surfaces" }] },
-      "authority": { "state": "authorized", "refs": [{ "kind": "decision", "ref": "apps/plugin/opencode2/docs/decisions/0031-registry-ready-package-and-black-box-proof.md#Decision" }] },
-      "delivery": { "state": "registry-ready", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/integration/ephemeral-container-harness.test.mjs#functional setup contract is explicit unique and aligned with checked-in release assets" }] },
-      "qualification": { "state": "qualified", "platforms": [], "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/integration/readme-verification.test.mjs#README plugin verification retries exact cold-empty output then accepts only the expected inventory" }] },
-      "availability": { "state": "enabled", "environments": ["repository", "test"], "production": "disabled", "publication": "unknown", "deployment": "disabled" },
-      "status": "Current",
-      "verdict": { "decision": "GO", "rationaleCode": "scope-qualified-current" },
-      "blockerCodes": ["publication-review-required"],
-      "guards": [{"path":"apps/plugin/opencode2/tests/integration/registry-package-contract.test.mjs","mode":"exact","sha256":"26ea6886f2c2efde35f1b919ed2fe285eeb77259b8feebf841d79f83f031e8f9"},{"path":"apps/plugin/opencode2/package.json","mode":"exact","sha256":"8bbec2a75b907aff4402885821897167f2d286b8faea76aaa5d2feb51f4ff84c"},{"path":"apps/plugin/opencode2/tests/integration/readme-verification.test.mjs","mode":"exact","sha256":"0655e356ab9d60a09c73552c93b98aa524d5180cafb823710b97fe434ab9df9a"},{"path":"apps/plugin/opencode2/docs/decisions/0031-registry-ready-package-and-black-box-proof.md","mode":"exact","sha256":"6ba562fa73d9e4090d8bc1cf9a6a03e2ab63865d9edbbf2e295e4101f9c34802"},{"path":"apps/plugin/opencode2/tests/integration/ephemeral-container-harness.test.mjs","mode":"exact","sha256":"977fa44aee19aa5212f64fd4e518fd782f40ff9b6d176339443a673c0be6a920"}]
+      "owners": [
+        "plugin"
+      ],
+      "scope": {
+        "product": "plugin",
+        "level": "package",
+        "environments": [
+          "repository",
+          "test"
+        ],
+        "platforms": [],
+        "constraints": [
+          "version 0.1.0",
+          "isolated loopback registry proof"
+        ]
+      },
+      "observation": {
+        "state": "implemented",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/package.json#exports"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "limited",
+        "code": "scope-limited",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/plugin/opencode2/docs/decisions/0031-registry-ready-package-and-black-box-proof.md#Consequences"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "partial",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/integration/registry-package-contract.test.mjs#normal pack preserves the source manifest and excludes development/workspace surfaces"
+          }
+        ]
+      },
+      "authority": {
+        "state": "limited",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/plugin/opencode2/docs/decisions/0031-registry-ready-package-and-black-box-proof.md#Decision"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "conditional",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/integration/ephemeral-container-harness.test.mjs#functional setup contract is explicit unique and aligned with checked-in release assets"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "unqualified",
+        "platforms": [],
+        "refs": []
+      },
+      "availability": {
+        "state": "conditional",
+        "environments": [
+          "repository",
+          "test"
+        ],
+        "production": "disabled",
+        "publication": "unknown",
+        "deployment": "disabled"
+      },
+      "status": "Experimental",
+      "verdict": {
+        "decision": "CONDITIONAL",
+        "rationaleCode": "bounded-experimental"
+      },
+      "blockerCodes": [
+        "publication-review-required",
+        "source-requalification-required"
+      ],
+      "guards": [
+        {
+          "path": "apps/plugin/opencode2/tests/integration/registry-package-contract.test.mjs",
+          "mode": "exact",
+          "sha256": "26ea6886f2c2efde35f1b919ed2fe285eeb77259b8feebf841d79f83f031e8f9"
+        },
+        {
+          "path": "apps/plugin/opencode2/package.json",
+          "mode": "exact",
+          "sha256": "c00485b5af4f88382169fb97dcec2c48bd63d44e22c8b4209b62a7b6dca7f6d9"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/integration/readme-verification.test.mjs",
+          "mode": "exact",
+          "sha256": "0655e356ab9d60a09c73552c93b98aa524d5180cafb823710b97fe434ab9df9a"
+        },
+        {
+          "path": "apps/plugin/opencode2/docs/decisions/0031-registry-ready-package-and-black-box-proof.md",
+          "mode": "exact",
+          "sha256": "6ba562fa73d9e4090d8bc1cf9a6a03e2ab63865d9edbbf2e295e4101f9c34802"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/integration/ephemeral-container-harness.test.mjs",
+          "mode": "exact",
+          "sha256": "977fa44aee19aa5212f64fd4e518fd782f40ff9b6d176339443a673c0be6a920"
+        }
+      ]
     },
     {
       "id": "plugin-engineering-intent",
-      "owners": ["plugin"],
-      "scope": { "product": "plugin", "level": "repository", "environments": ["development", "test"], "platforms": [], "constraints": ["uncomposed typed modules", "prompt commands are not trusted callbacks"] },
-      "observation": { "state": "implemented", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/features/engineering-intent/controller.ts#EngineeringPursuitController" }] },
-      "assertion": { "state": "limited", "code": "scope-limited", "refs": [{ "kind": "section", "ref": "apps/plugin/opencode2/docs/architecture/current-state.md#Internal scaffolding" }] },
-      "evidence": { "state": "partial", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/integration/engineering-foreground.test.mjs#pinned host denies authority minting and every consequential admission" }] },
-      "authority": { "state": "limited", "refs": [{ "kind": "decision", "ref": "apps/plugin/opencode2/docs/decisions/0017-engineering-intent-commands.md#Decision" }] },
-      "delivery": { "state": "internal", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/plugin/plugin.ts#composed" }] },
-      "qualification": { "state": "conditional", "platforms": [], "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/unit/engineering-policy.test.mjs#only linked fresh host observations evidence the declared criterion" }] },
-      "availability": { "state": "disabled", "environments": [], "production": "disabled", "publication": "not-applicable", "deployment": "disabled" },
+      "owners": [
+        "plugin"
+      ],
+      "scope": {
+        "product": "plugin",
+        "level": "repository",
+        "environments": [
+          "development",
+          "test"
+        ],
+        "platforms": [],
+        "constraints": [
+          "uncomposed typed modules",
+          "prompt commands are not trusted callbacks"
+        ]
+      },
+      "observation": {
+        "state": "implemented",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/features/engineering-intent/controller.ts#EngineeringPursuitController"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "limited",
+        "code": "scope-limited",
+        "refs": [
+          {
+            "kind": "section",
+            "ref": "apps/plugin/opencode2/docs/architecture/current-state.md#Internal scaffolding"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "partial",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/integration/engineering-foreground.test.mjs#pinned host denies authority minting and every consequential admission"
+          }
+        ]
+      },
+      "authority": {
+        "state": "limited",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/plugin/opencode2/docs/decisions/0017-engineering-intent-commands.md#Decision"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "internal",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/plugin/plugin.ts#composed"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "conditional",
+        "platforms": [],
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/unit/engineering-policy.test.mjs#only linked fresh host observations evidence the declared criterion"
+          }
+        ]
+      },
+      "availability": {
+        "state": "disabled",
+        "environments": [],
+        "production": "disabled",
+        "publication": "not-applicable",
+        "deployment": "disabled"
+      },
       "status": "Experimental",
-      "verdict": { "decision": "CONDITIONAL", "rationaleCode": "bounded-experimental" },
-      "blockerCodes": ["trusted-command-callback-required", "durable-replay-required", "composition-authority-required"],
-      "guards": [{"path":"apps/plugin/opencode2/src/features/engineering-intent/controller.ts","mode":"exact","sha256":"81bf62782b781565ae59c800013a786f01c4f9ead419c94f22f964a71cb69b2a"},{"path":"apps/plugin/opencode2/src/plugin/plugin.ts","mode":"exact","sha256":"e1349089fd24623accdfc3def40e3fa6ff11eb2a30b14d450fc8d81bf03d43fb"},{"path":"apps/plugin/opencode2/tests/integration/engineering-foreground.test.mjs","mode":"exact","sha256":"6c24e66f8c7d09dee91802e099abffa0b5fc2c1b8d045f0097da343503f449b1"}]
+      "verdict": {
+        "decision": "CONDITIONAL",
+        "rationaleCode": "bounded-experimental"
+      },
+      "blockerCodes": [
+        "trusted-command-callback-required",
+        "durable-replay-required",
+        "composition-authority-required",
+        "source-requalification-required"
+      ],
+      "guards": [
+        {
+          "path": "apps/plugin/opencode2/src/features/engineering-intent/controller.ts",
+          "mode": "exact",
+          "sha256": "81bf62782b781565ae59c800013a786f01c4f9ead419c94f22f964a71cb69b2a"
+        },
+        {
+          "path": "apps/plugin/opencode2/src/plugin/plugin.ts",
+          "mode": "exact",
+          "sha256": "47fa921e0069405baa231f491a1051ff4eb589e10f103f6d3c5b04186ee16217"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/integration/engineering-foreground.test.mjs",
+          "mode": "exact",
+          "sha256": "6c24e66f8c7d09dee91802e099abffa0b5fc2c1b8d045f0097da343503f449b1"
+        }
+      ]
     },
     {
       "id": "plugin-evidence-scaffolding",
-      "owners": ["plugin"],
-      "scope": { "product": "plugin", "level": "repository", "environments": ["development", "test"], "platforms": [], "constraints": ["development bootstrap only", "non-authoritative"] },
-      "observation": { "state": "implemented", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/features/evidence/index.ts#evidenceFeature" }] },
-      "assertion": { "state": "limited", "code": "scope-limited", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/unit/evidence-development.test.mjs#development bootstrap is explicit and rejects production claims" }] },
-      "evidence": { "state": "partial", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/integration/evidence-ingest-query.test.mjs#ingest crash boundaries converge and pre-commit work is universally ineligible" }] },
-      "authority": { "state": "limited", "refs": [{ "kind": "decision", "ref": "apps/plugin/opencode2/docs/decisions/0024-durable-ledger-v2-and-capture-authority.md#Decision" }] },
-      "delivery": { "state": "internal", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/features/evidence/development-harness.ts#createDevelopmentHarness" }] },
-      "qualification": { "state": "conditional", "platforms": [], "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/security/evidence-bootstrap-security.test.mjs#development secrets are redacted and cannot imply activation or claims" }] },
-      "availability": { "state": "disabled", "environments": [], "production": "disabled", "publication": "not-applicable", "deployment": "disabled" },
+      "owners": [
+        "plugin"
+      ],
+      "scope": {
+        "product": "plugin",
+        "level": "repository",
+        "environments": [
+          "development",
+          "test"
+        ],
+        "platforms": [],
+        "constraints": [
+          "development bootstrap only",
+          "non-authoritative"
+        ]
+      },
+      "observation": {
+        "state": "implemented",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/features/evidence/index.ts#evidenceFeature"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "limited",
+        "code": "scope-limited",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/unit/evidence-development.test.mjs#development bootstrap is explicit and rejects production claims"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "partial",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/integration/evidence-ingest-query.test.mjs#ingest crash boundaries converge and pre-commit work is universally ineligible"
+          }
+        ]
+      },
+      "authority": {
+        "state": "limited",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/plugin/opencode2/docs/decisions/0024-durable-ledger-v2-and-capture-authority.md#Decision"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "internal",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/features/evidence/development-harness.ts#createDevelopmentHarness"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "conditional",
+        "platforms": [],
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/security/evidence-bootstrap-security.test.mjs#development secrets are redacted and cannot imply activation or claims"
+          }
+        ]
+      },
+      "availability": {
+        "state": "disabled",
+        "environments": [],
+        "production": "disabled",
+        "publication": "not-applicable",
+        "deployment": "disabled"
+      },
       "status": "Experimental",
-      "verdict": { "decision": "CONDITIONAL", "rationaleCode": "bounded-experimental" },
-      "blockerCodes": ["ledger-fencing-required", "composition-authority-required"],
-      "guards": [{"path":"apps/plugin/opencode2/src/features/evidence/index.ts","mode":"exact","sha256":"d8b2346ab0b97bfc5649263303f3d5a8a7f8debf85c1d81f7cee0a2b99a891bb"},{"path":"apps/plugin/opencode2/src/features/evidence/development-harness.ts","mode":"exact","sha256":"a6ee7dfe31cbff39a39cdf78aea9b53df07e0ef510f71b18188eb66fb8cdf25c"},{"path":"apps/plugin/opencode2/tests/security/evidence-bootstrap-security.test.mjs","mode":"exact","sha256":"1e11bcbd5b1d97d16a13e9f30e83afb000ec321213435d300e8639e5742dceec"}]
+      "verdict": {
+        "decision": "CONDITIONAL",
+        "rationaleCode": "bounded-experimental"
+      },
+      "blockerCodes": [
+        "ledger-fencing-required",
+        "composition-authority-required",
+        "source-requalification-required"
+      ],
+      "guards": [
+        {
+          "path": "apps/plugin/opencode2/src/features/evidence/index.ts",
+          "mode": "exact",
+          "sha256": "d8b2346ab0b97bfc5649263303f3d5a8a7f8debf85c1d81f7cee0a2b99a891bb"
+        },
+        {
+          "path": "apps/plugin/opencode2/src/features/evidence/development-harness.ts",
+          "mode": "exact",
+          "sha256": "a6ee7dfe31cbff39a39cdf78aea9b53df07e0ef510f71b18188eb66fb8cdf25c"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/security/evidence-bootstrap-security.test.mjs",
+          "mode": "exact",
+          "sha256": "1e11bcbd5b1d97d16a13e9f30e83afb000ec321213435d300e8639e5742dceec"
+        }
+      ]
     },
     {
       "id": "plugin-orchestration-scaffolding",
-      "owners": ["plugin"],
-      "scope": { "product": "plugin", "level": "repository", "environments": ["development", "test"], "platforms": [], "constraints": ["planning and contract compilation only"] },
-      "observation": { "state": "implemented", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/features/orchestration/index.ts#orchestrationFeature" }, { "kind": "source", "ref": "apps/plugin/opencode2/src/features/handoff/index.mjs#compileHandoff" }] },
-      "assertion": { "state": "limited", "code": "scope-limited", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/unit/handoff-contract.test.mjs#skill command schema and fixtures remain provider-neutral and planning-only" }] },
-      "evidence": { "state": "partial", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/unit/handoff-contract.test.mjs#policy denial is out-of-band and terminal" }] },
-      "authority": { "state": "limited", "refs": [{ "kind": "decision", "ref": "apps/plugin/opencode2/docs/decisions/0012-ledger-native-product.md#ADR 0012 Ledger authority and native loop product" }] },
-      "delivery": { "state": "internal", "refs": [{ "kind": "source", "ref": "apps/plugin/opencode2/src/plugin/plugin.ts#composed" }] },
-      "qualification": { "state": "conditional", "platforms": [], "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/unit/handoff-contract.test.mjs#C rejects mutation parallelism without out-of-band authorization" }] },
-      "availability": { "state": "disabled", "environments": [], "production": "disabled", "publication": "not-applicable", "deployment": "disabled" },
+      "owners": [
+        "plugin"
+      ],
+      "scope": {
+        "product": "plugin",
+        "level": "repository",
+        "environments": [
+          "development",
+          "test"
+        ],
+        "platforms": [],
+        "constraints": [
+          "planning and contract compilation only"
+        ]
+      },
+      "observation": {
+        "state": "implemented",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/features/orchestration/index.ts#orchestrationFeature"
+          },
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/features/handoff/index.mjs#compileHandoff"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "limited",
+        "code": "scope-limited",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/unit/handoff-contract.test.mjs#skill command schema and fixtures remain provider-neutral and planning-only"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "partial",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/unit/handoff-contract.test.mjs#policy denial is out-of-band and terminal"
+          }
+        ]
+      },
+      "authority": {
+        "state": "limited",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/plugin/opencode2/docs/decisions/0012-ledger-native-product.md#ADR 0012 Ledger authority and native loop product"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "internal",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/plugin/opencode2/src/plugin/plugin.ts#composed"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "conditional",
+        "platforms": [],
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/unit/handoff-contract.test.mjs#C rejects mutation parallelism without out-of-band authorization"
+          }
+        ]
+      },
+      "availability": {
+        "state": "disabled",
+        "environments": [],
+        "production": "disabled",
+        "publication": "not-applicable",
+        "deployment": "disabled"
+      },
       "status": "Experimental",
-      "verdict": { "decision": "CONDITIONAL", "rationaleCode": "bounded-experimental" },
-      "blockerCodes": ["composition-authority-required"],
-      "guards": [{"path":"apps/plugin/opencode2/src/features/orchestration/index.ts","mode":"exact","sha256":"0d6d93b8f72b4a0869e2f500cabfd5fb21c36748960a032fd0e78e0a05a3d894"},{"path":"apps/plugin/opencode2/src/features/handoff/index.mjs","mode":"exact","sha256":"e969b1eeb3b47608c772599ba4537b4f1b9226b8d02059af70321939d3d10ad9"},{"path":"apps/plugin/opencode2/tests/unit/handoff-contract.test.mjs","mode":"exact","sha256":"18a6d1301b72580f4188ccd2815633005204357bc07b833fb10daa6c1ab63009"}]
+      "verdict": {
+        "decision": "CONDITIONAL",
+        "rationaleCode": "bounded-experimental"
+      },
+      "blockerCodes": [
+        "composition-authority-required",
+        "source-requalification-required"
+      ],
+      "guards": [
+        {
+          "path": "apps/plugin/opencode2/src/features/orchestration/index.ts",
+          "mode": "exact",
+          "sha256": "0d6d93b8f72b4a0869e2f500cabfd5fb21c36748960a032fd0e78e0a05a3d894"
+        },
+        {
+          "path": "apps/plugin/opencode2/src/features/handoff/index.mjs",
+          "mode": "exact",
+          "sha256": "e969b1eeb3b47608c772599ba4537b4f1b9226b8d02059af70321939d3d10ad9"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/unit/handoff-contract.test.mjs",
+          "mode": "exact",
+          "sha256": "18a6d1301b72580f4188ccd2815633005204357bc07b833fb10daa6c1ab63009"
+        }
+      ]
     },
     {
       "id": "runtime-m1",
-      "owners": ["runtime"],
-      "scope": { "product": "runtime", "level": "package", "environments": ["repository", "development"], "platforms": [], "constraints": ["dependency-free Rust core and in-process Bun shim", "no corpus by default"] },
-      "observation": { "state": "implemented", "refs": [{ "kind": "source", "ref": "apps/runtime/src/index.ts#createRuntime" }] },
-      "assertion": { "state": "positive", "code": "validated-positive", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0024-m1-verification-and-go.md#Decision" }] },
-      "evidence": { "state": "sufficient", "refs": [{ "kind": "test", "ref": "apps/runtime/tests/runtime.test.ts#returns the deterministic bounded no-corpus envelope" }] },
-      "authority": { "state": "authorized", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0023-stateless-m1-runtime.md#Decision" }] },
-      "delivery": { "state": "exported", "refs": [{ "kind": "source", "ref": "apps/runtime/package.json#exports" }] },
-      "qualification": { "state": "qualified", "platforms": [], "refs": [{ "kind": "test", "ref": "apps/runtime/tests/boundaries.test.ts#runtime startup discovery request and close leave an isolated directory unchanged" }] },
-      "availability": { "state": "enabled", "environments": ["repository", "development"], "production": "disabled", "publication": "unpublished", "deployment": "disabled" },
+      "owners": [
+        "runtime"
+      ],
+      "scope": {
+        "product": "runtime",
+        "level": "package",
+        "environments": [
+          "repository",
+          "development"
+        ],
+        "platforms": [],
+        "constraints": [
+          "dependency-free Rust core and in-process Bun shim",
+          "no corpus by default"
+        ]
+      },
+      "observation": {
+        "state": "implemented",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/runtime/src/index.ts#createRuntime"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "positive",
+        "code": "validated-positive",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0024-m1-verification-and-go.md#Decision"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "sufficient",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/runtime/tests/runtime.test.ts#returns the deterministic bounded no-corpus envelope"
+          }
+        ]
+      },
+      "authority": {
+        "state": "authorized",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0023-stateless-m1-runtime.md#Decision"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "exported",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/runtime/package.json#exports"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "qualified",
+        "platforms": [],
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/runtime/tests/boundaries.test.ts#runtime startup discovery request and close leave an isolated directory unchanged"
+          }
+        ]
+      },
+      "availability": {
+        "state": "enabled",
+        "environments": [
+          "repository",
+          "development"
+        ],
+        "production": "disabled",
+        "publication": "unpublished",
+        "deployment": "disabled"
+      },
       "status": "Current",
-      "verdict": { "decision": "GO", "rationaleCode": "scope-qualified-current" },
+      "verdict": {
+        "decision": "GO",
+        "rationaleCode": "scope-qualified-current"
+      },
       "blockerCodes": [],
-      "guards": [{"path":"apps/runtime/src/index.ts","mode":"exact","sha256":"5c6da5642e12edb078c3ab755b72a2d83aac3fa549f4302c313c702b3b18fe84"},{"path":"apps/runtime/native/src/lib.rs","mode":"exact","sha256":"95de23f7ec6c802c9959421c75d9fb4df80fa31460d8a365faed0fc41e1fb5e6"},{"path":"apps/runtime/tests/runtime.test.ts","mode":"exact","sha256":"06b095df2d2038ab262d89d2adae248f57b2546ea594f179a6676e91d1b8b487"},{"path":"apps/runtime/package.json","mode":"exact","sha256":"03e967ba66faad296920d6abb0e91ede3cc671a248583cb17492643138d64d40"},{"path":"apps/runtime/docs/decisions/0023-stateless-m1-runtime.md","mode":"exact","sha256":"cea469bd6cb48280a78c4152628d1639a649fe382be7b1ac614cd87b855dde16"},{"path":"apps/runtime/tests/boundaries.test.ts","mode":"exact","sha256":"639c8fed9c0264ffc371ac92cd0215e78d06ecf390bf289a38af54c72f15aaa4"}]
+      "guards": [
+        {
+          "path": "apps/runtime/src/index.ts",
+          "mode": "exact",
+          "sha256": "5c6da5642e12edb078c3ab755b72a2d83aac3fa549f4302c313c702b3b18fe84"
+        },
+        {
+          "path": "apps/runtime/native/src/lib.rs",
+          "mode": "exact",
+          "sha256": "95de23f7ec6c802c9959421c75d9fb4df80fa31460d8a365faed0fc41e1fb5e6"
+        },
+        {
+          "path": "apps/runtime/tests/runtime.test.ts",
+          "mode": "exact",
+          "sha256": "06b095df2d2038ab262d89d2adae248f57b2546ea594f179a6676e91d1b8b487"
+        },
+        {
+          "path": "apps/runtime/package.json",
+          "mode": "exact",
+          "sha256": "03e967ba66faad296920d6abb0e91ede3cc671a248583cb17492643138d64d40"
+        },
+        {
+          "path": "apps/runtime/docs/decisions/0023-stateless-m1-runtime.md",
+          "mode": "exact",
+          "sha256": "cea469bd6cb48280a78c4152628d1639a649fe382be7b1ac614cd87b855dde16"
+        },
+        {
+          "path": "apps/runtime/tests/boundaries.test.ts",
+          "mode": "exact",
+          "sha256": "639c8fed9c0264ffc371ac92cd0215e78d06ecf390bf289a38af54c72f15aaa4"
+        }
+      ]
     },
     {
       "id": "runtime-m2",
-      "owners": ["runtime"],
-      "scope": { "product": "runtime", "level": "package", "environments": ["repository", "development"], "platforms": [], "constraints": ["exact fictional fixture", "operator-owned external state root", "single writer"] },
-      "observation": { "state": "implemented", "refs": [{ "kind": "source", "ref": "apps/runtime/src/index.ts#createCorpusAdmin" }] },
-      "assertion": { "state": "limited", "code": "scope-limited", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0028-m2-verification-and-go.md#Decision" }] },
-      "evidence": { "state": "sufficient", "refs": [{ "kind": "test", "ref": "apps/runtime/tests/corpus.test.ts#imports atomically activates and returns bounded deterministic lexical results" }] },
-      "authority": { "state": "authorized", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0027-m2-contract-abi-and-authority.md#Decision" }] },
-      "delivery": { "state": "exported", "refs": [{ "kind": "source", "ref": "apps/runtime/package.json#./admin" }] },
-      "qualification": { "state": "qualified", "platforms": [], "refs": [{ "kind": "test", "ref": "apps/runtime/tests/corpus.test.ts#keeps query and administrative capabilities non-interchangeable" }] },
-      "availability": { "state": "enabled", "environments": ["repository", "development"], "production": "disabled", "publication": "unpublished", "deployment": "disabled" },
+      "owners": [
+        "runtime"
+      ],
+      "scope": {
+        "product": "runtime",
+        "level": "package",
+        "environments": [
+          "repository",
+          "development"
+        ],
+        "platforms": [],
+        "constraints": [
+          "exact fictional fixture",
+          "operator-owned external state root",
+          "single writer"
+        ]
+      },
+      "observation": {
+        "state": "implemented",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/runtime/src/index.ts#createCorpusAdmin"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "limited",
+        "code": "scope-limited",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0028-m2-verification-and-go.md#Decision"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "sufficient",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/runtime/tests/corpus.test.ts#imports atomically activates and returns bounded deterministic lexical results"
+          }
+        ]
+      },
+      "authority": {
+        "state": "authorized",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0027-m2-contract-abi-and-authority.md#Decision"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "exported",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/runtime/package.json#./admin"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "qualified",
+        "platforms": [],
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/runtime/tests/corpus.test.ts#keeps query and administrative capabilities non-interchangeable"
+          }
+        ]
+      },
+      "availability": {
+        "state": "enabled",
+        "environments": [
+          "repository",
+          "development"
+        ],
+        "production": "disabled",
+        "publication": "unpublished",
+        "deployment": "disabled"
+      },
       "status": "Current",
-      "verdict": { "decision": "GO", "rationaleCode": "scope-qualified-current" },
+      "verdict": {
+        "decision": "GO",
+        "rationaleCode": "scope-qualified-current"
+      },
       "blockerCodes": [],
-      "guards": [{"path":"apps/runtime/native/src/corpus.rs","mode":"exact","sha256":"1234211b8cbdb82f2b8ac16fb50aedfa8903ebe9a30fa0085f7854fa0e644398"},{"path":"apps/runtime/src/admin.ts","mode":"exact","sha256":"839b16ffed0d13cfcdbbdfbc2f6bc112591c37e2d192f6bb7108be150e1b0db4"},{"path":"apps/runtime/tests/corpus.test.ts","mode":"exact","sha256":"722be5b9b8195fc86a02316ca419d1d46a072ca36b8d6b87523743bc2a3be634"},{"path":"apps/runtime/package.json","mode":"exact","sha256":"03e967ba66faad296920d6abb0e91ede3cc671a248583cb17492643138d64d40"},{"path":"apps/runtime/src/index.ts","mode":"exact","sha256":"5c6da5642e12edb078c3ab755b72a2d83aac3fa549f4302c313c702b3b18fe84"},{"path":"apps/runtime/docs/decisions/0027-m2-contract-abi-and-authority.md","mode":"exact","sha256":"e079601d778ace7bc137cb01193c3a6237512ba6e79dddc20b37bf9d8f0a464f"}]
+      "guards": [
+        {
+          "path": "apps/runtime/native/src/corpus.rs",
+          "mode": "exact",
+          "sha256": "1234211b8cbdb82f2b8ac16fb50aedfa8903ebe9a30fa0085f7854fa0e644398"
+        },
+        {
+          "path": "apps/runtime/src/admin.ts",
+          "mode": "exact",
+          "sha256": "839b16ffed0d13cfcdbbdfbc2f6bc112591c37e2d192f6bb7108be150e1b0db4"
+        },
+        {
+          "path": "apps/runtime/tests/corpus.test.ts",
+          "mode": "exact",
+          "sha256": "722be5b9b8195fc86a02316ca419d1d46a072ca36b8d6b87523743bc2a3be634"
+        },
+        {
+          "path": "apps/runtime/package.json",
+          "mode": "exact",
+          "sha256": "03e967ba66faad296920d6abb0e91ede3cc671a248583cb17492643138d64d40"
+        },
+        {
+          "path": "apps/runtime/src/index.ts",
+          "mode": "exact",
+          "sha256": "5c6da5642e12edb078c3ab755b72a2d83aac3fa549f4302c313c702b3b18fe84"
+        },
+        {
+          "path": "apps/runtime/docs/decisions/0027-m2-contract-abi-and-authority.md",
+          "mode": "exact",
+          "sha256": "e079601d778ace7bc137cb01193c3a6237512ba6e79dddc20b37bf9d8f0a464f"
+        }
+      ]
     },
     {
       "id": "runtime-m3",
-      "owners": ["runtime"],
-      "scope": { "product": "runtime", "level": "package", "environments": ["repository", "development"], "platforms": [], "constraints": ["query-only export", "canonical workspace scope", "operator query capability"] },
-      "observation": { "state": "implemented", "refs": [{ "kind": "source", "ref": "apps/runtime/src/query.ts#createQueryRuntime" }] },
-      "assertion": { "state": "positive", "code": "validated-positive", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0030-m3-verification-and-go.md#Decision" }] },
-      "evidence": { "state": "sufficient", "refs": [{ "kind": "test", "ref": "apps/runtime/tests/query-boundary.test.ts#query-only package surface has no administrative capability or mutation API" }] },
-      "authority": { "state": "authorized", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0029-m3-query-authority-and-source-contract.md#Decision" }] },
-      "delivery": { "state": "exported", "refs": [{ "kind": "source", "ref": "apps/runtime/package.json#./query" }] },
-      "qualification": { "state": "qualified", "platforms": [], "refs": [{ "kind": "test", "ref": "apps/runtime/tests/corpus.test.ts#query-only package validates principal authority independently and returns canonical fixture URLs" }] },
-      "availability": { "state": "enabled", "environments": ["repository", "development"], "production": "disabled", "publication": "unpublished", "deployment": "disabled" },
+      "owners": [
+        "runtime"
+      ],
+      "scope": {
+        "product": "runtime",
+        "level": "package",
+        "environments": [
+          "repository",
+          "development"
+        ],
+        "platforms": [],
+        "constraints": [
+          "query-only export",
+          "canonical workspace scope",
+          "operator query capability"
+        ]
+      },
+      "observation": {
+        "state": "implemented",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/runtime/src/query.ts#createQueryRuntime"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "positive",
+        "code": "validated-positive",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0030-m3-verification-and-go.md#Decision"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "sufficient",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/runtime/tests/query-boundary.test.ts#query-only package surface has no administrative capability or mutation API"
+          }
+        ]
+      },
+      "authority": {
+        "state": "authorized",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0029-m3-query-authority-and-source-contract.md#Decision"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "exported",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/runtime/package.json#./query"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "qualified",
+        "platforms": [],
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/runtime/tests/corpus.test.ts#query-only package validates principal authority independently and returns canonical fixture URLs"
+          }
+        ]
+      },
+      "availability": {
+        "state": "enabled",
+        "environments": [
+          "repository",
+          "development"
+        ],
+        "production": "disabled",
+        "publication": "unpublished",
+        "deployment": "disabled"
+      },
       "status": "Current",
-      "verdict": { "decision": "GO", "rationaleCode": "scope-qualified-current" },
+      "verdict": {
+        "decision": "GO",
+        "rationaleCode": "scope-qualified-current"
+      },
       "blockerCodes": [],
-      "guards": [{"path":"apps/runtime/src/query.ts","mode":"exact","sha256":"775c0412047e10c912cb891bac67da0162cc1c9cf1992a5b52a24d8e2eda82e4"},{"path":"apps/runtime/tests/query-boundary.test.ts","mode":"exact","sha256":"3a2f009d7e2da9b9c61629d695f21124c002d19576f44c020f6ddb558607c510"},{"path":"apps/runtime/package.json","mode":"exact","sha256":"03e967ba66faad296920d6abb0e91ede3cc671a248583cb17492643138d64d40"},{"path":"apps/runtime/docs/decisions/0029-m3-query-authority-and-source-contract.md","mode":"exact","sha256":"8aa1273b59fd30ec4b9699641d323ea29148701820fb05dfa89857a4dbe19709"},{"path":"apps/runtime/tests/corpus.test.ts","mode":"exact","sha256":"722be5b9b8195fc86a02316ca419d1d46a072ca36b8d6b87523743bc2a3be634"}]
+      "guards": [
+        {
+          "path": "apps/runtime/src/query.ts",
+          "mode": "exact",
+          "sha256": "775c0412047e10c912cb891bac67da0162cc1c9cf1992a5b52a24d8e2eda82e4"
+        },
+        {
+          "path": "apps/runtime/tests/query-boundary.test.ts",
+          "mode": "exact",
+          "sha256": "3a2f009d7e2da9b9c61629d695f21124c002d19576f44c020f6ddb558607c510"
+        },
+        {
+          "path": "apps/runtime/package.json",
+          "mode": "exact",
+          "sha256": "03e967ba66faad296920d6abb0e91ede3cc671a248583cb17492643138d64d40"
+        },
+        {
+          "path": "apps/runtime/docs/decisions/0029-m3-query-authority-and-source-contract.md",
+          "mode": "exact",
+          "sha256": "8aa1273b59fd30ec4b9699641d323ea29148701820fb05dfa89857a4dbe19709"
+        },
+        {
+          "path": "apps/runtime/tests/corpus.test.ts",
+          "mode": "exact",
+          "sha256": "722be5b9b8195fc86a02316ca419d1d46a072ca36b8d6b87523743bc2a3be634"
+        }
+      ]
     },
     {
       "id": "runtime-m4",
-      "owners": ["runtime"],
-      "scope": { "product": "runtime", "level": "repository", "environments": ["repository", "test"], "platforms": [], "constraints": ["build_owned_crawl_snapshot only", "foreground runNext"] },
-      "observation": { "state": "implemented", "refs": [{ "kind": "source", "ref": "apps/runtime/src/admin.ts#build_owned_crawl_snapshot" }] },
-      "assertion": { "state": "limited", "code": "scope-limited", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0037-m4-verification-and-go.md#ADR 0037 M4 verification and GO" }] },
-      "evidence": { "state": "sufficient", "refs": [{ "kind": "test", "ref": "apps/runtime/tests/owned-crawl.test.ts#runs cooperatively to an inactive candidate with immutable capture/citation lineage" }] },
-      "authority": { "state": "authorized", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0034-m4-d5a-owned-crawl-job-semantics.md#ADR 0034 M4 D5A owned-crawl job semantics" }] },
-      "delivery": { "state": "exported", "refs": [{ "kind": "source", "ref": "apps/runtime/package.json#./admin" }] },
-      "qualification": { "state": "qualified", "platforms": [], "refs": [{ "kind": "test", "ref": "apps/runtime/tests/owned-crawl.test.ts#enforces operation digest idempotency immutable settlement bounded replay and cancellation" }] },
-      "availability": { "state": "enabled", "environments": ["repository", "test"], "production": "disabled", "publication": "unpublished", "deployment": "disabled" },
+      "owners": [
+        "runtime"
+      ],
+      "scope": {
+        "product": "runtime",
+        "level": "repository",
+        "environments": [
+          "repository",
+          "test"
+        ],
+        "platforms": [],
+        "constraints": [
+          "build_owned_crawl_snapshot only",
+          "foreground runNext"
+        ]
+      },
+      "observation": {
+        "state": "implemented",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/runtime/src/admin.ts#build_owned_crawl_snapshot"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "limited",
+        "code": "scope-limited",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0037-m4-verification-and-go.md#ADR 0037 M4 verification and GO"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "sufficient",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/runtime/tests/owned-crawl.test.ts#runs cooperatively to an inactive candidate with immutable capture/citation lineage"
+          }
+        ]
+      },
+      "authority": {
+        "state": "authorized",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0034-m4-d5a-owned-crawl-job-semantics.md#ADR 0034 M4 D5A owned-crawl job semantics"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "exported",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/runtime/package.json#./admin"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "qualified",
+        "platforms": [],
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/runtime/tests/owned-crawl.test.ts#enforces operation digest idempotency immutable settlement bounded replay and cancellation"
+          }
+        ]
+      },
+      "availability": {
+        "state": "enabled",
+        "environments": [
+          "repository",
+          "test"
+        ],
+        "production": "disabled",
+        "publication": "unpublished",
+        "deployment": "disabled"
+      },
       "status": "Current",
-      "verdict": { "decision": "GO", "rationaleCode": "scope-qualified-current" },
+      "verdict": {
+        "decision": "GO",
+        "rationaleCode": "scope-qualified-current"
+      },
       "blockerCodes": [],
-      "guards": [{"path":"apps/runtime/src/admin.ts","mode":"exact","sha256":"839b16ffed0d13cfcdbbdfbc2f6bc112591c37e2d192f6bb7108be150e1b0db4"},{"path":"apps/runtime/native/src/jobs.rs","mode":"exact","sha256":"47ede8e7d6ceb658b2d434540a280207e580b9b8e3889799545b174b7f415252"},{"path":"apps/runtime/tests/owned-crawl.test.ts","mode":"exact","sha256":"82cb26d4e0e2e0695408bb444b0f30d8668d6ab804e834c8de42d3a12ecee6d8"},{"path":"apps/runtime/docs/decisions/0034-m4-d5a-owned-crawl-job-semantics.md","mode":"exact","sha256":"729ef6292d5a337088b1653f6dd137339fc711fb60e8ec9c0be0442102be8169"},{"path":"apps/runtime/package.json","mode":"exact","sha256":"03e967ba66faad296920d6abb0e91ede3cc671a248583cb17492643138d64d40"}]
+      "guards": [
+        {
+          "path": "apps/runtime/src/admin.ts",
+          "mode": "exact",
+          "sha256": "839b16ffed0d13cfcdbbdfbc2f6bc112591c37e2d192f6bb7108be150e1b0db4"
+        },
+        {
+          "path": "apps/runtime/native/src/jobs.rs",
+          "mode": "exact",
+          "sha256": "47ede8e7d6ceb658b2d434540a280207e580b9b8e3889799545b174b7f415252"
+        },
+        {
+          "path": "apps/runtime/tests/owned-crawl.test.ts",
+          "mode": "exact",
+          "sha256": "82cb26d4e0e2e0695408bb444b0f30d8668d6ab804e834c8de42d3a12ecee6d8"
+        },
+        {
+          "path": "apps/runtime/docs/decisions/0034-m4-d5a-owned-crawl-job-semantics.md",
+          "mode": "exact",
+          "sha256": "729ef6292d5a337088b1653f6dd137339fc711fb60e8ec9c0be0442102be8169"
+        },
+        {
+          "path": "apps/runtime/package.json",
+          "mode": "exact",
+          "sha256": "03e967ba66faad296920d6abb0e91ede3cc671a248583cb17492643138d64d40"
+        }
+      ]
     },
     {
       "id": "runtime-m5",
-      "owners": ["runtime"],
-      "scope": { "product": "runtime", "level": "repository", "environments": ["repository", "test"], "platforms": [], "constraints": ["fixed configured SearXNG gateway adapter", "no fallback", "live use excluded"] },
-      "observation": { "state": "implemented", "refs": [{ "kind": "source", "ref": "apps/runtime/src/repository-search.ts#createSearxngGatewayAdapter" }] },
-      "assertion": { "state": "limited", "code": "scope-limited", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0033-m5-verification-and-repository-go.md#Decision" }] },
-      "evidence": { "state": "sufficient", "refs": [{ "kind": "test", "ref": "apps/runtime/tests/repository-search.test.ts#uses one fixed token-protected provider-neutral POST and normalizes bounded evidence" }] },
-      "authority": { "state": "authorized", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0031-m5-searxng-gateway-d6.md#Decision" }] },
-      "delivery": { "state": "exported", "refs": [{ "kind": "source", "ref": "apps/runtime/package.json#./query" }] },
-      "qualification": { "state": "qualified", "platforms": [], "refs": [{ "kind": "test", "ref": "apps/runtime/tests/repository-search.test.ts#omitted source remains local and performs no transport" }] },
-      "availability": { "state": "enabled", "environments": ["repository", "test"], "production": "disabled", "publication": "unpublished", "deployment": "disabled" },
+      "owners": [
+        "runtime"
+      ],
+      "scope": {
+        "product": "runtime",
+        "level": "repository",
+        "environments": [
+          "repository",
+          "test"
+        ],
+        "platforms": [],
+        "constraints": [
+          "fixed configured SearXNG gateway adapter",
+          "no fallback",
+          "live use excluded"
+        ]
+      },
+      "observation": {
+        "state": "implemented",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/runtime/src/repository-search.ts#createSearxngGatewayAdapter"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "limited",
+        "code": "scope-limited",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0033-m5-verification-and-repository-go.md#Decision"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "sufficient",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/runtime/tests/repository-search.test.ts#uses one fixed token-protected provider-neutral POST and normalizes bounded evidence"
+          }
+        ]
+      },
+      "authority": {
+        "state": "authorized",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0031-m5-searxng-gateway-d6.md#Decision"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "exported",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/runtime/package.json#./query"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "qualified",
+        "platforms": [],
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/runtime/tests/repository-search.test.ts#omitted source remains local and performs no transport"
+          }
+        ]
+      },
+      "availability": {
+        "state": "enabled",
+        "environments": [
+          "repository",
+          "test"
+        ],
+        "production": "disabled",
+        "publication": "unpublished",
+        "deployment": "disabled"
+      },
       "status": "Current",
-      "verdict": { "decision": "GO", "rationaleCode": "scope-qualified-current" },
-      "blockerCodes": ["live-endpoint-qualification-required"],
-      "guards": [{"path":"apps/runtime/src/repository-search.ts","mode":"exact","sha256":"3c6eecf0a936d87a5bf2c4f44b1d74f64077d92c092e82988a08fb540e5538bc"},{"path":"apps/runtime/tests/repository-search.test.ts","mode":"exact","sha256":"6b40ff0077a45ea090a3044b14afe4105f1eb98f654fe9a4db3b4a3f4a71d6f7"},{"path":"apps/runtime/docs/decisions/0031-m5-searxng-gateway-d6.md","mode":"exact","sha256":"41a4d663b7b6b343db5cad76c1705c05c9fbf8842b2ac6596c42bf10258119c7"},{"path":"apps/runtime/package.json","mode":"exact","sha256":"03e967ba66faad296920d6abb0e91ede3cc671a248583cb17492643138d64d40"}]
+      "verdict": {
+        "decision": "GO",
+        "rationaleCode": "scope-qualified-current"
+      },
+      "blockerCodes": [
+        "live-endpoint-qualification-required"
+      ],
+      "guards": [
+        {
+          "path": "apps/runtime/src/repository-search.ts",
+          "mode": "exact",
+          "sha256": "3c6eecf0a936d87a5bf2c4f44b1d74f64077d92c092e82988a08fb540e5538bc"
+        },
+        {
+          "path": "apps/runtime/tests/repository-search.test.ts",
+          "mode": "exact",
+          "sha256": "6b40ff0077a45ea090a3044b14afe4105f1eb98f654fe9a4db3b4a3f4a71d6f7"
+        },
+        {
+          "path": "apps/runtime/docs/decisions/0031-m5-searxng-gateway-d6.md",
+          "mode": "exact",
+          "sha256": "41a4d663b7b6b343db5cad76c1705c05c9fbf8842b2ac6596c42bf10258119c7"
+        },
+        {
+          "path": "apps/runtime/package.json",
+          "mode": "exact",
+          "sha256": "03e967ba66faad296920d6abb0e91ede3cc671a248583cb17492643138d64d40"
+        }
+      ]
     },
     {
       "id": "runtime-m6",
-      "owners": ["runtime"],
-      "scope": { "product": "runtime", "level": "repository", "environments": ["repository", "test"], "platforms": [], "constraints": ["fixed local project-CA synthetic cell", "docs.m6-owned.test and loopback only"] },
-      "observation": { "state": "implemented", "refs": [{ "kind": "source", "ref": "apps/runtime/src/admin.ts#createM6ProjectCaTransport" }] },
-      "assertion": { "state": "limited", "code": "scope-limited", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0038-m6-verification-and-repository-go.md#ADR 0038 M6 verification and repository GO" }] },
-      "evidence": { "state": "sufficient", "refs": [{ "kind": "test", "ref": "apps/runtime/tests/owned-crawl.test.ts#pins the exact eight project-authored fixture documents and aggregate digest" }] },
-      "authority": { "state": "authorized", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0036-m6-owned-synthetic-cell-d7.md#ADR 0036 M6 owned synthetic cell D7" }] },
-      "delivery": { "state": "exported", "refs": [{ "kind": "source", "ref": "apps/runtime/package.json#./admin" }] },
-      "qualification": { "state": "qualified", "platforms": [], "refs": [{ "kind": "test", "ref": "apps/runtime/tests/characterization/m6-local-tls.test.ts#M6 fixture uses project-CA TLS validates the logical host and never resolves public DNS" }] },
-      "availability": { "state": "enabled", "environments": ["repository", "test"], "production": "disabled", "publication": "unpublished", "deployment": "disabled" },
+      "owners": [
+        "runtime"
+      ],
+      "scope": {
+        "product": "runtime",
+        "level": "repository",
+        "environments": [
+          "repository",
+          "test"
+        ],
+        "platforms": [],
+        "constraints": [
+          "fixed local project-CA synthetic cell",
+          "docs.m6-owned.test and loopback only"
+        ]
+      },
+      "observation": {
+        "state": "implemented",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/runtime/src/admin.ts#createM6ProjectCaTransport"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "limited",
+        "code": "scope-limited",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0038-m6-verification-and-repository-go.md#ADR 0038 M6 verification and repository GO"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "sufficient",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/runtime/tests/owned-crawl.test.ts#pins the exact eight project-authored fixture documents and aggregate digest"
+          }
+        ]
+      },
+      "authority": {
+        "state": "authorized",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0036-m6-owned-synthetic-cell-d7.md#ADR 0036 M6 owned synthetic cell D7"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "exported",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/runtime/package.json#./admin"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "qualified",
+        "platforms": [],
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/runtime/tests/characterization/m6-local-tls.test.ts#M6 fixture uses project-CA TLS validates the logical host and never resolves public DNS"
+          }
+        ]
+      },
+      "availability": {
+        "state": "enabled",
+        "environments": [
+          "repository",
+          "test"
+        ],
+        "production": "disabled",
+        "publication": "unpublished",
+        "deployment": "disabled"
+      },
       "status": "Current",
-      "verdict": { "decision": "GO", "rationaleCode": "scope-qualified-current" },
+      "verdict": {
+        "decision": "GO",
+        "rationaleCode": "scope-qualified-current"
+      },
       "blockerCodes": [],
-      "guards": [{"path":"apps/runtime/src/admin.ts","mode":"exact","sha256":"839b16ffed0d13cfcdbbdfbc2f6bc112591c37e2d192f6bb7108be150e1b0db4"},{"path":"apps/runtime/tests/owned-crawl.test.ts","mode":"exact","sha256":"82cb26d4e0e2e0695408bb444b0f30d8668d6ab804e834c8de42d3a12ecee6d8"},{"path":"apps/runtime/tests/characterization/m6-local-tls.test.ts","mode":"exact","sha256":"d76f5739b798320d237c7a98a1e787681d7acb3d6d0c4dd4c07dbf1116c6e28d"},{"path":"apps/runtime/docs/decisions/0036-m6-owned-synthetic-cell-d7.md","mode":"exact","sha256":"722be31e7bdcdc055efafe97e18b2be6c1191bfd7a914e998c368c43372cbaf1"},{"path":"apps/runtime/package.json","mode":"exact","sha256":"03e967ba66faad296920d6abb0e91ede3cc671a248583cb17492643138d64d40"}]
+      "guards": [
+        {
+          "path": "apps/runtime/src/admin.ts",
+          "mode": "exact",
+          "sha256": "839b16ffed0d13cfcdbbdfbc2f6bc112591c37e2d192f6bb7108be150e1b0db4"
+        },
+        {
+          "path": "apps/runtime/tests/owned-crawl.test.ts",
+          "mode": "exact",
+          "sha256": "82cb26d4e0e2e0695408bb444b0f30d8668d6ab804e834c8de42d3a12ecee6d8"
+        },
+        {
+          "path": "apps/runtime/tests/characterization/m6-local-tls.test.ts",
+          "mode": "exact",
+          "sha256": "d76f5739b798320d237c7a98a1e787681d7acb3d6d0c4dd4c07dbf1116c6e28d"
+        },
+        {
+          "path": "apps/runtime/docs/decisions/0036-m6-owned-synthetic-cell-d7.md",
+          "mode": "exact",
+          "sha256": "722be31e7bdcdc055efafe97e18b2be6c1191bfd7a914e998c368c43372cbaf1"
+        },
+        {
+          "path": "apps/runtime/package.json",
+          "mode": "exact",
+          "sha256": "03e967ba66faad296920d6abb0e91ede3cc671a248583cb17492643138d64d40"
+        }
+      ]
     },
     {
       "id": "runtime-m7-historical",
-      "owners": ["runtime", "plugin"],
-      "scope": { "product": "runtime", "level": "private-profile", "environments": ["private-release"], "platforms": ["darwin-arm64"], "constraints": ["source commit 0dfc71de02393da9aad37bc753724886c00e323c", "artifact SHA-256 3aa8e5ba6660cafefb3d3121ba1e652346f4019a78922a0ec689b04b32e06642", "OpenCode beta-17519 and Effect beta.101", "single-machine immutable historical profile only"] },
-      "observation": { "state": "implemented", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#Verdict and immutable identity" }] },
-      "assertion": { "state": "limited", "code": "scope-limited", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#Decision" }] },
-      "evidence": { "state": "sufficient", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#Verification evidence" }] },
-      "authority": { "state": "authorized", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#Status Accepted 2026-08-18 for the exact private Darwin arm64 profile all broader release gates NO-GO" }] },
-      "delivery": { "state": "private-release", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#The immutable release is" }] },
-      "qualification": { "state": "qualified", "platforms": ["darwin-arm64"], "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#Three independent clean builds were byte-reproducible" }] },
-      "availability": { "state": "enabled", "environments": ["private-release"], "production": "disabled", "publication": "unpublished", "deployment": "disabled" },
+      "owners": [
+        "runtime",
+        "plugin"
+      ],
+      "scope": {
+        "product": "runtime",
+        "level": "private-profile",
+        "environments": [
+          "private-release"
+        ],
+        "platforms": [
+          "darwin-arm64"
+        ],
+        "constraints": [
+          "source commit 0dfc71de02393da9aad37bc753724886c00e323c",
+          "artifact SHA-256 3aa8e5ba6660cafefb3d3121ba1e652346f4019a78922a0ec689b04b32e06642",
+          "OpenCode beta-17519 and Effect beta.101",
+          "single-machine immutable historical profile only"
+        ]
+      },
+      "observation": {
+        "state": "implemented",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#Verdict and immutable identity"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "limited",
+        "code": "scope-limited",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#Decision"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "sufficient",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#Verification evidence"
+          }
+        ]
+      },
+      "authority": {
+        "state": "authorized",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#Status Accepted 2026-08-18 for the exact private Darwin arm64 profile all broader release gates NO-GO"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "private-release",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#The immutable release is"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "qualified",
+        "platforms": [
+          "darwin-arm64"
+        ],
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#Three independent clean builds were byte-reproducible"
+          }
+        ]
+      },
+      "availability": {
+        "state": "enabled",
+        "environments": [
+          "private-release"
+        ],
+        "production": "disabled",
+        "publication": "unpublished",
+        "deployment": "disabled"
+      },
       "status": "Current",
-      "verdict": { "decision": "GO", "rationaleCode": "scope-qualified-current" },
+      "verdict": {
+        "decision": "GO",
+        "rationaleCode": "scope-qualified-current"
+      },
       "blockerCodes": [],
-      "guards": [{"path":"apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md","mode":"exact","sha256":"8ac26ef942dba0eccfd85742db04ee1ef843b8b9445d5c5b17e5a3eb601206cf"}]
+      "guards": [
+        {
+          "path": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md",
+          "mode": "exact",
+          "sha256": "8ac26ef942dba0eccfd85742db04ee1ef843b8b9445d5c5b17e5a3eb601206cf"
+        }
+      ]
     },
     {
       "id": "runtime-m7-current",
-      "owners": ["runtime", "plugin"],
-      "scope": { "product": "runtime", "level": "private-profile", "environments": ["private-release"], "platforms": ["darwin-arm64"], "constraints": ["current source differs from accepted commit", "OpenCode beta-17595 and Effect beta.107 drift", "no current artifact qualification", "manual candidate only"] },
-      "observation": { "state": "implemented", "refs": [{ "kind": "source", "ref": "apps/runtime/tools/m7-release.mjs#build" }] },
-      "assertion": { "state": "negative", "code": "validated-negative", "refs": [{ "kind": "section", "ref": "apps/runtime/README.md#Current M7 source candidate" }] },
-      "evidence": { "state": "partial", "refs": [{ "kind": "test", "ref": "apps/runtime/tests/package-scripts.test.ts#M7 current candidate and SDK qualification stay manual and outside ordinary verification" }] },
-      "authority": { "state": "unauthorized", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#Reopen this decision before any source or artifact-byte change" }] },
-      "delivery": { "state": "internal", "refs": [{ "kind": "source", "ref": "apps/runtime/tools/m7-release.mjs#command" }] },
-      "qualification": { "state": "unqualified", "platforms": [], "refs": [] },
-      "availability": { "state": "disabled", "environments": [], "production": "disabled", "publication": "unpublished", "deployment": "disabled" },
+      "owners": [
+        "runtime",
+        "plugin"
+      ],
+      "scope": {
+        "product": "runtime",
+        "level": "private-profile",
+        "environments": [
+          "private-release"
+        ],
+        "platforms": [
+          "darwin-arm64"
+        ],
+        "constraints": [
+          "current source differs from accepted commit",
+          "OpenCode beta-18138 and Effect rc.111 drift",
+          "no current artifact qualification",
+          "manual candidate only"
+        ]
+      },
+      "observation": {
+        "state": "implemented",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/runtime/tools/m7-release.mjs#build"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "negative",
+        "code": "validated-negative",
+        "refs": [
+          {
+            "kind": "section",
+            "ref": "apps/runtime/README.md#Current M7 source candidate"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "partial",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/runtime/tests/package-scripts.test.ts#M7 current candidate and SDK qualification stay manual and outside ordinary verification"
+          }
+        ]
+      },
+      "authority": {
+        "state": "unauthorized",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md#Reopen this decision before any source or artifact-byte change"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "internal",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/runtime/tools/m7-release.mjs#command"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "unqualified",
+        "platforms": [],
+        "refs": []
+      },
+      "availability": {
+        "state": "disabled",
+        "environments": [],
+        "production": "disabled",
+        "publication": "unpublished",
+        "deployment": "disabled"
+      },
       "status": "Deferred",
-      "verdict": { "decision": "NO-GO", "rationaleCode": "fail-closed-deferred" },
-      "blockerCodes": ["source-requalification-required", "platform-qualification-required"],
-      "guards": [{"path":"apps/runtime/tools/m7-release.mjs","mode":"exact","sha256":"a4688d841b90628ba57c840d2805bbb133f4e2052411cf0a79d6eecc99b3ca09"},{"path":"apps/runtime/tests/package-scripts.test.ts","mode":"exact","sha256":"c5457a9f67208b1238049ece13d026f255bc983add9b5e1eee34889b31b832dd"},{"path":"apps/runtime/README.md","mode":"exact","sha256":"b84e1e4da0a20444719c3695db2d854f11168546297ba897da13c929bc3b1f86"},{"path":"apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md","mode":"exact","sha256":"8ac26ef942dba0eccfd85742db04ee1ef843b8b9445d5c5b17e5a3eb601206cf"}]
+      "verdict": {
+        "decision": "NO-GO",
+        "rationaleCode": "fail-closed-deferred"
+      },
+      "blockerCodes": [
+        "source-requalification-required",
+        "platform-qualification-required"
+      ],
+      "guards": [
+        {
+          "path": "apps/runtime/tools/m7-release.mjs",
+          "mode": "exact",
+          "sha256": "a4688d841b90628ba57c840d2805bbb133f4e2052411cf0a79d6eecc99b3ca09"
+        },
+        {
+          "path": "apps/runtime/tests/package-scripts.test.ts",
+          "mode": "exact",
+          "sha256": "c5457a9f67208b1238049ece13d026f255bc983add9b5e1eee34889b31b832dd"
+        },
+        {
+          "path": "apps/runtime/README.md",
+          "mode": "exact",
+          "sha256": "b84e1e4da0a20444719c3695db2d854f11168546297ba897da13c929bc3b1f86"
+        },
+        {
+          "path": "apps/runtime/docs/decisions/0040-m7-private-profile-verification-and-go.md",
+          "mode": "exact",
+          "sha256": "8ac26ef942dba0eccfd85742db04ee1ef843b8b9445d5c5b17e5a3eb601206cf"
+        }
+      ]
     },
     {
       "id": "runtime-unified-evidence",
-      "owners": ["runtime", "plugin"],
-      "scope": { "product": "runtime", "level": "design", "environments": [], "platforms": [], "constraints": ["design-only accepted ADR", "future Ledger remains sole lifecycle authority"] },
-      "observation": { "state": "design-only", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0041-unified-retrieval-memory-evidence-substrate.md#Decision" }] },
-      "assertion": { "state": "negative", "code": "validated-negative", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0041-unified-retrieval-memory-evidence-substrate.md#Consequences" }] },
-      "evidence": { "state": "missing", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0041-unified-retrieval-memory-evidence-substrate.md#Unresolved blocking decisions" }] },
-      "authority": { "state": "unauthorized", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0041-unified-retrieval-memory-evidence-substrate.md#Status" }] },
-      "delivery": { "state": "design-only", "refs": [{ "kind": "section", "ref": "apps/runtime/docs/README.md#Decisions" }] },
-      "qualification": { "state": "unqualified", "platforms": [], "refs": [] },
-      "availability": { "state": "disabled", "environments": [], "production": "disabled", "publication": "not-applicable", "deployment": "disabled" },
+      "owners": [
+        "runtime",
+        "plugin"
+      ],
+      "scope": {
+        "product": "runtime",
+        "level": "design",
+        "environments": [],
+        "platforms": [],
+        "constraints": [
+          "design-only accepted ADR",
+          "future Ledger remains sole lifecycle authority"
+        ]
+      },
+      "observation": {
+        "state": "design-only",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0041-unified-retrieval-memory-evidence-substrate.md#Decision"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "negative",
+        "code": "validated-negative",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0041-unified-retrieval-memory-evidence-substrate.md#Consequences"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "missing",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0041-unified-retrieval-memory-evidence-substrate.md#Unresolved blocking decisions"
+          }
+        ]
+      },
+      "authority": {
+        "state": "unauthorized",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0041-unified-retrieval-memory-evidence-substrate.md#Status"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "design-only",
+        "refs": [
+          {
+            "kind": "section",
+            "ref": "apps/runtime/docs/README.md#Decisions"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "unqualified",
+        "platforms": [],
+        "refs": []
+      },
+      "availability": {
+        "state": "disabled",
+        "environments": [],
+        "production": "disabled",
+        "publication": "not-applicable",
+        "deployment": "disabled"
+      },
       "status": "Deferred",
-      "verdict": { "decision": "NO-GO", "rationaleCode": "fail-closed-deferred" },
-      "blockerCodes": ["unresolved-design-decisions", "implementation-authority-required"],
-      "guards": [{"path":"apps/runtime/src/unified-evidence.ts","mode":"absent"},{"path":"apps/plugin/opencode2/src/features/unified-evidence","mode":"absent"},{"path":"apps/runtime/docs/decisions/0041-unified-retrieval-memory-evidence-substrate.md","mode":"exact","sha256":"0c2bb57f8524ac3fa0791db5f38c5627904e2d60b02af05637da39ae56dd0179"}]
+      "verdict": {
+        "decision": "NO-GO",
+        "rationaleCode": "fail-closed-deferred"
+      },
+      "blockerCodes": [
+        "unresolved-design-decisions",
+        "implementation-authority-required"
+      ],
+      "guards": [
+        {
+          "path": "apps/runtime/src/unified-evidence.ts",
+          "mode": "absent"
+        },
+        {
+          "path": "apps/plugin/opencode2/src/features/unified-evidence",
+          "mode": "absent"
+        },
+        {
+          "path": "apps/runtime/docs/decisions/0041-unified-retrieval-memory-evidence-substrate.md",
+          "mode": "exact",
+          "sha256": "0c2bb57f8524ac3fa0791db5f38c5627904e2d60b02af05637da39ae56dd0179"
+        }
+      ]
     },
     {
       "id": "runtime-sdk-v2",
-      "owners": ["runtime", "plugin"],
-      "scope": { "product": "runtime", "level": "test-only", "environments": ["test"], "platforms": [], "constraints": ["candidate receipts conflict with supersession/tool-policy history", "no normal plugin composition"] },
-      "observation": { "state": "contradictory", "refs": [{ "kind": "receipt", "ref": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-r4-acceptance-receipt.json#reproduction" }, { "kind": "decision", "ref": "apps/runtime/docs/decisions/0060-closed-sdk-v2-tool-and-environment-policy.md#Decision" }] },
-      "assertion": { "state": "negative", "code": "validated-negative", "refs": [{ "kind": "section", "ref": "apps/runtime/docs/README.md#SDK v2 adjudication" }] },
-      "evidence": { "state": "contradictory", "refs": [{ "kind": "receipt", "ref": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-r4-acceptance-receipt.json#reproduction" }, { "kind": "decision", "ref": "apps/plugin/opencode2/docs/decisions/0030-closed-sdk-v2-tool-policy-companion.md#Decision" }] },
-      "authority": { "state": "limited", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0060-closed-sdk-v2-tool-and-environment-policy.md#Status" }] },
-      "delivery": { "state": "test-only", "refs": [{ "kind": "decision", "ref": "apps/runtime/docs/decisions/0057-private-node-api-sdk-qualification.md#Decision" }] },
-      "qualification": { "state": "contradictory", "platforms": [], "refs": [{ "kind": "receipt", "ref": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-r4-acceptance-receipt.json#reproduction" }] },
-      "availability": { "state": "disabled", "environments": [], "production": "disabled", "publication": "unpublished", "deployment": "disabled" },
+      "owners": [
+        "runtime",
+        "plugin"
+      ],
+      "scope": {
+        "product": "runtime",
+        "level": "test-only",
+        "environments": [
+          "test"
+        ],
+        "platforms": [],
+        "constraints": [
+          "candidate receipts conflict with supersession/tool-policy history",
+          "no normal plugin composition"
+        ]
+      },
+      "observation": {
+        "state": "contradictory",
+        "refs": [
+          {
+            "kind": "receipt",
+            "ref": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-r4-acceptance-receipt.json#reproduction"
+          },
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0060-closed-sdk-v2-tool-and-environment-policy.md#Decision"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "negative",
+        "code": "validated-negative",
+        "refs": [
+          {
+            "kind": "section",
+            "ref": "apps/runtime/docs/README.md#SDK v2 adjudication"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "contradictory",
+        "refs": [
+          {
+            "kind": "receipt",
+            "ref": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-r4-acceptance-receipt.json#reproduction"
+          },
+          {
+            "kind": "decision",
+            "ref": "apps/plugin/opencode2/docs/decisions/0030-closed-sdk-v2-tool-policy-companion.md#Decision"
+          }
+        ]
+      },
+      "authority": {
+        "state": "limited",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0060-closed-sdk-v2-tool-and-environment-policy.md#Status"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "test-only",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/runtime/docs/decisions/0057-private-node-api-sdk-qualification.md#Decision"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "contradictory",
+        "platforms": [],
+        "refs": [
+          {
+            "kind": "receipt",
+            "ref": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-r4-acceptance-receipt.json#reproduction"
+          }
+        ]
+      },
+      "availability": {
+        "state": "disabled",
+        "environments": [],
+        "production": "disabled",
+        "publication": "unpublished",
+        "deployment": "disabled"
+      },
       "status": "Deferred",
-      "verdict": { "decision": "NO-GO", "rationaleCode": "fail-closed-deferred" },
-      "blockerCodes": ["coherent-candidate-required", "platform-qualification-required", "composition-authority-required"],
-      "guards": [{"path":"apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-r4-acceptance-receipt.json","mode":"exact","sha256":"24e9d7418d025417037254470e4edc42c90869bfa17e9f96e5421918ba4a95e2"},{"path":"apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-acceptance-verifier.mjs","mode":"exact","sha256":"e61a20c64d1ffbfbd6c482954d51b473750f136d67f9d6f563ad76374e653ce9"},{"path":"apps/runtime/docs/decisions/0060-closed-sdk-v2-tool-and-environment-policy.md","mode":"exact","sha256":"514578763985971191187f586ca10497fd51ee3ac149278238c5da3935c428c1"}]
+      "verdict": {
+        "decision": "NO-GO",
+        "rationaleCode": "fail-closed-deferred"
+      },
+      "blockerCodes": [
+        "coherent-candidate-required",
+        "platform-qualification-required",
+        "composition-authority-required"
+      ],
+      "guards": [
+        {
+          "path": "apps/runtime/docs/specifications/legacy-memory-node-api-sdk-v2-r4-acceptance-receipt.json",
+          "mode": "exact",
+          "sha256": "24e9d7418d025417037254470e4edc42c90869bfa17e9f96e5421918ba4a95e2"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-acceptance-verifier.mjs",
+          "mode": "exact",
+          "sha256": "e61a20c64d1ffbfbd6c482954d51b473750f136d67f9d6f563ad76374e653ce9"
+        },
+        {
+          "path": "apps/runtime/docs/decisions/0060-closed-sdk-v2-tool-and-environment-policy.md",
+          "mode": "exact",
+          "sha256": "514578763985971191187f586ca10497fd51ee3ac149278238c5da3935c428c1"
+        }
+      ]
     },
     {
       "id": "starter-scaffolds",
-      "owners": ["scaffolds"],
-      "scope": { "product": "scaffolds", "level": "repository", "environments": ["development"], "platforms": [], "constraints": ["starter code", "not canonical product documentation or runtime UI"] },
-      "observation": { "state": "implemented", "refs": [{ "kind": "source", "ref": "apps/web/package.json#name" }, { "kind": "source", "ref": "apps/docs/package.json#name" }, { "kind": "source", "ref": "packages/ui/package.json#name" }] },
-      "assertion": { "state": "limited", "code": "scope-limited", "refs": [{ "kind": "section", "ref": "README.md#Workspace map" }] },
-      "evidence": { "state": "partial", "refs": [{ "kind": "source", "ref": "turbo.json#tasks" }] },
-      "authority": { "state": "limited", "refs": [] },
-      "delivery": { "state": "internal", "refs": [{ "kind": "source", "ref": "package.json#workspaces" }] },
-      "qualification": { "state": "unqualified", "platforms": [], "refs": [] },
-      "availability": { "state": "conditional", "environments": ["development"], "production": "disabled", "publication": "unpublished", "deployment": "disabled" },
+      "owners": [
+        "scaffolds"
+      ],
+      "scope": {
+        "product": "scaffolds",
+        "level": "repository",
+        "environments": [
+          "development"
+        ],
+        "platforms": [],
+        "constraints": [
+          "apps/docs and packages/ui retain starter status",
+          "apps/web is a limited read-only product surface"
+        ]
+      },
+      "observation": {
+        "state": "implemented",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "apps/web/package.json#name"
+          },
+          {
+            "kind": "source",
+            "ref": "apps/docs/package.json#name"
+          },
+          {
+            "kind": "source",
+            "ref": "packages/ui/package.json#name"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "limited",
+        "code": "scope-limited",
+        "refs": [
+          {
+            "kind": "section",
+            "ref": "README.md#Workspace map"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "partial",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "turbo.json#tasks"
+          }
+        ]
+      },
+      "authority": {
+        "state": "limited",
+        "refs": []
+      },
+      "delivery": {
+        "state": "internal",
+        "refs": [
+          {
+            "kind": "source",
+            "ref": "package.json#workspaces"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "unqualified",
+        "platforms": [],
+        "refs": []
+      },
+      "availability": {
+        "state": "conditional",
+        "environments": [
+          "development"
+        ],
+        "production": "disabled",
+        "publication": "unpublished",
+        "deployment": "disabled"
+      },
       "status": "Experimental",
-      "verdict": { "decision": "CONDITIONAL", "rationaleCode": "bounded-experimental" },
-      "blockerCodes": ["product-definition-required", "broader-delivery-authority-required"],
-      "guards": [{"path":"turbo.json","mode":"exact","sha256":"d6e2e99a1ae21c2f5fd2c32a7f85089b1ae81b73c0eac7999e7a19cef2c5c549"},{"path":"apps/web/package.json","mode":"exact","sha256":"6424001993ac07180be894cd92779eb501f7f4b0ed602b24be12e62e5ab0ea57"},{"path":"apps/docs/package.json","mode":"exact","sha256":"f90f912f976997d62fb9dfb8ba0c9c9817d19fe0507bf972a90c6f3ccfcf977f"},{"path":"packages/ui/package.json","mode":"exact","sha256":"54cf76aca25250990a87f8aa12942f3a88dd23a451757d75de9c9af281f6939b"}]
+      "verdict": {
+        "decision": "CONDITIONAL",
+        "rationaleCode": "bounded-experimental"
+      },
+      "blockerCodes": [
+        "product-definition-required",
+        "broader-delivery-authority-required"
+      ],
+      "guards": [
+        {
+          "path": "turbo.json",
+          "mode": "exact",
+          "sha256": "a9a64be92ab242860bc6ae2be8ce86b8fc17c2e9548a66e090235dde503905c3"
+        },
+        {
+          "path": "apps/web/package.json",
+          "mode": "exact",
+          "sha256": "27500a8b3b62ac2df6327b1d8b42ade82dbf287612ca40297d447a145f6e661f"
+        },
+        {
+          "path": "apps/docs/package.json",
+          "mode": "exact",
+          "sha256": "f90f912f976997d62fb9dfb8ba0c9c9817d19fe0507bf972a90c6f3ccfcf977f"
+        },
+        {
+          "path": "packages/ui/package.json",
+          "mode": "exact",
+          "sha256": "54cf76aca25250990a87f8aa12942f3a88dd23a451757d75de9c9af281f6939b"
+        }
+      ]
     },
     {
       "id": "retired-legacy-runtime",
-      "owners": ["plugin"],
-      "scope": { "product": "plugin", "level": "retired", "environments": [], "platforms": [], "constraints": ["must remain absent"] },
-      "observation": { "state": "absent", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/characterization/compatibility-surfaces.test.mjs#legacy runtime daemon mutable state authority and marker agent are absent" }] },
-      "assertion": { "state": "negative", "code": "validated-negative", "refs": [{ "kind": "decision", "ref": "apps/plugin/opencode2/docs/decisions/0013-legacy-loop-retirement.md#ADR 0013 Imported loop runtime retirement" }] },
-      "evidence": { "state": "sufficient", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/security/release-security.test.mjs#product has no autonomous or imported lifecycle runtime" }] },
-      "authority": { "state": "forbidden", "refs": [{ "kind": "decision", "ref": "apps/plugin/opencode2/docs/decisions/0013-legacy-loop-retirement.md#ADR 0013 Imported loop runtime retirement" }] },
-      "delivery": { "state": "retired", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/characterization/compatibility-surfaces.test.mjs#legacy runtime daemon mutable state authority and marker agent are absent" }] },
-      "qualification": { "state": "not-required", "platforms": [], "refs": [] },
-      "availability": { "state": "absent", "environments": [], "production": "disabled", "publication": "not-applicable", "deployment": "disabled" },
+      "owners": [
+        "plugin"
+      ],
+      "scope": {
+        "product": "plugin",
+        "level": "retired",
+        "environments": [],
+        "platforms": [],
+        "constraints": [
+          "must remain absent"
+        ]
+      },
+      "observation": {
+        "state": "absent",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/characterization/compatibility-surfaces.test.mjs#legacy runtime daemon mutable state authority and marker agent are absent"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "negative",
+        "code": "validated-negative",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/plugin/opencode2/docs/decisions/0013-legacy-loop-retirement.md#ADR 0013 Imported loop runtime retirement"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "sufficient",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/security/release-security.test.mjs#product has no autonomous or imported lifecycle runtime"
+          }
+        ]
+      },
+      "authority": {
+        "state": "forbidden",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/plugin/opencode2/docs/decisions/0013-legacy-loop-retirement.md#ADR 0013 Imported loop runtime retirement"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "retired",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/characterization/compatibility-surfaces.test.mjs#legacy runtime daemon mutable state authority and marker agent are absent"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "not-required",
+        "platforms": [],
+        "refs": []
+      },
+      "availability": {
+        "state": "absent",
+        "environments": [],
+        "production": "disabled",
+        "publication": "not-applicable",
+        "deployment": "disabled"
+      },
       "status": "Retired",
-      "verdict": { "decision": "RETIRED", "rationaleCode": "verified-retirement" },
+      "verdict": {
+        "decision": "RETIRED",
+        "rationaleCode": "verified-retirement"
+      },
       "blockerCodes": [],
-      "guards": [{"path":"apps/plugin/opencode2/src/features/loop-compat","mode":"absent"},{"path":"apps/plugin/opencode2/tests/characterization/compatibility-surfaces.test.mjs","mode":"exact","sha256":"d2f72bec7cd5faa1311d0fc83d8acd69b45f2b26747f12f00550816e68c62a8d"},{"path":"apps/plugin/opencode2/tests/security/release-security.test.mjs","mode":"exact","sha256":"3b062b08dcdf8314fad548ac0a63f6082f9dc6111ae94f788799b3d82a29fb44"}]
+      "guards": [
+        {
+          "path": "apps/plugin/opencode2/src/features/loop-compat",
+          "mode": "absent"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/characterization/compatibility-surfaces.test.mjs",
+          "mode": "exact",
+          "sha256": "d2f72bec7cd5faa1311d0fc83d8acd69b45f2b26747f12f00550816e68c62a8d"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/security/release-security.test.mjs",
+          "mode": "exact",
+          "sha256": "3b062b08dcdf8314fad548ac0a63f6082f9dc6111ae94f788799b3d82a29fb44"
+        }
+      ]
     },
     {
       "id": "retired-daemon",
-      "owners": ["plugin"],
-      "scope": { "product": "plugin", "level": "retired", "environments": [], "platforms": [], "constraints": ["tools/loopd.mjs must remain absent"] },
-      "observation": { "state": "absent", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/characterization/compatibility-surfaces.test.mjs#legacy runtime daemon mutable state authority and marker agent are absent" }] },
-      "assertion": { "state": "negative", "code": "validated-negative", "refs": [{ "kind": "section", "ref": "apps/plugin/opencode2/docs/operations/daemon-deprecation.md#Removed legacy daemon" }] },
-      "evidence": { "state": "sufficient", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/security/release-security.test.mjs#product has no autonomous or imported lifecycle runtime" }] },
-      "authority": { "state": "forbidden", "refs": [{ "kind": "decision", "ref": "apps/plugin/opencode2/docs/decisions/0013-legacy-loop-retirement.md#ADR 0013 Imported loop runtime retirement" }] },
-      "delivery": { "state": "retired", "refs": [{ "kind": "section", "ref": "apps/plugin/opencode2/docs/operations/daemon-deprecation.md#Removed legacy daemon" }] },
-      "qualification": { "state": "not-required", "platforms": [], "refs": [] },
-      "availability": { "state": "absent", "environments": [], "production": "disabled", "publication": "not-applicable", "deployment": "disabled" },
+      "owners": [
+        "plugin"
+      ],
+      "scope": {
+        "product": "plugin",
+        "level": "retired",
+        "environments": [],
+        "platforms": [],
+        "constraints": [
+          "tools/loopd.mjs must remain absent"
+        ]
+      },
+      "observation": {
+        "state": "absent",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/characterization/compatibility-surfaces.test.mjs#legacy runtime daemon mutable state authority and marker agent are absent"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "negative",
+        "code": "validated-negative",
+        "refs": [
+          {
+            "kind": "section",
+            "ref": "apps/plugin/opencode2/docs/operations/daemon-deprecation.md#Removed legacy daemon"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "sufficient",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/security/release-security.test.mjs#product has no autonomous or imported lifecycle runtime"
+          }
+        ]
+      },
+      "authority": {
+        "state": "forbidden",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/plugin/opencode2/docs/decisions/0013-legacy-loop-retirement.md#ADR 0013 Imported loop runtime retirement"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "retired",
+        "refs": [
+          {
+            "kind": "section",
+            "ref": "apps/plugin/opencode2/docs/operations/daemon-deprecation.md#Removed legacy daemon"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "not-required",
+        "platforms": [],
+        "refs": []
+      },
+      "availability": {
+        "state": "absent",
+        "environments": [],
+        "production": "disabled",
+        "publication": "not-applicable",
+        "deployment": "disabled"
+      },
       "status": "Retired",
-      "verdict": { "decision": "RETIRED", "rationaleCode": "verified-retirement" },
+      "verdict": {
+        "decision": "RETIRED",
+        "rationaleCode": "verified-retirement"
+      },
       "blockerCodes": [],
-      "guards": [{"path":"apps/plugin/opencode2/tools/loopd.mjs","mode":"absent"},{"path":"apps/plugin/opencode2/tests/characterization/compatibility-surfaces.test.mjs","mode":"exact","sha256":"d2f72bec7cd5faa1311d0fc83d8acd69b45f2b26747f12f00550816e68c62a8d"},{"path":"apps/plugin/opencode2/tests/security/release-security.test.mjs","mode":"exact","sha256":"3b062b08dcdf8314fad548ac0a63f6082f9dc6111ae94f788799b3d82a29fb44"}]
+      "guards": [
+        {
+          "path": "apps/plugin/opencode2/tools/loopd.mjs",
+          "mode": "absent"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/characterization/compatibility-surfaces.test.mjs",
+          "mode": "exact",
+          "sha256": "d2f72bec7cd5faa1311d0fc83d8acd69b45f2b26747f12f00550816e68c62a8d"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/security/release-security.test.mjs",
+          "mode": "exact",
+          "sha256": "3b062b08dcdf8314fad548ac0a63f6082f9dc6111ae94f788799b3d82a29fb44"
+        }
+      ]
     },
     {
       "id": "retired-marker-agent",
-      "owners": ["plugin"],
-      "scope": { "product": "plugin", "level": "retired", "environments": [], "platforms": [], "constraints": ["legacy marker and opencode-loop-local agent must remain absent from product source and assets"] },
-      "observation": { "state": "absent", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/characterization/compatibility-surfaces.test.mjs#every compatibility name is a thin native adapter or stable unsupported diagnostic" }] },
-      "assertion": { "state": "negative", "code": "validated-negative", "refs": [{ "kind": "decision", "ref": "apps/plugin/opencode2/docs/decisions/0013-legacy-loop-retirement.md#ADR 0013 Imported loop runtime retirement" }] },
-      "evidence": { "state": "sufficient", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/security/release-security.test.mjs#product has no autonomous or imported lifecycle runtime" }] },
-      "authority": { "state": "forbidden", "refs": [{ "kind": "decision", "ref": "apps/plugin/opencode2/docs/decisions/0013-legacy-loop-retirement.md#ADR 0013 Imported loop runtime retirement" }] },
-      "delivery": { "state": "retired", "refs": [{ "kind": "test", "ref": "apps/plugin/opencode2/tests/characterization/compatibility-surfaces.test.mjs#legacy runtime daemon mutable state authority and marker agent are absent" }] },
-      "qualification": { "state": "not-required", "platforms": [], "refs": [] },
-      "availability": { "state": "absent", "environments": [], "production": "disabled", "publication": "not-applicable", "deployment": "disabled" },
+      "owners": [
+        "plugin"
+      ],
+      "scope": {
+        "product": "plugin",
+        "level": "retired",
+        "environments": [],
+        "platforms": [],
+        "constraints": [
+          "legacy marker and opencode-loop-local agent must remain absent from product source and assets"
+        ]
+      },
+      "observation": {
+        "state": "absent",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/characterization/compatibility-surfaces.test.mjs#every compatibility name is a thin native adapter or stable unsupported diagnostic"
+          }
+        ]
+      },
+      "assertion": {
+        "state": "negative",
+        "code": "validated-negative",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/plugin/opencode2/docs/decisions/0013-legacy-loop-retirement.md#ADR 0013 Imported loop runtime retirement"
+          }
+        ]
+      },
+      "evidence": {
+        "state": "sufficient",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/security/release-security.test.mjs#product has no autonomous or imported lifecycle runtime"
+          }
+        ]
+      },
+      "authority": {
+        "state": "forbidden",
+        "refs": [
+          {
+            "kind": "decision",
+            "ref": "apps/plugin/opencode2/docs/decisions/0013-legacy-loop-retirement.md#ADR 0013 Imported loop runtime retirement"
+          }
+        ]
+      },
+      "delivery": {
+        "state": "retired",
+        "refs": [
+          {
+            "kind": "test",
+            "ref": "apps/plugin/opencode2/tests/characterization/compatibility-surfaces.test.mjs#legacy runtime daemon mutable state authority and marker agent are absent"
+          }
+        ]
+      },
+      "qualification": {
+        "state": "not-required",
+        "platforms": [],
+        "refs": []
+      },
+      "availability": {
+        "state": "absent",
+        "environments": [],
+        "production": "disabled",
+        "publication": "not-applicable",
+        "deployment": "disabled"
+      },
       "status": "Retired",
-      "verdict": { "decision": "RETIRED", "rationaleCode": "verified-retirement" },
+      "verdict": {
+        "decision": "RETIRED",
+        "rationaleCode": "verified-retirement"
+      },
       "blockerCodes": [],
-      "guards": [{"path":"apps/plugin/opencode2/assets/agents/opencode-loop-local.md","mode":"absent"},{"path":"apps/plugin/opencode2/tests/characterization/compatibility-surfaces.test.mjs","mode":"exact","sha256":"d2f72bec7cd5faa1311d0fc83d8acd69b45f2b26747f12f00550816e68c62a8d"},{"path":"apps/plugin/opencode2/tests/security/release-security.test.mjs","mode":"exact","sha256":"3b062b08dcdf8314fad548ac0a63f6082f9dc6111ae94f788799b3d82a29fb44"}]
+      "guards": [
+        {
+          "path": "apps/plugin/opencode2/assets/agents/opencode-loop-local.md",
+          "mode": "absent"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/characterization/compatibility-surfaces.test.mjs",
+          "mode": "exact",
+          "sha256": "d2f72bec7cd5faa1311d0fc83d8acd69b45f2b26747f12f00550816e68c62a8d"
+        },
+        {
+          "path": "apps/plugin/opencode2/tests/security/release-security.test.mjs",
+          "mode": "exact",
+          "sha256": "3b062b08dcdf8314fad548ac0a63f6082f9dc6111ae94f788799b3d82a29fb44"
+        }
+      ]
     }
   ]
 }

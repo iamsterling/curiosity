@@ -37,7 +37,8 @@ export const runtimeSearchOptions = (options: unknown): RuntimeSearchOptions | u
 export const createSearchDefinitions = (options: SearchBackendOptions = {}, fetcher: Fetcher = fetch) => {
   const runtimeOptions = runtimeSearchOptions(options);
   const runtime = runtimeOptions ? createRuntimeSearchExecutor(runtimeOptions) : undefined;
-  const backendExecute = runtime?.execute ?? ((value: unknown) => executeWebSearch(value, options as SearchOptions, fetcher));
+  const backendExecute =
+    runtime?.execute ?? ((value: unknown) => executeWebSearch(value, options as SearchOptions, fetcher));
   const execute = (value: unknown, context: { agent?: unknown } = {}) => {
     if (context.agent !== "researcher") {
       const error = new DiagnosticError("WEB_SEARCH_RESEARCHER_REQUIRED");

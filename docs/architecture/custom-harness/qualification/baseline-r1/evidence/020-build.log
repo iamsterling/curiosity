@@ -1,0 +1,4 @@
+$ bun run abi:check
+$ node tools/check-opencode-abi.mjs
+OpenCode ABI pin verified: 0.0.0-beta-18138
+$ rm -rf dist && tsc -p tsconfig.build.json && node tools/write-build-provenance.mjs

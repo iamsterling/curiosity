@@ -1,0 +1,2 @@
+exitCode: 0
+command: /Users/sterling/.nvm/versions/node/v24.18.0/bin/bun --no-install --no-env-file run --cwd apps/plugin/opencode2 abi:check

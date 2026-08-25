@@ -1,0 +1,84 @@
+{
+  "schemaVersion": "custom-harness-q1-r2-execution-plan/v2",
+  "rootCommands": [
+    {
+      "id": "recovery-root-inventory-check",
+      "script": "inventory:check",
+      "argv": ["--no-install", "--no-env-file", "run", "inventory:check"]
+    },
+    {
+      "id": "recovery-root-status-check",
+      "script": "status:check",
+      "argv": ["--no-install", "--no-env-file", "run", "status:check"]
+    },
+    {
+      "id": "recovery-root-check-types",
+      "script": "check-types",
+      "argv": ["--no-install", "--no-env-file", "run", "check-types"]
+    },
+    {
+      "id": "recovery-root-lint",
+      "script": "lint",
+      "argv": ["--no-install", "--no-env-file", "run", "lint"]
+    },
+    {
+      "id": "recovery-root-test",
+      "script": "test",
+      "argv": ["--no-install", "--no-env-file", "run", "test"]
+    },
+    {
+      "id": "recovery-root-build",
+      "script": "build",
+      "argv": ["--no-install", "--no-env-file", "run", "build"]
+    },
+    {
+      "id": "recovery-root-verify",
+      "script": "verify",
+      "argv": ["--no-install", "--no-env-file", "run", "verify"]
+    }
+  ],
+  "rootEnvironment": {
+    "BUN_INSTALL_CACHE_DIR": "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/tmp/bun-install-cache",
+    "CARGO": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+    "CARGO_CLIPPY": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo-clippy",
+    "CARGO_FMT": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo-fmt",
+    "CARGO_HOME": "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/cargo-home",
+    "CARGO_NET_OFFLINE": "true",
+    "CARGO_TARGET_AARCH64_APPLE_DARWIN_LINKER": "/usr/bin/clang",
+    "CARGO_TARGET_DIR": "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/runtime/native/target",
+    "CI": "1",
+    "DO_NOT_TRACK": "1",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_TERMINAL_PROMPT": "0",
+    "HOME": "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/home",
+    "LC_ALL": "C",
+    "NEXT_TELEMETRY_DISABLED": "1",
+    "NO_UPDATE_NOTIFIER": "1",
+    "PATH": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin:/Users/sterling/.nvm/versions/node/v24.18.0/bin:/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/node_modules/.bin:/usr/bin:/bin:/usr/sbin:/sbin",
+    "RUSTC": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rustc",
+    "RUSTDOC": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rustdoc",
+    "TMPDIR": "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/tmp",
+    "TURBO_FORCE": "1",
+    "TURBO_NO_UPDATE_NOTIFIER": "1",
+    "TURBO_TELEMETRY_DISABLED": "1",
+    "XDG_CACHE_HOME": "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/xdg/cache",
+    "XDG_CONFIG_HOME": "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/xdg/config",
+    "XDG_DATA_HOME": "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/xdg/data",
+    "BUN_RUNTIME_TRANSPILER_CACHE_PATH": "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/tmp/bun-transpiler-cache",
+    "FORCE_COLOR": "0",
+    "TERM": "dumb",
+    "TURBO_BINARY_PATH": "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/node_modules/.bun/@turbo+darwin-arm64@2.10.10/node_modules/@turbo/darwin-arm64/bin/turbo"
+  },
+  "turboBinaryPath": "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/node_modules/.bun/@turbo+darwin-arm64@2.10.10/node_modules/@turbo/darwin-arm64/bin/turbo",
+  "forbiddenCommands": [
+    "bun install",
+    "bun update",
+    "bun upgrade",
+    "bunx",
+    "cargo install",
+    "cargo update",
+    "rustup"
+  ],
+  "aiProviderCommands": []
+}

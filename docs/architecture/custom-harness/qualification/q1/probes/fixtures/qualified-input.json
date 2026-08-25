@@ -1,0 +1,56 @@
+{
+  "qualificationId": "custom-harness-q1-2026-08-24",
+  "automaticUpdates": false,
+  "effect": {
+    "version": "4.0.0-beta.107",
+    "sourceCommit": "3c495ae7c96d43bfc3b8020250562a194c2c895e",
+    "lockIntegrity": "sha512-OoBAv8eF+yanc+C6xhgEUnWeXUSHA6ynnscYqpkAY9GSnzZWystsIjBowVqCkLpHGlnRtdIqYT3wHwpOY6JDnQ==",
+    "artifactSha256": "e3b3664b248b812eb4d6ad278817b29a803c1a7694237c367b201099b21edd4d",
+    "importSurface": [
+      "effect/Context",
+      "effect/Effect",
+      "effect/Layer",
+      "effect/ManagedRuntime"
+    ]
+  },
+  "buildTest": {
+    "bun": {
+      "version": "1.3.14",
+      "revision": "0d9b296af33f2b851fcbf4df3e9ec89751734ba4",
+      "binarySha256": "e0c90ec15d33363e6b70713d56bc3b2c7585c17f40a0fe0f8fd9305901d4e233",
+      "testRunner": "bun:test"
+    },
+    "typescript": {
+      "version": "5.9.2",
+      "sourceCommit": "5be33469d551655d878876faa9e30aa3b49f8ee9",
+      "lockIntegrity": "sha512-CWBzXQrc/qOkhidw1OzBTQuYRbfyxDXJMVJ1XNwUHGROVmuaeiEm3OslpZ1RV96d7SKKjZKrSJu3+t/xlw3R9A==",
+      "artifactSha256": "67a3bc82e822b8f45f653a80fc3a9730d23214d36c83ba85dd7f5abebee82062",
+      "compilerOptions": {
+        "lib": ["ESNext", "DOM"],
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "skipLibCheck": true,
+        "strict": true,
+        "target": "ES2023"
+      }
+    },
+    "turbo": {
+      "version": "2.10.10",
+      "sourceCommit": "ea08facfcc9185adc1096a994408bfc9114b2164",
+      "wrapperIntegrity": "sha512-/90KTW+USzvYOPmafRZHVKLBsHXQ5810Ao/HdtJYAqguIhZ+XruS6eIUjqJUDtrSxaZYynNFht68qckGKAOWTA==",
+      "platformIntegrity": "sha512-VZYsxZ6yjyDosUqtiroAVSXPLmx/qBxdHJgIxdMH9RyNmLdOLOWtJnYMnI4qckwCgQMK85G3fu94/xk5+iBCgw==",
+      "platformBinarySha256": "415bad4b27666b6ba13f37e563b4f6b02add80775588637c6bc6d0f5a161d7ce"
+    },
+    "nodeWhenInvoked": {
+      "version": "24.18.0",
+      "sourceCommit": "20da4aeadabc5b0a01e3fcf520f91df8285c68a2",
+      "binarySha256": "ee6fb0e015284d83a91e8ec5213f43a157f8a392b58555301682892ba928c04a"
+    },
+    "target": {
+      "os": "darwin",
+      "arch": "arm64",
+      "macosVersion": "27.0",
+      "macosBuild": "26A5368g"
+    }
+  }
+}

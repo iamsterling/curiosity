@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "custom-harness-q1-r3-controller-start/v1",
+  "startedUtc": "2026-08-25T05:02:57.685Z",
+  "cwd": "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab",
+  "argv": [
+    "/Users/sterling/.nvm/versions/node/v24.18.0/bin/node",
+    "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/docs/architecture/custom-harness/qualification/q1/r3/probes/execute-r3.mjs"
+  ],
+  "executablePath": "/Users/sterling/.nvm/versions/node/v24.18.0/bin/node",
+  "executableRealpath": "/Users/sterling/.nvm/versions/node/v24.18.0/bin/node",
+  "executableSha256": "ee6fb0e015284d83a91e8ec5213f43a157f8a392b58555301682892ba928c04a",
+  "planSha256": "ab0b90385c7d1e4247191313488428ceb941f5734ed35d12254dfef901980ff7",
+  "sourceHead": "6bc9df8f0d9500616f8d4ea220586d0ebdea0ef0",
+  "persistentWriteBoundary": "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/docs/architecture/custom-harness/qualification/q1/r3",
+  "preservedInput": "apps/plugin/opencode2/turbo.json",
+  "noI1": true
+}

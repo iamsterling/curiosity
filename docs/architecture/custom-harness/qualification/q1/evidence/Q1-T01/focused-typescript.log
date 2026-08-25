@@ -1,0 +1,1 @@
+$ env -i ... bun --no-install --no-env-file node_modules/typescript/bin/tsc -p q1/probes/tsconfig.json (retained final)

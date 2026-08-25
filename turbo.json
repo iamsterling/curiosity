@@ -14,7 +14,8 @@
     "MACOSX_DEPLOYMENT_TARGET",
     "RUSTFLAGS",
     "LC_ALL",
-    "TMPDIR"
+    "TMPDIR",
+    "CURIOSITY_DATABASE_PATH"
   ],
   "tasks": {
     "build": {

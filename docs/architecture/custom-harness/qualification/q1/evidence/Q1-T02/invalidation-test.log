@@ -1,0 +1,15 @@
+$ env -i ... bun --no-install --no-env-file test invalidation.test.ts
+bun test v1.3.14 (0d9b296a)
+
+docs/architecture/custom-harness/qualification/q1/probes/invalidation.test.ts:
+(pass) Q1-T02 qualification invalidation > unchanged exact input remains current [0.07ms]
+(pass) Q1-T02 qualification invalidation > changed pin invalidates the qualification [0.03ms]
+(pass) Q1-T02 qualification invalidation > changed feature/import surface invalidates the qualification [0.02ms]
+(pass) Q1-T02 qualification invalidation > changed source digest invalidates the qualification [0.02ms]
+(pass) Q1-T02 qualification invalidation > changed platform artifact invalidates the qualification [0.01ms]
+(pass) Q1-T02 qualification invalidation > changed platform invalidates the qualification [0.01ms]
+
+ 6 pass
+ 0 fail
+ 6 expect() calls
+Ran 6 tests across 1 file. [8.00ms]

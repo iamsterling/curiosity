@@ -35,7 +35,7 @@ export const copyVerifiedExecutable = ({ source, destination, expectedSha256, co
 }
 
 export const runtimeIdentity = {
-  cliExecutable: "874ba7c06b959f308beb4dbd825e331fedc86196d8c79ab65c45afea2ca86746",
+  cliExecutable: "4c4f39e7fa8cd533fa317cde068ccb57d0f5a89d56006f3e287e501c48ffd39e",
   pluginSdk: "635130e6226771c2db358921af2dd3a2c6a03e39f3c926f54f56ba8e4392506f",
 }
 

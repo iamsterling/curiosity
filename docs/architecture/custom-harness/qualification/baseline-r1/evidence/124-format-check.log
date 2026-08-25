@@ -1,0 +1,22 @@
+$ biome format src package.json tsconfig.json tsconfig.build.json biome.json assets/manifest.json
+src/features/search/index.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    38 38 │     const runtimeOptions = runtimeSearchOptions(options);
+    39 39 │     const runtime = runtimeOptions ? createRuntimeSearchExecutor(runtimeOptions) : undefined;
+    40    │ - ··const·backendExecute·=·runtime?.execute·??·((value:·unknown)·=>·executeWebSearch(value,·options·as·SearchOptions,·fetcher));
+       40 │ + ··const·backendExecute·=
+       41 │ + ····runtime?.execute·??·((value:·unknown)·=>·executeWebSearch(value,·options·as·SearchOptions,·fetcher));
+    41 42 │     const execute = (value: unknown, context: { agent?: unknown } = {}) => {
+    42 43 │       if (context.agent !== "researcher") {
+  
+
+Checked 71 files in 11ms. No fixes applied.
+Found 1 error.
+format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
+error: script "format:check" exited with code 1

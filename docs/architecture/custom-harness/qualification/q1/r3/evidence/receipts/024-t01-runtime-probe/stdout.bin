@@ -1,0 +1,33 @@
+{
+  "packageVersion": "4.0.0-beta.107",
+  "selectedImports": [
+    "effect/Context",
+    "effect/Effect",
+    "effect/Layer",
+    "effect/ManagedRuntime"
+  ],
+  "resolutions": [
+    {
+      "specifier": "effect/Context",
+      "resolved": "file:///private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r3/consumer/node_modules/effect/dist/Context.js"
+    },
+    {
+      "specifier": "effect/Effect",
+      "resolved": "file:///private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r3/consumer/node_modules/effect/dist/Effect.js"
+    },
+    {
+      "specifier": "effect/Layer",
+      "resolved": "file:///private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r3/consumer/node_modules/effect/dist/Layer.js"
+    },
+    {
+      "specifier": "effect/ManagedRuntime",
+      "resolved": "file:///private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r3/consumer/node_modules/effect/dist/ManagedRuntime.js"
+    }
+  ],
+  "acquisitions": 1,
+  "releases": 1,
+  "transitions": 2,
+  "oneCachedContext": true,
+  "activeManagedRuntimeCount": 1,
+  "rejectedAfterDispose": true
+}

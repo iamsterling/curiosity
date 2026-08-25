@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "custom-harness-q1-r3-invalidation/v1",
+  "verdict": "PASS",
+  "unchangedExactIdentityPasses": true,
+  "mutations": [
+    { "path": "schemaVersion", "invalidated": true },
+    { "path": "governingPlanSha256", "invalidated": true },
+    { "path": "effect.package", "invalidated": true },
+    { "path": "effect.version", "invalidated": true },
+    { "path": "effect.sourceCommit", "invalidated": true },
+    { "path": "effect.sourceTree", "invalidated": true },
+    { "path": "effect.lockIntegrity", "invalidated": true },
+    { "path": "effect.artifactSha256", "invalidated": true },
+    { "path": "effect.artifactSha512Hex", "invalidated": true },
+    { "path": "effect.licenseSha256", "invalidated": true },
+    { "path": "effect.importSurface.0", "invalidated": true },
+    { "path": "effect.importSurface.1", "invalidated": true },
+    { "path": "effect.importSurface.2", "invalidated": true },
+    { "path": "effect.importSurface.3", "invalidated": true },
+    { "path": "buildTest.bun.version", "invalidated": true },
+    { "path": "buildTest.bun.revision", "invalidated": true },
+    { "path": "buildTest.bun.binarySha256", "invalidated": true },
+    { "path": "buildTest.bun.artifactSha256", "invalidated": true },
+    { "path": "buildTest.bun.testRunner", "invalidated": true },
+    { "path": "buildTest.typescript.version", "invalidated": true },
+    { "path": "buildTest.typescript.sourceCommit", "invalidated": true },
+    { "path": "buildTest.typescript.lockIntegrity", "invalidated": true },
+    { "path": "buildTest.typescript.artifactSha256", "invalidated": true },
+    {
+      "path": "buildTest.typescript.compilerOptions.lib.0",
+      "invalidated": true
+    },
+    {
+      "path": "buildTest.typescript.compilerOptions.lib.1",
+      "invalidated": true
+    },
+    {
+      "path": "buildTest.typescript.compilerOptions.module",
+      "invalidated": true
+    },
+    {
+      "path": "buildTest.typescript.compilerOptions.moduleResolution",
+      "invalidated": true
+    },
+    {
+      "path": "buildTest.typescript.compilerOptions.skipLibCheck",
+      "invalidated": true
+    },
+    {
+      "path": "buildTest.typescript.compilerOptions.strict",
+      "invalidated": true
+    },
+    {
+      "path": "buildTest.typescript.compilerOptions.target",
+      "invalidated": true
+    },
+    { "path": "buildTest.turbo.version", "invalidated": true },
+    { "path": "buildTest.turbo.sourceCommit", "invalidated": true },
+    { "path": "buildTest.turbo.wrapperIntegrity", "invalidated": true },
+    { "path": "buildTest.turbo.wrapperArtifactSha256", "invalidated": true },
+    { "path": "buildTest.turbo.platformIntegrity", "invalidated": true },
+    { "path": "buildTest.turbo.platformArtifactSha256", "invalidated": true },
+    { "path": "buildTest.turbo.platformBinarySha256", "invalidated": true },
+    { "path": "buildTest.nodeWhenInvoked.version", "invalidated": true },
+    { "path": "buildTest.nodeWhenInvoked.sourceCommit", "invalidated": true },
+    { "path": "buildTest.nodeWhenInvoked.binarySha256", "invalidated": true },
+    { "path": "buildTest.nodeWhenInvoked.artifactSha256", "invalidated": true },
+    {
+      "path": "buildTest.rustCargoForRootChecksOnly.rustVersion",
+      "invalidated": true
+    },
+    {
+      "path": "buildTest.rustCargoForRootChecksOnly.rustCommit",
+      "invalidated": true
+    },
+    {
+      "path": "buildTest.rustCargoForRootChecksOnly.cargoVersion",
+      "invalidated": true
+    },
+    {
+      "path": "buildTest.rustCargoForRootChecksOnly.cargoCommit",
+      "invalidated": true
+    },
+    {
+      "path": "buildTest.rustCargoForRootChecksOnly.target",
+      "invalidated": true
+    },
+    {
+      "path": "buildTest.rustCargoForRootChecksOnly.channelManifestSha256",
+      "invalidated": true
+    },
+    { "path": "buildTest.target.os", "invalidated": true },
+    { "path": "buildTest.target.arch", "invalidated": true },
+    { "path": "buildTest.target.macosVersion", "invalidated": true },
+    { "path": "buildTest.target.macosBuild", "invalidated": true },
+    { "path": "aiSdk", "invalidated": true },
+    { "path": "aiSdkVerdict", "invalidated": true },
+    { "path": "sqliteVerdict", "invalidated": true },
+    { "path": "gitVerdict", "invalidated": true },
+    { "path": "supervisorVerdict", "invalidated": true }
+  ],
+  "enforcementBoundary": "Qualification-record comparison only; product enforcement is not implemented or claimed."
+}

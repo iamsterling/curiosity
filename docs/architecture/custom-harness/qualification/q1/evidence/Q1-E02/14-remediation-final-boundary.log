@@ -1,0 +1,57 @@
+Q1 REMEDIATION FINAL STATIC BOUNDARY CHECK
+PARTIAL_ATTEMPT_INCORPORATED=yes
+FIRST_ATTEMPT_EXIT=1
+FIRST_ATTEMPT_EXIT_REASON=before/after snapshot exclusion expression retained the 18 intended targets
+FIRST_ATTEMPT_DELETION_COMPLETED=yes
+FIRST_ATTEMPT_DIFF_REMOVAL_COUNT=18
+FIRST_ATTEMPT_DIFF_ONLY_EXPECTED_18=yes
+CURRENT_ABSENT_COUNT=18
+PARENT_DIRECTORIES_BEGIN
+PRESENT apps/docs/.next/types
+PRESENT apps/web/.next/types
+PRESENT apps/docs/.turbo
+PRESENT apps/web/.turbo
+PRESENT apps/plugin/opencode2/.turbo
+PRESENT apps/runtime/.turbo
+PRESENT packages/ui/.turbo
+PARENT_DIRECTORIES_END
+EXCLUDED_PREEXISTING_LOGS_BEGIN
+9e8bd518ad2bf183a6d8ec5a7f89a8050ed1e61437267a5e4b29cb6ce293e4e6  apps/docs/.turbo/turbo-lint.log
+9e8bd518ad2bf183a6d8ec5a7f89a8050ed1e61437267a5e4b29cb6ce293e4e6  apps/web/.turbo/turbo-lint.log
+EXCLUDED_PREEXISTING_LOGS_END
+PROTECTED_HASHES_BEGIN
+cc9018882649228e6514e2e0df8ba983d1a8a90a9a7361ba75c7da78d8457e10  apps/plugin/opencode2/assets/manifest.json
+0656e39945e9b62c4535f0a60fb3da5a2d0206e9e0757d4226e277aba98e9075  bun.lock
+d45e0fcd14dd5f373fec1e131895bca2e291abc3bfe4aef1418562ee9d5b31d5  package.json
+d6e2e99a1ae21c2f5fd2c32a7f85089b1ae81b73c0eac7999e7a19cef2c5c549  turbo.json
+PROTECTED_HASHES_END
+HEAD=8670d358f761003c49902db5f148baab0c2e6be4
+TRACKED_DIFF_EMPTY=yes
+OUTSIDE_Q1_STATUS_BEGIN
+?? docs/architecture/custom-harness/PHASE-1-IMPLEMENTATION-PLAN.md
+?? docs/architecture/custom-harness/README.md
+?? docs/architecture/custom-harness/decisions/ADR-001-effect-authority-rust-supervisor.md
+?? docs/architecture/custom-harness/decisions/ADR-002-event-log-sqlite-projections.md
+?? docs/architecture/custom-harness/decisions/ADR-003-command-attempt-cancellation.md
+?? docs/architecture/custom-harness/decisions/ADR-004-provider-gateway-usage-accounting.md
+?? docs/architecture/custom-harness/decisions/ADR-005-capabilities-provenance-sinks.md
+?? docs/architecture/custom-harness/decisions/ADR-006-extensions-sandbox-platforms.md
+?? docs/architecture/custom-harness/decisions/ADR-007-worktree-lifecycle.md
+?? docs/architecture/custom-harness/decisions/ADR-008-autonomy-and-human-gates.md
+?? docs/architecture/custom-harness/decisions/ADR-009-trusted-local-authentication-readiness.md
+?? docs/architecture/custom-harness/decisions/ADR-010-provenance-updates-licenses.md
+?? research/harnesses/RESEARCH-CONTRACT.md
+OUTSIDE_Q1_STATUS_END
+OUTSIDE_Q1_STATUS_MATCHES_RETAINED_PREFLIGHT=yes
+RAW_HASH_CHECKS_BEGIN
+docs/architecture/custom-harness/qualification/q1/evidence/Q1-T01/diagnostic-initial-comment-scan-failure.log: OK
+docs/architecture/custom-harness/qualification/q1/evidence/Q1-T01/diagnostic-upstream-declaration-check.log: OK
+docs/architecture/custom-harness/qualification/q1/evidence/Q1-T01/focused-bun-test.log: OK
+docs/architecture/custom-harness/qualification/q1/evidence/Q1-T01/focused-typescript.log: OK
+docs/architecture/custom-harness/qualification/q1/evidence/Q1-T01/identity-license-observation.log: OK
+docs/architecture/custom-harness/qualification/q1/evidence/Q1-T02/invalidation-test.log: OK
+docs/architecture/custom-harness/qualification/q1/evidence/Q1-T04/no-auto-update-license-scan.log: OK
+RAW_HASH_CHECKS_END
+SCRATCH_ABSENT=yes
+ROOT_OR_QUALIFICATION_COMMAND_RERUN=no
+REMEDIATION_SCOPE=Q1 evidence/docs plus deletion of exact audited 18 files

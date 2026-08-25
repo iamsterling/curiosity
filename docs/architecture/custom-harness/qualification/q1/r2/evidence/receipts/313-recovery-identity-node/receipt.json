@@ -1,0 +1,332 @@
+{
+  "schemaVersion": "custom-harness-q1-r2-receipt/v1",
+  "receiptId": "recovery-identity-node",
+  "sequence": 313,
+  "authorization": {
+    "path": "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/docs/architecture/custom-harness/qualification/q1/r2/authorization/PLAN-E02-Q1-R2-AUTHORIZATION.md",
+    "sha256": "5259595a5dd60212a67b9e1d154d3c5f9ce743107ac608d79683d0c574d76b2d"
+  },
+  "command": {
+    "cwd": "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab",
+    "argv": [
+      "/Users/sterling/.nvm/versions/node/v24.18.0/bin/node",
+      "--version"
+    ],
+    "executablePath": "/Users/sterling/.nvm/versions/node/v24.18.0/bin/node",
+    "executableRealpath": "/Users/sterling/.nvm/versions/node/v24.18.0/bin/node",
+    "executableSha256": "ee6fb0e015284d83a91e8ec5213f43a157f8a392b58555301682892ba928c04a",
+    "shell": false
+  },
+  "environment": {
+    "mode": "env-i",
+    "entries": [
+      "BUN_INSTALL_CACHE_DIR=/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/tmp/bun-install-cache",
+      "BUN_RUNTIME_TRANSPILER_CACHE_PATH=/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/tmp/bun-transpiler-cache",
+      "CARGO=/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+      "CARGO_CLIPPY=/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo-clippy",
+      "CARGO_FMT=/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo-fmt",
+      "CARGO_HOME=/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/cargo-home",
+      "CARGO_NET_OFFLINE=true",
+      "CARGO_TARGET_AARCH64_APPLE_DARWIN_LINKER=/usr/bin/clang",
+      "CARGO_TARGET_DIR=/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/runtime/native/target",
+      "CI=1",
+      "DO_NOT_TRACK=1",
+      "FORCE_COLOR=0",
+      "GIT_CONFIG_GLOBAL=/dev/null",
+      "GIT_CONFIG_NOSYSTEM=1",
+      "GIT_TERMINAL_PROMPT=0",
+      "HOME=/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/home",
+      "LC_ALL=C",
+      "NEXT_TELEMETRY_DISABLED=1",
+      "NO_UPDATE_NOTIFIER=1",
+      "PATH=/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin:/Users/sterling/.nvm/versions/node/v24.18.0/bin:/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/node_modules/.bin:/usr/bin:/bin:/usr/sbin:/sbin",
+      "RUSTC=/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rustc",
+      "RUSTDOC=/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rustdoc",
+      "TERM=dumb",
+      "TMPDIR=/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/tmp",
+      "TURBO_BINARY_PATH=/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/node_modules/.bun/@turbo+darwin-arm64@2.10.10/node_modules/@turbo/darwin-arm64/bin/turbo",
+      "TURBO_FORCE=1",
+      "TURBO_NO_UPDATE_NOTIFIER=1",
+      "TURBO_TELEMETRY_DISABLED=1",
+      "XDG_CACHE_HOME=/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/xdg/cache",
+      "XDG_CONFIG_HOME=/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/xdg/config",
+      "XDG_DATA_HOME=/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/xdg/data"
+    ],
+    "sha256": "c45bc9c8845f0e89d53505af88167c301913d03f5115d7e9a65d376c31ce03d8",
+    "credentialScrubbed": true
+  },
+  "time": {
+    "startedUtc": "2026-08-25T00:44:55.531Z",
+    "endedUtc": "2026-08-25T00:44:55.552Z",
+    "monotonicDurationNs": "20246458"
+  },
+  "process": {
+    "expectedExitCode": 0,
+    "exitCode": 0,
+    "signal": null,
+    "spawnError": null
+  },
+  "streams": {
+    "stdout": {
+      "path": "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/docs/architecture/custom-harness/qualification/q1/r2/evidence/receipts/313-recovery-identity-node/stdout.bin",
+      "bytes": 9,
+      "sha256": "8f9258d5e9da5443c42966a661aee09292b49d1c64e718dcc5f72976500bac48"
+    },
+    "stderr": {
+      "path": "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/docs/architecture/custom-harness/qualification/q1/r2/evidence/receipts/313-recovery-identity-node/stderr.bin",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "events": {
+      "path": "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/docs/architecture/custom-harness/qualification/q1/r2/evidence/receipts/313-recovery-identity-node/events.ndjson",
+      "bytes": 185,
+      "sha256": "b418115d61bf59cde6dc5a99871b25dd3db4d3d0b9913a8da80346f200fe7561"
+    }
+  },
+  "inputs": [
+    {
+      "path": "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/docs/architecture/custom-harness/qualification/q1/r2/inputs/candidates.json",
+      "kind": "file",
+      "bytes": 3492,
+      "sha256": "c1a8eac8565c7acfa527e0901b014039a81d0bd29bb25b70404afad65f532092"
+    }
+  ],
+  "generatedInventory": {
+    "before": {
+      "roots": [
+        { "path": ".turbo", "state": "absent" },
+        {
+          "path": "apps/docs/.next",
+          "state": "present",
+          "type": "directory",
+          "bytes": "704",
+          "mode": 16877,
+          "mtimeNs": "1787574948438758780"
+        },
+        {
+          "path": "apps/docs/.turbo",
+          "state": "present",
+          "type": "directory",
+          "bytes": "128",
+          "mode": 16877,
+          "mtimeNs": "1787588461348295811"
+        },
+        { "path": "apps/docs/next-env.d.ts", "state": "absent" },
+        {
+          "path": "apps/web/.next",
+          "state": "present",
+          "type": "directory",
+          "bytes": "704",
+          "mode": 16877,
+          "mtimeNs": "1787574948435041761"
+        },
+        {
+          "path": "apps/web/.turbo",
+          "state": "present",
+          "type": "directory",
+          "bytes": "128",
+          "mode": 16877,
+          "mtimeNs": "1787588461348324394"
+        },
+        { "path": "apps/web/next-env.d.ts", "state": "absent" },
+        {
+          "path": "apps/plugin/opencode2/.turbo",
+          "state": "present",
+          "type": "directory",
+          "bytes": "96",
+          "mode": 16877,
+          "mtimeNs": "1787588461348378894"
+        },
+        {
+          "path": "apps/plugin/opencode2/dist",
+          "state": "present",
+          "type": "directory",
+          "bytes": "384",
+          "mode": 16877,
+          "mtimeNs": "1787574948435066553"
+        },
+        {
+          "path": "apps/plugin/opencode2/assets/manifest.json",
+          "state": "present",
+          "type": "file",
+          "bytes": "24989",
+          "mode": 33188,
+          "mtimeNs": "1787513748826851230"
+        },
+        {
+          "path": "apps/runtime/.turbo",
+          "state": "present",
+          "type": "directory",
+          "bytes": "96",
+          "mode": 16877,
+          "mtimeNs": "1787588461348431894"
+        },
+        {
+          "path": "apps/runtime/native/target",
+          "state": "present",
+          "type": "directory",
+          "bytes": "160",
+          "mode": 16877,
+          "mtimeNs": "1787585096472315763"
+        },
+        {
+          "path": "packages/eslint-config/.turbo",
+          "state": "present",
+          "type": "directory",
+          "bytes": "96",
+          "mode": 16877,
+          "mtimeNs": "1787574948390687751"
+        },
+        {
+          "path": "packages/typescript-config/.turbo",
+          "state": "present",
+          "type": "directory",
+          "bytes": "96",
+          "mode": 16877,
+          "mtimeNs": "1787574948390703542"
+        },
+        {
+          "path": "packages/ui/.turbo",
+          "state": "present",
+          "type": "directory",
+          "bytes": "96",
+          "mode": 16877,
+          "mtimeNs": "1787588461349697563"
+        },
+        {
+          "path": "packages/ui/dist",
+          "state": "present",
+          "type": "directory",
+          "bytes": "256",
+          "mode": 16877,
+          "mtimeNs": "1787574948392433259"
+        },
+        {
+          "path": "apps/runtime/src/turbo-future-source-fixture.ts",
+          "state": "absent"
+        }
+      ],
+      "sha256": "a959e7b9622cb25a8c6f23bbabc8040103d12262574b0ea34b022afb88422359"
+    },
+    "after": {
+      "roots": [
+        { "path": ".turbo", "state": "absent" },
+        {
+          "path": "apps/docs/.next",
+          "state": "present",
+          "type": "directory",
+          "bytes": "704",
+          "mode": 16877,
+          "mtimeNs": "1787574948438758780"
+        },
+        {
+          "path": "apps/docs/.turbo",
+          "state": "present",
+          "type": "directory",
+          "bytes": "128",
+          "mode": 16877,
+          "mtimeNs": "1787588461348295811"
+        },
+        { "path": "apps/docs/next-env.d.ts", "state": "absent" },
+        {
+          "path": "apps/web/.next",
+          "state": "present",
+          "type": "directory",
+          "bytes": "704",
+          "mode": 16877,
+          "mtimeNs": "1787574948435041761"
+        },
+        {
+          "path": "apps/web/.turbo",
+          "state": "present",
+          "type": "directory",
+          "bytes": "128",
+          "mode": 16877,
+          "mtimeNs": "1787588461348324394"
+        },
+        { "path": "apps/web/next-env.d.ts", "state": "absent" },
+        {
+          "path": "apps/plugin/opencode2/.turbo",
+          "state": "present",
+          "type": "directory",
+          "bytes": "96",
+          "mode": 16877,
+          "mtimeNs": "1787588461348378894"
+        },
+        {
+          "path": "apps/plugin/opencode2/dist",
+          "state": "present",
+          "type": "directory",
+          "bytes": "384",
+          "mode": 16877,
+          "mtimeNs": "1787574948435066553"
+        },
+        {
+          "path": "apps/plugin/opencode2/assets/manifest.json",
+          "state": "present",
+          "type": "file",
+          "bytes": "24989",
+          "mode": 33188,
+          "mtimeNs": "1787513748826851230"
+        },
+        {
+          "path": "apps/runtime/.turbo",
+          "state": "present",
+          "type": "directory",
+          "bytes": "96",
+          "mode": 16877,
+          "mtimeNs": "1787588461348431894"
+        },
+        {
+          "path": "apps/runtime/native/target",
+          "state": "present",
+          "type": "directory",
+          "bytes": "160",
+          "mode": 16877,
+          "mtimeNs": "1787585096472315763"
+        },
+        {
+          "path": "packages/eslint-config/.turbo",
+          "state": "present",
+          "type": "directory",
+          "bytes": "96",
+          "mode": 16877,
+          "mtimeNs": "1787574948390687751"
+        },
+        {
+          "path": "packages/typescript-config/.turbo",
+          "state": "present",
+          "type": "directory",
+          "bytes": "96",
+          "mode": 16877,
+          "mtimeNs": "1787574948390703542"
+        },
+        {
+          "path": "packages/ui/.turbo",
+          "state": "present",
+          "type": "directory",
+          "bytes": "96",
+          "mode": 16877,
+          "mtimeNs": "1787588461349697563"
+        },
+        {
+          "path": "packages/ui/dist",
+          "state": "present",
+          "type": "directory",
+          "bytes": "256",
+          "mode": 16877,
+          "mtimeNs": "1787574948392433259"
+        },
+        {
+          "path": "apps/runtime/src/turbo-future-source-fixture.ts",
+          "state": "absent"
+        }
+      ],
+      "sha256": "a959e7b9622cb25a8c6f23bbabc8040103d12262574b0ea34b022afb88422359"
+    }
+  },
+  "assertions": [{ "id": "expected-process-exit", "passed": true }],
+  "skips": [],
+  "knownExclusions": [],
+  "verdict": "PASS"
+}

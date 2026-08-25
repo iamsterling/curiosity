@@ -1,0 +1,15 @@
+HTTP/2 200 
+date: Tue, 25 Aug 2026 00:40:51 GMT
+content-type: application/gzip
+content-length: 52087559
+cf-cache-status: HIT
+accept-ranges: bytes
+age: 11527
+cache-control: public, max-age=3600, s-maxage=14400
+etag: "76a4deff2d98a66fe42fdd8ebff95a4b"
+last-modified: Tue, 23 Jun 2026 13:43:11 GMT
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+x-content-type-options: nosniff
+server: cloudflare
+cf-ray: a3068c391d68c06e-DFW
+

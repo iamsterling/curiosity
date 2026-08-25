@@ -1,0 +1,854 @@
+▶ verification inventory fails closed for a new package and an unclassified script or export
+  ✔ new package (59.863ms)
+  ✔ new nested package (61.270292ms)
+  ✖ script (121.169042ms)
+  ✖ export (114.341583ms)
+✖ verification inventory fails closed for a new package and an unclassified script or export (359.112583ms)
+▶ verification inventory fails closed for a new test, a skipped expected profile, and Cargo drift
+  ✖ test (113.088458ms)
+  ✖ profile mapping (118.142958ms)
+  ✖ crate (109.362708ms)
+  ✖ implicit Cargo build script (109.413208ms)
+  ✖ explicit Cargo package build script (113.928709ms)
+✖ verification inventory fails closed for a new test, a skipped expected profile, and Cargo drift (564.859125ms)
+▶ ABI and workflow action, condition, and aggregate drift fail closed
+  ✖ action (108.976833ms)
+  ✖ condition (114.449542ms)
+  ✖ aggregate (109.075959ms)
+  ✖ write-all remains forbidden after an inventory hash refresh (126.891083ms)
+  ✖ job write permission remains forbidden after an inventory hash refresh (107.468792ms)
+  ✖ required aggregate omission remains forbidden after an inventory hash refresh (121.589125ms)
+  ✖ an explicitly inventoried approved job read scope remains allowed (107.323708ms)
+✖ ABI and workflow action, condition, and aggregate drift fail closed (797.329ms)
+▶ dependency, Cargo target, and required record additions and omissions fail closed
+  ✔ external package dependency (116.783167ms)
+  ✔ workspace package dependency (119.293ms)
+  ✖ inventoried mutable dependency protocol (106.186542ms)
+  ✔ override metadata (118.778167ms)
+  ✔ bundled dependency metadata (107.046458ms)
+  ✔ peer dependency metadata (120.095167ms)
+  ✔ package-manager override metadata (113.502125ms)
+  ✖ new trusted dependency requires explicit review (119.735708ms)
+  ✖ a lifecycle hook cannot be laundered through a scripts inventory refresh (108.127291ms)
+  ✖ an inventoried but unreviewed trusted dependency remains forbidden (124.418625ms)
+  ✖ unsafe patch protocols remain forbidden after review (118.0895ms)
+  ✖ implicit Cargo bin (105.098041ms)
+  ✔ releaseArtifacts omission (0.592833ms)
+  ✔ crossPackageContracts omission (0.383333ms)
+✖ dependency, Cargo target, and required record additions and omissions fail closed (1379.536334ms)
+▶ Bun execution policy disables implicit trust and every CI install ignores scripts
+  ✔ default-trusted msgpackr-extract cannot be laundered through reviewed inventory metadata (119.1565ms)
+  ✖ workflow flag removal remains forbidden after an inventory hash refresh (106.31825ms)
+  ✖ Bun install aliases and wrappers remain forbidden after a workflow hash refresh (122.217625ms)
+✖ Bun execution policy disables implicit trust and every CI install ignores scripts (349.190167ms)
+✔ Bun and npm automatic lifecycle authority is inventoried separately from generic scripts (0.411083ms)
+✔ npm executes standalone prestart before its implicit server.js start (173.631125ms)
+▶ implicit npm execution surfaces cannot be laundered through inventory refreshes
+  ✖ prestart plus implicit server.js start (113.922625ms)
+  ✖ implicit binding.gyp install (116.3715ms)
+✖ implicit npm execution surfaces cannot be laundered through inventory refreshes (230.916042ms)
+✔ clean frozen Bun installs ignore lifecycle scripts even for a default-trusted package name (22.892458ms)
+✔ required workspace verification lane covers only starter and configuration workspaces once (0.496125ms)
+▶ required profiles close over their command graph and legacy orphan surfaces make no green claim
+  ✖ removing a required script edge cannot be laundered through an inventory refresh (122.118375ms)
+  ✖ manual Darwin real-host work cannot leak into portable or required command graphs (106.206333ms)
+✖ required profiles close over their command graph and legacy orphan surfaces make no green claim (228.817667ms)
+▶ verification tool additions and byte drift fail closed
+  ✖ new tool (114.972583ms)
+  ✖ network gate drift (119.588208ms)
+  ▶ plugin verification wrapper plans and entrypoint are code-owned beyond self-hash
+    ✖ remove portable verification (110.490292ms)
+    ✖ reverse Darwin plan (125.355791ms)
+    ✖ append Darwin command (116.609708ms)
+    ✖ bypass injected executor (103.765125ms)
+    ✖ bypass CLI entrypoint (118.718458ms)
+  ✖ plugin verification wrapper plans and entrypoint are code-owned beyond self-hash (575.927084ms)
+✖ verification tool additions and byte drift fail closed (811.202375ms)
+✖ bounded Turbo source globs cannot be weakened by refreshing the task inventory (105.57025ms)
+✔ runtime profiles cannot be conflated with M7 or SDK v2 (0.559041ms)
+✔ query types resolve to the authoritative implementation rather than a handwritten declaration (2.678666ms)
+✔ current runtime documentation maps the historical query declaration range to authoritative symbols (1.231333ms)
+✔ repository exposes an executable staged plugin and runtime contract (2.907042ms)
+✔ registry smoke builds the plugin before executing installed setup evidence (0.291291ms)
+✔ versioned runtime compatibility evidence and ABI profiles are exact (2.592417ms)
+✔ verification inventory is separate from capability lifecycle status (152.842417ms)
+✔ M7 status is split between immutable history and the unqualified source candidate (0.770917ms)
+✔ Linux network denial is fail-closed and enforces the exact Rust pin (0.552458ms)
+✔ Turbo test and verify hashes include repository verification and runtime contract inputs exactly once (171.400083ms)
+✔ the required workspace command reaches honest starter syntax and package contract checks (92.1585ms)
+ℹ tests 69
+ℹ suites 0
+ℹ pass 26
+ℹ fail 43
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5695.673625
+
+✖ failing tests:
+
+test at tools/verification/inventory.test.mjs:51:17
+✖ script (121.169042ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_PACKAGE_SCRIPTS:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:54:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:51:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_PACKAGE_SCRIPTS:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:56:17
+✖ export (114.341583ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_PACKAGE_EXPORTS:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:59:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:56:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_PACKAGE_EXPORTS:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:66:17
+✖ test (113.088458ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_TEST_INVENTORY:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:66:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_TEST_INVENTORY:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:70:17
+✖ profile mapping (118.142958ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_TEST_PROFILE:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:74:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:70:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_TEST_PROFILE:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:76:17
+✖ crate (109.362708ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_CARGO_SURFACE:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:78:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:76:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_CARGO_SURFACE:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:80:17
+✖ implicit Cargo build script (109.413208ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_CARGO_SURFACE:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:80:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_CARGO_SURFACE:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:84:17
+✖ explicit Cargo package build script (113.928709ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_CARGO_SURFACE:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:86:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:84:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_CARGO_SURFACE:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:105:20
+✖ action (108.976833ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_WORKFLOW_DRIFT:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:105:6)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_WORKFLOW_DRIFT:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:105:20
+✖ condition (114.449542ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_WORKFLOW_DRIFT:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:105:6)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_WORKFLOW_DRIFT:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:105:20
+✖ aggregate (109.075959ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_WORKFLOW_DRIFT:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:105:6)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_WORKFLOW_DRIFT:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:110:17
+✖ write-all remains forbidden after an inventory hash refresh (126.891083ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_WORKFLOW_PERMISSIONS:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:114:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:110:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_WORKFLOW_PERMISSIONS:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:119:17
+✖ job write permission remains forbidden after an inventory hash refresh (107.468792ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_WORKFLOW_PERMISSIONS:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:123:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:119:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_WORKFLOW_PERMISSIONS:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:128:17
+✖ required aggregate omission remains forbidden after an inventory hash refresh (121.589125ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_WORKFLOW_REQUIRED_AGGREGATE:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:138:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:128:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_WORKFLOW_REQUIRED_AGGREGATE:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:143:17
+✖ an explicitly inventoried approved job read scope remains allowed (107.323708ms)
+  Error: VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2
+      at fail (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory-model.mjs:18:40)
+      at verifyPackages (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory-model.mjs:347:73)
+      at async verifyInventory (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory-model.mjs:1117:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:149:7)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:143:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+
+test at tools/verification/inventory.test.mjs:174:17
+✖ inventoried mutable dependency protocol (106.186542ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_PACKAGE_DEPENDENCY_POLICY:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:185:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:174:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_PACKAGE_DEPENDENCY_POLICY:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:231:17
+✖ new trusted dependency requires explicit review (119.735708ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_PACKAGE_EXECUTION_METADATA:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:234:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:231:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_PACKAGE_EXECUTION_METADATA:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:239:17
+✖ a lifecycle hook cannot be laundered through a scripts inventory refresh (108.127291ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_PACKAGE_EXECUTION_METADATA:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:244:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:239:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_PACKAGE_EXECUTION_METADATA:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:249:17
+✖ an inventoried but unreviewed trusted dependency remains forbidden (124.418625ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_PACKAGE_EXECUTION_POLICY:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:270:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:249:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_PACKAGE_EXECUTION_POLICY:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:275:17
+✖ unsafe patch protocols remain forbidden after review (118.0895ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_PACKAGE_EXECUTION_POLICY:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:287:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:275:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_PACKAGE_EXECUTION_POLICY:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:292:17
+✖ implicit Cargo bin (105.098041ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_CARGO_SURFACE:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:292:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_CARGO_SURFACE:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:348:17
+✖ workflow flag removal remains forbidden after an inventory hash refresh (106.31825ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_WORKFLOW_INSTALL_POLICY:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:352:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:348:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_WORKFLOW_INSTALL_POLICY:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:358:17
+✖ Bun install aliases and wrappers remain forbidden after a workflow hash refresh (122.217625ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_WORKFLOW_INSTALL_POLICY:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:374:7)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:358:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_WORKFLOW_INSTALL_POLICY:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:435:17
+✖ prestart plus implicit server.js start (113.922625ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_PACKAGE_EXECUTION_METADATA:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:440:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:435:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_PACKAGE_EXECUTION_METADATA:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:448:17
+✖ implicit binding.gyp install (116.3715ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_PACKAGE_EXECUTION_METADATA:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:448:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_PACKAGE_EXECUTION_METADATA:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:516:17
+✖ removing a required script edge cannot be laundered through an inventory refresh (122.118375ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_REQUIRED_PROFILE_UNEXECUTED:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:522:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:516:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_REQUIRED_PROFILE_UNEXECUTED:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:528:17
+✖ manual Darwin real-host work cannot leak into portable or required command graphs (106.206333ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_MANUAL_PROFILE_LEAK:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:534:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:528:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_MANUAL_PROFILE_LEAK:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:544:17
+✖ new tool (114.972583ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_TOOL_INVENTORY:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:544:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_TOOL_INVENTORY:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:548:17
+✖ network gate drift (119.588208ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_TOOL_DRIFT:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:550:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:548:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_TOOL_DRIFT:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:569:69
+✖ remove portable verification (110.490292ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_PLUGIN_PROFILE_CONTRACT:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:574:7)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:569:47)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:556:3)
+      at async Test.run (node:internal/test_runner/test:1332:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_PLUGIN_PROFILE_CONTRACT:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:569:69
+✖ reverse Darwin plan (125.355791ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_PLUGIN_PROFILE_CONTRACT:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:574:7)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:569:47)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:556:3)
+      at async Test.run (node:internal/test_runner/test:1332:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_PLUGIN_PROFILE_CONTRACT:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:569:69
+✖ append Darwin command (116.609708ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_PLUGIN_PROFILE_CONTRACT:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:574:7)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:569:47)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:556:3)
+      at async Test.run (node:internal/test_runner/test:1332:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_PLUGIN_PROFILE_CONTRACT:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:569:69
+✖ bypass injected executor (103.765125ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_PLUGIN_PROFILE_CONTRACT:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:574:7)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:569:47)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:556:3)
+      at async Test.run (node:internal/test_runner/test:1332:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_PLUGIN_PROFILE_CONTRACT:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:569:69
+✖ bypass CLI entrypoint (118.718458ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_PLUGIN_PROFILE_CONTRACT:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:574:7)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:569:47)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:556:3)
+      at async Test.run (node:internal/test_runner/test:1332:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_PLUGIN_PROFILE_CONTRACT:/u,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at tools/verification/inventory.test.mjs:582:1
+✖ bounded Turbo source globs cannot be weakened by refreshing the task inventory (105.57025ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /^VERIFICATION_TURBO_INPUTS:/u. Input:
+  
+  'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2'
+  
+      at Object.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:36:10)
+      at expectedException (node:assert:578:17)
+      at expectsError (node:assert:703:21)
+      at strict.rejects (node:assert:769:3)
+      at async TestContext.<anonymous> (file:///Users/sterling/orca/workspaces/curiosity/custom-harness-lab/tools/verification/inventory.test.mjs:590:3)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'VERIFICATION_PACKAGE_DEPENDENCIES:apps/plugin/opencode2',
+    expected: /^VERIFICATION_TURBO_INPUTS:/u,
+    operator: 'match',
+    diff: 'simple'
+  }

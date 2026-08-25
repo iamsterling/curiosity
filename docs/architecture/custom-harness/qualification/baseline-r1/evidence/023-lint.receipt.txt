@@ -1,0 +1,2 @@
+exitCode: 1
+command: bun --no-install --no-env-file run --cwd apps/plugin/opencode2 lint

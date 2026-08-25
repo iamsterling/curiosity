@@ -1,0 +1,1 @@
+$ node --test tools/status/status.test.mjs && node tools/status/status.mjs

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "custom-harness-q1-r2-environment/v1",
+  "focused": {
+    "CI": "1",
+    "DO_NOT_TRACK": "1",
+    "HOME": "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/home",
+    "LC_ALL": "C",
+    "NEXT_TELEMETRY_DISABLED": "1",
+    "NO_UPDATE_NOTIFIER": "1",
+    "PATH": "/Users/sterling/.nvm/versions/node/v24.18.0/bin:/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/node_modules/.bin:/usr/bin:/bin:/usr/sbin:/sbin",
+    "TMPDIR": "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/tmp",
+    "TURBO_NO_UPDATE_NOTIFIER": "1",
+    "TURBO_TELEMETRY_DISABLED": "1",
+    "XDG_CACHE_HOME": "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/xdg/cache",
+    "XDG_CONFIG_HOME": "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/xdg/config",
+    "XDG_DATA_HOME": "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/xdg/data"
+  },
+  "root": {
+    "BUN_INSTALL_CACHE_DIR": "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/tmp/bun-install-cache",
+    "CARGO": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo",
+    "CARGO_CLIPPY": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo-clippy",
+    "CARGO_FMT": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo-fmt",
+    "CARGO_HOME": "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/cargo-home",
+    "CARGO_NET_OFFLINE": "true",
+    "CARGO_TARGET_AARCH64_APPLE_DARWIN_LINKER": "/usr/bin/clang",
+    "CARGO_TARGET_DIR": "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/apps/runtime/native/target",
+    "CI": "1",
+    "DO_NOT_TRACK": "1",
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_TERMINAL_PROMPT": "0",
+    "HOME": "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/home",
+    "LC_ALL": "C",
+    "NEXT_TELEMETRY_DISABLED": "1",
+    "NO_UPDATE_NOTIFIER": "1",
+    "PATH": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin:/Users/sterling/.nvm/versions/node/v24.18.0/bin:/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/node_modules/.bin:/usr/bin:/bin:/usr/sbin:/sbin",
+    "RUSTC": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rustc",
+    "RUSTDOC": "/Users/sterling/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rustdoc",
+    "TMPDIR": "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/tmp",
+    "TURBO_FORCE": "1",
+    "TURBO_NO_UPDATE_NOTIFIER": "1",
+    "TURBO_TELEMETRY_DISABLED": "1",
+    "XDG_CACHE_HOME": "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/xdg/cache",
+    "XDG_CONFIG_HOME": "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/xdg/config",
+    "XDG_DATA_HOME": "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/xdg/data"
+  },
+  "retrieval": {
+    "HOME": "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/home",
+    "LC_ALL": "C",
+    "PATH": "/usr/bin:/bin",
+    "TMPDIR": "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/custom-harness-q1-r2/tmp"
+  }
+}

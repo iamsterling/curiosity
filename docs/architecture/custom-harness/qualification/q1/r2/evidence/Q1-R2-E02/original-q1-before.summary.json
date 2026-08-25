@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "custom-harness-q1-r2-boundary-manifest/v1",
+  "name": "original-q1-before",
+  "recordCount": 75,
+  "aggregateSha256": "a67159486aa143a784f91ec8c5fda318ad108cfb86ddc512cd5b92e00974b32d",
+  "ndjsonPath": "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/docs/architecture/custom-harness/qualification/q1/r2/evidence/Q1-R2-E02/original-q1-before.ndjson",
+  "ndjsonSha256": "13495f70417020eb6eb19afee7b571196aafbced56b5c8369ef09e085f7e864e",
+  "excluded": ["r2/**"]
+}

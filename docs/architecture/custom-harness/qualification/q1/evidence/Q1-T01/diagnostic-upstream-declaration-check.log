@@ -1,0 +1,13 @@
+$ env -i ... bun --no-install --no-env-file node_modules/typescript/bin/tsc -p q1/probes/tsconfig.json
+docs/architecture/custom-harness/qualification/q1/probes/effect-composition.ts(53,3): error TS2775: Assertions require every name in the call target to be declared with an explicit type annotation.
+docs/architecture/custom-harness/qualification/q1/probes/effect-composition.ts(54,3): error TS2775: Assertions require every name in the call target to be declared with an explicit type annotation.
+docs/architecture/custom-harness/qualification/q1/probes/effect-composition.ts(55,3): error TS2775: Assertions require every name in the call target to be declared with an explicit type annotation.
+docs/architecture/custom-harness/qualification/q1/probes/effect-composition.ts(56,3): error TS2775: Assertions require every name in the call target to be declared with an explicit type annotation.
+docs/architecture/custom-harness/qualification/q1/probes/effect-composition.ts(57,3): error TS2775: Assertions require every name in the call target to be declared with an explicit type annotation.
+docs/architecture/custom-harness/qualification/q1/probes/effect-composition.ts(58,3): error TS2775: Assertions require every name in the call target to be declared with an explicit type annotation.
+docs/architecture/custom-harness/qualification/q1/probes/effect-composition.ts(61,3): error TS2775: Assertions require every name in the call target to be declared with an explicit type annotation.
+docs/architecture/custom-harness/qualification/q1/probes/effect-composition.ts(69,3): error TS2775: Assertions require every name in the call target to be declared with an explicit type annotation.
+node_modules/.bun/effect@4.0.0-beta.107/node_modules/effect/dist/Effect.d.ts(12019,52): error TS2304: Cannot find name 'AsyncDisposable'.
+node_modules/.bun/effect@4.0.0-beta.107/node_modules/effect/dist/Effect.d.ts(12019,70): error TS2304: Cannot find name 'Disposable'.
+node_modules/.bun/effect@4.0.0-beta.107/node_modules/effect/dist/ManagedRuntime.d.ts(188,22): error TS2550: Property 'asyncDispose' does not exist on type 'SymbolConstructor'. Do you need to change your target library? Try changing the 'lib' compiler option to 'esnext' or later.
+node_modules/.bun/effect@4.0.0-beta.107/node_modules/effect/dist/Schema.d.ts(10815,57): error TS2694: Namespace '"/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/node_modules/.bun/effect@4.0.0-beta.107/node_modules/effect/dist/SchemaAST"' has no exported member 'Sentinel'.

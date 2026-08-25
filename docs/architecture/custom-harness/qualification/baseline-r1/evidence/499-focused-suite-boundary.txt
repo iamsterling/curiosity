@@ -1,0 +1,5 @@
+suiteExitCode: 1
+restoreExitCode: 0
+inventoryExitCode: 0
+compareExitCode: 0
+scratchAbsent: true

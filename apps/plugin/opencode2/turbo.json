@@ -4,6 +4,9 @@
     "build": {
       "outputs": ["dist/**"]
     },
+    "test": {
+      "dependsOn": ["$TURBO_EXTENDS$", "build"]
+    },
     "m7:prepare": {
       "dependsOn": ["build"]
     }

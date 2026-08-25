@@ -1,0 +1,99 @@
+{
+  "output": "/Users/sterling/orca/workspaces/curiosity/custom-harness-lab/docs/architecture/custom-harness/qualification/baseline-r1/evidence/010-generated-before.json",
+  "roots": [
+    {
+      "path": ".turbo",
+      "state": "absent"
+    },
+    {
+      "path": "apps/docs/.next",
+      "state": "present",
+      "entryCount": 174,
+      "manifestSha256": "8c92e7cd94fb6bd7a9282bc8fd856efc54b69337d7eecd3af8e354e272a387df"
+    },
+    {
+      "path": "apps/docs/.turbo",
+      "state": "present",
+      "entryCount": 3,
+      "manifestSha256": "b6f17d8577ce4b81f28fe7b0fa16b85c6781503a69fea8416bc8d6055bbaf211"
+    },
+    {
+      "path": "apps/docs/next-env.d.ts",
+      "state": "absent"
+    },
+    {
+      "path": "apps/web/.next",
+      "state": "present",
+      "entryCount": 174,
+      "manifestSha256": "3b50779aabc052535b399b019048dbcd5c6f3b52d0227a7642809da915545d9b"
+    },
+    {
+      "path": "apps/web/.turbo",
+      "state": "present",
+      "entryCount": 3,
+      "manifestSha256": "36c5eae6c6844ea5bb240543c10879be5bb4178a940712018b4bcdaf98f4fd81"
+    },
+    {
+      "path": "apps/web/next-env.d.ts",
+      "state": "absent"
+    },
+    {
+      "path": "apps/plugin/opencode2/.turbo",
+      "state": "present",
+      "entryCount": 2,
+      "manifestSha256": "912681269703f381cb9dda5990e26044b3779429e953916c8f5c29569abd70a1"
+    },
+    {
+      "path": "apps/plugin/opencode2/dist",
+      "state": "present",
+      "entryCount": 306,
+      "manifestSha256": "bf0e184c7b37016dea3be8d906a79996f0da486d54a5ae4f97a01fae32cfecbd"
+    },
+    {
+      "path": "apps/plugin/opencode2/assets/manifest.json",
+      "state": "present",
+      "entryCount": 1,
+      "manifestSha256": "8a925dff57744494af96b10d02ce6c39f8b8ca80b9baaa32e37db988be8060c8"
+    },
+    {
+      "path": "apps/runtime/.turbo",
+      "state": "present",
+      "entryCount": 2,
+      "manifestSha256": "54b84a9500aa8f02ebc6b3e1ba66a803c70c7b72e48b0dad74af4c07b8e35e28"
+    },
+    {
+      "path": "apps/runtime/native/target",
+      "state": "present",
+      "entryCount": 6,
+      "manifestSha256": "6b6a9c0d235049a7f59779eaffa3823a40cdca46d13e65041720579d89f72e74"
+    },
+    {
+      "path": "packages/eslint-config/.turbo",
+      "state": "present",
+      "entryCount": 2,
+      "manifestSha256": "64b3c37c9a6d0104fe4bf1b192df6c84023c586c6f99ca8f9aadf9daccb9d36e"
+    },
+    {
+      "path": "packages/typescript-config/.turbo",
+      "state": "present",
+      "entryCount": 2,
+      "manifestSha256": "a11317113a3c9262bff30c168b0308b45fe0df12fe72be5c7afa3a032fd826aa"
+    },
+    {
+      "path": "packages/ui/.turbo",
+      "state": "present",
+      "entryCount": 2,
+      "manifestSha256": "97f21559707dbf7a137209610686b0e9618d10bc063dd17cb0e3e308f27132a2"
+    },
+    {
+      "path": "packages/ui/dist",
+      "state": "present",
+      "entryCount": 7,
+      "manifestSha256": "3450786aea7c562a48818d840db4a9361cdb182bbed48d0378890e0b80fe76b1"
+    },
+    {
+      "path": "apps/runtime/src/turbo-future-source-fixture.ts",
+      "state": "absent"
+    }
+  ]
+}

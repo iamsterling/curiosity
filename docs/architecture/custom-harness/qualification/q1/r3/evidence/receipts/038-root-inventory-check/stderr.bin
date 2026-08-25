@@ -1,0 +1,2 @@
+$ node --test --test-concurrency=1 tools/verification/*.test.mjs && node tools/verification/inventory.mjs
+error: script "inventory:check" exited with code 1

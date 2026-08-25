@@ -18,8 +18,8 @@ test("artifact provenance hashes the workspace lock and records its exact OpenCo
     provenance.inputs.find(({ file }) => file === "workspace:bun.lock")?.sha256,
     createHash("sha256").update(lockBytes).digest("hex"),
   )
-  assert.equal(provenance.resolutions.plugin.integrity, "sha512-AeK5lPPpy/3IO7zgmLvn9uaQD4OzN8EYQlxFk8P5WxOb1THLAzNs3c8eQJ8ZY2k6SFgdZJ/Vr+0Czo06yEI0RA==")
-  assert.equal(provenance.resolutions.host.integrity, "sha512-suz/2lpQv2yb6Z45OJeE9bQnBUrNj1ed5qXHLp+BNmowD8ltGdZ8CatOyT7tZBmmG7e3XQOL7+YB8B8SelcaQw==")
+  assert.equal(provenance.resolutions.plugin.integrity, "sha512-tNk/rvUFaKGnuqKdqFbafxjOahFLiJHg10MUyKso6M1W+UZ9JuebW1ggWlgEXCKZ/w5xEpt3vR1wCzaRIeK7yw==")
+  assert.equal(provenance.resolutions.host.integrity, "sha512-9lVIZ0fNsNtggMYzNpEW8+/Lh9ph45ZtoUNSVxBw9uFzq7sCjjwuGoMI1e21l/66l15kuaLRWjsvLoAMj4N/0w==")
 })
 
 test("provenance includes untracked runtime sources and rejects a stale manifest after one changes", async () => {
