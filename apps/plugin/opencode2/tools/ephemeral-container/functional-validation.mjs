@@ -8,6 +8,7 @@ import {
   DOCUMENTED_HOST_COMMAND_IDS,
   EXPECTED_AGENTS,
   EXPECTED_COMMAND_IDS,
+  EXPECTED_DEFAULT_AGENT,
   EXPECTED_HOOKS,
   EXPECTED_PLUGIN_ID,
   EXPECTED_PLUGIN_VERSION,
@@ -213,7 +214,7 @@ export const validateInstalledPluginSetup = async ({ directory, pluginEntry, hos
     const hooks = registrations.filter((id) => id.startsWith("session:") || id.startsWith("tool:execute.")).sort()
     requireValue(JSON.stringify(hooks) === JSON.stringify(EXPECTED_HOOKS), "SETUP_INSTRUMENTATION_HOOK_SURFACE_MISMATCH", hooks)
     requireValue(eventSubscriptions === 1, "SETUP_INSTRUMENTATION_EVENT_SUBSCRIPTION_MISMATCH", eventSubscriptions)
-    requireValue(agents.get("default") === "orchestrator", "SETUP_INSTRUMENTATION_DEFAULT_AGENT_MISMATCH", agents.get("default"))
+    requireValue(agents.get("default") === EXPECTED_DEFAULT_AGENT, "SETUP_INSTRUMENTATION_DEFAULT_AGENT_MISMATCH", agents.get("default"))
 
     const approval = definitions.find(({ name }) => name === "ledger_approval_status")
     const approvalResult = await approval.execute({}, { sessionID: "setup-validation" })
@@ -415,7 +416,7 @@ const validateCatalogs = async ({ configRoot, host, packageSpec, project }) => {
     documents,
   )
   const endpointDefaults = documents.map((info) => info?.default_agent).filter((value) => value !== undefined)
-  requireValue(endpointDefaults.every((value) => value === "orchestrator"), "CONTAINER_HOST_CONFIG_DEFAULT_AGENT_MISMATCH", endpointDefaults)
+  requireValue(endpointDefaults.every((value) => value === EXPECTED_DEFAULT_AGENT), "CONTAINER_HOST_CONFIG_DEFAULT_AGENT_MISMATCH", endpointDefaults)
   return {
     agents: { count: Object.keys(EXPECTED_AGENTS).length, ids: sorted(Object.keys(EXPECTED_AGENTS)), hostCatalogCount: agentCatalog.length },
     commands: {
@@ -473,11 +474,11 @@ const activeProfile = async ({ configRoot, env, host: executable, hostVersion, p
       requireValue(event.sourceKind === "host", "CONTAINER_HOST_CAPTURE_SOURCE_MISMATCH", event)
     }
     if (activity.runtimeDefaultAgent !== null) {
-      requireValue(activity.runtimeDefaultAgent === "orchestrator", "CONTAINER_HOST_RUNTIME_DEFAULT_AGENT_MISMATCH", activity.runtimeDefaultAgent)
+      requireValue(activity.runtimeDefaultAgent === EXPECTED_DEFAULT_AGENT, "CONTAINER_HOST_RUNTIME_DEFAULT_AGENT_MISMATCH", activity.runtimeDefaultAgent)
     }
     return {
       ...catalogs,
-      config: { ...catalogs.config, runtimeDefaultAgent: activity.runtimeDefaultAgent, setupInstrumentationDefault: "orchestrator" },
+      config: { ...catalogs.config, runtimeDefaultAgent: activity.runtimeDefaultAgent, setupInstrumentationDefault: EXPECTED_DEFAULT_AGENT },
       events: {
         count: events.length,
         hostVersion,

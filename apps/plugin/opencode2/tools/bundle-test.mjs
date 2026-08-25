@@ -7,7 +7,7 @@ import test from "node:test"
 import { exportBundle, validateBundle } from "./bundle-assets.mjs"
 
 const overlay = {
-  host: { apiVersion: "1" }, defaultAgent: "orchestrator",
+  host: { apiVersion: "1" }, defaultAgent: "generalist",
   enabledAgents: ["orchestrator", "generalist", "analyst", "implementer", "strategist", "reviewer", "researcher", "worker"],
   models: Object.fromEntries(["orchestrator", "generalist", "analyst", "implementer", "strategist", "reviewer", "researcher", "worker"].map((role) => [role, "operator/test-model"])),
   permissions: [{ action: "read", resource: "*", effect: "allow" }], plugins: ["test/plugin"], experimental: { subagent_depth: 3 },

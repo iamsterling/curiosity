@@ -65,16 +65,19 @@ const EXPECTED_TOOL_IDS = [
   "native_loop_stop", "web_search",
 ]
 
-test("setup installs the bundled agent suite and selects orchestrator without user config", async () => {
+test("setup installs the bundled agent suite and selects direct execution without user config", async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), "plugin-agents-"))
   const definitions = new Map()
   try {
     const cleanup = await plugin.setup(contextFor(directory, [], definitions))
-    assert.equal(definitions.get("agent:default"), "orchestrator")
+    assert.equal(definitions.get("agent:default"), "generalist")
+    assert.equal(definitions.get("agent:generalist").mode, "primary")
     assert.equal(definitions.get("agent:orchestrator").mode, "primary")
-    assert.match(definitions.get("agent:orchestrator").system, /Delegate-only coordinator/)
+    assert.match(definitions.get("agent:generalist").system, /Default to direct execution/)
+    assert.match(definitions.get("agent:orchestrator").system, /Explicit coordination only/)
+    assert.match(definitions.get("agent:orchestrator").system, /cap work at two child sessions/)
     assert.equal("model" in definitions.get("agent:orchestrator"), false)
-    for (const id of ["analyst", "generalist", "implementer", "researcher", "reviewer", "strategist", "worker"])
+    for (const id of ["analyst", "implementer", "researcher", "reviewer", "strategist", "worker"])
       assert.equal(definitions.get(`agent:${id}`).mode, "subagent", id)
     assert.deepEqual(definitions.get("agent:researcher").permissions.slice(-2), [
       { action: "web_search", resource: "*", effect: "allow" },
@@ -123,7 +126,7 @@ test("setup accepts the reviewed beta-17595 host ABI", async () => {
     const context = contextFor(directory, [], definitions)
     context.app.version = "0.0.0-beta-17595"
     const cleanup = await plugin.setup(context)
-    assert.equal(definitions.get("agent:default"), "orchestrator")
+    assert.equal(definitions.get("agent:default"), "generalist")
     await cleanup?.()
   } finally { await rm(directory, { recursive: true, force: true }) }
 })

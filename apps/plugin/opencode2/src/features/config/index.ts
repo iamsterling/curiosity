@@ -13,7 +13,7 @@ export const registerPluginConfig = async (context: OpenCodeContext): Promise<vo
         agent.permissions.unshift(...searchPermissionsFor(id));
       });
     }
-    agents.default("orchestrator");
+    agents.default("generalist");
   });
 };
 

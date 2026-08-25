@@ -1,6 +1,7 @@
 export const EXPECTED_HOST_VERSION = "0.0.0-beta-17595"
 export const EXPECTED_PLUGIN_ID = "iamsterling.opencode2-config"
 export const EXPECTED_PLUGIN_VERSION = "0.1.0"
+export const EXPECTED_DEFAULT_AGENT = "generalist"
 
 export const EXPECTED_README_PLUGIN_IDS = Object.freeze([
   "iamsterling.opencode2-config",
@@ -82,7 +83,7 @@ export const EXPECTED_README_PLUGIN_IDS = Object.freeze([
 
 export const EXPECTED_AGENTS = Object.freeze({
   analyst: { mode: "subagent", search: "deny" },
-  generalist: { mode: "subagent", search: "deny" },
+  generalist: { mode: "primary", search: "deny" },
   implementer: { mode: "subagent", search: "deny" },
   orchestrator: { mode: "primary", search: "deny" },
   researcher: { mode: "subagent", search: "allow" },

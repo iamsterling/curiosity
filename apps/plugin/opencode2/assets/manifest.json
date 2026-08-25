@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedReleaseDigest": "sha256:d5c2cec7c512ee8a6e79ededb12a50692b299ef8fcac98fbaee6760ec2df3d14",
+  "generatedReleaseDigest": "sha256:799468b76e8f82f98400ca3c5b2762628d649e1a3b3ffd29f47452ea8fdc2cb2",
   "assets": [
     {
       "id": "bug",
@@ -470,7 +470,7 @@
       "dependencies": [],
       "owningFeature": "platform",
       "status": "active",
-      "digest": "sha256:4b0d593647d27ee4d3770eb2e72e3f1c9891ccb1478218d2ddcfc9049685780c"
+      "digest": "sha256:e295251a6603b1e082f2895cdb67dd616362a1c90871e0b24f4b3632e7f56740"
     },
     {
       "id": "agents/implementer",
@@ -490,7 +490,7 @@
       "dependencies": [],
       "owningFeature": "platform",
       "status": "active",
-      "digest": "sha256:226078e0c36e5fecc3eca78b192a598087d72a85b2ff0811b91c407d933855cc"
+      "digest": "sha256:da38d6d4a86c04b2399c85a559f1f9bea2ef4892ed896b898c4cdb6779d10f7b"
     },
     {
       "id": "agents/plan",
@@ -550,7 +550,7 @@
       "dependencies": [],
       "owningFeature": "platform",
       "status": "active",
-      "digest": "sha256:6cc00f75d7333ca0c4d2395d810c5afcf5ff27f19b726daeaa241677eff0cc6e"
+      "digest": "sha256:9ff9f942c26735a9906cf3f68054853584f84c04132db2a01dc5184b7ade814e"
     },
     {
       "id": "overlay.schema",

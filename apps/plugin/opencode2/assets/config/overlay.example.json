@@ -1,6 +1,6 @@
 {
   "host": { "apiVersion": "1" },
-  "defaultAgent": "orchestrator",
+  "defaultAgent": "generalist",
   "enabledAgents": ["orchestrator", "generalist", "analyst", "implementer", "strategist", "reviewer", "researcher", "worker"],
   "models": {
     "orchestrator": "REQUIRED_PROVIDER/REQUIRED_MODEL",

@@ -4,12 +4,12 @@
     {
       "historicalPath": "config/agents/orchestrator.json",
       "currentPath": "assets/config/agents/orchestrator.json",
-      "currentDigest": "sha256:226078e0c36e5fecc3eca78b192a598087d72a85b2ff0811b91c407d933855cc"
+      "currentDigest": "sha256:da38d6d4a86c04b2399c85a559f1f9bea2ef4892ed896b898c4cdb6779d10f7b"
     },
     {
       "historicalPath": "config/agents/generalist.json",
       "currentPath": "assets/config/agents/generalist.json",
-      "currentDigest": "sha256:4b0d593647d27ee4d3770eb2e72e3f1c9891ccb1478218d2ddcfc9049685780c"
+      "currentDigest": "sha256:e295251a6603b1e082f2895cdb67dd616362a1c90871e0b24f4b3632e7f56740"
     },
     {
       "historicalPath": "config/agents/analyst.json",
@@ -319,7 +319,7 @@
     {
       "historicalPath": "config/overlay.example.json",
       "currentPath": "assets/config/overlay.example.json",
-      "currentDigest": "sha256:6cc00f75d7333ca0c4d2395d810c5afcf5ff27f19b726daeaa241677eff0cc6e"
+      "currentDigest": "sha256:9ff9f942c26735a9906cf3f68054853584f84c04132db2a01dc5184b7ade814e"
     },
     {
       "historicalPath": "scripts/bundle-assets.mjs",
@@ -329,7 +329,7 @@
     {
       "historicalPath": "scripts/bundle-test.mjs",
       "currentPath": "tools/bundle-test.mjs",
-      "currentDigest": "sha256:8831542688b51221c0b6b7f21e3197df8f22f9c08fc00710f885daf54c03059d"
+      "currentDigest": "sha256:2805fe00c55156c16d5d2af3603b23189f370ead9019fa52b6536a2902fc5351"
     },
     {
       "historicalPath": "test/runtime-contract.test.mjs",
