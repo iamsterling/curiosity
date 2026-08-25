@@ -182,6 +182,13 @@ test("neutral tool is public and the shipped branded name is a compatibility ali
   assert.equal(calls, 0)
 })
 
+test("public-web search is enforced researcher-only at execution, independent of catalog ordering", async () => {
+  const definitions = createSearchDefinitions(options, async () => json({ results: [] }))
+  await assert.rejects(definitions[0].execute({ query: "x" }, { agent: "generalist" }), { code: "WEB_SEARCH_RESEARCHER_REQUIRED" })
+  const result = await definitions[0].execute({ query: "x" }, { agent: "researcher" })
+  assert.deepEqual(JSON.parse(result.content).results, [])
+})
+
 test("explicit runtime backend is researcher-only, no-network, identical by alias, and never falls back", async () => {
   let fetches = 0
   let calls = 0

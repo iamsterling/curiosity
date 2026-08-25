@@ -1,6 +1,7 @@
 import { executeSearxngSearch, type Fetcher, type SearchOptions } from "./searxng-adapter.js";
 import { createRuntimeSearchExecutor, type RuntimeSearchOptions } from "./runtime-adapter.js";
 import { DiagnosticError } from "../../core/diagnostics/diagnostic.js";
+import { Effect } from "effect";
 
 export { SEARCH_API_ENDPOINT } from "./searxng-adapter.js";
 export type { RuntimeSearchOptions } from "./runtime-adapter.js";
@@ -36,7 +37,14 @@ export const runtimeSearchOptions = (options: unknown): RuntimeSearchOptions | u
 export const createSearchDefinitions = (options: SearchBackendOptions = {}, fetcher: Fetcher = fetch) => {
   const runtimeOptions = runtimeSearchOptions(options);
   const runtime = runtimeOptions ? createRuntimeSearchExecutor(runtimeOptions) : undefined;
-  const execute = runtime?.execute ?? ((value: unknown) => executeWebSearch(value, options as SearchOptions, fetcher));
+  const backendExecute = runtime?.execute ?? ((value: unknown) => executeWebSearch(value, options as SearchOptions, fetcher));
+  const execute = (value: unknown, context: { agent?: unknown } = {}) => {
+    if (context.agent !== "researcher") {
+      const error = new DiagnosticError("WEB_SEARCH_RESEARCHER_REQUIRED");
+      return runtime ? Effect.fail(error) : Promise.reject(error);
+    }
+    return backendExecute(value, context as never);
+  };
   const definitions = [
     {
       name: "web_search",
