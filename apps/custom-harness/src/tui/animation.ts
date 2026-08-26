@@ -1,7 +1,9 @@
+import { TUI_DESIGN_TOKENS } from "./design-system.js";
+
 export type BrailleAnimation = "breathe" | "orbit" | "wave";
 export type MotionPreference = "full" | "reduced";
 
-export const ANIMATION_INTERVAL_MS = 80;
+export const ANIMATION_INTERVAL_MS = TUI_DESIGN_TOKENS.motion.activeFrameMs;
 
 const frames: Readonly<Record<BrailleAnimation, readonly string[]>> = {
   breathe: Object.freeze([

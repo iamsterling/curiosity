@@ -1,26 +1,30 @@
+import { TUI_DESIGN_TOKENS } from "./design-system.js";
+
 export interface TerminalTheme {
-  readonly accent: (value: string) => string;
-  readonly assistant: (value: string) => string;
+  readonly activity: (value: string) => string;
   readonly base: string;
   readonly bold: (value: string) => string;
   readonly canvas: (value: string) => string;
   readonly code: (value: string) => string;
   readonly danger: (value: string) => string;
-  readonly effort: (value: string) => string;
   readonly enabled: boolean;
-  readonly info: (value: string) => string;
+  readonly focus: (value: string) => string;
+  readonly heading: (value: string) => string;
   readonly link: (value: string) => string;
   readonly muted: (value: string) => string;
-  readonly panel: (value: string) => string;
-  readonly panelEffort: (value: string) => string;
-  readonly panelMuted: (value: string) => string;
-  readonly panelText: (value: string) => string;
-  readonly primary: (value: string) => string;
+  readonly quietSurface: (value: string) => string;
+  readonly quietSurfaceMuted: (value: string) => string;
+  readonly quietSurfaceText: (value: string) => string;
   readonly reset: string;
+  readonly rule: (value: string) => string;
   readonly success: (value: string) => string;
-  readonly user: (value: string) => string;
-  readonly userPanel: (value: string) => string;
-  readonly userPanelMuted: (value: string) => string;
+  readonly surface: (value: string) => string;
+  readonly surfaceActivity: (value: string) => string;
+  readonly surfaceMuted: (value: string) => string;
+  readonly surfaceStatus: (value: string) => string;
+  readonly surfaceText: (value: string) => string;
+  readonly text: (value: string) => string;
+  readonly warning: (value: string) => string;
 }
 
 const foreground = (hex: string): string => {
@@ -40,44 +44,59 @@ const style =
     enabled ? `\u001b[${code}m${value}${base}` : value;
 
 export const makeTerminalTheme = (enabled: boolean): TerminalTheme => {
-  const canvasCode = `${foreground("#EEEEEE")};${background("#0A0A0A")}`;
+  const { color } = TUI_DESIGN_TOKENS;
+  const canvasCode = `${foreground(color.textPrimary)};${background(color.canvas)}`;
   const base = enabled ? `\u001b[${canvasCode}m` : "";
-  const panelCode = background("#1E1E1E");
-  const userPanelCode = background("#141414");
+  const surfaceCode = background(color.surface);
+  const quietSurfaceCode = background(color.surfaceQuiet);
   return Object.freeze({
-    accent: style(enabled, base, foreground("#9D7CD8")),
-    assistant: style(enabled, base, foreground("#EEEEEE")),
+    activity: style(enabled, base, foreground(color.activity)),
     base,
     bold: style(enabled, base, "1"),
     canvas: style(enabled, base, canvasCode),
-    code: style(enabled, base, foreground("#7FD88F")),
-    danger: style(enabled, base, foreground("#E06C75")),
-    effort: style(enabled, base, `1;${foreground("#F5A742")}`),
+    code: style(enabled, base, foreground(color.code)),
+    danger: style(enabled, base, foreground(color.danger)),
     enabled,
-    info: style(enabled, base, foreground("#56B6C2")),
-    link: style(enabled, base, `4;${foreground("#FAB283")}`),
-    muted: style(enabled, base, foreground("#808080")),
-    panel: style(enabled, base, panelCode),
-    panelEffort: style(
+    focus: style(enabled, base, foreground(color.focus)),
+    heading: style(enabled, base, `1;${foreground(color.textPrimary)}`),
+    link: style(enabled, base, `4;${foreground(color.focus)}`),
+    muted: style(enabled, base, foreground(color.textMuted)),
+    quietSurface: style(enabled, base, quietSurfaceCode),
+    quietSurfaceMuted: style(
       enabled,
       base,
-      `1;${foreground("#F5A742")};${panelCode}`,
+      `${foreground(color.textMuted)};${quietSurfaceCode}`,
     ),
-    panelMuted: style(enabled, base, `${foreground("#808080")};${panelCode}`),
-    panelText: style(enabled, base, `${foreground("#EEEEEE")};${panelCode}`),
-    primary: style(enabled, base, foreground("#FAB283")),
+    quietSurfaceText: style(
+      enabled,
+      base,
+      `${foreground(color.textPrimary)};${quietSurfaceCode}`,
+    ),
     reset: enabled ? "\u001b[0m" : "",
-    success: style(enabled, base, foreground("#7FD88F")),
-    user: style(enabled, base, foreground("#5C9CF5")),
-    userPanel: style(
+    rule: style(enabled, base, foreground(color.line)),
+    success: style(enabled, base, foreground(color.success)),
+    surface: style(enabled, base, surfaceCode),
+    surfaceActivity: style(
       enabled,
       base,
-      `${foreground("#EEEEEE")};${userPanelCode}`,
+      `${foreground(color.activity)};${surfaceCode}`,
     ),
-    userPanelMuted: style(
+    surfaceMuted: style(
       enabled,
       base,
-      `${foreground("#808080")};${userPanelCode}`,
+      `${foreground(color.textMuted)};${surfaceCode}`,
     ),
+    surfaceStatus: style(
+      enabled,
+      base,
+      `${foreground(color.success)};${surfaceCode}`,
+    ),
+    surfaceText: style(
+      enabled,
+      base,
+      `${foreground(color.textPrimary)};${surfaceCode}`,
+    ),
+    text: style(enabled, base, foreground(color.textPrimary)),
+    warning: style(enabled, base, foreground(color.warning)),
   });
 };

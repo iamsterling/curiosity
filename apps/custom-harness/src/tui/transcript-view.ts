@@ -5,6 +5,7 @@ import { clip, modelParts, padPlain, place, wrapPlain } from "./frame-text.js";
 import { renderMarkdown } from "./markdown.js";
 import { sanitizeTerminalText } from "./terminal-text.js";
 import type { TerminalTheme } from "./theme.js";
+import { TUI_DESIGN_TOKENS } from "./design-system.js";
 
 const durationLabel = (durationMs: number | undefined): string | undefined => {
   if (durationMs === undefined || durationMs <= 0) return undefined;
@@ -16,11 +17,11 @@ export const renderPanel = (
   text: string,
   width: number,
   theme: TerminalTheme,
-  rule: (value: string) => string = theme.user,
+  rule: (value: string) => string = theme.rule,
 ): readonly string[] => {
   const innerWidth = Math.max(1, width - 1);
   const row = (content: string): string =>
-    `${rule("│")}${theme.userPanel(padPlain(content, innerWidth))}`;
+    `${rule(TUI_DESIGN_TOKENS.glyph.rail)}${theme.quietSurfaceText(padPlain(content, innerWidth))}`;
   return [
     row(""),
     ...wrapPlain(text, Math.max(1, innerWidth - 4)).map((line) =>
@@ -35,24 +36,25 @@ const renderAssistant = (
   width: number,
   theme: TerminalTheme,
 ): readonly string[] => {
-  const inset = 3;
+  const inset = TUI_DESIGN_TOKENS.layout.responseInset;
   const markdown = renderMarkdown(message.text, {
     theme,
     width: Math.max(24, width - inset),
   });
   const { model } = modelParts(message.modelId ?? "custom:unknown");
   const suffix = [
-    "·",
     sanitizeTerminalText(model),
-    durationLabel(message.durationMs) ? "·" : undefined,
     durationLabel(message.durationMs),
   ]
     .filter(Boolean)
-    .join(" ");
+    .join(" / ");
   return [
     ...markdown.split("\n").map((line) => place(inset, line)),
     "",
-    place(inset, `${theme.user("▣")} Chat ${theme.muted(suffix)}`),
+    place(
+      inset,
+      `${theme.rule(TUI_DESIGN_TOKENS.glyph.ruleLead)} ${theme.muted(`RESPONSE / ${suffix}`)}`,
+    ),
   ];
 };
 
@@ -61,7 +63,7 @@ const renderStreamingAssistant = (
   width: number,
   theme: TerminalTheme,
 ): readonly string[] => {
-  const inset = 3;
+  const inset = TUI_DESIGN_TOKENS.layout.responseInset;
   const markdown = renderMarkdown(text, {
     theme,
     width: Math.max(24, width - inset),
@@ -75,14 +77,14 @@ const renderError = (
   theme: TerminalTheme,
 ): readonly string[] => {
   const innerWidth = Math.max(1, width - 1);
-  const row = (content: string): string =>
-    `${theme.danger("│")}${theme.userPanelMuted(padPlain(content, innerWidth))}`;
+  const row = (content: string, muted = false): string =>
+    `${theme.danger(TUI_DESIGN_TOKENS.glyph.rail)}${(muted ? theme.quietSurfaceMuted : theme.quietSurfaceText)(padPlain(content, innerWidth))}`;
   return [
     row(""),
     ...wrapPlain(error, Math.max(1, innerWidth - 4)).map((line) =>
       row(`  ${line}`),
     ),
-    row("  Retry after resolving the provider or connection."),
+    row("  Retry after resolving the provider or connection.", true),
     row(""),
   ];
 };
@@ -114,8 +116,8 @@ export const renderConversation = (
     result.push(
       "",
       place(
-        3,
-        `${theme.user(brailleFrame("orbit", state.animationTick, state.motion))} ${theme.muted("Working…")}`,
+        TUI_DESIGN_TOKENS.layout.responseInset,
+        `${theme.activity(brailleFrame("orbit", state.animationTick, state.motion))} ${theme.muted("Working…")}`,
       ),
     );
   if (state.error) result.push("", ...renderError(state.error, width, theme));
@@ -128,10 +130,18 @@ export const renderTitlePanel = (
   compact: boolean,
   theme: TerminalTheme,
 ): readonly string[] => {
-  const safeTitle = clip(sanitizeTerminalText(title), Math.max(1, width - 5));
-  if (compact)
-    return [
-      `${theme.muted("│")}${theme.userPanel(padPlain(`  # ${safeTitle}`, width - 1))}`,
-    ];
-  return renderPanel(`# ${safeTitle}`, width, theme, theme.muted);
+  const prefix = compact ? "T / " : "THREAD / ";
+  const safeTitle = clip(
+    sanitizeTerminalText(title),
+    Math.max(1, width - visibleLength(prefix) - 2),
+  );
+  const occupied = visibleLength(prefix) + visibleLength(safeTitle) + 1;
+  const rule = TUI_DESIGN_TOKENS.glyph.rule.repeat(
+    Math.max(0, width - occupied),
+  );
+  return [
+    `${theme.muted(prefix)}${theme.heading(safeTitle)} ${theme.rule(rule)}`,
+  ];
 };
+
+const visibleLength = (value: string): number => Bun.stringWidth(value);

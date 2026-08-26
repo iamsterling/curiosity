@@ -2,12 +2,9 @@ import type { TuiFrameState } from "./frame-types.js";
 import { clip, modelParts, padPlain, visibleWidth } from "./frame-text.js";
 import { sanitizeTerminalText } from "./terminal-text.js";
 import type { TerminalTheme } from "./theme.js";
+import { TUI_DESIGN_TOKENS } from "./design-system.js";
 
-export const LOGO = [
-  "█▀▀ █ █ █▀▄ ▀█▀ █▀█ █▀▀ ▀█▀ ▀█▀ █ █",
-  "█   █ █ █▀▄  █  █ █ ▀▀█  █   █  ▀█▀",
-  "▀▀▀ ▀▀▀ ▀ ▀ ▀▀▀ ▀▀▀ ▀▀▀ ▀▀▀  ▀   █ ",
-] as const;
+export const LOGO = ["C U R I O S I T Y", "SYSTEM / READY"] as const;
 
 export interface ComposerView {
   readonly cursorColumn?: number;
@@ -66,17 +63,47 @@ const metadata = (
   const safeModel = sanitizeTerminalText(model);
   const safeProvider = sanitizeTerminalText(provider);
   const safeEffort = sanitizeTerminalText(state.effort);
-  const providerPart = compact ? "" : ` ${safeProvider}`;
-  const reserved = 2 + 4 + 3 + providerPart.length + 3 + safeEffort.length;
-  const clippedModel = clip(safeModel, Math.max(4, width - reserved));
-  const plain = `  Chat · ${clippedModel}${providerPart} · ${safeEffort}`;
+  const status = state.status === "working" ? "ACTIVE" : "READY";
+
+  if (width < 40) {
+    const clippedModel = clip(
+      safeModel,
+      Math.max(4, width - status.length - 5),
+    );
+    const plain = `  ${clippedModel}`;
+    const gap = " ".repeat(
+      Math.max(1, width - visibleWidth(plain) - status.length),
+    );
+    return (
+      theme.surface("  ") +
+      theme.surfaceText(clippedModel) +
+      theme.surface(gap) +
+      (state.status === "working"
+        ? theme.surfaceActivity(status)
+        : theme.surfaceStatus(status))
+    );
+  }
+
+  const providerPart = compact ? "" : ` · ${safeProvider}`;
+  const fixed = `  CHAT / ${providerPart} / EFFORT ${safeEffort} ${status}`;
+  const clippedModel = clip(
+    safeModel,
+    Math.max(4, width - visibleWidth(fixed)),
+  );
+  const plain = `  CHAT / ${clippedModel}${providerPart} / EFFORT ${safeEffort}`;
+  const gap = " ".repeat(
+    Math.max(1, width - visibleWidth(plain) - status.length),
+  );
   return (
-    theme.panelText("  Chat") +
-    theme.panelMuted(" · ") +
-    theme.panelText(clippedModel) +
-    theme.panelMuted(`${providerPart} · `) +
-    theme.panelEffort(safeEffort) +
-    theme.panel(" ".repeat(Math.max(0, width - visibleWidth(plain))))
+    theme.surface("  ") +
+    theme.surfaceMuted("CHAT / ") +
+    theme.surfaceText(clippedModel) +
+    theme.surfaceMuted(`${providerPart} / EFFORT `) +
+    theme.surfaceText(safeEffort) +
+    theme.surface(gap) +
+    (state.status === "working"
+      ? theme.surfaceActivity(status)
+      : theme.surfaceStatus(status))
   );
 };
 
@@ -97,13 +124,11 @@ export const renderComposer = (
   const visibleRows = input.lines.slice(firstRow, firstRow + maxRows);
   const body = state.input
     ? visibleRows.map((line) =>
-        theme.panelText(padPlain(`  ${line}`, innerWidth)),
+        theme.surfaceText(padPlain(`  ${line}`, innerWidth)),
       )
-    : [
-        theme.panelMuted(
-          padPlain('  Ask anything... "What should we build?"', innerWidth),
-        ),
-      ];
+    : [theme.surfaceMuted(padPlain("  Ask Curiosity…", innerWidth))];
+  const rail = state.status === "working" ? theme.activity : theme.focus;
+  const { glyph } = TUI_DESIGN_TOKENS;
   return {
     ...(state.status === "idle"
       ? {
@@ -112,17 +137,17 @@ export const renderComposer = (
         }
       : {}),
     lines: [
-      `${theme.user("│")}${theme.panel(" ".repeat(innerWidth))}`,
-      ...body.map((line) => `${theme.user("│")}${line}`),
-      `${theme.user("│")}${metadata(innerWidth, state, theme, compact)}`,
-      `${theme.user("╹")}${theme.panel(" ".repeat(innerWidth))}`,
+      `${rail(glyph.railStart)}${theme.surface(" ".repeat(innerWidth))}`,
+      ...body.map((line) => `${rail(glyph.rail)}${line}`),
+      `${rail(glyph.rail)}${metadata(innerWidth, state, theme, compact)}`,
+      `${rail(glyph.railEnd)}${theme.surface(" ".repeat(innerWidth))}`,
     ],
   };
 };
 
 export const renderLogoLine = (line: string, theme: TerminalTheme): string => {
-  const split = Math.floor(line.length * 0.47);
-  return `${theme.muted(line.slice(0, split))}${theme.bold(line.slice(split))}`;
+  if (line === LOGO[0]) return theme.heading(line);
+  return `${theme.success(TUI_DESIGN_TOKENS.glyph.status)} ${theme.muted(line)}`;
 };
 
 export const renderFooter = (
@@ -130,13 +155,13 @@ export const renderFooter = (
   width: number,
   theme: TerminalTheme,
 ): string => {
-  const left = clip(
+  const status = " KERNEL / DURABLE";
+  const workspacePrefix = width < 72 ? "" : "WORKSPACE / ";
+  const left = `${workspacePrefix}${clip(
     sanitizeTerminalText(state.workingDirectory),
-    Math.max(8, width - 18),
-  );
-  const right = "○ durable";
-  const gap = " ".repeat(
-    Math.max(1, width - visibleWidth(left) - right.length),
-  );
-  return theme.muted(`${left}${gap}${right}`);
+    Math.max(8, width - visibleWidth(status) - workspacePrefix.length - 4),
+  )}`;
+  const rightWidth = 1 + visibleWidth(status);
+  const gap = " ".repeat(Math.max(1, width - visibleWidth(left) - rightWidth));
+  return `${theme.muted(left)}${gap}${theme.success(TUI_DESIGN_TOKENS.glyph.status)}${theme.muted(status)}`;
 };

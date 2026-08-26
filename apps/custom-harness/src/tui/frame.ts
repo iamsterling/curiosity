@@ -9,6 +9,7 @@ import { fitLine, place, setLine, visibleWidth } from "./frame-text.js";
 import { sanitizeTerminalText } from "./terminal-text.js";
 import type { TerminalTheme } from "./theme.js";
 import { renderConversation, renderTitlePanel } from "./transcript-view.js";
+import { TUI_DESIGN_TOKENS } from "./design-system.js";
 
 export type { TerminalFrame, TuiFrameState } from "./frame-types.js";
 
@@ -18,19 +19,26 @@ export const renderTuiFrame = (
 ): TerminalFrame => {
   const width = Math.max(20, state.columns - 1);
   const height = Math.max(12, state.rows);
-  const compact = width < 80 || height < 30;
+  const { layout } = TUI_DESIGN_TOKENS;
+  const compact = width < layout.compactColumns || height < layout.compactRows;
   const lines = Array.from({ length: height }, () => "");
   const active =
     state.messages.length > 0 ||
     Boolean(state.submittedText) ||
     Boolean(state.streamingText) ||
     Boolean(state.error);
+  const availableWidth = Math.max(20, width - layout.contentInset * 2);
+  const contentWidth = Math.min(layout.readingWidth, availableWidth);
+  const contentColumn = Math.max(
+    layout.contentInset,
+    Math.floor((width - contentWidth) / 2),
+  );
   const composerWidth = active
-    ? Math.max(20, width - 4)
-    : Math.min(75, Math.max(20, width - 4));
+    ? contentWidth
+    : Math.min(layout.idleComposerWidth, availableWidth);
   const composerColumn = active
-    ? 2
-    : Math.max(2, Math.floor((width - composerWidth) / 2));
+    ? contentColumn
+    : Math.max(layout.contentInset, Math.floor((width - composerWidth) / 2));
   const composer = renderComposer(state, composerWidth, compact, theme);
   let composerRow = height - composer.lines.length - 4;
 
@@ -50,8 +58,6 @@ export const renderTuiFrame = (
   }
 
   if (active) {
-    const contentColumn = 2;
-    const contentWidth = Math.max(20, width - 4);
     const titleRows = renderTitlePanel(
       sanitizeTerminalText(
         state.threadTitle ?? state.submittedText ?? "Thread",
@@ -80,10 +86,12 @@ export const renderTuiFrame = (
   );
   const hints =
     state.status === "working"
-      ? theme.muted("working")
-      : compact
-        ? theme.muted("/new   /quit")
-        : theme.muted("/new  new thread    /quit  exit");
+      ? theme.activity("● ACTIVE")
+      : state.input
+        ? theme.muted("↵ send   ctrl+j newline")
+        : compact
+          ? theme.muted("/new   /quit")
+          : theme.muted("/new  new thread    /quit  exit");
   setLine(
     lines,
     composerRow + composer.lines.length,

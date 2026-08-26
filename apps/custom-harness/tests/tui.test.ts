@@ -8,10 +8,7 @@ import {
   type TuiHarness,
   type TuiScreenTerminal,
 } from "../src/tui/session.js";
-import {
-  resolveTuiAgentId,
-  resolveTuiConfig,
-} from "../src/tui/config.js";
+import { resolveTuiAgentId, resolveTuiConfig } from "../src/tui/config.js";
 import {
   resolveAiSdkEffort,
   resolveAiSdkModelId,
@@ -21,6 +18,7 @@ import { renderTuiFrame, type TerminalFrame } from "../src/tui/frame.js";
 import type { TuiKey } from "../src/tui/screen-terminal.js";
 import { makeTerminalTheme } from "../src/tui/theme.js";
 import { brailleFrame, resolveMotionPreference } from "../src/tui/animation.js";
+import { TUI_DESIGN_TOKENS } from "../src/tui/design-system.js";
 
 describe("custom harness TUI", () => {
   test("accepts a prompt immediately and streams through a signed chat turn", async () => {
@@ -43,7 +41,11 @@ describe("custom harness TUI", () => {
     const harness: TuiHarness = {
       catalog: {
         agents: [
-          { description: "Direct execution", id: "generalist", mode: "primary" },
+          {
+            description: "Direct execution",
+            id: "generalist",
+            mode: "primary",
+          },
         ],
         digest: "test-catalog",
         pluginIds: [],
@@ -114,13 +116,14 @@ describe("custom harness TUI", () => {
       .map(stripVTControlCharacters)
       .join("\n");
     expect(rendered).toContain("│");
-    expect(rendered).toContain("Chat · gpt-5.4-mini openai-oauth");
+    expect(rendered).toContain(
+      "CHAT / gpt-5.4-mini · openai-oauth / EFFORT medium",
+    );
     expect(rendered).toContain("Done.");
     expect(rendered).toContain("⠉ Working…");
-    expect(rendered).toContain("⠰ Working…");
-    expect(rendered).toContain("· medium");
-    expect(rendered).toContain("Ask anything...");
-    expect(rendered).toContain("○ durable");
+    expect(rendered).toContain("⠘ Working…");
+    expect(rendered).toContain("Ask Curiosity…");
+    expect(rendered).toContain("● KERNEL / DURABLE");
     expect(rendered).not.toContain("title>");
     expect(submissions).toHaveLength(1);
     const submission = submissions[0];
@@ -158,7 +161,11 @@ describe("custom harness TUI", () => {
     const harness: TuiHarness = {
       catalog: {
         agents: [
-          { description: "Direct execution", id: "generalist", mode: "primary" },
+          {
+            description: "Direct execution",
+            id: "generalist",
+            mode: "primary",
+          },
         ],
         digest: "test-catalog",
         pluginIds: [],
@@ -340,9 +347,14 @@ describe("custom harness TUI", () => {
       theme,
     );
     const splashText = splash.lines.join("\n");
-    expect(splashText).toContain('Ask anything... "What should we build?"');
-    expect(splashText).toContain("Chat · gpt-5.4-mini openai-oauth · high");
+    expect(splashText).toContain("C U R I O S I T Y");
+    expect(splashText).toContain("● SYSTEM / READY");
+    expect(splashText).toContain("Ask Curiosity…");
+    expect(splashText).toContain(
+      "CHAT / gpt-5.4-mini · openai-oauth / EFFORT high",
+    );
     expect(splashText).toContain("/new  new thread");
+    expect(splashText).not.toContain("█▀▀ █ █");
     expect(splash.cursor).toBeDefined();
 
     const active = renderTuiFrame(
@@ -384,7 +396,7 @@ describe("custom harness TUI", () => {
       theme,
     );
     const activeText = active.lines.join("\n");
-    expect(activeText).toContain("# Durable kernel");
+    expect(activeText).toContain("THREAD / Durable kernel");
     expect(activeText).toContain("Explain the durable kernel");
     expect(activeText).toContain("Durable");
     expect(activeText).not.toContain("**Durable**");
@@ -458,7 +470,7 @@ describe("custom harness TUI", () => {
     const compactText = compact.lines.join("\n");
     expect(compactText).toContain("first line");
     expect(compactText).toContain("second line");
-    expect(compactText).toContain("Chat · gpt-5.4-mini · high");
+    expect(compactText).toContain("CHAT / gpt-5.4-mini / EFFORT high");
     expect(compactText).not.toContain("openai-oauth");
     expect(compactText).not.toContain("█▀▀ █ █");
     expect(compact.cursor?.row).toBeGreaterThan(0);
@@ -479,5 +491,33 @@ describe("custom harness TUI", () => {
       "reduced",
     );
     expect(resolveMotionPreference({})).toBe("full");
+  });
+
+  test("defines restrained semantic tokens for every terminal state", () => {
+    expect(TUI_DESIGN_TOKENS.color).toEqual({
+      activity: "#8BD5F7",
+      canvas: "#07090B",
+      code: "#A7CFB2",
+      danger: "#E8847E",
+      focus: "#8BD5F7",
+      line: "#2A353C",
+      success: "#82C7A5",
+      surface: "#10161A",
+      surfaceQuiet: "#0C1114",
+      textMuted: "#74828A",
+      textPrimary: "#E7EDF0",
+      textSecondary: "#9AA8AF",
+      warning: "#D7B873",
+    });
+    expect(TUI_DESIGN_TOKENS.layout).toMatchObject({
+      compactColumns: 80,
+      compactRows: 30,
+      contentInset: 2,
+      readingWidth: 112,
+    });
+    expect(TUI_DESIGN_TOKENS.motion).toEqual({
+      activeFrameMs: 120,
+      idleAnimation: false,
+    });
   });
 });
