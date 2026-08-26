@@ -5,13 +5,14 @@ import path from "node:path";
 import { Effect, Schema } from "effect";
 import { SupervisorUnavailable } from "../kernel/errors.js";
 
-const frameLimit = 8 * 1024;
-const requestTimeoutMs = 2_000;
+const frameLimit = 64 * 1024;
+const requestTimeoutMs = 10_000;
 
 class SupervisorCapabilities extends Schema.Class<SupervisorCapabilities>(
   "@curiosity/custom-harness/SupervisorCapabilities",
 )({
   filesystemMutation: Schema.Literal(false),
+  filesystemRead: Schema.Literal(true),
   git: Schema.Literal(false),
   process: Schema.Literal(false),
   sandbox: Schema.Literal(false),
@@ -20,7 +21,7 @@ class SupervisorCapabilities extends Schema.Class<SupervisorCapabilities>(
 export class SupervisorReceipt extends Schema.Class<SupervisorReceipt>(
   "@curiosity/custom-harness/SupervisorReceipt",
 )({
-  protocolVersion: Schema.Literal(1),
+  protocolVersion: Schema.Literal(2),
   kind: Schema.Literal("handshake.accepted"),
   nonce: Schema.NonEmptyString,
   capabilities: SupervisorCapabilities,
@@ -134,6 +135,21 @@ const validatedExecutable = async (input: string): Promise<string> => {
   return realpath(input);
 };
 
+const validatedWorkspace = async (input: string): Promise<string> => {
+  if (!path.isAbsolute(input))
+    throw unavailable("SUPERVISOR_WORKSPACE_NOT_ABSOLUTE");
+  const details = await lstat(input).catch(() => undefined);
+  if (!details?.isDirectory() || details.isSymbolicLink())
+    throw unavailable("SUPERVISOR_WORKSPACE_INVALID");
+  return realpath(input);
+};
+
+const responseRecord = (value: unknown): Record<string, unknown> => {
+  if (!value || typeof value !== "object" || Array.isArray(value))
+    throw new Error("SUPERVISOR_RESPONSE_INVALID");
+  return value as Record<string, unknown>;
+};
+
 export class SupervisorClient {
   readonly #child: ChildProcessWithoutNullStreams;
   readonly #reader: FrameReader;
@@ -153,10 +169,14 @@ export class SupervisorClient {
     });
   }
 
-  static async start(input: string): Promise<SupervisorClient> {
+  static async start(
+    input: string,
+    workspaceRoot: string,
+  ): Promise<SupervisorClient> {
     let child: ChildProcessWithoutNullStreams | undefined;
     try {
       const executable = await validatedExecutable(input);
+      const workspace = await validatedWorkspace(workspaceRoot);
       child = spawn(executable, [], {
         cwd: path.dirname(executable),
         env: { LANG: "C", LC_ALL: "C" },
@@ -167,9 +187,10 @@ export class SupervisorClient {
       const reader = new FrameReader(child.stdout);
       const nonce = randomBytes(32).toString("hex");
       await writeFrame(child, {
-        protocolVersion: 1,
+        protocolVersion: 2,
         kind: "handshake.request",
         nonce,
+        workspaceRoot: workspace,
       });
       const receipt = decodeReceipt(
         JSON.parse(await withTimeout(reader.next())),
@@ -193,16 +214,63 @@ export class SupervisorClient {
     return Effect.void;
   }
 
+  async workspaceRead(
+    requestId: string,
+    input: {
+      readonly maxLines: number;
+      readonly path: string;
+      readonly startLine: number;
+    },
+  ): Promise<unknown> {
+    return this.#workspaceRequest("workspace.read", requestId, input);
+  }
+
+  async workspaceSearch(
+    requestId: string,
+    input: { readonly maxResults: number; readonly query: string },
+  ): Promise<unknown> {
+    return this.#workspaceRequest("workspace.search", requestId, input);
+  }
+
+  async #workspaceRequest(
+    kind: "workspace.read" | "workspace.search",
+    requestId: string,
+    input: Readonly<Record<string, number | string>>,
+  ): Promise<unknown> {
+    if (this.#exited || this.#child.exitCode !== null)
+      throw new Error("SUPERVISOR_EXITED");
+    await writeFrame(this.#child, {
+      ...input,
+      protocolVersion: 2,
+      kind,
+      requestId,
+    });
+    const response = responseRecord(
+      JSON.parse(await withTimeout(this.#reader.next())) as unknown,
+    );
+    if (response.protocolVersion !== 2 || response.requestId !== requestId)
+      throw new Error("SUPERVISOR_RESPONSE_INVALID");
+    if (response.kind === `${kind}.failed`)
+      throw new Error(
+        typeof response.errorCode === "string"
+          ? response.errorCode
+          : "WORKSPACE_TOOL_FAILED",
+      );
+    if (response.kind !== `${kind}.succeeded` || !("output" in response))
+      throw new Error("SUPERVISOR_RESPONSE_INVALID");
+    return response.output;
+  }
+
   async close(): Promise<void> {
     if (this.#exited || this.#child.exitCode !== null) return;
     try {
-      await writeFrame(this.#child, { protocolVersion: 1, kind: "shutdown" });
+      await writeFrame(this.#child, { protocolVersion: 2, kind: "shutdown" });
       const response = JSON.parse(
         await withTimeout(this.#reader.next()),
       ) as unknown;
       const record = Schema.decodeUnknownSync(
         Schema.Struct({
-          protocolVersion: Schema.Literal(1),
+          protocolVersion: Schema.Literal(2),
           kind: Schema.Literal("shutdown.accepted"),
         }),
       )(response);

@@ -193,6 +193,7 @@ describe("durable action and reaction spine", () => {
       omittedBlocks: [],
       revision: source.sequence,
       schemaVersion: 1 as const,
+      tools: [],
     };
     const promptSnapshotDigest = digest(promptSnapshot);
     const requestDigest = digest({ request: 1 });

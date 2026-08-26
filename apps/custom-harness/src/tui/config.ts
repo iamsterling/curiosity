@@ -9,6 +9,7 @@ export interface TuiConfigDefaults {
   readonly createSecret?: () => string;
   readonly homeDirectory?: string;
   readonly supervisorPath?: string;
+  readonly workingDirectory?: string;
 }
 
 const defaultSupervisorPath = path.resolve(
@@ -41,7 +42,12 @@ export const resolveTuiConfig = (
     supervisorPath: path.resolve(
       configured(environment.CURIOSITY_SUPERVISOR_PATH) ??
         defaults.supervisorPath ??
-        defaultSupervisorPath,
+      defaultSupervisorPath,
+    ),
+    workspaceRoot: path.resolve(
+      configured(environment.CURIOSITY_WORKSPACE_ROOT) ??
+        defaults.workingDirectory ??
+        process.cwd(),
     ),
   });
 };

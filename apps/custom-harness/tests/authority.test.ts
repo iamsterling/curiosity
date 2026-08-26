@@ -27,6 +27,7 @@ const fixture = () => {
     authenticationSecret: secret,
     databasePath,
     supervisorPath,
+    workspaceRoot: root,
   });
   return { databasePath, harness };
 };
@@ -69,8 +70,9 @@ describe("sealed command authority", () => {
       "curiosity.stock.search",
       "curiosity.stock.skills",
       "curiosity.stock.thread",
-      "curiosity.stock.chat",
       "curiosity.stock.tools",
+      "curiosity.stock.workspace",
+      "curiosity.stock.chat",
     ]);
     expect(harness.catalog.digest).toMatch(/^[a-f0-9]{64}$/u);
     expect(Object.isFrozen(harness.catalog)).toBe(true);
@@ -97,6 +99,7 @@ describe("sealed command authority", () => {
       authenticationSecret: secret,
       databasePath,
       supervisorPath,
+      workspaceRoot: path.dirname(databasePath),
     });
     expect(await reopened.projections.threads()).toEqual([
       {

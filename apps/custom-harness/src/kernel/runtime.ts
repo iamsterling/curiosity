@@ -17,6 +17,7 @@ export interface CuriosityHarnessConfig {
   readonly authenticationSecret: string;
   readonly databasePath: string;
   readonly supervisorPath: string;
+  readonly workspaceRoot: string;
   readonly maxClockSkewMs?: number;
   readonly clock?: () => number;
   readonly textGenerator?: TextGenerator;
@@ -59,7 +60,8 @@ const authorityLayer = (
     Effect.gen(function* () {
       const supervisor = yield* Effect.acquireRelease(
         Effect.tryPromise({
-          try: () => SupervisorClient.start(config.supervisorPath),
+          try: () =>
+            SupervisorClient.start(config.supervisorPath, config.workspaceRoot),
           catch: (error) =>
             error instanceof SupervisorUnavailable
               ? error
@@ -100,6 +102,8 @@ const validateConfig = (config: CuriosityHarnessConfig): void => {
     throw new Error("HARNESS_DATABASE_PATH_REQUIRED");
   if (!config.supervisorPath.trim())
     throw new Error("HARNESS_SUPERVISOR_PATH_REQUIRED");
+  if (!config.workspaceRoot.trim())
+    throw new Error("HARNESS_WORKSPACE_ROOT_REQUIRED");
 };
 
 export const createCuriosityHarness = (

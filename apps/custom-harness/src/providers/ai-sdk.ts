@@ -4,8 +4,15 @@ import { createOpenAI } from "@ai-sdk/openai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { createOpenAIOAuth } from "@openai-oauth/ai-sdk";
 import { openaiCredentials } from "@openai-oauth/local";
-import { createProviderRegistry, streamText } from "ai";
+import {
+  createProviderRegistry,
+  jsonSchema,
+  streamText,
+  tool,
+  type ToolSet,
+} from "ai";
 import type { TextGenerator } from "../kernel/text-generator.js";
+import type { PromptMessage } from "../kernel/text-generator.js";
 
 type ProviderEnvironment = Readonly<Record<string, string | undefined>>;
 
@@ -34,6 +41,20 @@ const configured = (value: string | undefined): string | undefined => {
 
 const configuredSecret = (value: string | undefined): string | undefined =>
   configured(value) ? value : undefined;
+
+export const splitAiSdkPrompt = (
+  input: readonly PromptMessage[],
+): {
+  readonly messages: readonly PromptMessage[];
+  readonly system?: string;
+} => {
+  const system = input
+    .filter(({ role }) => role === "system")
+    .map(({ content }) => content)
+    .join("\n\n");
+  const messages = input.filter(({ role }) => role !== "system");
+  return system ? { messages, system } : { messages };
+};
 
 export const resolveAiSdkModelId = (
   environment: ProviderEnvironment,
@@ -137,14 +158,26 @@ export const createAiSdkTextGenerator = (
   const generator: TextGenerator = {
     effort,
     modelId,
-    stream: async function* ({ abortSignal, messages }) {
+    stream: async function* ({ abortSignal, messages, tools = [] }) {
+      const prompt = splitAiSdkPrompt(messages);
+      const modelTools = Object.fromEntries(
+        tools.map((definition) => [
+          definition.name,
+          tool({
+            description: definition.description,
+            inputSchema: jsonSchema(definition.inputSchema as never),
+          }),
+        ]),
+      ) as ToolSet;
       const result = streamText({
         abortSignal,
-        messages: messages.map((message) => ({
+        messages: prompt.messages.map((message) => ({
           content: message.content,
           role: message.role,
         })),
         model,
+        ...(prompt.system ? { system: prompt.system } : {}),
+        ...(tools.length > 0 ? { tools: modelTools } : {}),
         ...(effort === "default"
           ? {}
           : { providerOptions: { openai: { reasoningEffort: effort } } }),
@@ -152,6 +185,13 @@ export const createAiSdkTextGenerator = (
       let completed = false;
       for await (const part of result.fullStream) {
         if (part.type === "text-delta") yield part.text;
+        if (part.type === "tool-call")
+          yield {
+            input: part.input,
+            toolCallId: part.toolCallId,
+            toolName: part.toolName,
+            type: "tool-call" as const,
+          };
         if (part.type === "error") throw new Error("AI_SDK_STREAM_FAILED");
         if (part.type === "abort") throw new Error("AI_SDK_STREAM_ABORTED");
         if (part.type === "finish") completed = true;

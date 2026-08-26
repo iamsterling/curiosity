@@ -105,6 +105,7 @@ const assemble = (
       actionType: "provider.generate",
       agentId: "test-agent",
       correlation: { kind: "test" },
+      grantedCapabilities: new Set(),
       messages: [{ content: "question", role: "user" }],
       sourceEventId,
     }),

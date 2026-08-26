@@ -40,7 +40,7 @@ const migrateSchema = (database: Database): void => {
       "SELECT value FROM harness_metadata WHERE key = ?",
     )
     .get("schema_version");
-  if (!["1", "2", "3", "4", "5", "6", "7"].includes(metadata?.value ?? ""))
+  if (!["1", "2", "3", "4", "5", "6", "7", "8"].includes(metadata?.value ?? ""))
     throw new Error("EVENT_SCHEMA_VERSION_UNSUPPORTED");
   database
     .transaction(() => {
@@ -64,9 +64,9 @@ const migrateSchema = (database: Database): void => {
       for (const [name, definition] of actionAuthorityColumns)
         if (!actionColumns.has(name))
           database.exec(`ALTER TABLE actions ADD COLUMN ${name} ${definition}`);
-      if (metadata?.value !== "7")
+      if (metadata?.value !== "8")
         database.run(
-          "UPDATE harness_metadata SET value = '7' WHERE key = 'schema_version'",
+          "UPDATE harness_metadata SET value = '8' WHERE key = 'schema_version'",
         );
       database.exec(`
         DROP TRIGGER IF EXISTS provider_call_snapshot_immutable;
@@ -84,6 +84,22 @@ const migrateSchema = (database: Database): void => {
           OR OLD.source_revision != NEW.source_revision
         BEGIN
           SELECT RAISE(ABORT, 'PROVIDER_CALL_SNAPSHOT_IMMUTABLE');
+        END;
+      `);
+      database.exec(`
+        DROP TRIGGER IF EXISTS tool_call_snapshot_immutable;
+        CREATE TRIGGER tool_call_snapshot_immutable
+        BEFORE UPDATE ON tool_calls
+        WHEN OLD.action_id != NEW.action_id
+          OR OLD.attempt_id != NEW.attempt_id
+          OR OLD.generation != NEW.generation
+          OR OLD.tool_name != NEW.tool_name
+          OR OLD.tool_version != NEW.tool_version
+          OR OLD.model_tool_call_id != NEW.model_tool_call_id
+          OR OLD.request_digest != NEW.request_digest
+          OR OLD.catalog_digest != NEW.catalog_digest
+        BEGIN
+          SELECT RAISE(ABORT, 'TOOL_CALL_SNAPSHOT_IMMUTABLE');
         END;
       `);
     })
@@ -121,7 +137,7 @@ export class EventJournal {
         "SELECT value FROM harness_metadata WHERE key = ?",
       )
       .get("schema_version");
-    if (metadata?.value !== "7") {
+    if (metadata?.value !== "8") {
       database.close(true);
       throw new Error("EVENT_SCHEMA_VERSION_UNSUPPORTED");
     }

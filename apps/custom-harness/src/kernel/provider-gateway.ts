@@ -231,6 +231,7 @@ export class ProviderGateway {
         actionType: action.actionType,
         agentId: input.agentId,
         correlation: input.correlation,
+        grantedCapabilities: this.grantedCapabilities,
         messages: input.messages,
         sourceEventId: action.sourceEventId,
       })
@@ -262,6 +263,7 @@ export class ProviderGateway {
           effort: generator.effort,
           messages: assembled.messages,
           modelId: generator.modelId,
+          tools: assembled.tools,
         }),
       )
       .digest("hex");
@@ -375,15 +377,56 @@ export class ProviderGateway {
       try: async (abortSignal) => {
         let output = "";
         let outputBytes = 0;
+        const toolCalls: Array<{
+          readonly input: unknown;
+          readonly toolCallId: string;
+          readonly toolName: string;
+          readonly toolVersion: string;
+        }> = [];
+        const visibleTools = new Map(
+          assembled.tools.map((tool) => [tool.name, tool]),
+        );
+        const toolCallIds = new Set<string>();
         const combined = AbortSignal.any([abortSignal, localAbort.signal]);
         try {
-          for await (const delta of generator.stream({
+          for await (const part of generator.stream({
             abortSignal: combined,
             messages: assembled.messages,
+            tools: assembled.tools.map((tool) => ({
+              description: tool.description,
+              inputSchema: tool.inputSchema,
+              name: tool.name,
+              version: tool.version,
+            })),
           })) {
             if (combined.aborted) throw new Error("ACTION_CANCELLED");
-            if (typeof delta !== "string")
-              throw new Error("TEXT_DELTA_INVALID");
+            if (typeof part !== "string" && part.type === "tool-call") {
+              const selected = visibleTools.get(part.toolName);
+              if (
+                !selected ||
+                !part.toolCallId ||
+                Buffer.byteLength(part.toolCallId) > 256 ||
+                toolCallIds.has(part.toolCallId) ||
+                toolCalls.length >= 4 ||
+                Buffer.byteLength(canonicalJson(part.input)) > 16_384
+              )
+                throw new Error("PROVIDER_TOOL_CALL_INVALID");
+              toolCallIds.add(part.toolCallId);
+              toolCalls.push({
+                input: part.input,
+                toolCallId: part.toolCallId,
+                toolName: part.toolName,
+                toolVersion: selected.version,
+              });
+              continue;
+            }
+            const delta =
+              typeof part === "string"
+                ? part
+                : part.type === "text-delta"
+                  ? part.text
+                  : undefined;
+            if (delta === undefined) throw new Error("TEXT_DELTA_INVALID");
             outputBytes += Buffer.byteLength(delta);
             if (outputBytes > 1_048_576)
               throw new Error("TEXT_RESPONSE_TOO_LARGE");
@@ -399,7 +442,9 @@ export class ProviderGateway {
               // Projection failure cannot change provider completion authority.
             }
           }
-          return output;
+          if (!output && toolCalls.length === 0)
+            throw new Error("TEXT_RESPONSE_EMPTY");
+          return { text: output, toolCalls };
         } finally {
           if (this.#active.get(action.executionId) === localAbort)
             this.#active.delete(action.executionId);
@@ -450,7 +495,8 @@ export class ProviderGateway {
       durationMs: Math.max(0, Math.round(performance.now() - startedAt)),
       effort: generator.effort,
       modelId: generator.modelId,
-      text: result.success,
+      text: result.success.text,
+      toolCalls: result.success.toolCalls,
     };
     const event = {
       body: {

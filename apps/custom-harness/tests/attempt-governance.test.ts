@@ -135,6 +135,7 @@ const attemptSnapshot = (
     omittedBlocks: [],
     revision: 1,
     schemaVersion: 1,
+    tools: [],
   };
   const requestDigest = digest({ actionId: action.actionId, generation });
   return {
@@ -375,6 +376,7 @@ describe("attempt, gate, cancellation, and fencing governance", () => {
       databasePath,
       supervisorPath,
       textGenerator: generator,
+      workspaceRoot: path.dirname(databasePath),
     });
     const chat = harness.chat(
       signCommand(

@@ -72,6 +72,7 @@ describe("native agent policy and bounded context", () => {
       databasePath,
       supervisorPath,
       textGenerator: generator,
+      workspaceRoot: path.dirname(databasePath),
     });
 
     await harness.chat(turn());

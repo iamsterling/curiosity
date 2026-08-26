@@ -7,10 +7,17 @@ import {
   type CuriosityPluginV2,
 } from "../kernel/plugin.js";
 import { projectChatMessages } from "../projection/chat-projection.js";
+import {
+  actionFailed,
+  emptyChatReaction,
+  initialChatCorrelation,
+  providerSucceeded,
+  toolSucceeded,
+} from "../semantics/chat-tool-loop.js";
 
 const maximumMessageBytes = 64 * 1_024;
 const maximumIdentifierBytes = 256;
-const emptyReaction = { actions: [], events: [] } as const;
+const emptyReaction = emptyChatReaction;
 
 const titleFrom = (text: string): string => {
   const firstLine = text.split(/\r?\n/u, 1)[0]?.trim() ?? "";
@@ -52,32 +59,6 @@ const body = (value: unknown): Record<string, unknown> | undefined =>
     ? (value as Record<string, unknown>)
     : undefined;
 
-const chatCorrelation = (
-  value: unknown,
-):
-  | {
-      readonly assistantMessageId: string;
-      readonly kind: "curiosity.chat.turn";
-      readonly threadId: string;
-      readonly turnId: string;
-    }
-  | undefined => {
-  const candidate = body(value);
-  if (
-    candidate?.kind !== "curiosity.chat.turn" ||
-    typeof candidate.assistantMessageId !== "string" ||
-    typeof candidate.threadId !== "string" ||
-    typeof candidate.turnId !== "string"
-  )
-    return undefined;
-  return {
-    assistantMessageId: candidate.assistantMessageId,
-    kind: "curiosity.chat.turn",
-    threadId: candidate.threadId,
-    turnId: candidate.turnId,
-  };
-};
-
 export const chatPlugin: CuriosityPluginV2 = {
   manifest: {
     capabilities: ["provider.generate"],
@@ -86,16 +67,17 @@ export const chatPlugin: CuriosityPluginV2 = {
     kernelApi: KERNEL_PLUGIN_API_VERSION,
     provenance: {
       license: "Project-owned",
-      revision: "1.2.0",
+      revision: "1.3.0",
       source: "apps/custom-harness/src/plugins/chat.ts",
     },
     requires: [
       { pluginId: "curiosity.stock.agents", version: "1.0.0" },
       { pluginId: "curiosity.stock.context", version: "1.0.0" },
       { pluginId: "curiosity.stock.thread", version: "1.0.0" },
+      { pluginId: "curiosity.stock.workspace", version: "1.0.0" },
     ],
     schemaVersion: 2,
-    version: "1.2.0",
+    version: "1.3.0",
   },
   commandDeciders: [
     {
@@ -186,12 +168,11 @@ export const chatPlugin: CuriosityPluginV2 = {
                 gateClass: "none-requested",
                 input: {
                   agentId: "generalist",
-                  correlation: {
+                  correlation: initialChatCorrelation({
                     assistantMessageId: requested.assistantMessageId,
-                    kind: "curiosity.chat.turn",
                     threadId: requested.threadId,
                     turnId: requested.turnId,
-                  },
+                  }),
                   messages,
                 },
                 requestedCapabilities: ["provider.generate"],
@@ -211,74 +192,19 @@ export const chatPlugin: CuriosityPluginV2 = {
     {
       eventTypes: ["action.succeeded"],
       id: "curiosity.stock.chat.reactors.provider-succeeded",
-      react: Effect.fn("ChatPlugin.providerSucceeded")(function* (event) {
-        const receipt = body(event.body);
-        const correlation = chatCorrelation(receipt?.correlation);
-        if (receipt?.actionType !== "provider.generate" || !correlation)
-          return emptyReaction;
-        const output = body(receipt.output);
-        if (
-          typeof output?.text !== "string" ||
-          typeof output.durationMs !== "number" ||
-          typeof output.effort !== "string" ||
-          typeof output.modelId !== "string"
-        )
-          return yield* new PluginFailure({
-            message: "CHAT_PROVIDER_RECEIPT_INVALID",
-            pluginId: "curiosity.stock.chat",
-          });
-        return {
-          actions: [],
-          events: [
-            {
-              body: {
-                durationMs: output.durationMs,
-                effort: output.effort,
-                messageId: correlation.assistantMessageId,
-                modelId: output.modelId,
-                role: "assistant",
-                schemaVersion: 1,
-                text: output.text,
-                threadId: correlation.threadId,
-                turnId: correlation.turnId,
-              },
-              streamId: correlation.threadId,
-              type: "message.appended",
-            },
-          ],
-        };
-      }),
+      react: providerSucceeded,
+      schemaVersion: 1,
+    },
+    {
+      eventTypes: ["action.succeeded"],
+      id: "curiosity.stock.chat.reactors.tool-succeeded",
+      react: toolSucceeded,
       schemaVersion: 1,
     },
     {
       eventTypes: ["action.failed"],
       id: "curiosity.stock.chat.reactors.provider-failed",
-      react: Effect.fn("ChatPlugin.providerFailed")(function* (event) {
-        const receipt = body(event.body);
-        const correlation = chatCorrelation(receipt?.correlation);
-        if (receipt?.actionType !== "provider.generate" || !correlation)
-          return emptyReaction;
-        return {
-          actions: [],
-          events: [
-            {
-              body: {
-                errorCode:
-                  typeof receipt.errorCode === "string"
-                    ? receipt.errorCode
-                    : "TEXT_GENERATION_FAILED",
-                modelId:
-                  typeof receipt.modelId === "string" ? receipt.modelId : "",
-                schemaVersion: 1,
-                threadId: correlation.threadId,
-                turnId: correlation.turnId,
-              },
-              streamId: correlation.threadId,
-              type: "turn.failed",
-            },
-          ],
-        };
-      }),
+      react: actionFailed,
       schemaVersion: 1,
     },
     {

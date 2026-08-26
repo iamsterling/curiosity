@@ -25,6 +25,19 @@ export interface OmittedPromptBlock {
   readonly reason: "contributor-overflow" | "global-overflow";
 }
 
+export interface PromptSnapshotTool {
+  readonly description: string;
+  readonly digest: string;
+  readonly inputSchema: unknown;
+  readonly name: string;
+  readonly outputProvenance: "trusted-durable" | "untrusted-evidence";
+  readonly pluginId: string;
+  readonly pluginVersion: string;
+  readonly readOnly: boolean;
+  readonly requestedCapabilities: readonly string[];
+  readonly version: string;
+}
+
 export interface PromptSnapshot {
   readonly agent: {
     readonly contentDigest: string;
@@ -44,10 +57,12 @@ export interface PromptSnapshot {
   readonly omittedBlocks: readonly OmittedPromptBlock[];
   readonly revision: number;
   readonly schemaVersion: 1;
+  readonly tools: readonly PromptSnapshotTool[];
 }
 
 export interface AssembledPrompt {
   readonly messages: readonly PromptMessage[];
   readonly snapshot: PromptSnapshot;
   readonly snapshotDigest: string;
+  readonly tools: readonly PromptSnapshotTool[];
 }

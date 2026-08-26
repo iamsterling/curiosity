@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test } from "bun:test";
+import { Database } from "bun:sqlite";
 import { randomBytes } from "node:crypto";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
@@ -8,7 +9,10 @@ import {
   signCommand,
   type TextGenerator,
 } from "../src/index.js";
-import { createAiSdkTextGenerator } from "../src/providers/ai-sdk.js";
+import {
+  createAiSdkTextGenerator,
+  splitAiSdkPrompt,
+} from "../src/providers/ai-sdk.js";
 
 const roots: string[] = [];
 const actorId = "local-owner";
@@ -53,6 +57,19 @@ afterEach(() => {
 });
 
 describe("plugin-native chat turns", () => {
+  test("separates trusted system instructions from AI SDK conversation messages", () => {
+    expect(
+      splitAiSdkPrompt([
+        { content: "policy one", role: "system" },
+        { content: "policy two", role: "system" },
+        { content: "question", role: "user" },
+      ]),
+    ).toEqual({
+      messages: [{ content: "question", role: "user" }],
+      system: "policy one\n\npolicy two",
+    });
+  });
+
   test("streams through the AI SDK OpenAI-compatible adapter", async () => {
     const encoder = new TextEncoder();
     const server = Bun.serve({
@@ -116,7 +133,7 @@ describe("plugin-native chat turns", () => {
         abortSignal: new AbortController().signal,
         messages: [{ content: "hello", role: "user" }],
       }))
-        deltas.push(delta);
+        if (typeof delta === "string") deltas.push(delta);
       expect(deltas.join("")).toBe("Smoke OK");
     } finally {
       await server.stop(true);
@@ -147,6 +164,7 @@ describe("plugin-native chat turns", () => {
       databasePath,
       supervisorPath,
       textGenerator,
+      workspaceRoot: path.dirname(databasePath),
     };
     const harness = createCuriosityHarness(config);
     const deltas: string[] = [];
@@ -194,6 +212,126 @@ describe("plugin-native chat turns", () => {
     await reopened.dispose();
   });
 
+  test("executes bounded workspace evidence tools and continues the governed turn", async () => {
+    const root = mkdtempSync(path.join(tmpdir(), "curiosity-tools-"));
+    roots.push(root);
+    writeFileSync(
+      path.join(root, "baseline.md"),
+      "The checked qualification marker is candidate-A.\n",
+    );
+    const databasePath = path.join(root, "events.sqlite");
+    let generations = 0;
+    const textGenerator: TextGenerator = {
+      effort: "high",
+      modelId: "test:tools",
+      stream: async function* (request) {
+        generations += 1;
+        const tools = (request as unknown as { tools?: readonly { name: string }[] })
+          .tools;
+        expect(tools?.map(({ name }) => name)).toEqual([
+          "workspace_read",
+          "workspace_search",
+        ]);
+        if (generations === 1) {
+          yield "Framing the decision.";
+          yield {
+            input: {
+              maxResults: 2,
+              query: "candidate-A",
+              schemaVersion: 1,
+            },
+            toolCallId: "tool-call-search-001",
+            toolName: "workspace_search",
+            type: "tool-call",
+          } as never;
+          return;
+        }
+        expect(request.messages.at(-2)).toEqual({
+          content: "Framing the decision.",
+          role: "assistant",
+        });
+        expect(request.messages.at(-1)?.content).toContain("baseline.md");
+        expect(request.messages.at(-1)?.content).toContain("candidate-A");
+        yield "Use candidate-A. STOP.";
+      },
+    };
+    const harness = createCuriosityHarness({
+      actorId,
+      authenticationSecret: secret,
+      databasePath,
+      supervisorPath,
+      textGenerator,
+      workspaceRoot: root,
+    });
+    await harness.submit(
+      signCommand(
+        {
+          actorId,
+          command: {
+            id: "command-research-001",
+            kind: "prompt.command.invoke",
+            payload: {
+              activationId: "activation-research-001",
+              arguments: "Choose the baseline",
+              name: "research",
+              schemaVersion: 1,
+              threadId: "thread-chat-001",
+            },
+            schemaVersion: 1,
+          },
+          issuedAt: new Date().toISOString(),
+          nonce: "nonce-research-001",
+          schemaVersion: 1,
+        },
+        secret,
+      ),
+    );
+
+    await expect(harness.chat(turn())).resolves.toMatchObject({
+      text: "Use candidate-A. STOP.",
+    });
+    expect(generations).toBe(2);
+    const database = new Database(databasePath, {
+      readonly: true,
+      strict: true,
+    });
+    expect(
+      database
+        .query<
+          { action_type: string; status: string },
+          []
+        >(
+          "SELECT actions.action_type,actions.status FROM actions JOIN events ON events.event_id = actions.source_event_id ORDER BY events.global_sequence,actions.action_id",
+        )
+        .all(),
+    ).toEqual([
+      { action_type: "provider.generate", status: "succeeded" },
+      { action_type: "workspace.search", status: "succeeded" },
+      { action_type: "provider.generate", status: "succeeded" },
+    ]);
+    expect(
+      database
+        .query<
+          { delivery_certainty: string; status: string; tool_name: string },
+          []
+        >("SELECT tool_name,status,delivery_certainty FROM tool_calls")
+        .get(),
+    ).toEqual({
+      delivery_certainty: "DELIVERED",
+      status: "succeeded",
+      tool_name: "workspace_search",
+    });
+    expect(
+      database
+        .query<{ count: number }, []>(
+          "SELECT count(*) AS count FROM attempts WHERE status = 'succeeded'",
+        )
+        .get()?.count,
+    ).toBe(3);
+    database.close();
+    await harness.dispose();
+  });
+
   test("records a failed turn without fabricating an assistant message", async () => {
     const databasePath = databaseFixture();
     const textGenerator: TextGenerator = {
@@ -209,6 +347,7 @@ describe("plugin-native chat turns", () => {
       databasePath,
       supervisorPath,
       textGenerator,
+      workspaceRoot: path.dirname(databasePath),
     });
 
     await expect(harness.chat(turn())).rejects.toMatchObject({

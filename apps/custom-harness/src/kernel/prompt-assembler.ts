@@ -1,6 +1,10 @@
 import { createHash } from "node:crypto";
 import { Effect, Schema } from "effect";
-import type { AssembledPrompt, PromptSnapshotBlock } from "../domain/prompt.js";
+import type {
+  AssembledPrompt,
+  PromptSnapshotBlock,
+  PromptSnapshotTool,
+} from "../domain/prompt.js";
 import type { StoredEvent } from "../domain/event.js";
 import { canonicalJson } from "./canonical-json.js";
 import { PromptAssemblyFailure } from "./errors.js";
@@ -167,6 +171,7 @@ export class PromptAssembler {
       readonly actionType: string;
       readonly agentId: string;
       readonly correlation: unknown;
+      readonly grantedCapabilities: ReadonlySet<string>;
       readonly messages: readonly PromptMessage[];
       readonly sourceEventId: string;
     },
@@ -184,6 +189,29 @@ export class PromptAssembler {
     );
     const agent = this.catalog.agent(input.agentId);
     if (!agent) return yield* promptFailure("AGENT_NOT_FOUND");
+    const tools: PromptSnapshotTool[] = [];
+    for (const name of [...agent.requestedTools].sort()) {
+      const tool = this.catalog.tool(name);
+      if (!tool) return yield* promptFailure("AGENT_TOOL_NOT_FOUND");
+      if (
+        tool.requestedCapabilities.some(
+          (capability) => !input.grantedCapabilities.has(capability),
+        )
+      )
+        continue;
+      const identity = {
+        description: tool.description,
+        inputSchema: tool.inputSchema,
+        name: tool.name,
+        outputProvenance: tool.outputProvenance,
+        pluginId: tool.pluginId,
+        pluginVersion: tool.pluginVersion,
+        readOnly: tool.readOnly,
+        requestedCapabilities: [...tool.requestedCapabilities].sort(),
+        version: tool.version,
+      };
+      tools.push({ ...identity, digest: digest(identity) });
+    }
 
     const agentIdentity = {
       content: agent.system,
@@ -304,7 +332,8 @@ export class PromptAssembler {
       ),
       revision: source.sequence,
       schemaVersion: 1 as const,
+      tools,
     };
-    return { messages, snapshot, snapshotDigest: digest(snapshot) };
+    return { messages, snapshot, snapshotDigest: digest(snapshot), tools };
   });
 }

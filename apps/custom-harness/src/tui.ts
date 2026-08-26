@@ -31,7 +31,7 @@ const main = async (): Promise<void> => {
       motion: resolveMotionPreference(process.env),
       secret: config.authenticationSecret,
       terminal,
-      workingDirectory: process.cwd(),
+      workingDirectory: config.workspaceRoot,
     });
   } finally {
     terminal.close();

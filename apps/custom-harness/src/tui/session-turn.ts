@@ -9,6 +9,23 @@ export interface TurnIdentity {
   readonly secret: string;
 }
 
+export interface ParsedPromptCommand {
+  readonly arguments: string;
+  readonly name: string;
+}
+
+export const parsePromptCommand = (
+  text: string,
+): ParsedPromptCommand | undefined => {
+  const match = /^\/([a-z][a-z0-9-]{0,63})(?:[ \t]+([\s\S]*))?$/u.exec(text);
+  const name = match?.[1];
+  if (!name) return undefined;
+  return Object.freeze({
+    arguments: (match[2] ?? "").trim(),
+    name,
+  });
+};
+
 export const latestThread = (
   threads: readonly ThreadProjection[],
 ): ThreadProjection | undefined =>
@@ -49,6 +66,37 @@ export const signTurn = (
           threadId,
           turnId,
           userMessageId: createId(),
+        },
+        schemaVersion: 1,
+      },
+      issuedAt: issuedAt(),
+      nonce: createId(),
+      schemaVersion: 1,
+    },
+    identity.secret,
+  );
+};
+
+export const signPromptCommand = (
+  identity: TurnIdentity,
+  threadId: string,
+  prompt: ParsedPromptCommand,
+  createId: () => string,
+  issuedAt: () => string,
+): SignedCommandEnvelope => {
+  const activationId = createId();
+  return signCommand(
+    {
+      actorId: identity.actorId,
+      command: {
+        id: createId(),
+        kind: "prompt.command.invoke",
+        payload: {
+          activationId,
+          arguments: prompt.arguments,
+          name: prompt.name,
+          schemaVersion: 1,
+          threadId,
         },
         schemaVersion: 1,
       },

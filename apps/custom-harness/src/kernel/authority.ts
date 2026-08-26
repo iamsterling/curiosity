@@ -37,6 +37,7 @@ import { ReactionEngine } from "./reaction-engine.js";
 import type { TextGenerator } from "./text-generator.js";
 import { WorkflowEngine } from "./workflow-engine.js";
 import { capabilityStatus } from "./capability-status.js";
+import { ToolGateway } from "./tool-gateway.js";
 
 export interface AuthorityService {
   readonly close: () => void;
@@ -84,26 +85,41 @@ export const makeAuthority = (config: AuthorityConfig): AuthorityService => {
   const projectionEngine = new ProjectionEngine(config.plugins, () =>
     journal.readEvents(),
   );
+  const grantedCapabilities = new Set([
+    ...(config.textGenerator ? ["provider.generate"] : []),
+    ...(config.supervisor.receipt.capabilities.filesystemRead
+      ? ["filesystem.read"]
+      : []),
+  ]);
   const providerGateway = new ProviderGateway(
     journal.actions,
     journal.attempts,
     promptAssembler,
     config.textGenerator,
     config.now,
-    new Set(config.textGenerator ? ["provider.generate"] : []),
+    grantedCapabilities,
+  );
+  const toolGateway = new ToolGateway(
+    journal.actions,
+    journal.attempts,
+    config.plugins,
+    config.supervisor,
+    config.now,
+    grantedCapabilities,
   );
   const reactions = new ReactionEngine(
     journal,
     config.plugins,
     providerGateway,
+    toolGateway,
     config.now,
-    new Set(config.textGenerator ? ["provider.generate"] : []),
+    grantedCapabilities,
     config.actorId,
   );
   const workflows = new WorkflowEngine(
     journal,
     config.plugins,
-    new Set(config.textGenerator ? ["provider.generate"] : []),
+    grantedCapabilities,
     config.actorId,
     config.now,
   );

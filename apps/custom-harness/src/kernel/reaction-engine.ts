@@ -8,6 +8,7 @@ import { canonicalJson } from "./canonical-json.js";
 import { ActionExecutionFailure, PluginFailure } from "./errors.js";
 import type { StaticPluginCatalog } from "./plugin.js";
 import { ProviderGateway, type ActionStreamDelta } from "./provider-gateway.js";
+import { ToolGateway } from "./tool-gateway.js";
 
 const maximumDrainSteps = 1_024;
 
@@ -72,6 +73,7 @@ export class ReactionEngine {
     private readonly journal: EventJournal,
     private readonly catalog: StaticPluginCatalog,
     private readonly providers: ProviderGateway,
+    private readonly tools: ToolGateway,
     private readonly now: () => number,
     private readonly grantedCapabilities: ReadonlySet<string>,
     private readonly eligibleActorId: string,
@@ -184,6 +186,8 @@ export class ReactionEngine {
     }
     if (action.actionType === "provider.generate")
       return yield* this.providers.execute(action, onDelta);
+    if (["workspace.read", "workspace.search"].includes(action.actionType))
+      return yield* this.tools.execute(action);
     const completedAt = new Date(this.now()).toISOString();
     const event = {
       body: {
@@ -216,6 +220,7 @@ export class ReactionEngine {
     onDelta?: (delta: ActionStreamDelta) => void,
   ) {
     yield* this.providers.reconcileInterrupted();
+    yield* this.tools.reconcileInterrupted();
     let firstFailure: ActionExecutionFailure | undefined;
     let steps = 0;
     while (steps < maximumDrainSteps) {

@@ -3,7 +3,7 @@ export const eventSchema = `
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
   ) STRICT;
-  INSERT OR IGNORE INTO harness_metadata(key, value) VALUES ('schema_version', '7');
+  INSERT OR IGNORE INTO harness_metadata(key, value) VALUES ('schema_version', '8');
   CREATE TABLE IF NOT EXISTS command_admissions (
     actor_id TEXT NOT NULL,
     command_id TEXT NOT NULL,
@@ -133,6 +133,25 @@ export const eventSchema = `
     output_digest TEXT,
     error_code TEXT
   ) STRICT;
+  CREATE TABLE IF NOT EXISTS tool_calls (
+    call_id TEXT PRIMARY KEY,
+    action_id TEXT NOT NULL UNIQUE REFERENCES actions(action_id),
+    attempt_id TEXT NOT NULL REFERENCES attempts(attempt_id),
+    generation INTEGER NOT NULL,
+    tool_name TEXT NOT NULL,
+    tool_version TEXT NOT NULL,
+    model_tool_call_id TEXT NOT NULL,
+    request_digest TEXT NOT NULL,
+    catalog_digest TEXT NOT NULL,
+    dispatch_state TEXT NOT NULL DEFAULT 'armed' CHECK(dispatch_state IN ('armed', 'dispatched')),
+    dispatched_at TEXT,
+    delivery_certainty TEXT NOT NULL DEFAULT 'NOT_DISPATCHED' CHECK(delivery_certainty IN ('NOT_DISPATCHED', 'DELIVERED', 'NOT_DELIVERED', 'UNKNOWN')),
+    status TEXT NOT NULL CHECK(status IN ('allocated', 'succeeded', 'failed', 'delivery-unknown')),
+    allocated_at TEXT NOT NULL,
+    completed_at TEXT,
+    output_digest TEXT,
+    error_code TEXT
+  ) STRICT;
   CREATE TABLE IF NOT EXISTS quarantined_receipts (
     receipt_id TEXT PRIMARY KEY,
     action_id TEXT NOT NULL,
@@ -207,5 +226,18 @@ export const eventSchema = `
     OR OLD.catalog_digest != NEW.catalog_digest
   BEGIN
     SELECT RAISE(ABORT, 'ATTEMPT_SNAPSHOT_IMMUTABLE');
+  END;
+  CREATE TRIGGER IF NOT EXISTS tool_call_snapshot_immutable
+  BEFORE UPDATE ON tool_calls
+  WHEN OLD.action_id != NEW.action_id
+    OR OLD.attempt_id != NEW.attempt_id
+    OR OLD.generation != NEW.generation
+    OR OLD.tool_name != NEW.tool_name
+    OR OLD.tool_version != NEW.tool_version
+    OR OLD.model_tool_call_id != NEW.model_tool_call_id
+    OR OLD.request_digest != NEW.request_digest
+    OR OLD.catalog_digest != NEW.catalog_digest
+  BEGIN
+    SELECT RAISE(ABORT, 'TOOL_CALL_SNAPSHOT_IMMUTABLE');
   END;
 `;

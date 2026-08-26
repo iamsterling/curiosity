@@ -10,14 +10,15 @@ const executable = path.resolve(
 );
 
 describe("mandatory Rust supervisor", () => {
-  test("completes a nonce-bound versioned handshake with every host capability disabled", async () => {
-    const supervisor = await SupervisorClient.start(executable);
+  test("completes a nonce-bound handshake with only confined reads enabled", async () => {
+    const supervisor = await SupervisorClient.start(executable, import.meta.dir);
 
     expect(supervisor.receipt).toMatchObject({
-      protocolVersion: 1,
+      protocolVersion: 2,
       kind: "handshake.accepted",
       capabilities: {
         filesystemMutation: false,
+        filesystemRead: true,
         git: false,
         process: false,
         sandbox: false,
@@ -33,6 +34,7 @@ describe("mandatory Rust supervisor", () => {
       authenticationSecret: secret,
       databasePath: ":memory:",
       supervisorPath: `${executable}.missing`,
+      workspaceRoot: import.meta.dir,
     });
     const envelope = signCommand(
       {

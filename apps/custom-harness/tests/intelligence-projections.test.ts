@@ -34,6 +34,7 @@ const fixture = () => {
       authenticationSecret: secret,
       databasePath,
       supervisorPath,
+      workspaceRoot: root,
     }),
   };
 };
@@ -183,6 +184,7 @@ describe("native observation, Ledger, and evidence projections", () => {
       authenticationSecret: secret,
       databasePath,
       supervisorPath,
+      workspaceRoot: path.dirname(databasePath),
     });
     expect(
       await reopened.projections.plugin(

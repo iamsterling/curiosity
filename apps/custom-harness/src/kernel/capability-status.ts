@@ -31,6 +31,9 @@ export const capabilityStatus = (input: {
         ),
         unavailable("deployment", "DEPLOYMENT_SURFACE_ABSENT"),
         unavailable("filesystem.mutation", "SUPERVISOR_CAPABILITY_DISABLED"),
+        input.supervisor.capabilities.filesystemRead
+          ? available("filesystem.read", "WORKSPACE_READ_SUPERVISOR_ACTIVE")
+          : unavailable("filesystem.read", "SUPERVISOR_CAPABILITY_DISABLED"),
         unavailable("git.mutation", "GIT_QUALIFICATION_ABSENT"),
         unavailable("mobile", "MOBILE_SURFACE_ABSENT"),
         unavailable("network.search", "SEARCH_ADAPTER_UNQUALIFIED"),
@@ -72,6 +75,7 @@ export const capabilityStatus = (input: {
     schemaVersion: 1,
     supervisor: Object.freeze({
       filesystemMutation: input.supervisor.capabilities.filesystemMutation,
+      filesystemRead: input.supervisor.capabilities.filesystemRead,
       git: input.supervisor.capabilities.git,
       process: input.supervisor.capabilities.process,
       sandbox: input.supervisor.capabilities.sandbox,

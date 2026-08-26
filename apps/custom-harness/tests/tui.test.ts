@@ -63,6 +63,14 @@ describe("custom harness TUI", () => {
           turnId: payload.turnId,
         };
       },
+      submit: async () => ({
+        actorId: "local-owner",
+        commandId: "unused",
+        disposition: "accepted",
+        eventCount: 1,
+        firstSequence: 1,
+        lastSequence: 1,
+      }),
     };
     const ids = [
       "thread-001",
@@ -119,6 +127,107 @@ describe("custom harness TUI", () => {
     });
   });
 
+  test("activates a slash-command skill before submitting its chat turn", async () => {
+    const events: TuiKey[] = [
+      { type: "text", value: "/research Compare releases" },
+      { type: "enter" },
+      { type: "quit" },
+    ];
+    const commands: SignedCommandEnvelope[] = [];
+    const terminal: TuiScreenTerminal = {
+      close: () => undefined,
+      drainInput: () => undefined,
+      draw: () => undefined,
+      readKey: async () => events.shift() ?? { type: "quit" },
+      size: () => ({ columns: 120, rows: 40 }),
+    };
+    const harness: TuiHarness = {
+      chat: async (envelope) => {
+        const signed = envelope as SignedCommandEnvelope;
+        commands.push(signed);
+        const payload = signed.command.payload as {
+          assistantMessageId: string;
+          threadId: string;
+          turnId: string;
+        };
+        return {
+          assistantMessageId: payload.assistantMessageId,
+          durationMs: 10,
+          effort: "medium",
+          modelId: "test:model",
+          text: "Done.",
+          threadId: payload.threadId,
+          turnId: payload.turnId,
+        };
+      },
+      projections: {
+        messages: async () => [],
+        plugin: async () => ({}),
+        threads: async () => [],
+      },
+      submit: async (envelope) => {
+        const signed = envelope as SignedCommandEnvelope;
+        commands.push(signed);
+        return {
+          actorId: signed.actorId,
+          commandId: signed.command.id,
+          disposition: "accepted",
+          eventCount: 1,
+          firstSequence: 1,
+          lastSequence: 1,
+        };
+      },
+    };
+    const ids = [
+      "thread-research",
+      "activation-research",
+      "command-research",
+      "nonce-research",
+      "turn-research",
+      "command-chat",
+      "assistant-research",
+      "user-research",
+      "nonce-chat",
+    ];
+    const secret = "development-secret-with-at-least-32-bytes";
+
+    await runTuiSession({
+      actorId: "local-owner",
+      createId: () => ids.shift() ?? "unused",
+      effort: "medium",
+      harness,
+      issuedAt: () => "2026-08-25T00:00:00.000Z",
+      modelId: "test:model",
+      motion: "reduced",
+      secret,
+      terminal,
+      workingDirectory: "~/dev/curiosity",
+    });
+
+    expect(commands.map(({ command }) => command.kind)).toEqual([
+      "prompt.command.invoke",
+      "chat.turn",
+    ]);
+    const activation = commands[0];
+    if (!activation) throw new Error("expected activation command");
+    expect(activation.command.payload).toEqual({
+      activationId: "activation-research",
+      arguments: "Compare releases",
+      name: "research",
+      schemaVersion: 1,
+      threadId: "thread-research",
+    });
+    expect(signCommand(activation, secret).signature).toBe(
+      activation.signature,
+    );
+    const chat = commands[1];
+    if (!chat) throw new Error("expected chat command");
+    expect(chat.command.payload).toMatchObject({
+      text: "/research Compare releases",
+      threadId: "thread-research",
+    });
+  });
+
   test("removes terminal control sequences from projected text", () => {
     expect(sanitizeTerminalText("safe\u001b[2Jspoof\nnext")).toBe(
       "safe�[2Jspoof�next",
@@ -135,6 +244,7 @@ describe("custom harness TUI", () => {
         createSecret: () => "a".repeat(64),
         homeDirectory: "/home/local-owner",
         supervisorPath: "/package/curiosity-supervisor",
+        workingDirectory: "/workspace",
       },
     );
 
@@ -143,6 +253,7 @@ describe("custom harness TUI", () => {
       authenticationSecret: "a".repeat(64),
       databasePath: "/home/local-owner/.curiosity/events.sqlite",
       supervisorPath: "/package/curiosity-supervisor",
+      workspaceRoot: "/workspace",
     });
   });
 

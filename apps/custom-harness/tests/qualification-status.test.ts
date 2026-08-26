@@ -29,6 +29,7 @@ const fixture = () => {
       authenticationSecret: secret,
       databasePath,
       supervisorPath,
+      workspaceRoot: root,
     }),
   };
 };
@@ -55,6 +56,7 @@ describe("qualification and capability truth", () => {
       schemaVersion: 1,
       supervisor: {
         filesystemMutation: false,
+        filesystemRead: true,
         git: false,
         process: false,
         sandbox: false,
@@ -77,6 +79,12 @@ describe("qualification and capability truth", () => {
       qualifiedForProduction: false,
       reason: "PROVIDER_ADAPTER_NOT_CONFIGURED",
       state: "unavailable",
+    });
+    expect(capabilities.get("filesystem.read")).toEqual({
+      id: "filesystem.read",
+      qualifiedForProduction: false,
+      reason: "WORKSPACE_READ_SUPERVISOR_ACTIVE",
+      state: "available",
     });
     for (const id of [
       "deployment",

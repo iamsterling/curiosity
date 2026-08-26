@@ -40,3 +40,29 @@ export interface AllocatedProviderAttempt {
   readonly generation: number;
   readonly leaseExpiresAt: string;
 }
+
+export interface ToolAttemptSnapshot {
+  readonly action: ProviderAttemptSnapshot["action"];
+  readonly catalogDigest: string;
+  readonly generation: number;
+  readonly grantedCapabilities: readonly string[];
+  readonly policyVersion: "local-v1";
+  readonly requestDigest: string;
+  readonly schemaVersion: 1;
+  readonly tool: {
+    readonly digest: string;
+    readonly name: string;
+    readonly pluginId: string;
+    readonly pluginVersion: string;
+    readonly version: string;
+  };
+}
+
+export interface AllocatedToolAttempt {
+  readonly actionId: string;
+  readonly attemptId: string;
+  readonly callId: string;
+  readonly executionId: string;
+  readonly generation: number;
+  readonly leaseExpiresAt: string;
+}

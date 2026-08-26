@@ -8,8 +8,12 @@ class ChatCorrelation extends Schema.Class<ChatCorrelation>(
   "@curiosity/custom-harness/ChatContextCorrelation",
 )({
   assistantMessageId: Schema.NonEmptyString,
+  assistantContext: Schema.String,
   kind: Schema.Literal("curiosity.chat.turn"),
   threadId: Schema.NonEmptyString,
+  toolCallCount: Schema.Number,
+  toolEvidence: Schema.String,
+  toolRound: Schema.Number,
   turnId: Schema.NonEmptyString,
 }) {}
 

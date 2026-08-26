@@ -18,6 +18,7 @@ export interface CapabilityStatusReport {
   readonly schemaVersion: 1;
   readonly supervisor: {
     readonly filesystemMutation: false;
+    readonly filesystemRead: true;
     readonly git: false;
     readonly process: false;
     readonly sandbox: false;

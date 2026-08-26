@@ -33,6 +33,7 @@ const fixture = (textGenerator?: TextGenerator) => {
       authenticationSecret: secret,
       databasePath,
       supervisorPath,
+      workspaceRoot: root,
       ...(textGenerator ? { textGenerator } : {}),
     }),
   };

@@ -30,6 +30,7 @@ const fixture = () => {
       authenticationSecret: secret,
       databasePath,
       supervisorPath,
+      workspaceRoot: root,
     }),
   };
 };

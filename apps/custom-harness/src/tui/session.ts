@@ -7,6 +7,8 @@ import {
   failureTag,
   fallbackMessages,
   latestThread,
+  parsePromptCommand,
+  signPromptCommand,
   signTurn,
 } from "./session-turn.js";
 import {
@@ -18,7 +20,10 @@ import { makeTerminalTheme } from "./theme.js";
 export { sanitizeConversationText, sanitizeTerminalText };
 export type { TuiScreenTerminal };
 
-export type TuiHarness = Pick<CuriosityHarness, "chat" | "projections">;
+export type TuiHarness = Pick<
+  CuriosityHarness,
+  "chat" | "projections" | "submit"
+>;
 
 export interface TuiSessionOptions {
   readonly actorId: string;
@@ -169,6 +174,16 @@ export const runTuiSession = async (
     }
 
     const threadId = thread?.threadId ?? createId();
+    const promptCommand = parsePromptCommand(text);
+    const promptEnvelope = promptCommand
+      ? signPromptCommand(
+          options,
+          threadId,
+          promptCommand,
+          createId,
+          issuedAt,
+        )
+      : undefined;
     const envelope = signTurn(options, threadId, text, createId, issuedAt);
     submittedText = text;
     streamingText = undefined;
@@ -178,6 +193,7 @@ export const runTuiSession = async (
     startAnimation();
     draw();
     try {
+      if (promptEnvelope) await options.harness.submit(promptEnvelope);
       const result = await options.harness.chat(envelope, (delta) => {
         streamingText = `${streamingText ?? ""}${delta}`;
         draw();

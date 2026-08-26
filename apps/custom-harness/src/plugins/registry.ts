@@ -11,6 +11,7 @@ import { skillsPlugin } from "./skills.js";
 import { threadPlugin } from "./thread.js";
 import { toolsPlugin } from "./tools.js";
 import { loopPlugin } from "./loop.js";
+import { workspacePlugin } from "./workspace.js";
 
 export const stockPlugins = Object.freeze([
   agentsPlugin,
@@ -25,6 +26,7 @@ export const stockPlugins = Object.freeze([
   skillsPlugin,
   threadPlugin,
   toolsPlugin,
+  workspacePlugin,
 ]);
 
 export const createStockPluginCatalog = (): StaticPluginCatalog =>
