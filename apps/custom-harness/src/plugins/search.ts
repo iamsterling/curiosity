@@ -85,6 +85,19 @@ const webSearchTool: ToolContribution = {
   version: "1.0.0",
 };
 
+const formerHumanSearchTool: ToolContribution = {
+  ...webSearchTool,
+  description:
+    "Deprecated compatibility name for the provider-neutral bounded web search proposal.",
+  id: "curiosity.stock.search.tools.formerhuman_search",
+  name: "formerhuman_search",
+};
+
+export const searchToolContributions = Object.freeze([
+  formerHumanSearchTool,
+  webSearchTool,
+]);
+
 export const searchPlugin: CuriosityPluginV2 = {
   commandDeciders: [
     {
@@ -182,5 +195,5 @@ export const searchPlugin: CuriosityPluginV2 = {
     schemaVersion: 2,
     version: "1.0.0",
   },
-  tools: [webSearchTool],
+  tools: searchToolContributions,
 };

@@ -22,9 +22,12 @@ const skillKeys = [
 const promptCommandKeys = [
   "description",
   "id",
+  "instructions",
   "name",
   "schemaVersion",
   "skillName",
+  "status",
+  "version",
 ] as const;
 const toolKeys = [
   "actionType",
@@ -109,17 +112,36 @@ export const validatePromptCommand = (
   const id = contributionId(command.id, ownerId, "prompt-commands");
   if (command.schemaVersion !== 1)
     throw new Error(`PLUGIN_CONTRIBUTION_SCHEMA_UNSUPPORTED:${id}`);
+  if (
+    command.status !== "active" &&
+    command.status !== "compatibility-deprecated"
+  )
+    throw new Error(`PLUGIN_PROMPT_COMMAND_STATUS_INVALID:${id}`);
+  if (command.skillName !== null && typeof command.skillName !== "string")
+    throw new Error(`PLUGIN_PROMPT_COMMAND_SKILL_INVALID:${id}`);
   return {
     description: nonEmptyString(
       command.description,
       `PLUGIN_PROMPT_COMMAND_DESCRIPTION_INVALID:${id}`,
     ),
     id: id as PromptCommandContribution["id"],
+    instructions: nonEmptyString(
+      command.instructions,
+      `PLUGIN_PROMPT_COMMAND_INSTRUCTIONS_INVALID:${id}`,
+    ),
     name: name(command.name, `PLUGIN_PROMPT_COMMAND_NAME_INVALID:${id}`),
     schemaVersion: 1,
-    skillName: name(
-      command.skillName,
-      `PLUGIN_PROMPT_COMMAND_SKILL_INVALID:${id}`,
+    skillName:
+      command.skillName === null
+        ? null
+        : name(
+            command.skillName,
+            `PLUGIN_PROMPT_COMMAND_SKILL_INVALID:${id}`,
+          ),
+    status: command.status,
+    version: version(
+      command.version,
+      `PLUGIN_PROMPT_COMMAND_VERSION_INVALID:${id}`,
     ),
   };
 };

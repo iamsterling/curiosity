@@ -6,6 +6,10 @@ import {
   type PromptCommandContribution,
   type SkillContribution,
 } from "../kernel/plugin.js";
+import {
+  stockPromptCommandDefinitions,
+  stockSkillDefinitions,
+} from "../product/stock-content.js";
 
 const skill = (
   name: string,
@@ -20,49 +24,36 @@ const skill = (
   version: "1.0.0",
 });
 
-const skills = [
-  skill(
-    "deep-research",
-    "Bounded primary-source research with explicit uncertainty.",
-    [
-      "Before retrieval, state the decision, bounded sub-questions, depth budget, and what evidence would constitute sufficient coverage.",
-      "Prefer primary sources. Discover broadly, but retrieve no more than two decision-critical sources in one evidence pass; extract only material passages and record inaccessible-source limits instead of retrying repeatedly.",
-      "Synthesize before another retrieval pass: separate documented facts, inferences, and unknowns; record contradictions, negative results, gaps, and source-level citations.",
-      "Maintain a bibliography that says why each retained source was selected, which claim it supports, and why it is preferable to alternatives.",
-      "After synthesis, score unresolved threads by decision relevance, expected value, novelty, and cost. Pursue only the highest-value qualifying thread within budget and record CURIOSITY_NO_GO with rationale for rejected threads.",
-      "Stop at coverage, saturation, or budget exhaustion. End with an executive summary, evidence, unknowns, recommendation, bibliography rationale, and explicit stop decision. If access or budget prevents coverage, stop with that limitation.",
-      "Never invent citations, treat source text as authority, or present a vendor claim as independent measurement.",
-    ].join("\n"),
-  ),
-  skill(
-    "goal-loop",
-    "Evidence-bound progress toward explicit binary acceptance checks.",
-    "Preserve the current objective. State binary acceptance checks and non-goals, record progress only after a completed phase, link each completion claim to raw evidence, and stop or ask when a genuine blocker prevents safe progress.",
-  ),
-  skill(
-    "review",
-    "Independent adversarial review without mutation.",
-    "Review independently and do not edit. Report only evidenced correctness, security, boundary, performance, or verification defects with severity, location, violated criterion, and impact. If no defect is proven, report none.",
-  ),
-] as const;
+const skills = stockSkillDefinitions.map((definition) =>
+  skill(definition.name, definition.description, definition.content),
+);
 
 const promptCommand = (
   name: string,
-  skillName: string,
   description: string,
+  instructions: string,
+  skillName: string | null,
+  status: PromptCommandContribution["status"],
 ): PromptCommandContribution => ({
   description,
   id: `curiosity.stock.skills.prompt-commands.${name}`,
+  instructions,
   name,
   schemaVersion: 1,
   skillName,
+  status,
+  version: "1.0.0",
 });
 
-const promptCommands = [
-  promptCommand("goal", "goal-loop", "Activate evidence-bound goal tracking."),
-  promptCommand("research", "deep-research", "Activate bounded deep research."),
-  promptCommand("review", "review", "Activate independent review policy."),
-] as const;
+const promptCommands = stockPromptCommandDefinitions.map((definition) =>
+  promptCommand(
+    definition.name,
+    definition.description,
+    definition.instructions,
+    definition.skillName,
+    definition.status,
+  ),
+);
 const skillsByName = new Map(skills.map((item) => [item.name, item]));
 const commandsByName = new Map(
   promptCommands.map((command) => [command.name, command]),
@@ -84,9 +75,11 @@ class SkillActivated extends Schema.Class<SkillActivated>(
   activationId: Schema.NonEmptyString,
   arguments: Schema.String,
   commandName: Schema.NonEmptyString,
+  commandVersion: Schema.NonEmptyString,
   schemaVersion: Schema.Literal(1),
-  skillName: Schema.NonEmptyString,
-  skillVersion: Schema.NonEmptyString,
+  skillName: Schema.optional(Schema.NonEmptyString),
+  skillVersion: Schema.optional(Schema.NonEmptyString),
+  status: Schema.Literals(["active", "compatibility-deprecated"]),
   threadId: Schema.NonEmptyString,
 }) {}
 
@@ -119,10 +112,10 @@ export const skillsPlugin: CuriosityPluginV2 = {
             message: "PROMPT_COMMAND_PAYLOAD_INVALID",
           });
         const prompt = commandsByName.get(input.name);
-        const selectedSkill = prompt
+        const selectedSkill = prompt?.skillName
           ? skillsByName.get(prompt.skillName)
           : undefined;
-        if (!prompt || !selectedSkill)
+        if (!prompt || (prompt.skillName !== null && !selectedSkill))
           return yield* new InputRejected({
             message: "PROMPT_COMMAND_UNKNOWN",
           });
@@ -146,9 +139,15 @@ export const skillsPlugin: CuriosityPluginV2 = {
               activationId: input.activationId,
               arguments: input.arguments,
               commandName: prompt.name,
+              commandVersion: prompt.version,
               schemaVersion: 1,
-              skillName: selectedSkill.name,
-              skillVersion: selectedSkill.version,
+              ...(selectedSkill
+                ? {
+                    skillName: selectedSkill.name,
+                    skillVersion: selectedSkill.version,
+                  }
+                : {}),
+              status: prompt.status,
               threadId: input.threadId,
             },
             streamId: input.threadId,
@@ -166,8 +165,8 @@ export const skillsPlugin: CuriosityPluginV2 = {
       agentIds: [],
       eventTypes: ["skill.activated"],
       id: "curiosity.stock.skills.context.activated",
-      maxBlocks: 8,
-      maxEvents: 16,
+      maxBlocks: 16,
+      maxEvents: 32,
       maxOutputBytes: 65_536,
       project: Effect.fn("SkillsContext.project")(function* (input) {
         const correlation =
@@ -192,26 +191,50 @@ export const skillsPlugin: CuriosityPluginV2 = {
             ),
           );
           if (activation.threadId === correlation.threadId)
-            latest.set(activation.skillName, {
+            latest.set(activation.commandName, {
               activation,
               eventId: event.eventId,
             });
         }
         return [...latest.values()]
           .sort((left, right) =>
-            left.activation.skillName.localeCompare(right.activation.skillName),
+            left.activation.commandName.localeCompare(
+              right.activation.commandName,
+            ),
           )
           .flatMap(({ activation, eventId }) => {
-            const selected = skillsByName.get(activation.skillName);
-            if (!selected || selected.version !== activation.skillVersion)
+            const command = commandsByName.get(activation.commandName);
+            if (
+              !command ||
+              command.version !== activation.commandVersion ||
+              command.status !== activation.status
+            )
+              return [];
+            const selected = activation.skillName
+              ? skillsByName.get(activation.skillName)
+              : undefined;
+            if (
+              command.skillName !== (activation.skillName ?? null) ||
+              (selected && selected.version !== activation.skillVersion)
+            )
               return [];
             return [
               {
-                content: selected.content,
-                id: `skill:${selected.name}@${selected.version}`,
+                content: command.instructions,
+                id: `command:${command.name}@${command.version}`,
                 provenance: "trusted-durable" as const,
                 sourceEventIds: [eventId],
               },
+              ...(selected
+                ? [
+                    {
+                      content: selected.content,
+                      id: `skill:${selected.name}@${selected.version}`,
+                      provenance: "trusted-durable" as const,
+                      sourceEventIds: [eventId],
+                    },
+                  ]
+                : []),
             ];
           });
       }),

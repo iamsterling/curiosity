@@ -14,6 +14,7 @@ import {
   providerSucceeded,
   toolSucceeded,
 } from "../semantics/chat-tool-loop.js";
+import { stockAgentIds } from "./agents.js";
 
 const maximumMessageBytes = 64 * 1_024;
 const maximumIdentifierBytes = 256;
@@ -27,6 +28,7 @@ const titleFrom = (text: string): string => {
 };
 
 const validatePayloadBounds = (payload: {
+  readonly agentId?: string | undefined;
   readonly assistantMessageId: string;
   readonly text: string;
   readonly threadId: string;
@@ -34,6 +36,7 @@ const validatePayloadBounds = (payload: {
   readonly userMessageId: string;
 }): Effect.Effect<void, InputRejected> => {
   const identifiers = [
+    ...(payload.agentId ? [payload.agentId] : []),
     payload.assistantMessageId,
     payload.threadId,
     payload.turnId,
@@ -89,6 +92,9 @@ export const chatPlugin: CuriosityPluginV2 = {
           ),
         );
         yield* validatePayloadBounds(payload);
+        const agentId = payload.agentId ?? "generalist";
+        if (!stockAgentIds.includes(agentId))
+          return yield* new InputRejected({ message: "CHAT_AGENT_UNKNOWN" });
 
         const events: ProposedEvent[] = [];
         const threadExists = context.events.some(
@@ -123,6 +129,7 @@ export const chatPlugin: CuriosityPluginV2 = {
           {
             body: {
               assistantMessageId: payload.assistantMessageId,
+              agentId,
               schemaVersion: 1,
               threadId: payload.threadId,
               turnId: payload.turnId,
@@ -146,6 +153,7 @@ export const chatPlugin: CuriosityPluginV2 = {
           const requested = body(event.body);
           if (
             typeof requested?.assistantMessageId !== "string" ||
+            typeof requested.agentId !== "string" ||
             typeof requested.threadId !== "string" ||
             typeof requested.turnId !== "string"
           )
@@ -167,8 +175,9 @@ export const chatPlugin: CuriosityPluginV2 = {
                 deadlineClass: "interactive",
                 gateClass: "none-requested",
                 input: {
-                  agentId: "generalist",
+                  agentId: requested.agentId,
                   correlation: initialChatCorrelation({
+                    agentId: requested.agentId,
                     assistantMessageId: requested.assistantMessageId,
                     threadId: requested.threadId,
                     turnId: requested.turnId,

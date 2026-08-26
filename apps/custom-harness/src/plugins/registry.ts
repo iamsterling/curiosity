@@ -2,6 +2,7 @@ import { StaticPluginCatalog } from "../kernel/plugin.js";
 import { agentsPlugin } from "./agents.js";
 import { chatPlugin } from "./chat.js";
 import { contextPlugin } from "./context.js";
+import { compatibilityToolsPlugin } from "./compatibility-tools.js";
 import { evidencePlugin } from "./evidence.js";
 import { ledgerPlugin } from "./ledger.js";
 import { observationsPlugin } from "./observations.js";
@@ -16,6 +17,7 @@ import { workspacePlugin } from "./workspace.js";
 export const stockPlugins = Object.freeze([
   agentsPlugin,
   chatPlugin,
+  compatibilityToolsPlugin,
   contextPlugin,
   evidencePlugin,
   ledgerPlugin,

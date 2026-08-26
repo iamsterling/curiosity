@@ -1755,6 +1755,7 @@
         "apps/custom-harness/tests/chat.test.ts",
         "apps/custom-harness/tests/content-tools.test.ts",
         "apps/custom-harness/tests/intelligence-projections.test.ts",
+        "apps/custom-harness/tests/opencode2-parity.test.ts",
         "apps/custom-harness/tests/plugin-catalog.test.ts",
         "apps/custom-harness/tests/prompt-assembler.test.ts",
         "apps/custom-harness/tests/prompt-context.test.ts",
@@ -1835,6 +1836,17 @@
     },
     {
       "path": "apps/custom-harness/tests/intelligence-projections.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/custom-harness/tests/opencode2-parity.test.ts",
       "owner": "harness",
       "profiles": [
         "custom-harness"

@@ -204,19 +204,24 @@
           "sealed ABI v2 stock plugin catalog with manifest contribution dependency and workflow validation plus deterministic catalog identity",
           "one Effect ManagedRuntime authority",
           "immutable SQLite events actions attempts gates workflow steps and replayable read-only projections",
-          "mandatory Rust supervisor with host capabilities disabled",
+          "mandatory Rust supervisor confines bounded UTF-8 workspace reads while mutation Git process and sandbox capabilities remain disabled",
           "provider calls use immutable attempt snapshots physical-call accounting cancellation generation fencing and stale-receipt quarantine",
-          "native agents bounded context observations Ledger evidence skills prompt commands and proposal-only read tools remain plugin-owned",
+          "native agents bounded context observations Ledger evidence skills prompt commands compatibility tools and workspace tools remain plugin-owned",
+          "OpenCode2 behavioral parity seals 8 agents 8 skills 41 commands and 20 plugin-owned runtime tool names while retaining independent kernel runtime persistence schema and authority",
+          "slash commands activate through authenticated prompt.command.invoke and selected chat agents remain kernel validated",
+          "compatibility Ledger and native-loop tools route through durable semantic.command actions while deprecated surfaces fail closed",
           "finite loops and delegation use kernel budgets child capability ceilings cancellation propagation and terminal checks",
           "candidate capability status reports unqualified mutation Git sandbox remote publication deployment production mobile and hard-reset surfaces unavailable",
-          "provider calls limited to static AI SDK 6 adapters with no model-initiated tool execution",
+          "provider calls use static AI SDK 6 adapters and model-initiated tools remain version-snapshotted capability-gated bounded and core-dispatched",
           "real-host provider delivery remains unqualified",
           "no release deployment production tool Git sandbox or remote-access claim",
           "operator TUI is a projection and signed command client only",
           "alternate-screen terminal projection renders bounded streamed and completed Markdown without OpenTUI",
           "responsive OpenCode-style splash composer transcript error and compact frames are cell-geometry tested",
           "provider work animation changes one braille cell at a bounded cadence and supports explicit reduced motion",
-          "displayed OpenAI effort is forwarded as provider options and persisted with completion metadata"
+          "displayed OpenAI effort is forwarded as provider options and persisted with completion metadata",
+          "deep-research activation limits model-visible tools to bounded workspace_read and workspace_search and preserves assistant context through a finite continuation loop",
+          "workspace read and literal search are root-confined symlink-safe byte result line and entry bounded and grant no mutation shell Git or network authority"
         ]
       },
       "observation": {
@@ -229,6 +234,34 @@
           {
             "kind": "source",
             "ref": "apps/custom-harness/src/kernel/plugin.ts#StaticPluginCatalog"
+          },
+          {
+            "kind": "source",
+            "ref": "apps/custom-harness/src/product/stock-content.ts#stockSkillDefinitions"
+          },
+          {
+            "kind": "source",
+            "ref": "apps/custom-harness/src/plugins/compatibility-tools.ts#compatibilityToolContributions"
+          },
+          {
+            "kind": "source",
+            "ref": "apps/custom-harness/src/kernel/local-action-gateway.ts#LocalActionGateway"
+          },
+          {
+            "kind": "source",
+            "ref": "apps/custom-harness/src/plugins/workspace.ts#workspacePlugin"
+          },
+          {
+            "kind": "source",
+            "ref": "apps/custom-harness/src/kernel/tool-gateway.ts#ToolGateway"
+          },
+          {
+            "kind": "source",
+            "ref": "apps/custom-harness/src/semantics/chat-tool-loop.ts#providerSucceeded"
+          },
+          {
+            "kind": "source",
+            "ref": "apps/custom-harness/native/supervisor/src/main.rs#search_workspace"
           }
         ]
       },
@@ -303,6 +336,18 @@
           },
           {
             "kind": "test",
+            "ref": "apps/custom-harness/tests/content-tools.test.ts#routes compatible Ledger tools through the durable semantic command gateway"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/opencode2-parity.test.ts#seals every active agent installed skill and installed command"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/opencode2-parity.test.ts#registers every plugin-owned runtime tool name"
+          },
+          {
+            "kind": "test",
             "ref": "apps/custom-harness/tests/intelligence-projections.test.ts#replays equivalent bounded views while keeping evidence and resolution non-authoritative"
           },
           {
@@ -320,6 +365,14 @@
           {
             "kind": "test",
             "ref": "apps/custom-harness/tests/workflow-orchestration.test.ts#runs one bounded child and denies child capability widening"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/tui.test.ts#activates a slash-command skill before submitting its chat turn"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/chat.test.ts#executes bounded workspace evidence tools and continues the governed turn"
           }
         ]
       },
@@ -349,7 +402,7 @@
         "refs": [
           {
             "kind": "test",
-            "ref": "apps/custom-harness/tests/supervisor.test.ts#completes a nonce-bound versioned handshake with every host capability disabled"
+            "ref": "apps/custom-harness/tests/supervisor.test.ts#completes a nonce-bound handshake with only confined reads enabled"
           }
         ]
       },
@@ -373,12 +426,12 @@
         {
           "path": "apps/custom-harness/src/kernel/runtime.ts",
           "mode": "exact",
-          "sha256": "0ea995fe217de0fb474331cbc39e5af4808ce3ba3b3e347a3047ecf8f3472454"
+          "sha256": "e1decb007e1cac241b3d3bdebcf0523310064b1d152286f8b226e47a279ee90d"
         },
         {
           "path": "apps/custom-harness/tests/authority.test.ts",
           "mode": "exact",
-          "sha256": "8de381b922935f91552e24dd1a8e2710beec66f1877c69ec5980d571cc5f1f9d"
+          "sha256": "a6292387f8785ef5be22ddaa93bf9aabcb30719f50072c648d9bc78e568841f8"
         },
         {
           "path": "docs/architecture/custom-harness/decisions/ADR-011-direct-build-and-host-decoupling.md",
@@ -393,47 +446,62 @@
         {
           "path": "apps/custom-harness/tests/supervisor.test.ts",
           "mode": "exact",
-          "sha256": "9d76f9111e3773158783655e5372b6882f48d0bbc1593e4d1da1cb3f52e064c8"
+          "sha256": "f3b3c638b83165680085f75ea316b19a91cadec2457e1a0b0a4b67fc71251912"
         },
         {
           "path": "apps/custom-harness/tests/architecture.test.ts",
           "mode": "exact",
           "sha256": "aec75b5cb18b3579a31b753dc61ce5819380f46150c129fcaae8e1c086e6963c"
         },
-          {
-            "path": "apps/custom-harness/src/tui/session.ts",
-            "mode": "exact",
-            "sha256": "642d4c44ad3012de53b31000056d157bee3adff9cbba9245548519f2df72f428"
+        {
+          "path": "apps/custom-harness/src/tui/session.ts",
+          "mode": "exact",
+          "sha256": "43d0911a712455072d68bbf869e58d9facf2691de4ee7b16c77526d3f65c3dcc"
         },
-          {
-            "path": "apps/custom-harness/tests/tui.test.ts",
-            "mode": "exact",
-            "sha256": "6690213947f5bdc6c52bb399ddf8742ac6e3b0a205e1d1b62658563dd997a962"
+        {
+          "path": "apps/custom-harness/tests/tui.test.ts",
+          "mode": "exact",
+          "sha256": "1010726792ce2ea4e3d864e926645d10c94c97e932eac8d7ecfeda893f56a9f5"
         },
-          {
-            "path": "apps/custom-harness/src/tui.ts",
-            "mode": "exact",
-            "sha256": "a0c2b526ae67ff16d01b0d1d3b40774be34ef4e2cc2afe6de850bf0c108b49ab"
+        {
+          "path": "apps/custom-harness/src/tui.ts",
+          "mode": "exact",
+          "sha256": "898230e47851ae18e8593cb50ce2c274d292183a6719f500c80d2c3896b44065"
         },
         {
           "path": "apps/custom-harness/src/tui/config.ts",
           "mode": "exact",
-          "sha256": "c5114d7bb705f710115868ef19936a33ab277bee5c69d7bfe6a879a7dcec8fa6"
+          "sha256": "ab07456163d3b027aee876e06b48ce6989fb9f4c97476bf841a16ec119316c08"
         },
         {
           "path": "apps/custom-harness/src/kernel/authority.ts",
           "mode": "exact",
-          "sha256": "a0e3b4b33bdf589abd3c3c2390584507e4b17711e813a78c6e91372db20bbd5a"
+          "sha256": "929f21ba7a002acdbad5dcf93c0d1932d40c02bc308c1d957d501c3a82a8ee76"
         },
         {
           "path": "apps/custom-harness/src/plugins/chat.ts",
           "mode": "exact",
-          "sha256": "ca9b9d4538340b35b36acb2c4b2869c719a8f65e09b0576959bc2a0938f6c68d"
+          "sha256": "5c73271d4677cd51cf5ab56fca0eab42297cd71051e543e167408bab0594803e"
         },
         {
           "path": "apps/custom-harness/src/kernel/plugin.ts",
           "mode": "exact",
-          "sha256": "25f3d442aeef5b7fb0e71b892d69aac7d693c4802e15dea48cfae4b1f87e0371"
+          "sha256": "b1c906d072f7c42a2cd4179be4108486ded0abd6311d8d26390d442d39c74496"
+        },
+        {
+          "path": "apps/custom-harness/src/product/stock-content.ts",
+          "mode": "exact",
+          "sha256": "35cfdbc35a6bd32086e9442fee7485b7a76f5a2956468a3fdcbf47f1fb9750b1"
+        },
+        {
+          "path": "apps/custom-harness/src/plugins/compatibility-tools.ts",
+          "mode": "exact",
+          "sha256": "4e228ce952e5cba4b8fe2dcd48c9f2256a4e4545d0c213656a6dd0e4af76f6c8"
+        },
+        {
+          "path": "apps/custom-harness/src/kernel/local-action-gateway.ts",
+          "mode": "exact",
+          "sha256": "fe442490d2986d10c00f351b1a6e7d35f6b78c839ebcf6d55bb63d66698efcce"
         },
         {
           "path": "apps/custom-harness/tests/plugin-catalog.test.ts",
@@ -443,17 +511,17 @@
         {
           "path": "apps/custom-harness/src/providers/ai-sdk.ts",
           "mode": "exact",
-          "sha256": "9db2acf4da7d33d7a6ce2694acb462ce488907b2b10d25e0fe14cf4e3ae9c7c4"
+          "sha256": "6b79128522fac1cc93a2ecd2f78b8217a0421e02f1ebf8d3786d4231f3b7d6ae"
         },
         {
           "path": "apps/custom-harness/tests/chat.test.ts",
           "mode": "exact",
-          "sha256": "961be68ffa739df36c86f8346950eb3a041d8d447a129a078f24f09359f67ae1"
+          "sha256": "c19e29ccc7b85229fd0ef83d4b21fa12b759f3aeacf9a34cfc163f11ae7f63a2"
         },
         {
           "path": "apps/custom-harness/src/kernel/text-generator.ts",
           "mode": "exact",
-          "sha256": "f96d420acd7558b8139e8deb9297e59ee673e6f5cbd7be53f98318cac42973d1"
+          "sha256": "e41e9f262c86260adb37f48f0c491aa202ddd33346dac4f9fbae6eb7d386b874"
         },
         {
           "path": "apps/custom-harness/src/projection/chat-projection.ts",
@@ -470,50 +538,50 @@
           "mode": "exact",
           "sha256": "161774cfc692b96a61c801e8cdee12c9a3f11c99fadd74c08010c66a5435b04f"
         },
-          {
-            "path": "apps/custom-harness/src/tui/theme.ts",
-            "mode": "exact",
-            "sha256": "62dacebed4afdd1aba98dd0c9870918da4dfb2712b8848d518e27ca37fe21fce"
-          },
-          {
-            "path": "apps/custom-harness/src/tui/composer-view.ts",
-            "mode": "exact",
-            "sha256": "c1f19bdfe962bb38eae30739f0dbec4532c753006500b6f6ce6263857c565ca6"
-          },
-          {
-            "path": "apps/custom-harness/src/tui/frame-text.ts",
-            "mode": "exact",
-            "sha256": "123aa189c0af31bee5d3c7ffbcea3c10bfddc45e9f1e0c3e6556877844279fa9"
-          },
-          {
-            "path": "apps/custom-harness/src/tui/frame-types.ts",
-            "mode": "exact",
-            "sha256": "81edddd35b95f2b60059bbb6b6031bc9d8419bb1ead79c024c14e325e0724c00"
-          },
-          {
-            "path": "apps/custom-harness/src/tui/frame.ts",
-            "mode": "exact",
-            "sha256": "b2e0970b269390bda993a5a70da1e1afee9892a387e37f91699c3cf83d463c61"
-          },
-          {
-            "path": "apps/custom-harness/src/tui/screen-terminal.ts",
-            "mode": "exact",
-            "sha256": "89a0794f219bdf362ca327ddc94ec4f49424aca77da38e427847d2f766486716"
-          },
-          {
-            "path": "apps/custom-harness/src/tui/session-turn.ts",
-            "mode": "exact",
-             "sha256": "3a342fee4e46878e0b6c26fcd290551fd2fc9915e91315afdff67f532894874d"
-          },
-          {
-            "path": "apps/custom-harness/src/tui/transcript-view.ts",
-            "mode": "exact",
-            "sha256": "64f5642ee3a01510fa4990d95d6d0e9f4c5c23fcb46e9bc1f3abf614d274a3c5"
-          },
-          {
-            "path": "apps/custom-harness/src/tui/animation.ts",
-            "mode": "exact",
-            "sha256": "0916559dac2b05d690591e07512d272606b74fc56bceea9e78a9f2a04d4a5002"
+        {
+          "path": "apps/custom-harness/src/tui/theme.ts",
+          "mode": "exact",
+          "sha256": "62dacebed4afdd1aba98dd0c9870918da4dfb2712b8848d518e27ca37fe21fce"
+        },
+        {
+          "path": "apps/custom-harness/src/tui/composer-view.ts",
+          "mode": "exact",
+          "sha256": "c1f19bdfe962bb38eae30739f0dbec4532c753006500b6f6ce6263857c565ca6"
+        },
+        {
+          "path": "apps/custom-harness/src/tui/frame-text.ts",
+          "mode": "exact",
+          "sha256": "123aa189c0af31bee5d3c7ffbcea3c10bfddc45e9f1e0c3e6556877844279fa9"
+        },
+        {
+          "path": "apps/custom-harness/src/tui/frame-types.ts",
+          "mode": "exact",
+          "sha256": "81edddd35b95f2b60059bbb6b6031bc9d8419bb1ead79c024c14e325e0724c00"
+        },
+        {
+          "path": "apps/custom-harness/src/tui/frame.ts",
+          "mode": "exact",
+          "sha256": "b2e0970b269390bda993a5a70da1e1afee9892a387e37f91699c3cf83d463c61"
+        },
+        {
+          "path": "apps/custom-harness/src/tui/screen-terminal.ts",
+          "mode": "exact",
+          "sha256": "89a0794f219bdf362ca327ddc94ec4f49424aca77da38e427847d2f766486716"
+        },
+        {
+          "path": "apps/custom-harness/src/tui/session-turn.ts",
+          "mode": "exact",
+          "sha256": "031911145447f86bf15d0f4cdc8e37a6614f4f538c95aff1dc89c611f1a236d8"
+        },
+        {
+          "path": "apps/custom-harness/src/tui/transcript-view.ts",
+          "mode": "exact",
+          "sha256": "64f5642ee3a01510fa4990d95d6d0e9f4c5c23fcb46e9bc1f3abf614d274a3c5"
+        },
+        {
+          "path": "apps/custom-harness/src/tui/animation.ts",
+          "mode": "exact",
+          "sha256": "0916559dac2b05d690591e07512d272606b74fc56bceea9e78a9f2a04d4a5002"
         },
         {
           "path": "apps/custom-harness/src/types/marked-terminal.d.ts",
@@ -523,42 +591,127 @@
         {
           "path": "apps/custom-harness/tests/action-reaction.test.ts",
           "mode": "exact",
-          "sha256": "f3c087bc1a52f7b9bee2479e90e3c5c72154371fd19635d1c6f53e3e4ff067dc"
+          "sha256": "0d1cf4a5b1edd4c8d945736a39c8e5a99431867e1697efc11a71c6db55047e70"
         },
         {
           "path": "apps/custom-harness/tests/attempt-governance.test.ts",
           "mode": "exact",
-          "sha256": "3355a790047eb318e467fb7cfc1922b8ab255e41b45c77be9d2449d88aed86ce"
+          "sha256": "91488ccde8d881e3f9fdf7c79856cbe7a342e0ca054662fce90b255b9937fca4"
         },
         {
           "path": "apps/custom-harness/tests/content-tools.test.ts",
           "mode": "exact",
-          "sha256": "e6e561c8e896b94d859b9b7d14637cf08cfcbc66a8a833a1f357a171d1f2f56d"
+          "sha256": "b6198095e1ccd7eaef58c3d3286e7a95919de12718cd6dfe6a20b5e88f1b5694"
+        },
+        {
+          "path": "apps/custom-harness/tests/opencode2-parity.test.ts",
+          "mode": "exact",
+          "sha256": "2cff193a7abbb2953703d4b896f856154d94d755ac31f66d11c2d27706ceb68a"
         },
         {
           "path": "apps/custom-harness/tests/intelligence-projections.test.ts",
           "mode": "exact",
-          "sha256": "58eb62d0ff42657a794e04eb98cc1260ddb95150679046856f6f26a5ca5ca672"
+          "sha256": "62f2bfb36e46b0f606322ebc6748ffb0e12352e348d2507aeea58781ea88b86d"
         },
         {
           "path": "apps/custom-harness/tests/prompt-assembler.test.ts",
           "mode": "exact",
-          "sha256": "dd604b5bd78a4b60a33b4534332d0b7ad78ddce61d7630afaf5021bb8447d665"
+          "sha256": "a22eb250779a71e798303656f1b9decc70142fb4d66eca1e42d592fe983f5641"
         },
         {
           "path": "apps/custom-harness/tests/prompt-context.test.ts",
           "mode": "exact",
-          "sha256": "dbdd450251d490c9eb42f45cb08f74ba199b280832a5be8d2d172e778423d2e9"
+          "sha256": "6837439b0525fd5f51de59575fa29b373493a68a9146fb268fb8b5ad935703cf"
         },
         {
           "path": "apps/custom-harness/tests/qualification-status.test.ts",
           "mode": "exact",
-          "sha256": "44191f5a144bd5630fd430b200ea7217178f0549e4c2473d8d421368ff531847"
+          "sha256": "e93fad5a5a89c417674ca522d6e48eef11e14047e3e5d9d33af7874b9cc3e0a1"
         },
         {
           "path": "apps/custom-harness/tests/workflow-orchestration.test.ts",
           "mode": "exact",
-          "sha256": "7d7464979eba6477a7a8e8f8aa9933c1eee4b6a2bf170d61161853306afac3ff"
+          "sha256": "cfeb455965cfc61af722a1bb4f37d5a0746d2265c489f15d893198ea8f8eeda4"
+        },
+        {
+          "path": "apps/custom-harness/native/supervisor/src/main.rs",
+          "mode": "exact",
+          "sha256": "facaa7792b23215e3cc70bb16589ed0f926d3c33f975a48534e1fa9ff8878fa6"
+        },
+        {
+          "path": "apps/custom-harness/src/domain/attempt.ts",
+          "mode": "exact",
+          "sha256": "cd20290285309c902dfc23f9ee71f631f4269ec79fd12a25d8e17b11ebba3f0d"
+        },
+        {
+          "path": "apps/custom-harness/src/domain/prompt.ts",
+          "mode": "exact",
+          "sha256": "cfef0195d0f2a0748f8ef6c7e1b9e5ebad984085270363cf0556856601cb3bd1"
+        },
+        {
+          "path": "apps/custom-harness/src/kernel/prompt-assembler.ts",
+          "mode": "exact",
+          "sha256": "c35e51c0728d5031c89db211c244d3db61eabdda0d8d4d5c9a7d85c3d22ae664"
+        },
+        {
+          "path": "apps/custom-harness/src/kernel/provider-gateway.ts",
+          "mode": "exact",
+          "sha256": "15d1b38c2ab94dff8909969524991cb7ec90bd8037e4e18e5179eacb66c413ae"
+        },
+        {
+          "path": "apps/custom-harness/src/kernel/reaction-engine.ts",
+          "mode": "exact",
+          "sha256": "86970b9267a1d31f33e9725a914d2dbe9725c3a5ffcd0ed7b0600c1149db3a6a"
+        },
+        {
+          "path": "apps/custom-harness/src/kernel/tool-gateway.ts",
+          "mode": "exact",
+          "sha256": "b967280e702406a22b899f723f0e1e89268a1cfb028f4421a4e7809def55884a"
+        },
+        {
+          "path": "apps/custom-harness/src/plugins/agents.ts",
+          "mode": "exact",
+          "sha256": "3f9cca37d8f330b968bca4fe7aacc679fd9c2ef328e5e46d244c4484465b080c"
+        },
+        {
+          "path": "apps/custom-harness/src/plugins/context.ts",
+          "mode": "exact",
+          "sha256": "5ba7dd2ad0d648679287859dbd3522db49dc5bacd2588af5571b74c0f68e8d77"
+        },
+        {
+          "path": "apps/custom-harness/src/plugins/skills.ts",
+          "mode": "exact",
+          "sha256": "e9492c67c11e4848ef62a5f266d100cb2162ac4733cedbce1ab04fbf810b5dc8"
+        },
+        {
+          "path": "apps/custom-harness/src/plugins/workspace.ts",
+          "mode": "exact",
+          "sha256": "bd6f8956557ecf4b5ba3b398ea1a0e6656148ed60c593599fcfb7856d7a4dac1"
+        },
+        {
+          "path": "apps/custom-harness/src/semantics/chat-tool-loop.ts",
+          "mode": "exact",
+          "sha256": "1506e737caab9d4499a894e5c288e0e8fa9b19f2ae37ba2997c09300de303008"
+        },
+        {
+          "path": "apps/custom-harness/src/storage/attempt-journal.ts",
+          "mode": "exact",
+          "sha256": "0f5a78843a232d47888cb76dd086163778449837f8740a17b92db317745eb666"
+        },
+        {
+          "path": "apps/custom-harness/src/storage/event-journal.ts",
+          "mode": "exact",
+          "sha256": "2591db4f99fa71b8876fbec76b4af8c9ca49a3bcaada2731f8511edff0b70205"
+        },
+        {
+          "path": "apps/custom-harness/src/storage/event-schema.ts",
+          "mode": "exact",
+          "sha256": "c4ab76304d68d96b3c0ce0e9dce8d907dc2185b7d8766c653a351115628706f0"
+        },
+        {
+          "path": "apps/custom-harness/src/supervisor/client.ts",
+          "mode": "exact",
+          "sha256": "2e884c8e9d992bcb7cbcf0bb19a3ce60907c70cbb55685e0dbbc7f9af7f0aff9"
         }
       ]
     },

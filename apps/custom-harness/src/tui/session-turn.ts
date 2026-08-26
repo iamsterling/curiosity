@@ -5,18 +5,19 @@ import type { ChatMessageProjection } from "../projection/chat-projection.js";
 import type { ThreadProjection } from "../projection/thread-projection.js";
 
 export interface TurnIdentity {
+  readonly agentId?: string;
   readonly actorId: string;
   readonly secret: string;
 }
 
-export interface ParsedPromptCommand {
+export interface PromptCommandInput {
   readonly arguments: string;
   readonly name: string;
 }
 
 export const parsePromptCommand = (
   text: string,
-): ParsedPromptCommand | undefined => {
+): PromptCommandInput | undefined => {
   const match = /^\/([a-z][a-z0-9-]{0,63})(?:[ \t]+([\s\S]*))?$/u.exec(text);
   const name = match?.[1];
   if (!name) return undefined;
@@ -25,7 +26,6 @@ export const parsePromptCommand = (
     name,
   });
 };
-
 export const latestThread = (
   threads: readonly ThreadProjection[],
 ): ThreadProjection | undefined =>
@@ -61,6 +61,7 @@ export const signTurn = (
         id: createId(),
         kind: "chat.turn",
         payload: {
+          ...(identity.agentId ? { agentId: identity.agentId } : {}),
           assistantMessageId: createId(),
           text,
           threadId,
@@ -80,7 +81,7 @@ export const signTurn = (
 export const signPromptCommand = (
   identity: TurnIdentity,
   threadId: string,
-  prompt: ParsedPromptCommand,
+  prompt: PromptCommandInput,
   createId: () => string,
   issuedAt: () => string,
 ): SignedCommandEnvelope => {

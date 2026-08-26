@@ -5,6 +5,8 @@ import {
   type CuriosityPluginV2,
   type ToolContribution,
 } from "../kernel/plugin.js";
+import { compatibilityToolContributions } from "./compatibility-tools.js";
+import { searchToolContributions } from "./search.js";
 
 class LedgerQuery extends Schema.Class<LedgerQuery>(
   "@curiosity/custom-harness/LedgerQuery",
@@ -158,7 +160,11 @@ const tools: readonly ToolContribution[] = [
     version: "1.0.0",
   },
 ];
-const toolsByName = new Map(tools.map((tool) => [tool.name, tool]));
+const toolsByName = new Map(
+  [...tools, ...compatibilityToolContributions, ...searchToolContributions].map(
+    (tool) => [tool.name, tool],
+  ),
+);
 
 export const toolsPlugin: CuriosityPluginV2 = {
   commandDeciders: [
@@ -274,8 +280,10 @@ export const toolsPlugin: CuriosityPluginV2 = {
       source: "apps/custom-harness/src/plugins/tools.ts",
     },
     requires: [
+      { pluginId: "curiosity.stock.compatibility-tools", version: "1.0.0" },
       { pluginId: "curiosity.stock.evidence", version: "1.0.0" },
       { pluginId: "curiosity.stock.ledger", version: "1.0.0" },
+      { pluginId: "curiosity.stock.search", version: "1.0.0" },
     ],
     schemaVersion: 2,
     version: "1.0.0",

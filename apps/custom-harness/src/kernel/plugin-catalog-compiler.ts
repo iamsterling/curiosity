@@ -359,6 +359,10 @@ export const compilePluginCatalog = (
     for (const child of agent.childAgents)
       if (!agents.has(child))
         throw new Error(`PLUGIN_AGENT_CHILD_MISSING:${agent.id}:${child}`);
+  for (const agent of agents.values())
+    for (const toolName of agent.requestedTools)
+      if (!tools.has(toolName))
+        throw new Error(`PLUGIN_AGENT_TOOL_MISSING:${agent.id}:${toolName}`);
   for (const context of contexts)
     for (const agentId of context.agentIds)
       if (!agents.has(agentId))
@@ -366,7 +370,7 @@ export const compilePluginCatalog = (
           `PLUGIN_CONTEXT_AGENT_MISSING:${context.id}:${agentId}`,
         );
   for (const command of promptCommands.values())
-    if (!skills.has(command.skillName))
+    if (command.skillName !== null && !skills.has(command.skillName))
       throw new Error(
         `PLUGIN_PROMPT_COMMAND_SKILL_MISSING:${command.id}:${command.skillName}`,
       );

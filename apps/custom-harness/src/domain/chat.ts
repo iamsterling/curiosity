@@ -3,6 +3,7 @@ import { Schema } from "effect";
 export class ChatTurnPayload extends Schema.Class<ChatTurnPayload>(
   "@curiosity/custom-harness/ChatTurnPayload",
 )({
+  agentId: Schema.optional(Schema.NonEmptyString),
   assistantMessageId: Schema.NonEmptyString,
   text: Schema.NonEmptyString,
   threadId: Schema.NonEmptyString,

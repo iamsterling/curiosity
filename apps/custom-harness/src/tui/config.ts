@@ -22,6 +22,10 @@ const configured = (value: string | undefined): string | undefined => {
   return trimmed ? trimmed : undefined;
 };
 
+export const resolveTuiAgentId = (
+  environment: TuiEnvironment,
+): string => configured(environment.CURIOSITY_AGENT) ?? "generalist";
+
 export const resolveTuiConfig = (
   environment: TuiEnvironment,
   defaults: TuiConfigDefaults = {},

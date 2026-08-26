@@ -40,12 +40,35 @@ const slotOrder = new Map([
 const maximumContextBytes = 65_536;
 const maximumHistoryBytes = 131_072;
 const maximumHistoryMessages = 128;
+const deepResearchToolNames = new Set([
+  "workspace_read",
+  "workspace_search",
+]);
 
 const digest = (value: unknown): string =>
   createHash("sha256").update(canonicalJson(value)).digest("hex");
 
 const promptFailure = (message: string) =>
   new PromptAssemblyFailure({ message });
+
+const activeSkillName = (
+  events: readonly StoredEvent[],
+  correlation: unknown,
+): string | undefined => {
+  if (!correlation || typeof correlation !== "object" || Array.isArray(correlation))
+    return undefined;
+  const threadId = (correlation as Record<string, unknown>).threadId;
+  if (typeof threadId !== "string") return undefined;
+  for (const event of [...events].reverse()) {
+    if (event.type !== "skill.activated" || event.streamId !== threadId)
+      continue;
+    if (!event.body || typeof event.body !== "object" || Array.isArray(event.body))
+      continue;
+    const skillName = (event.body as Record<string, unknown>).skillName;
+    if (typeof skillName === "string") return skillName;
+  }
+  return undefined;
+};
 
 const delimitedContent = (block: ContextBlock): string => {
   if (block.provenance === "trusted-durable") return block.content;
@@ -189,8 +212,11 @@ export class PromptAssembler {
     );
     const agent = this.catalog.agent(input.agentId);
     if (!agent) return yield* promptFailure("AGENT_NOT_FOUND");
+    const activeSkill = activeSkillName(events, input.correlation);
     const tools: PromptSnapshotTool[] = [];
     for (const name of [...agent.requestedTools].sort()) {
+      if (activeSkill === "deep-research" && !deepResearchToolNames.has(name))
+        continue;
       const tool = this.catalog.tool(name);
       if (!tool) return yield* promptFailure("AGENT_TOOL_NOT_FOUND");
       if (

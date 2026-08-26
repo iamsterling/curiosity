@@ -205,6 +205,53 @@ describe("skills, prompt commands, tools, and search", () => {
     await harness.dispose();
   });
 
+  test("routes compatible Ledger tools through the durable semantic command gateway", async () => {
+    const { databasePath, harness } = fixture();
+    await submit(harness, "tool.propose", {
+      input: {
+        intent: {
+          id: "intent-tool-001",
+          invariant: "Plugin tool proposals cannot bypass kernel authority",
+          nonGoals: ["production activation"],
+          objective: "Record a native intent through the compatibility tool",
+          revision: 1,
+          rigor: "mechanical",
+          scope: ["apps/custom-harness"],
+        },
+      },
+      proposalId: "tool-proposal-ledger-001",
+      schemaVersion: 1,
+      subjectId: "intent-tool-001",
+      toolName: "ledger_intent_propose",
+    });
+
+    expect(
+      await harness.projections.plugin(
+        "curiosity.stock.ledger.projections.domain",
+      ),
+    ).toMatchObject({
+      intents: [
+        expect.objectContaining({
+          id: "intent-tool-001",
+          rigor: "mechanical",
+        }),
+      ],
+    });
+    const database = new Database(databasePath, {
+      readonly: true,
+      strict: true,
+    });
+    expect(
+      database
+        .query<{ status: string }, []>(
+          "SELECT status FROM actions WHERE action_type = 'semantic.command'",
+        )
+        .get(),
+    ).toEqual({ status: "succeeded" });
+    database.close();
+    await harness.dispose();
+  });
+
   test("seals content and tool definitions in the deterministic catalog", () => {
     const catalog = createStockPluginCatalog();
     expect(catalog.promptCommand("research")).toMatchObject({
@@ -218,6 +265,10 @@ describe("skills, prompt commands, tools, and search", () => {
     expect(catalog.tool("web_search")).toMatchObject({
       outputProvenance: "untrusted-evidence",
       requestedCapabilities: ["network.search"],
+    });
+    expect(catalog.tool("ledger_intent_propose")).toMatchObject({
+      actionType: "semantic.command",
+      requestedCapabilities: ["semantic.command"],
     });
   });
 });

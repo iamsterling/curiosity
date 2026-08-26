@@ -22,10 +22,11 @@ export type { TuiScreenTerminal };
 
 export type TuiHarness = Pick<
   CuriosityHarness,
-  "chat" | "projections" | "submit"
+  "catalog" | "chat" | "projections" | "submit"
 >;
 
 export interface TuiSessionOptions {
+  readonly agentId?: string;
   readonly actorId: string;
   readonly color?: boolean;
   readonly createId?: () => string;
@@ -44,6 +45,9 @@ export const runTuiSession = async (
 ): Promise<void> => {
   const createId = options.createId ?? randomUUID;
   const issuedAt = options.issuedAt ?? (() => new Date().toISOString());
+  const agentId = options.agentId ?? "generalist";
+  if (!options.harness.catalog.agents.some((agent) => agent.id === agentId))
+    throw new Error("TUI_AGENT_UNKNOWN");
   const theme = makeTerminalTheme(options.color ?? false);
   let thread = latestThread(await options.harness.projections.threads());
   let messages = thread
@@ -173,8 +177,18 @@ export const runTuiSession = async (
       continue;
     }
 
-    const threadId = thread?.threadId ?? createId();
     const promptCommand = parsePromptCommand(text);
+    if (
+      promptCommand &&
+      !options.harness.catalog.promptCommands.some(
+        (command) => command.name === promptCommand.name,
+      )
+    ) {
+      error = "PROMPT_COMMAND_UNKNOWN";
+      draw();
+      continue;
+    }
+    const threadId = thread?.threadId ?? createId();
     const promptEnvelope = promptCommand
       ? signPromptCommand(
           options,
@@ -184,7 +198,13 @@ export const runTuiSession = async (
           issuedAt,
         )
       : undefined;
-    const envelope = signTurn(options, threadId, text, createId, issuedAt);
+    const envelope = signTurn(
+      { ...options, ...(options.agentId ? { agentId } : {}) },
+      threadId,
+      text,
+      createId,
+      issuedAt,
+    );
     submittedText = text;
     streamingText = undefined;
     error = undefined;

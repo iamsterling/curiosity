@@ -9,6 +9,7 @@ import { ActionExecutionFailure, PluginFailure } from "./errors.js";
 import type { StaticPluginCatalog } from "./plugin.js";
 import { ProviderGateway, type ActionStreamDelta } from "./provider-gateway.js";
 import { ToolGateway } from "./tool-gateway.js";
+import { LocalActionGateway } from "./local-action-gateway.js";
 
 const maximumDrainSteps = 1_024;
 
@@ -69,6 +70,8 @@ const actionProposedEvent = (
 });
 
 export class ReactionEngine {
+  private readonly localActions: LocalActionGateway;
+
   constructor(
     private readonly journal: EventJournal,
     private readonly catalog: StaticPluginCatalog,
@@ -77,7 +80,9 @@ export class ReactionEngine {
     private readonly now: () => number,
     private readonly grantedCapabilities: ReadonlySet<string>,
     private readonly eligibleActorId: string,
-  ) {}
+  ) {
+    this.localActions = new LocalActionGateway(journal, catalog, now);
+  }
 
   private processReactions = Effect.fn("ReactionEngine.processReactions")(
     function* (this: ReactionEngine) {
@@ -188,6 +193,8 @@ export class ReactionEngine {
       return yield* this.providers.execute(action, onDelta);
     if (["workspace.read", "workspace.search"].includes(action.actionType))
       return yield* this.tools.execute(action);
+    if (this.localActions.supports(action.actionType))
+      return yield* this.localActions.execute(action);
     const completedAt = new Date(this.now()).toISOString();
     const event = {
       body: {

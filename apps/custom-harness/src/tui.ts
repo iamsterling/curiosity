@@ -3,7 +3,7 @@ import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { createCuriosityHarness } from "./kernel/runtime.js";
 import { createAiSdkTextGenerator } from "./providers/ai-sdk.js";
-import { resolveTuiConfig } from "./tui/config.js";
+import { resolveTuiAgentId, resolveTuiConfig } from "./tui/config.js";
 import { resolveMotionPreference } from "./tui/animation.js";
 import { createNodeScreenTerminal } from "./tui/screen-terminal.js";
 import { runTuiSession } from "./tui/session.js";
@@ -23,6 +23,7 @@ const main = async (): Promise<void> => {
 
   try {
     await runTuiSession({
+      agentId: resolveTuiAgentId(process.env),
       actorId: config.actorId,
       color: process.env.NO_COLOR === undefined,
       effort: textGenerator.effort,

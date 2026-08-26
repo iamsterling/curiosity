@@ -86,6 +86,7 @@ export const makeAuthority = (config: AuthorityConfig): AuthorityService => {
     journal.readEvents(),
   );
   const grantedCapabilities = new Set([
+    "semantic.command",
     ...(config.textGenerator ? ["provider.generate"] : []),
     ...(config.supervisor.receipt.capabilities.filesystemRead
       ? ["filesystem.read"]

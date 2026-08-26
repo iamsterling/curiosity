@@ -10,7 +10,17 @@ export class LedgerIntent extends Schema.Class<LedgerIntent>(
   nonGoals: StringList,
   objective: Schema.NonEmptyString,
   revision: Schema.Number,
-  rigor: Schema.Literals(["lite", "practical", "rigorous"]),
+  rigor: Schema.Literals([
+    "behavioral",
+    "destructive",
+    "irreversible",
+    "lite",
+    "mechanical",
+    "practical",
+    "rigorous",
+    "schema",
+    "security",
+  ]),
   schemaVersion: Schema.Literal(1),
   scope: StringList,
 }) {}

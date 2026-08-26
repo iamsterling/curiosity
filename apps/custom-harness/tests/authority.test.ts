@@ -60,11 +60,12 @@ describe("sealed command authority", () => {
     const { harness } = fixture();
 
     expect(harness.catalog.pluginIds).toEqual([
-      "curiosity.stock.agents",
       "curiosity.stock.context",
       "curiosity.stock.ledger",
       "curiosity.stock.evidence",
       "curiosity.stock.loop",
+      "curiosity.stock.compatibility-tools",
+      "curiosity.stock.agents",
       "curiosity.stock.observations",
       "curiosity.stock.orchestration",
       "curiosity.stock.search",

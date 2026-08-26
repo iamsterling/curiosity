@@ -106,6 +106,10 @@ export class StaticPluginCatalog {
     return this.#agents.get(agentId);
   }
 
+  agents(): readonly RegisteredAgent[] {
+    return Object.freeze([...this.#agents.values()]);
+  }
+
   contextContributors(): readonly RegisteredContextContributor[] {
     return this.#contexts;
   }
@@ -126,15 +130,31 @@ export class StaticPluginCatalog {
     return this.#promptCommands.get(name);
   }
 
+  promptCommands(): readonly RegisteredPromptCommand[] {
+    return Object.freeze([...this.#promptCommands.values()]);
+  }
+
   skill(name: string): RegisteredSkill | undefined {
     return this.#skills.get(name);
+  }
+
+  skills(): readonly RegisteredSkill[] {
+    return Object.freeze([...this.#skills.values()]);
   }
 
   tool(name: string): RegisteredTool | undefined {
     return this.#tools.get(name);
   }
 
+  tools(): readonly RegisteredTool[] {
+    return Object.freeze([...this.#tools.values()]);
+  }
+
   workflow(name: string): RegisteredWorkflow | undefined {
     return this.#workflows.get(name);
+  }
+
+  workflows(): readonly RegisteredWorkflow[] {
+    return Object.freeze([...this.#workflows.values()]);
   }
 }

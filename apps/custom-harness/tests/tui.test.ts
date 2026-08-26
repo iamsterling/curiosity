@@ -8,7 +8,10 @@ import {
   type TuiHarness,
   type TuiScreenTerminal,
 } from "../src/tui/session.js";
-import { resolveTuiConfig } from "../src/tui/config.js";
+import {
+  resolveTuiAgentId,
+  resolveTuiConfig,
+} from "../src/tui/config.js";
 import {
   resolveAiSdkEffort,
   resolveAiSdkModelId,
@@ -38,6 +41,17 @@ describe("custom harness TUI", () => {
       size: () => ({ columns: 120, rows: 40 }),
     };
     const harness: TuiHarness = {
+      catalog: {
+        agents: [
+          { description: "Direct execution", id: "generalist", mode: "primary" },
+        ],
+        digest: "test-catalog",
+        pluginIds: [],
+        promptCommands: [],
+        skills: [],
+        tools: [],
+        workflows: [],
+      },
       projections: {
         messages: async () => [],
         plugin: async () => ({}),
@@ -65,7 +79,7 @@ describe("custom harness TUI", () => {
       },
       submit: async () => ({
         actorId: "local-owner",
-        commandId: "unused",
+        commandId: "prompt-command",
         disposition: "accepted",
         eventCount: 1,
         firstSequence: 1,
@@ -142,6 +156,23 @@ describe("custom harness TUI", () => {
       size: () => ({ columns: 120, rows: 40 }),
     };
     const harness: TuiHarness = {
+      catalog: {
+        agents: [
+          { description: "Direct execution", id: "generalist", mode: "primary" },
+        ],
+        digest: "test-catalog",
+        pluginIds: [],
+        promptCommands: [
+          {
+            description: "Research",
+            name: "research",
+            status: "active",
+          },
+        ],
+        skills: [],
+        tools: [],
+        workflows: [],
+      },
       chat: async (envelope) => {
         const signed = envelope as SignedCommandEnvelope;
         commands.push(signed);
@@ -263,6 +294,9 @@ describe("custom harness TUI", () => {
     );
     expect(resolveAiSdkModelId({})).toBe("openai-oauth:gpt-5.4-mini");
     expect(resolveAiSdkEffort({}, "openai-oauth:gpt-5.4-mini")).toBe("medium");
+    expect(resolveTuiAgentId({ CURIOSITY_AGENT: "researcher" })).toBe(
+      "researcher",
+    );
     expect(
       resolveAiSdkEffort(
         { CURIOSITY_EFFORT: "high" },

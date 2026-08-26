@@ -42,8 +42,21 @@ export interface CuriosityHarness {
 }
 
 export interface CuriosityPluginCatalogProjection {
+  readonly agents: readonly {
+    readonly description: string;
+    readonly id: string;
+    readonly mode: "primary" | "subagent";
+  }[];
   readonly digest: string;
   readonly pluginIds: readonly string[];
+  readonly promptCommands: readonly {
+    readonly description: string;
+    readonly name: string;
+    readonly status: "active" | "compatibility-deprecated";
+  }[];
+  readonly skills: readonly string[];
+  readonly tools: readonly string[];
+  readonly workflows: readonly string[];
 }
 
 class HarnessAuthority extends Context.Service<
@@ -112,8 +125,25 @@ export const createCuriosityHarness = (
   validateConfig(config);
   const pluginCatalog = createStockPluginCatalog();
   const catalog = Object.freeze({
+    agents: Object.freeze(
+      pluginCatalog.agents().map(({ description, id, mode }) =>
+        Object.freeze({ description, id, mode }),
+      ),
+    ),
     digest: pluginCatalog.catalogDigest,
     pluginIds: pluginCatalog.pluginIds,
+    promptCommands: Object.freeze(
+      pluginCatalog
+        .promptCommands()
+        .map(({ description, name, status }) =>
+          Object.freeze({ description, name, status }),
+        ),
+    ),
+    skills: Object.freeze(pluginCatalog.skills().map(({ name }) => name)),
+    tools: Object.freeze(pluginCatalog.tools().map(({ name }) => name)),
+    workflows: Object.freeze(
+      pluginCatalog.workflows().map(({ name }) => name),
+    ),
   });
   const runtime = ManagedRuntime.make(authorityLayer(config, pluginCatalog));
   const run = (

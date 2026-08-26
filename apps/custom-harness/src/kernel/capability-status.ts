@@ -59,6 +59,10 @@ export const capabilityStatus = (input: {
         ),
         unavailable("tool.evidence-read", "TOOL_ADAPTER_UNAVAILABLE"),
         unavailable("tool.projection-read", "TOOL_ADAPTER_UNAVAILABLE"),
+        available(
+          "tool.semantic-command",
+          "DURABLE_SEMANTIC_COMMAND_GATEWAY_ACTIVE",
+        ),
         unavailable("updates.automatic", "AUTO_UPDATE_FORBIDDEN"),
         available("workflow.loop", "BOUNDED_WORKFLOW_KERNEL_ACTIVE"),
         available(

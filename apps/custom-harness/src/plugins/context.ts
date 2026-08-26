@@ -7,6 +7,7 @@ import {
 class ChatCorrelation extends Schema.Class<ChatCorrelation>(
   "@curiosity/custom-harness/ChatContextCorrelation",
 )({
+  agentId: Schema.NonEmptyString,
   assistantMessageId: Schema.NonEmptyString,
   assistantContext: Schema.String,
   kind: Schema.Literal("curiosity.chat.turn"),
@@ -33,7 +34,7 @@ export const contextPlugin: CuriosityPluginV2 = {
   context: [
     {
       actionTypes: ["provider.generate"],
-      agentIds: ["generalist"],
+      agentIds: [],
       eventTypes: ["thread.opened", "turn.failed"],
       id: "curiosity.stock.context.context.conversation",
       maxBlocks: 1,

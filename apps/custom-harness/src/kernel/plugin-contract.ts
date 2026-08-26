@@ -150,9 +150,12 @@ export interface SkillContribution {
 export interface PromptCommandContribution {
   readonly description: string;
   readonly id: `${string}.prompt-commands.${string}`;
+  readonly instructions: string;
   readonly name: string;
   readonly schemaVersion: 1;
-  readonly skillName: string;
+  readonly skillName: string | null;
+  readonly status: "active" | "compatibility-deprecated";
+  readonly version: string;
 }
 
 export interface ToolContribution {

@@ -207,6 +207,7 @@ export class ActionJournal {
 
   completeAction(input: {
     readonly actionId: string;
+    readonly additionalEvents?: readonly ProposedEvent[];
     readonly callId?: string;
     readonly completedAt: string;
     readonly errorCode?: string;
@@ -262,7 +263,7 @@ export class ActionJournal {
           actorId: "curiosity-kernel",
           commandDigest: input.outputDigest,
           commandId: `${input.actionId}:${input.status}`,
-          events: [input.event],
+          events: [input.event, ...(input.additionalEvents ?? [])],
           nonce: `${input.actionId}:${input.status}`,
           pluginId: "curiosity.kernel.actions",
         });
