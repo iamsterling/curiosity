@@ -61,18 +61,23 @@ describe("sealed command authority", () => {
 
     expect(harness.catalog.pluginIds).toEqual([
       "curiosity.stock.context",
+      "curiosity.stock.delegation",
+      "curiosity.stock.git",
       "curiosity.stock.ledger",
       "curiosity.stock.evidence",
       "curiosity.stock.loop",
       "curiosity.stock.compatibility-tools",
-      "curiosity.stock.agents",
       "curiosity.stock.observations",
       "curiosity.stock.orchestration",
+      "curiosity.stock.process",
+      "curiosity.stock.question",
       "curiosity.stock.search",
       "curiosity.stock.skills",
       "curiosity.stock.thread",
       "curiosity.stock.tools",
       "curiosity.stock.workspace",
+      "curiosity.stock.workspace-mutation",
+      "curiosity.stock.agents",
       "curiosity.stock.chat",
     ]);
     expect(harness.catalog.digest).toMatch(/^[a-f0-9]{64}$/u);

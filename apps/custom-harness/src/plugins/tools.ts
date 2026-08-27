@@ -276,17 +276,17 @@ export const toolsPlugin: CuriosityPluginV2 = {
     kernelApi: KERNEL_PLUGIN_API_VERSION,
     provenance: {
       license: "Project-owned clean-room translation",
-      revision: "1.0.0",
+      revision: "1.2.0",
       source: "apps/custom-harness/src/plugins/tools.ts",
     },
     requires: [
       { pluginId: "curiosity.stock.compatibility-tools", version: "1.0.0" },
       { pluginId: "curiosity.stock.evidence", version: "1.0.0" },
       { pluginId: "curiosity.stock.ledger", version: "1.0.0" },
-      { pluginId: "curiosity.stock.search", version: "1.0.0" },
+      { pluginId: "curiosity.stock.search", version: "1.2.0" },
     ],
     schemaVersion: 2,
-    version: "1.0.0",
+    version: "1.2.0",
   },
   tools,
 };

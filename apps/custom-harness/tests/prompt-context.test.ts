@@ -104,7 +104,7 @@ describe("native agent policy and bounded context", () => {
     expect(call?.catalog_digest).toMatch(/^[a-f0-9]{64}$/u);
     expect(call?.prompt_snapshot_digest).toMatch(/^[a-f0-9]{64}$/u);
     expect(JSON.parse(call!.prompt_snapshot_json)).toMatchObject({
-      agent: { id: "generalist", version: "1.0.0" },
+      agent: { id: "generalist", version: "1.2.0" },
       blocks: [
         expect.objectContaining({ required: true, slot: "agent-policy" }),
         expect.objectContaining({ slot: "durable-context" }),

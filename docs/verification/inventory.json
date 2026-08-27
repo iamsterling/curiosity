@@ -111,11 +111,15 @@
       "role": "harness",
       "scripts": {
         "build:supervisor": "cargo build --manifest-path native/supervisor/Cargo.toml --locked",
-        "build": "bun run build:supervisor && tsc -p tsconfig.build.json",
+        "build:tui": "go -C native/tui build -trimpath -ldflags '-s -w' -o dist/curiosity-tui ./cmd/curiosity-tui",
+        "build:experimental-binary": "cargo build --release --manifest-path native/supervisor/Cargo.toml --locked && bun run build:tui && bun tools/build-experimental-binary.mjs",
+        "build": "bun run build:supervisor && bun run build:tui && tsc -p tsconfig.build.json",
         "check-types": "tsc --noEmit",
-        "lint": "cargo fmt --manifest-path native/supervisor/Cargo.toml --check && cargo clippy --manifest-path native/supervisor/Cargo.toml --locked --all-targets -- -D warnings && node tools/verify-architecture.mjs",
-        "test": "bun run build:supervisor && cargo test --manifest-path native/supervisor/Cargo.toml --locked && bun test tests/*.test.ts",
-        "tui": "bun run build:supervisor && bun src/tui.ts",
+        "install:experimental-binary": "bun run build:experimental-binary && bun tools/install-experimental-binary.mjs",
+        "lint": "test -z \"$(gofmt -l native/tui)\" && go -C native/tui mod verify && go -C native/tui vet ./... && cargo fmt --manifest-path native/supervisor/Cargo.toml --check && cargo clippy --manifest-path native/supervisor/Cargo.toml --locked --all-targets -- -D warnings && node tools/verify-architecture.mjs",
+        "test": "bun run build:supervisor && cargo test --manifest-path native/supervisor/Cargo.toml --locked && go -C native/tui test ./... && bun test tests/*.test.ts",
+        "test:experimental-binary": "bun run build:experimental-binary && bun test tests/darwin/binary-distribution.test.ts",
+        "tui": "bun run build:supervisor && bun run build:tui && bun src/tui.ts",
         "verify": "bun run check-types && bun run lint && bun run build && bun run test"
       },
       "exports": {
@@ -138,6 +142,8 @@
       "files": [],
       "implicitConfigSubpaths": [
         "native/supervisor/Cargo.lock",
+        "native/tui/go.mod",
+        "native/tui/go.sum",
         "tsconfig.json",
         "tsconfig.build.json",
         "turbo.json"
@@ -170,6 +176,13 @@
           "version": "2.0.72",
           "classification": "external",
           "protocol": "exact"
+        },
+        {
+          "name": "@curiosity/runtime",
+          "section": "dependencies",
+          "version": "workspace:*",
+          "classification": "workspace",
+          "protocol": "workspace"
         },
         {
           "name": "@openai-oauth/ai-sdk",
@@ -233,9 +246,9 @@
         {
           "kind": "lifecycle-script",
           "path": "scripts.test",
-          "value": "bun run build:supervisor && cargo test --manifest-path native/supervisor/Cargo.toml --locked && bun test tests/*.test.ts",
+          "value": "bun run build:supervisor && cargo test --manifest-path native/supervisor/Cargo.toml --locked && go -C native/tui test ./... && bun test tests/*.test.ts",
           "classification": "reviewed",
-          "reason": "Required harness test entrypoint builds and tests the locked narrow Rust supervisor before executing focused Bun tests."
+          "reason": "Required harness test entrypoint builds and tests the locked narrow Rust supervisor and pinned Go presentation module before executing focused Bun tests."
         }
       ]
     },
@@ -1007,6 +1020,12 @@
       "specifier": "workspace:*"
     },
     {
+      "from": "apps/custom-harness",
+      "to": "apps/runtime",
+      "section": "dependencies",
+      "specifier": "workspace:*"
+    },
+    {
       "from": "apps/docs",
       "to": "packages/eslint-config",
       "section": "devDependencies",
@@ -1078,9 +1097,19 @@
       "features": {},
       "dependencies": [
         {
+          "name": "libc",
+          "section": "dependencies",
+          "declaration": "\"=0.2.189\""
+        },
+        {
           "name": "serde_json",
           "section": "dependencies",
           "declaration": "\"=1.0.151\""
+        },
+        {
+          "name": "sha2",
+          "section": "dependencies",
+          "declaration": "\"=0.10.9\""
         }
       ]
     },
@@ -1752,19 +1781,47 @@
         "apps/custom-harness/tests/architecture.test.ts",
         "apps/custom-harness/tests/attempt-governance.test.ts",
         "apps/custom-harness/tests/authority.test.ts",
+        "apps/custom-harness/tests/benchmark-owned-retrieval.test.ts",
+        "apps/custom-harness/tests/bounded-http-adapter.test.ts",
         "apps/custom-harness/tests/chat.test.ts",
+        "apps/custom-harness/tests/child-delegation.test.ts",
+        "apps/custom-harness/tests/compaction.test.ts",
         "apps/custom-harness/tests/content-tools.test.ts",
+        "apps/custom-harness/tests/git-read.test.ts",
+        "apps/custom-harness/tests/import-safety.test.ts",
         "apps/custom-harness/tests/intelligence-projections.test.ts",
         "apps/custom-harness/tests/opencode2-parity.test.ts",
         "apps/custom-harness/tests/plugin-catalog.test.ts",
+        "apps/custom-harness/tests/process-execution.test.ts",
         "apps/custom-harness/tests/prompt-assembler.test.ts",
         "apps/custom-harness/tests/prompt-context.test.ts",
+        "apps/custom-harness/tests/provider-routing.test.ts",
         "apps/custom-harness/tests/qualification-status.test.ts",
+        "apps/custom-harness/tests/question-lifecycle.test.ts",
+        "apps/custom-harness/tests/research-receipt.test.ts",
+        "apps/custom-harness/tests/research-run.test.ts",
+        "apps/custom-harness/tests/runtime-research-adapter.test.ts",
+        "apps/custom-harness/tests/schema-migration.test.ts",
         "apps/custom-harness/tests/supervisor.test.ts",
+        "apps/custom-harness/tests/tui-bubbletea.test.ts",
         "apps/custom-harness/tests/tui.test.ts",
-        "apps/custom-harness/tests/workflow-orchestration.test.ts"
+        "apps/custom-harness/tests/workflow-orchestration.test.ts",
+        "apps/custom-harness/tests/workspace-mutation.test.ts"
       ],
-      "reason": "Required independent harness authority, durability, architecture, and mandatory-supervisor verification."
+      "reason": "Required independent harness authority, durability, architecture, mandatory-supervisor verification, and non-authoritative Bubble Tea protocol verification."
+    },
+    "experimental-binary-darwin": {
+      "disposition": "manual",
+      "entrypoints": [
+        {
+          "package": "apps/custom-harness",
+          "script": "test:experimental-binary"
+        }
+      ],
+      "tests": [
+        "apps/custom-harness/tests/darwin/binary-distribution.test.ts"
+      ],
+      "reason": "Manual Darwin arm64 qualification for the experimental embedded supervisor and Go TUI payloads plus the local installer."
     }
   },
   "tests": [
@@ -1813,6 +1870,28 @@
       ]
     },
     {
+      "path": "apps/custom-harness/tests/benchmark-owned-retrieval.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/custom-harness/tests/bounded-http-adapter.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
       "path": "apps/custom-harness/tests/chat.test.ts",
       "owner": "harness",
       "profiles": [
@@ -1824,7 +1903,61 @@
       ]
     },
     {
+      "path": "apps/custom-harness/tests/child-delegation.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/custom-harness/tests/compaction.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
       "path": "apps/custom-harness/tests/content-tools.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/custom-harness/tests/darwin/binary-distribution.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "experimental-binary-darwin"
+      ],
+      "platforms": [
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/custom-harness/tests/git-read.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/custom-harness/tests/import-safety.test.ts",
       "owner": "harness",
       "profiles": [
         "custom-harness"
@@ -1868,6 +2001,17 @@
       ]
     },
     {
+      "path": "apps/custom-harness/tests/process-execution.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
       "path": "apps/custom-harness/tests/prompt-assembler.test.ts",
       "owner": "harness",
       "profiles": [
@@ -1890,6 +2034,17 @@
       ]
     },
     {
+      "path": "apps/custom-harness/tests/provider-routing.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
       "path": "apps/custom-harness/tests/qualification-status.test.ts",
       "owner": "harness",
       "profiles": [
@@ -1901,7 +2056,73 @@
       ]
     },
     {
+      "path": "apps/custom-harness/tests/question-lifecycle.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/custom-harness/tests/research-receipt.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/custom-harness/tests/research-run.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/custom-harness/tests/runtime-research-adapter.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/custom-harness/tests/schema-migration.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
       "path": "apps/custom-harness/tests/supervisor.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/custom-harness/tests/tui-bubbletea.test.ts",
       "owner": "harness",
       "profiles": [
         "custom-harness"
@@ -1924,6 +2145,17 @@
     },
     {
       "path": "apps/custom-harness/tests/workflow-orchestration.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/custom-harness/tests/workspace-mutation.test.ts",
       "owner": "harness",
       "profiles": [
         "custom-harness"
@@ -3100,7 +3332,7 @@
     {
       "path": ".github/workflows/opencode2.yml",
       "name": "Curiosity verification",
-      "sha256": "acfb88bc2ae5a69372d5276a6767db5be168288a4e02d9680390b62ead9f6725",
+      "sha256": "a9e729dea0c8835c20e9e2bc53e563ed64c92dfac17b8cda606b70a029475e5b",
       "triggers": [
         "pull_request",
         "push",
@@ -3140,7 +3372,8 @@
           "permissions": null,
           "actions": [
             "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
-            "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6"
+            "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6",
+            "actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16"
           ],
           "commands": [
             "rustup toolchain install 1.97.1 --profile minimal --component rustfmt,clippy",

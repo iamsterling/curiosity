@@ -33,3 +33,9 @@ export interface TextGenerator {
     request: TextGenerationRequest,
   ) => AsyncIterable<TextGenerationPart>;
 }
+
+export interface ProviderRouteConfig {
+  readonly adapterVersion: string;
+  readonly generator: TextGenerator;
+  readonly routeId: string;
+}

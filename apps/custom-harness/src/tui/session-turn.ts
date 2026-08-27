@@ -109,6 +109,29 @@ export const signPromptCommand = (
   );
 };
 
+export const signQuestionAnswer = (
+  identity: TurnIdentity,
+  questionId: string,
+  answer: string,
+  createId: () => string,
+  issuedAt: () => string,
+): SignedCommandEnvelope =>
+  signCommand(
+    {
+      actorId: identity.actorId,
+      command: {
+        id: createId(),
+        kind: "question.answer",
+        payload: { answer, questionId, schemaVersion: 1 },
+        schemaVersion: 1,
+      },
+      issuedAt: issuedAt(),
+      nonce: createId(),
+      schemaVersion: 1,
+    },
+    identity.secret,
+  );
+
 export const fallbackMessages = (
   envelope: SignedCommandEnvelope,
   result: ChatTurnResult,
@@ -134,6 +157,9 @@ export const fallbackMessages = (
       effort: result.effort,
       messageId: payload.assistantMessageId,
       modelId: result.modelId,
+      ...(result.researchReceipt
+        ? { researchReceipt: result.researchReceipt }
+        : {}),
       role: "assistant" as const,
       sequence: 2,
       text: result.text,

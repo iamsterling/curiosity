@@ -6,6 +6,9 @@ import type { InputRejected, PluginFailure } from "./errors.js";
 export const KERNEL_PLUGIN_API_VERSION = "2.0.0";
 
 export interface PluginDecisionContext {
+  readonly defaultPrimaryRole: string;
+  readonly enabledAgentIds: ReadonlySet<string>;
+  readonly enabledPrimaryAgentIds: ReadonlySet<string>;
   readonly events: readonly StoredEvent[];
 }
 
@@ -148,6 +151,7 @@ export interface SkillContribution {
 }
 
 export interface PromptCommandContribution {
+  readonly agentId: string | null;
   readonly description: string;
   readonly id: `${string}.prompt-commands.${string}`;
   readonly instructions: string;

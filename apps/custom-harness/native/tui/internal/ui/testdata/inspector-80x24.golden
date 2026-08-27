@@ -1,0 +1,24 @@
+  ◆ trace attempt fencing  thread 7c4a-0031  openai-oauth:gpt-5.4-mini  medium
+────────────────────────────────────────────────────────────────────────────────
+  I N S P E C T O R                                                     ctrl+i
+────────────────────────────────────────────────────────────────────────────────
+  ⌄  CAPABILITIES                                    trusted-local-single-user
+  ✓  filesystem.read                                                    ACTIVE
+  ✗  filesystem.mutation                                              DISABLED
+────────────────────────────────────────────────────────────────────────────────
+  ⌄  PLUGINS                                                          2 loaded
+  curiosity.stock.chat                                  curiosity.stock.skills
+────────────────────────────────────────────────────────────────────────────────
+  ›  CATALOG                                                      catalog-dig…
+  1 tools · 1 workflows
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+  ● ready                                                  plugins 2   tools 1

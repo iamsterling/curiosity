@@ -3,17 +3,18 @@ import assert from "node:assert/strict";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import ts from "typescript";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const sourceRoot = path.join(root, "src");
-const walk = async (directory) =>
+const walk = async (directory, extension = ".ts") =>
   (
     await Promise.all(
       (await readdir(directory, { withFileTypes: true })).map((entry) => {
         const target = path.join(directory, entry.name);
         return entry.isDirectory()
-          ? walk(target)
-          : target.endsWith(".ts")
+          ? walk(target, extension)
+          : target.endsWith(extension)
             ? [target]
             : [];
       }),
@@ -37,8 +38,10 @@ assert.deepEqual(
   [
     "storage/action-journal.ts",
     "storage/attempt-journal.ts",
+    "storage/delegation-journal.ts",
     "storage/event-append.ts",
     "storage/event-journal.ts",
+    "storage/research-evidence-reader.ts",
     "storage/thread-projection-reader.ts",
     "storage/workflow-journal.ts",
   ],
@@ -48,11 +51,19 @@ const projectionReader = texts.get(
   path.join(sourceRoot, "storage/thread-projection-reader.ts"),
 );
 assert.match(projectionReader, /readonly:\s*true/u);
+const researchEvidenceReader = texts.get(
+  path.join(sourceRoot, "storage/research-evidence-reader.ts"),
+);
+assert.match(researchEvidenceReader, /readonly:\s*true/u);
 const nodeProjectionReader = texts.get(
   path.join(sourceRoot, "storage/node-thread-projection-reader.ts"),
 );
 assert.match(nodeProjectionReader, /readOnly:\s*true/u);
-for (const reader of [projectionReader, nodeProjectionReader])
+for (const reader of [
+  projectionReader,
+  nodeProjectionReader,
+  researchEvidenceReader,
+])
   assert.doesNotMatch(
     reader,
     /\.(?:exec|run|transaction)\(/u,
@@ -112,17 +123,48 @@ const semanticPlugins = files.filter(
 );
 const forbiddenSemanticImport =
   /from "(?:bun:[^"]+|node:[^"]+|ai|@ai-sdk\/[^"/]+|@openai-oauth\/[^"/]+|(?:\.\.\/)+(?:providers|storage|supervisor)\/|(?:\.\.\/)+kernel\/(?!(?:errors|plugin)\.js")[^"]+)/u;
-const forbiddenSemanticAmbientEffect =
-  /\b(?:Date\.now|Math\.random|process\.|Bun\.|Deno\.|fetch\s*\(|WebSocket|EventSource|globalThis)/u;
+const ambientRuntimeReference = (file, source) => {
+  const parsed = ts.createSourceFile(
+    file,
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  );
+  let found;
+  const visit = (node) => {
+    if (found) return;
+    if (
+      ts.isPropertyAccessExpression(node) &&
+      ((ts.isIdentifier(node.expression) &&
+        ["Bun", "Deno", "process"].includes(node.expression.text)) ||
+        (ts.isIdentifier(node.expression) &&
+          node.expression.text === "Date" &&
+          node.name.text === "now") ||
+        (ts.isIdentifier(node.expression) &&
+          node.expression.text === "Math" &&
+          node.name.text === "random"))
+    )
+      found = node.getText(parsed);
+    if (
+      ts.isIdentifier(node) &&
+      ["EventSource", "WebSocket", "fetch", "globalThis"].includes(node.text)
+    )
+      found = node.text;
+    ts.forEachChild(node, visit);
+  };
+  visit(parsed);
+  return found;
+};
 for (const file of semanticPlugins) {
   assert.doesNotMatch(
     texts.get(file),
     forbiddenSemanticImport,
     `${relative(file)} must remain capability-free`,
   );
-  assert.doesNotMatch(
-    texts.get(file),
-    forbiddenSemanticAmbientEffect,
+  assert.equal(
+    ambientRuntimeReference(file, texts.get(file)),
+    undefined,
     `${relative(file)} must not read ambient runtime state`,
   );
   assert.match(texts.get(file), /manifest:/u);
@@ -146,6 +188,24 @@ assert.match(
   texts.get(path.join(sourceRoot, "plugins/registry.ts")),
   /new StaticPluginCatalog\(stockPlugins\)/u,
 );
+const nativeTuiRoot = path.join(root, "native/tui");
+const goFiles = await walk(nativeTuiRoot, ".go");
+const goTexts = await Promise.all(goFiles.map((file) => readFile(file, "utf8")));
+const forbiddenGoAuthority =
+  /"(?:database\/sql|os\/exec|net\/http|crypto\/(?:ed25519|hmac|rsa))"|CURIOSITY_AUTH_SECRET|event\.append|tool\.dispatch/u;
+for (const [index, text] of goTexts.entries())
+  assert.doesNotMatch(
+    text,
+    forbiddenGoAuthority,
+    `${path.relative(nativeTuiRoot, goFiles[index])} must remain presentation-only`,
+  );
+const goModule = await readFile(path.join(nativeTuiRoot, "go.mod"), "utf8");
+for (const dependency of [
+  "charm.land/bubbles/v2 v2.2.1",
+  "charm.land/bubbletea/v2 v2.0.9",
+  "charm.land/lipgloss/v2 v2.0.6",
+])
+  assert.match(goModule, new RegExp(`^\\s*${dependency.replaceAll(".", "\\.")}$`, "mu"));
 console.log(
-  `custom harness architecture verified (${files.length} source files)`,
+  `custom harness architecture verified (${files.length} TypeScript and ${goFiles.length} Go source files)`,
 );

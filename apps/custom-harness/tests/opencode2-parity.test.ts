@@ -68,6 +68,7 @@ const installedCommands = [
 ];
 
 const runtimeTools = [
+  "agent.delegate",
   "formerhuman_search",
   "ledger_approval_request",
   "ledger_approval_status",

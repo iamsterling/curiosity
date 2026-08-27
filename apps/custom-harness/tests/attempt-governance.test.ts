@@ -10,7 +10,10 @@ import {
   type TextGenerator,
 } from "../src/index.js";
 import type { StoredAction } from "../src/domain/action.js";
-import type { ProviderAttemptSnapshot } from "../src/domain/attempt.js";
+import type {
+  ProviderAttemptSnapshot,
+  ToolAttemptSnapshot,
+} from "../src/domain/attempt.js";
 import type { PromptSnapshot } from "../src/domain/prompt.js";
 import { canonicalJson } from "../src/kernel/canonical-json.js";
 import { EventJournal } from "../src/storage/event-journal.js";
@@ -35,8 +38,11 @@ const proposedAction = (
   journal: EventJournal,
   options: {
     readonly actionId: string;
+    readonly actionType?: string;
     readonly executionId: string;
     readonly gateClass?: StoredAction["gateClass"];
+    readonly requestedCapabilities?: readonly string[];
+    readonly resource?: string;
   },
 ): StoredAction => {
   journal.admit({
@@ -74,7 +80,7 @@ const proposedAction = (
       {
         actionId: options.actionId,
         actionSchemaVersion: 1,
-        actionType: "provider.generate",
+         actionType: options.actionType ?? "provider.generate",
         deadlineClass: "interactive",
         executionId: options.executionId,
         gateClass: options.gateClass ?? "none-requested",
@@ -82,8 +88,8 @@ const proposedAction = (
         inputDigest: digest(input),
         pluginId: "curiosity.test.attempts",
         reactorId,
-        requestedCapabilities: ["provider.generate"],
-        resource: "thread:test",
+         requestedCapabilities: options.requestedCapabilities ?? ["provider.generate"],
+         resource: options.resource ?? "thread:test",
         sourceEventId: source.eventId,
       },
     ],
@@ -152,6 +158,7 @@ const attemptSnapshot = (
         resource: action.resource,
       },
       catalogDigest: prompt.catalogDigest,
+      configDigest: digest("test-config"),
       effort: "medium",
       generation,
       grantedCapabilities: ["provider.generate"],
@@ -161,6 +168,11 @@ const attemptSnapshot = (
       promptSnapshotDigest: digest(prompt),
       providerPurpose: generation === 1 ? "normal" : "retry",
       requestDigest,
+      route: {
+        adapterVersion: "test-v1",
+        policyDigest: digest("test-route-policy"),
+        routeId: "test-route",
+      },
       schemaVersion: 1,
     },
   };
@@ -345,6 +357,206 @@ describe("attempt, gate, cancellation, and fencing governance", () => {
         )
         .get()?.generations,
     ).toBe("1,2");
+    database.close();
+  });
+
+  test("cancellation after allocation but before dispatch leaves the physical call not delivered", () => {
+    const databasePath = databaseFixture();
+    const journal = EventJournal.open(databasePath);
+    const action = proposedAction(journal, {
+      actionId: digest("cancel-before-dispatch"),
+      executionId: "execution-cancel-before-dispatch",
+    });
+    const attempt = allocate(journal, action, 1);
+    journal.attempts.cancelExecution({
+      acceptedAt: "2026-08-25T00:00:04.000Z",
+      actorId,
+      commandDigest: digest("cancel-before-dispatch-command"),
+      commandId: "cancel-before-dispatch-command",
+      events: [
+        {
+          body: {
+            executionId: action.executionId,
+            schemaVersion: 1,
+          },
+          streamId: action.executionId,
+          type: "execution.cancelled",
+        },
+      ],
+      executionId: action.executionId,
+      nonce: "cancel-before-dispatch-nonce",
+      pluginId: "curiosity.kernel.control",
+    });
+    expect(
+      journal.attempts.authorizeProviderDispatch({
+        actionId: action.actionId,
+        attemptId: attempt.allocation.attemptId,
+        callId: attempt.allocation.callId,
+        generation: 1,
+        now: "2026-08-25T00:00:05.000Z",
+        requestDigest: attempt.requestDigest,
+      }),
+    ).toBe("denied");
+    journal.close();
+
+    const database = new Database(databasePath, {
+      readonly: true,
+      strict: true,
+    });
+    expect(
+      database
+        .query<
+          {
+            delivery_certainty: string;
+            dispatch_state: string;
+            error_code: string;
+            status: string;
+          },
+          []
+        >(
+          "SELECT delivery_certainty,dispatch_state,error_code,status FROM provider_calls",
+        )
+        .get(),
+    ).toEqual({
+      delivery_certainty: "NOT_DELIVERED",
+      dispatch_state: "armed",
+      error_code: "ACTION_CANCELLED",
+      status: "failed",
+    });
+    database.close();
+  });
+
+  test("releases a known resource completion and fences delivery ambiguity", () => {
+    const databasePath = databaseFixture();
+    const journal = EventJournal.open(databasePath);
+    const resource = "workspace:path:claimed.txt";
+    const first = proposedAction(journal, {
+      actionId: digest("resource-first"),
+      actionType: "workspace.write",
+      executionId: "execution-resource-first",
+      requestedCapabilities: ["filesystem.mutation"],
+      resource,
+    });
+    const third = proposedAction(journal, {
+      actionId: digest("resource-third"),
+      actionType: "workspace.write",
+      executionId: "execution-resource-third",
+      requestedCapabilities: ["filesystem.mutation"],
+      resource,
+    });
+    const second = proposedAction(journal, {
+      actionId: digest("resource-second"),
+      actionType: "workspace.write",
+      executionId: "execution-resource-second",
+      requestedCapabilities: ["filesystem.mutation"],
+      resource,
+    });
+    const snapshot = (action: StoredAction): ToolAttemptSnapshot => ({
+      action: {
+        actionId: action.actionId,
+        actionType: action.actionType,
+        deadlineClass: action.deadlineClass,
+        gateClass: action.gateClass,
+        inputDigest: action.inputDigest,
+        requestedCapabilities: action.requestedCapabilities,
+        resource: action.resource,
+      },
+      catalogDigest: digest("resource-catalog"),
+      configDigest: digest("test-config"),
+      generation: 1,
+      grantedCapabilities: ["filesystem.mutation"],
+      policyVersion: "local-v1",
+      requestDigest: digest({ actionId: action.actionId }),
+      schemaVersion: 1,
+      tool: {
+        digest: digest("workspace-write-tool"),
+        name: "workspace_write",
+        pluginId: "curiosity.stock.workspace-mutation",
+        pluginVersion: "1.0.0",
+        version: "1.0.0",
+      },
+    });
+    const allocateTool = (action: StoredAction, suffix: string) => {
+      const toolSnapshot = snapshot(action);
+      return journal.attempts.allocateToolAttempt({
+        action,
+        allocatedAt: `2026-08-25T00:00:0${suffix}.000Z`,
+        attemptId: digest({ attempt: suffix }),
+        callId: digest({ call: suffix }),
+        generation: 1,
+        leaseExpiresAt: "2026-08-25T00:10:00.000Z",
+        modelToolCallId: `model-tool-${suffix}`,
+        ownerId: "curiosity-kernel",
+        requestDigest: toolSnapshot.requestDigest,
+        snapshot: toolSnapshot,
+        snapshotDigest: digest(toolSnapshot),
+        toolName: "workspace_write",
+        toolVersion: "1.0.0",
+      });
+    };
+    const firstAllocation = allocateTool(first, "3");
+    expect(firstAllocation).toMatchObject({ actionId: first.actionId });
+    expect(allocateTool(second, "4")).toBe("resource-collision");
+    if (!firstAllocation || firstAllocation === "resource-collision")
+      throw new Error("TEST_RESOURCE_ALLOCATION_FAILED");
+    expect(
+      journal.attempts.completeToolCall({
+        actionId: first.actionId,
+        attemptId: firstAllocation.attemptId,
+        callId: firstAllocation.callId,
+        completedAt: "2026-08-25T00:00:05.000Z",
+        event: {
+          body: { actionId: first.actionId, schemaVersion: 1 },
+          streamId: first.actionId,
+          type: "action.succeeded",
+        },
+        generation: 1,
+        outputDigest: digest("resource-first-completed"),
+        status: "succeeded",
+      }),
+    ).toBe("committed");
+    const secondAllocation = allocateTool(second, "6");
+    expect(secondAllocation).toMatchObject({ actionId: second.actionId });
+    if (!secondAllocation || secondAllocation === "resource-collision")
+      throw new Error("TEST_RESOURCE_SECOND_ALLOCATION_FAILED");
+    expect(
+      journal.attempts.completeToolCall({
+        actionId: second.actionId,
+        attemptId: secondAllocation.attemptId,
+        callId: secondAllocation.callId,
+        completedAt: "2026-08-25T00:00:07.000Z",
+        errorCode: "WORKSPACE_MUTATION_RECONCILIATION_FAILED",
+        event: {
+          body: {
+            actionId: second.actionId,
+            errorCode: "WORKSPACE_MUTATION_RECONCILIATION_FAILED",
+            schemaVersion: 1,
+          },
+          streamId: second.actionId,
+          type: "action.failed",
+        },
+        generation: 1,
+        outputDigest: digest("resource-second-unknown"),
+        status: "delivery-unknown",
+      }),
+    ).toBe("committed");
+    expect(allocateTool(third, "8")).toBe("resource-collision");
+    journal.close();
+
+    const database = new Database(databasePath, {
+      readonly: true,
+      strict: true,
+    });
+    expect(
+      database
+        .query<{ action_id: string; resource: string; status: string }, []>(
+          "SELECT action_id,resource,status FROM resource_leases ORDER BY acquired_at",
+        )
+        .all(),
+    ).toEqual([
+      { action_id: first.actionId, resource, status: "released" },
+      { action_id: second.actionId, resource, status: "fenced" },
+    ]);
     database.close();
   });
 

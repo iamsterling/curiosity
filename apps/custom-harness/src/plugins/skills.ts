@@ -29,12 +29,14 @@ const skills = stockSkillDefinitions.map((definition) =>
 );
 
 const promptCommand = (
+  agentId: string | null,
   name: string,
   description: string,
   instructions: string,
   skillName: string | null,
   status: PromptCommandContribution["status"],
 ): PromptCommandContribution => ({
+  agentId,
   description,
   id: `curiosity.stock.skills.prompt-commands.${name}`,
   instructions,
@@ -47,6 +49,7 @@ const promptCommand = (
 
 const promptCommands = stockPromptCommandDefinitions.map((definition) =>
   promptCommand(
+    definition.agentId,
     definition.name,
     definition.description,
     definition.instructions,
@@ -251,12 +254,12 @@ export const skillsPlugin: CuriosityPluginV2 = {
     kernelApi: KERNEL_PLUGIN_API_VERSION,
     provenance: {
       license: "Project-owned clean-room translation",
-      revision: "1.0.0",
+      revision: "1.1.0",
       source: "apps/custom-harness/src/plugins/skills.ts",
     },
     requires: [],
     schemaVersion: 2,
-    version: "1.0.0",
+    version: "1.1.0",
   },
   promptCommands,
   projections: [

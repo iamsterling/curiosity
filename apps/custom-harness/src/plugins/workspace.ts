@@ -23,9 +23,28 @@ class WorkspaceSearchInput extends Schema.Class<WorkspaceSearchInput>(
   schemaVersion: Schema.Literal(1),
 }) {}
 
+class WorkspaceGlobInput extends Schema.Class<WorkspaceGlobInput>(
+  "@curiosity/custom-harness/WorkspaceGlobInput",
+)({
+  maxResults: Schema.Number,
+  pattern: Schema.NonEmptyString,
+  schemaVersion: Schema.Literal(1),
+}) {}
+
+class WorkspaceListInput extends Schema.Class<WorkspaceListInput>(
+  "@curiosity/custom-harness/WorkspaceListInput",
+)({
+  maxEntries: Schema.Number,
+  path: Schema.NonEmptyString,
+  recursive: Schema.Boolean,
+  schemaVersion: Schema.Literal(1),
+}) {}
+
 const strict = { onExcessProperty: "error" } as const;
 const decodeRead = Schema.decodeUnknownEffect(WorkspaceReadInput, strict);
 const decodeSearch = Schema.decodeUnknownEffect(WorkspaceSearchInput, strict);
+const decodeGlob = Schema.decodeUnknownEffect(WorkspaceGlobInput, strict);
+const decodeList = Schema.decodeUnknownEffect(WorkspaceListInput, strict);
 const invalid = () =>
   new PluginFailure({
     message: "WORKSPACE_TOOL_INPUT_INVALID",
@@ -121,7 +140,104 @@ const workspaceSearch: ToolContribution = {
   version: "1.0.0",
 };
 
-export const workspaceTools = Object.freeze([workspaceRead, workspaceSearch]);
+const workspaceGrep: ToolContribution = {
+  ...workspaceSearch,
+  description:
+    "Find a bounded literal in workspace UTF-8 files and return matching paths, lines, and previews.",
+  id: "curiosity.stock.workspace.tools.workspace_grep",
+  name: "workspace_grep",
+};
+
+const workspaceGlob: ToolContribution = {
+  actionType: "workspace.glob",
+  description:
+    "Match a bounded workspace-relative *, **, and ? file pattern without following symbolic links.",
+  id: "curiosity.stock.workspace.tools.workspace_glob",
+  inputSchema: {
+    additionalProperties: false,
+    properties: {
+      maxResults: { maximum: 1_000, minimum: 1, type: "integer" },
+      pattern: { maxLength: 4096, minLength: 1, type: "string" },
+      schemaVersion: { const: 1 },
+    },
+    required: ["schemaVersion", "pattern", "maxResults"],
+    type: "object",
+  },
+  name: "workspace_glob",
+  outputProvenance: "untrusted-evidence",
+  propose: Effect.fn("WorkspaceGlobTool.propose")(function* (input, subject) {
+    const request = yield* decodeGlob(input).pipe(Effect.mapError(invalid));
+    if (
+      Buffer.byteLength(request.pattern) > 4_096 ||
+      !integerBetween(request.maxResults, 1, 1_000)
+    )
+      return yield* invalid();
+    return {
+      actionSchemaVersion: 1,
+      actionType: "workspace.glob",
+      deadlineClass: "interactive",
+      gateClass: "none-requested",
+      input: { request: { ...request } },
+      requestedCapabilities: ["filesystem.read"],
+      schemaVersion: 1,
+      subject,
+    };
+  }),
+  readOnly: true,
+  requestedCapabilities: ["filesystem.read"],
+  schemaVersion: 1,
+  version: "1.0.0",
+};
+
+const workspaceList: ToolContribution = {
+  actionType: "workspace.list",
+  description:
+    "List bounded workspace-relative directory entries without following symbolic links.",
+  id: "curiosity.stock.workspace.tools.workspace_list",
+  inputSchema: {
+    additionalProperties: false,
+    properties: {
+      maxEntries: { maximum: 1_000, minimum: 1, type: "integer" },
+      path: { maxLength: 4096, minLength: 1, type: "string" },
+      recursive: { type: "boolean" },
+      schemaVersion: { const: 1 },
+    },
+    required: ["schemaVersion", "path", "recursive", "maxEntries"],
+    type: "object",
+  },
+  name: "workspace_list",
+  outputProvenance: "untrusted-evidence",
+  propose: Effect.fn("WorkspaceListTool.propose")(function* (input, subject) {
+    const request = yield* decodeList(input).pipe(Effect.mapError(invalid));
+    if (
+      Buffer.byteLength(request.path) > 4_096 ||
+      !integerBetween(request.maxEntries, 1, 1_000)
+    )
+      return yield* invalid();
+    return {
+      actionSchemaVersion: 1,
+      actionType: "workspace.list",
+      deadlineClass: "interactive",
+      gateClass: "none-requested",
+      input: { request: { ...request } },
+      requestedCapabilities: ["filesystem.read"],
+      schemaVersion: 1,
+      subject,
+    };
+  }),
+  readOnly: true,
+  requestedCapabilities: ["filesystem.read"],
+  schemaVersion: 1,
+  version: "1.0.0",
+};
+
+export const workspaceTools = Object.freeze([
+  workspaceGlob,
+  workspaceGrep,
+  workspaceList,
+  workspaceRead,
+  workspaceSearch,
+]);
 
 export const proposeWorkspaceTool = (
   name: string,
@@ -147,12 +263,12 @@ export const workspacePlugin: CuriosityPluginV2 = {
     kernelApi: KERNEL_PLUGIN_API_VERSION,
     provenance: {
       license: "Project-owned",
-      revision: "1.0.0",
+      revision: "1.1.0",
       source: "apps/custom-harness/src/plugins/workspace.ts",
     },
     requires: [],
     schemaVersion: 2,
-    version: "1.0.0",
+    version: "1.1.0",
   },
   tools: workspaceTools,
 };

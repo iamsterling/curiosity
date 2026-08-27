@@ -17,10 +17,11 @@ export interface CapabilityStatusReport {
   readonly publicationReady: false;
   readonly schemaVersion: 1;
   readonly supervisor: {
-    readonly filesystemMutation: false;
+    readonly filesystemMutation: boolean;
     readonly filesystemRead: true;
-    readonly git: false;
-    readonly process: false;
+    readonly git: boolean;
+    readonly gitMutation: boolean;
+    readonly process: boolean;
     readonly sandbox: false;
   };
 }

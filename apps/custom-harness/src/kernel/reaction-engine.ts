@@ -7,14 +7,55 @@ import { validateReactionProposal } from "./action-proposal.js";
 import { canonicalJson } from "./canonical-json.js";
 import { ActionExecutionFailure, PluginFailure } from "./errors.js";
 import type { StaticPluginCatalog } from "./plugin.js";
+import type { RolePolicyConfig } from "./role-policy.js";
 import { ProviderGateway, type ActionStreamDelta } from "./provider-gateway.js";
 import { ToolGateway } from "./tool-gateway.js";
 import { LocalActionGateway } from "./local-action-gateway.js";
+import { ChildScheduler } from "./child-scheduler.js";
 
 const maximumDrainSteps = 1_024;
 
 const digest = (value: unknown): string =>
   createHash("sha256").update(canonicalJson(value)).digest("hex");
+
+const actionCorrelation = (
+  action: StoredAction,
+): Record<string, unknown> | undefined => {
+  const input =
+    action.input &&
+    typeof action.input === "object" &&
+    !Array.isArray(action.input)
+      ? (action.input as Record<string, unknown>)
+      : undefined;
+  return input?.correlation &&
+    typeof input.correlation === "object" &&
+    !Array.isArray(input.correlation)
+    ? (input.correlation as Record<string, unknown>)
+    : undefined;
+};
+
+const isChildProviderAction = (action: StoredAction): boolean =>
+  action.actionType === "provider.generate" &&
+  actionCorrelation(action)?.kind === "curiosity.child.run";
+
+const recoverableResearchActionTypes = new Set([
+  "fetch.web",
+  "search.web",
+  "workspace.glob",
+  "workspace.list",
+  "workspace.read",
+  "workspace.search",
+]);
+
+const isRecoverableResearchFailure = (action: StoredAction): boolean => {
+  const correlation = actionCorrelation(action);
+  return (
+    correlation?.kind === "curiosity.chat.tool" &&
+    correlation.agentId === "researcher" &&
+    correlation.recoverableResearchFailures === true &&
+    recoverableResearchActionTypes.has(action.actionType)
+  );
+};
 
 const actionRecord = (
   event: StoredEvent,
@@ -70,6 +111,7 @@ const actionProposedEvent = (
 });
 
 export class ReactionEngine {
+  private readonly children: ChildScheduler;
   private readonly localActions: LocalActionGateway;
 
   constructor(
@@ -80,8 +122,17 @@ export class ReactionEngine {
     private readonly now: () => number,
     private readonly grantedCapabilities: ReadonlySet<string>,
     private readonly eligibleActorId: string,
+    rolePolicy: RolePolicyConfig,
   ) {
-    this.localActions = new LocalActionGateway(journal, catalog, now);
+    this.localActions = new LocalActionGateway(journal, catalog, now, rolePolicy);
+    this.children = new ChildScheduler(
+      journal.actions,
+      journal.delegations,
+      catalog,
+      now,
+      grantedCapabilities,
+      rolePolicy,
+    );
   }
 
   private processReactions = Effect.fn("ReactionEngine.processReactions")(
@@ -191,7 +242,30 @@ export class ReactionEngine {
     }
     if (action.actionType === "provider.generate")
       return yield* this.providers.execute(action, onDelta);
-    if (["workspace.read", "workspace.search"].includes(action.actionType))
+    if (action.actionType === "agent.delegate")
+      return yield* this.children.execute(action);
+    if (
+      [
+        "fetch.web",
+        "git.diff",
+        "git.ref.inspect",
+        "git.ref.update",
+        "git.status",
+        "git.worktree.create",
+        "git.worktree.inspect",
+        "git.worktree.remove",
+        "process.run",
+        "question.ask",
+        "search.web",
+        "workspace.glob",
+        "workspace.list",
+        "workspace.read",
+        "workspace.search",
+        "workspace.write",
+        "workspace.patch",
+        "workspace.delete",
+      ].includes(action.actionType)
+    )
       return yield* this.tools.execute(action);
     if (this.localActions.supports(action.actionType))
       return yield* this.localActions.execute(action);
@@ -222,6 +296,31 @@ export class ReactionEngine {
     });
   });
 
+  private executeChildProviderBatch = Effect.fn(
+    "ReactionEngine.executeChildProviderBatch",
+  )(function* (
+    this: ReactionEngine,
+    actions: readonly StoredAction[],
+  ) {
+    const prepared = [];
+    const failures: ActionExecutionFailure[] = [];
+    for (const action of actions) {
+      const result = yield* this.providers.prepare(action).pipe(Effect.result);
+      if (result._tag === "Failure") failures.push(result.failure);
+      else prepared.push(result.success);
+    }
+    if (prepared.length === 0) return failures;
+    const results = yield* Effect.all(
+      prepared.map((call) =>
+        this.providers.dispatch(call).pipe(Effect.result),
+      ),
+      { concurrency: "unbounded" },
+    );
+    for (const result of results)
+      if (result._tag === "Failure") failures.push(result.failure);
+    return failures;
+  });
+
   drain = Effect.fn("ReactionEngine.drain")(function* (
     this: ReactionEngine,
     onDelta?: (delta: ActionStreamDelta) => void,
@@ -231,8 +330,9 @@ export class ReactionEngine {
     let firstFailure: ActionExecutionFailure | undefined;
     let steps = 0;
     while (steps < maximumDrainSteps) {
+      const reconciledChildren = yield* this.children.reconcile();
       const reactions = yield* this.processReactions();
-      steps += reactions;
+      steps += reconciledChildren + reactions;
       const actions = this.journal.actions
         .proposedActions()
         .filter((action) =>
@@ -241,15 +341,32 @@ export class ReactionEngine {
             new Date(this.now()).toISOString(),
           ),
         );
-      for (const action of actions) {
+      const childProviderActions = actions.filter(isChildProviderAction);
+      const serialActions = actions.filter(
+        (action) => !isChildProviderAction(action),
+      );
+      for (const action of serialActions) {
         const result = yield* this.executeAction(action, onDelta).pipe(
           Effect.result,
         );
-        if (result._tag === "Failure" && !firstFailure)
+        if (
+          result._tag === "Failure" &&
+          !firstFailure &&
+          actionCorrelation(action)?.kind !== "curiosity.child.run" &&
+          !isRecoverableResearchFailure(action)
+        )
           firstFailure = result.failure;
         steps += 1;
       }
-      if (reactions === 0 && actions.length === 0) {
+      if (childProviderActions.length > 0) {
+        yield* this.executeChildProviderBatch(childProviderActions);
+        steps += childProviderActions.length;
+      }
+      if (
+        reconciledChildren === 0 &&
+        reactions === 0 &&
+        actions.length === 0
+      ) {
         if (firstFailure) return yield* firstFailure;
         return;
       }

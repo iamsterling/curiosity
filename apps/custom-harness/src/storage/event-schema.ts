@@ -3,7 +3,7 @@ export const eventSchema = `
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
   ) STRICT;
-  INSERT OR IGNORE INTO harness_metadata(key, value) VALUES ('schema_version', '8');
+  INSERT OR IGNORE INTO harness_metadata(key, value) VALUES ('schema_version', '13');
   CREATE TABLE IF NOT EXISTS command_admissions (
     actor_id TEXT NOT NULL,
     command_id TEXT NOT NULL,
@@ -162,6 +162,38 @@ export const eventSchema = `
     body_json TEXT NOT NULL,
     received_at TEXT NOT NULL
   ) STRICT;
+  CREATE TABLE IF NOT EXISTS resource_leases (
+    lease_id TEXT PRIMARY KEY,
+    resource TEXT NOT NULL,
+    attempt_id TEXT NOT NULL REFERENCES attempts(attempt_id),
+    action_id TEXT NOT NULL REFERENCES actions(action_id),
+    execution_id TEXT NOT NULL REFERENCES executions(execution_id),
+    generation INTEGER NOT NULL,
+    mode TEXT NOT NULL CHECK(mode IN ('exclusive')),
+    status TEXT NOT NULL CHECK(status IN ('active', 'released', 'cancelled', 'fenced', 'expired')),
+    acquired_at TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    released_at TEXT
+  ) STRICT;
+  CREATE UNIQUE INDEX IF NOT EXISTS resource_leases_active_resource_idx
+    ON resource_leases(resource) WHERE status = 'active';
+  CREATE INDEX IF NOT EXISTS resource_leases_attempt_idx
+    ON resource_leases(attempt_id, status);
+  CREATE TABLE IF NOT EXISTS questions (
+    question_id TEXT PRIMARY KEY,
+    action_id TEXT NOT NULL UNIQUE REFERENCES actions(action_id),
+    execution_id TEXT NOT NULL REFERENCES executions(execution_id),
+    eligible_actor_id TEXT NOT NULL,
+    prompt TEXT NOT NULL,
+    options_json TEXT NOT NULL,
+    allow_free_text INTEGER NOT NULL CHECK(allow_free_text IN (0, 1)),
+    status TEXT NOT NULL CHECK(status IN ('pending', 'answered', 'cancelled')),
+    answer TEXT,
+    asked_at TEXT NOT NULL,
+    answered_at TEXT,
+    answer_command_id TEXT
+  ) STRICT;
+  CREATE INDEX IF NOT EXISTS questions_status_idx ON questions(status, asked_at);
   CREATE TABLE IF NOT EXISTS workflow_instances (
     instance_id TEXT PRIMARY KEY,
     source_event_id TEXT NOT NULL UNIQUE REFERENCES events(event_id),
@@ -210,6 +242,65 @@ export const eventSchema = `
     PRIMARY KEY(ancestor_execution_id, descendant_execution_id)
   ) STRICT;
   CREATE INDEX IF NOT EXISTS execution_ancestry_descendant_idx ON execution_ancestry(descendant_execution_id, ancestor_execution_id);
+  CREATE TABLE IF NOT EXISTS delegation_groups (
+    delegation_group_id TEXT PRIMARY KEY,
+    root_execution_id TEXT NOT NULL REFERENCES executions(execution_id),
+    parent_execution_id TEXT NOT NULL REFERENCES executions(execution_id),
+    parent_provider_action_id TEXT NOT NULL REFERENCES actions(action_id),
+    expected_children INTEGER NOT NULL CHECK(expected_children BETWEEN 1 AND 2),
+    status TEXT NOT NULL CHECK(status IN ('allocated', 'ready', 'delivered')),
+    result_digest TEXT,
+    allocated_at TEXT NOT NULL,
+    ready_at TEXT,
+    delivered_at TEXT
+  ) STRICT;
+  CREATE TABLE IF NOT EXISTS agent_sessions (
+    agent_session_id TEXT PRIMARY KEY,
+    root_execution_id TEXT NOT NULL REFERENCES executions(execution_id),
+    parent_execution_id TEXT NOT NULL REFERENCES executions(execution_id),
+    agent_id TEXT NOT NULL,
+    agent_version TEXT NOT NULL,
+    depth INTEGER NOT NULL CHECK(depth BETWEEN 1 AND 3),
+    revision INTEGER NOT NULL,
+    capability_ceiling_json TEXT NOT NULL,
+    tool_ceiling_json TEXT NOT NULL,
+    status TEXT NOT NULL CHECK(status IN ('busy', 'idle')),
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  ) STRICT;
+  CREATE TABLE IF NOT EXISTS agent_runs (
+    agent_run_id TEXT PRIMARY KEY,
+    agent_session_id TEXT NOT NULL REFERENCES agent_sessions(agent_session_id),
+    delegation_group_id TEXT NOT NULL REFERENCES delegation_groups(delegation_group_id),
+    ordinal INTEGER NOT NULL,
+    child_execution_id TEXT NOT NULL UNIQUE REFERENCES executions(execution_id),
+    delegation_action_id TEXT NOT NULL UNIQUE REFERENCES actions(action_id),
+    provider_action_id TEXT NOT NULL UNIQUE REFERENCES actions(action_id),
+    model_tool_call_id TEXT NOT NULL,
+    task_json TEXT NOT NULL,
+    budget_json TEXT NOT NULL,
+    resource_claims_json TEXT NOT NULL,
+    catalog_digest TEXT NOT NULL,
+    status TEXT NOT NULL CHECK(status IN ('allocated', 'running', 'completed', 'failed', 'cancelled', 'delivery-unknown')),
+    terminal_result_json TEXT,
+    terminal_digest TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    UNIQUE(delegation_group_id, ordinal),
+    UNIQUE(delegation_group_id, model_tool_call_id)
+  ) STRICT;
+  CREATE INDEX IF NOT EXISTS agent_runs_status_idx ON agent_runs(status, agent_run_id);
+  CREATE TABLE IF NOT EXISTS agent_session_messages (
+    agent_session_id TEXT NOT NULL REFERENCES agent_sessions(agent_session_id),
+    ordinal INTEGER NOT NULL,
+    revision INTEGER NOT NULL,
+    agent_run_id TEXT NOT NULL REFERENCES agent_runs(agent_run_id),
+    role TEXT NOT NULL CHECK(role IN ('user', 'assistant')),
+    content TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY(agent_session_id, ordinal)
+  ) STRICT;
+  CREATE INDEX IF NOT EXISTS agent_session_messages_revision_idx ON agent_session_messages(agent_session_id, revision, ordinal);
   CREATE TRIGGER IF NOT EXISTS workflow_steps_no_update BEFORE UPDATE ON workflow_steps BEGIN
     SELECT RAISE(ABORT, 'WORKFLOW_STEP_IMMUTABLE');
   END;

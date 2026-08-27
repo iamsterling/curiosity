@@ -100,6 +100,7 @@ export class AttemptJournal {
 
   allocateProviderAttempt(input: {
     readonly action: StoredAction;
+    readonly allocationEvents?: readonly ProposedEvent[];
     readonly allocatedAt: string;
     readonly attemptId: string;
     readonly callId: string;
@@ -242,6 +243,20 @@ export class AttemptJournal {
             input.allocatedAt,
           ],
         );
+        if (input.allocationEvents && input.allocationEvents.length > 0) {
+          const commandId = `provider-allocation:${input.callId}`;
+          const admitted = admitInTransaction(this.database, {
+            acceptedAt: input.allocatedAt,
+            actorId: "curiosity-kernel",
+            commandDigest: hash(input.allocationEvents),
+            commandId,
+            events: input.allocationEvents,
+            nonce: commandId,
+            pluginId: "curiosity.kernel.attempts",
+          });
+          if (admitted._tag === "Conflict")
+            throw new Error("PROVIDER_ALLOCATION_EVENT_CONFLICT");
+        }
         return {
           actionId: input.action.actionId,
           attemptId: input.attemptId,
@@ -268,7 +283,7 @@ export class AttemptJournal {
     readonly snapshotDigest: string;
     readonly toolName: string;
     readonly toolVersion: string;
-  }): AllocatedToolAttempt | undefined {
+  }): AllocatedToolAttempt | "resource-collision" | undefined {
     return this.database
       .transaction(() => {
         const action = this.database
@@ -336,6 +351,25 @@ export class AttemptJournal {
           )
         )
           return undefined;
+        const exclusive = input.action.requestedCapabilities.some((capability) =>
+          ["filesystem.mutation", "git.mutation"].includes(capability),
+        );
+        if (exclusive) {
+          this.database.run(
+            "UPDATE resource_leases SET status = 'fenced', released_at = ? WHERE status = 'active' AND attempt_id IN (SELECT attempt_id FROM attempts WHERE execution_id = ? AND status = 'running')",
+            [input.allocatedAt, input.action.executionId],
+          );
+          this.database.run(
+            "UPDATE resource_leases SET status = 'expired', released_at = ? WHERE status = 'active' AND expires_at <= ?",
+            [input.allocatedAt, input.allocatedAt],
+          );
+          const collision = this.database
+            .query<{ lease_id: string }, [string]>(
+              "SELECT lease_id FROM resource_leases WHERE resource = ? AND status IN ('active','fenced') LIMIT 1",
+            )
+            .get(input.action.resource);
+          if (collision) return "resource-collision";
+        }
         this.database.run(
           "UPDATE provider_calls SET status = CASE dispatch_state WHEN 'dispatched' THEN 'delivery-unknown' ELSE 'failed' END, completed_at = ?, error_code = 'ATTEMPT_FENCED', usage_state = 'UNKNOWN', delivery_certainty = CASE dispatch_state WHEN 'dispatched' THEN 'UNKNOWN' ELSE 'NOT_DELIVERED' END WHERE attempt_id IN (SELECT attempt_id FROM attempts WHERE execution_id = ? AND status = 'running') AND status = 'allocated'",
           [input.allocatedAt, input.action.executionId],
@@ -396,6 +430,24 @@ export class AttemptJournal {
             input.allocatedAt,
           ],
         );
+        if (exclusive)
+          this.database.run(
+            "INSERT INTO resource_leases(lease_id,resource,attempt_id,action_id,execution_id,generation,mode,status,acquired_at,expires_at,released_at) VALUES (?,?,?,?,?,?,'exclusive','active',?,?,NULL)",
+            [
+              hash({
+                attemptId: input.attemptId,
+                generation: input.generation,
+                resource: input.action.resource,
+              }),
+              input.action.resource,
+              input.attemptId,
+              input.action.actionId,
+              input.action.executionId,
+              input.generation,
+              input.allocatedAt,
+              input.leaseExpiresAt,
+            ],
+          );
         return {
           actionId: input.action.actionId,
           attemptId: input.attemptId,
@@ -546,6 +598,7 @@ export class AttemptJournal {
 
   completeProviderCall(input: {
     readonly actionId: string;
+    readonly additionalEvents?: readonly ProposedEvent[];
     readonly attemptId: string;
     readonly callId: string;
     readonly completedAt: string;
@@ -638,6 +691,19 @@ export class AttemptJournal {
           [attemptStatus, input.completedAt, input.attemptId, input.generation],
         );
         this.database.run(
+          "UPDATE resource_leases SET status = ?, released_at = ? WHERE attempt_id = ? AND generation = ? AND status = 'active'",
+          [
+            input.status === "delivery-unknown"
+              ? "fenced"
+              : input.status === "cancelled"
+                ? "cancelled"
+                : "released",
+            input.status === "delivery-unknown" ? null : input.completedAt,
+            input.attemptId,
+            input.generation,
+          ],
+        );
+        this.database.run(
           "UPDATE actions SET status = ?, updated_at = ?, output_digest = ?, error_code = ? WHERE action_id = ?",
           [
             actionStatus,
@@ -661,7 +727,7 @@ export class AttemptJournal {
           actorId: "curiosity-kernel",
           commandDigest: input.outputDigest,
           commandId: `${input.callId}:${input.status}`,
-          events: [input.event],
+           events: [input.event, ...(input.additionalEvents ?? [])],
           nonce: `${input.callId}:${input.status}`,
           pluginId: "curiosity.kernel.attempts",
         });
@@ -756,6 +822,19 @@ export class AttemptJournal {
         this.database.run(
           "UPDATE attempts SET status = ?, updated_at = ? WHERE attempt_id = ? AND generation = ?",
           [attemptStatus, input.completedAt, input.attemptId, input.generation],
+        );
+        this.database.run(
+          "UPDATE resource_leases SET status = ?, released_at = ? WHERE attempt_id = ? AND generation = ? AND status = 'active'",
+          [
+            input.status === "delivery-unknown"
+              ? "fenced"
+              : input.status === "cancelled"
+                ? "cancelled"
+                : "released",
+            input.status === "delivery-unknown" ? null : input.completedAt,
+            input.attemptId,
+            input.generation,
+          ],
         );
         this.database.run(
           "UPDATE actions SET status = ?, updated_at = ?, output_digest = ?, error_code = ? WHERE action_id = ?",
@@ -859,6 +938,10 @@ export class AttemptJournal {
         runFinalized(
           this.database,
           "UPDATE attempts SET status = 'cancelled', updated_at = ? WHERE (execution_id = ? OR execution_id IN (SELECT descendant_execution_id FROM execution_ancestry WHERE ancestor_execution_id = ?)) AND status = 'running'",
+          [input.acceptedAt, input.executionId, input.executionId],
+        );
+        this.database.run(
+          "UPDATE resource_leases SET status = CASE WHEN EXISTS (SELECT 1 FROM tool_calls WHERE tool_calls.attempt_id = resource_leases.attempt_id AND tool_calls.dispatch_state = 'dispatched') THEN 'fenced' ELSE 'cancelled' END, released_at = CASE WHEN EXISTS (SELECT 1 FROM tool_calls WHERE tool_calls.attempt_id = resource_leases.attempt_id AND tool_calls.dispatch_state = 'dispatched') THEN NULL ELSE ? END WHERE status = 'active' AND attempt_id IN (SELECT attempt_id FROM attempts WHERE execution_id = ? OR execution_id IN (SELECT descendant_execution_id FROM execution_ancestry WHERE ancestor_execution_id = ?))",
           [input.acceptedAt, input.executionId, input.executionId],
         );
         runFinalized(

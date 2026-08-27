@@ -19,6 +19,7 @@ const available = (id: string, reason: string) =>
 
 export const capabilityStatus = (input: {
   readonly providerConfigured: boolean;
+  readonly researchCapabilities: readonly string[];
   readonly supervisor: SupervisorReceipt;
 }): CapabilityStatusReport =>
   Object.freeze({
@@ -29,20 +30,44 @@ export const capabilityStatus = (input: {
           "auth.local-command",
           "LOCAL_AUTHENTICATED_COMMAND_PORT_ACTIVE",
         ),
+        input.providerConfigured
+          ? available("child.propose", "DURABLE_CHILD_SCHEDULER_ACTIVE")
+          : unavailable("child.propose", "PROVIDER_ADAPTER_NOT_CONFIGURED"),
         unavailable("deployment", "DEPLOYMENT_SURFACE_ABSENT"),
-        unavailable("filesystem.mutation", "SUPERVISOR_CAPABILITY_DISABLED"),
+        input.supervisor.capabilities.filesystemMutation
+          ? available(
+              "filesystem.mutation",
+              "PRECONDITIONED_ATOMIC_WORKSPACE_MUTATION_ACTIVE",
+            )
+          : unavailable("filesystem.mutation", "SUPERVISOR_CAPABILITY_DISABLED"),
         input.supervisor.capabilities.filesystemRead
           ? available("filesystem.read", "WORKSPACE_READ_SUPERVISOR_ACTIVE")
           : unavailable("filesystem.read", "SUPERVISOR_CAPABILITY_DISABLED"),
-        unavailable("git.mutation", "GIT_QUALIFICATION_ABSENT"),
+        input.supervisor.capabilities.git
+          ? available("git.read", "IDENTITY_BOUND_GIT_READ_ACTIVE")
+          : unavailable("git.read", "SUPERVISOR_CAPABILITY_DISABLED"),
+        input.supervisor.capabilities.gitMutation
+          ? available(
+              "git.mutation",
+              "GATED_WORKTREE_AND_REF_MUTATION_ACTIVE",
+            )
+          : unavailable("git.mutation", "GIT_MUTATION_PROFILE_DISABLED"),
         unavailable("mobile", "MOBILE_SURFACE_ABSENT"),
-        unavailable("network.search", "SEARCH_ADAPTER_UNQUALIFIED"),
+        input.researchCapabilities.includes("network.fetch")
+          ? available("network.fetch", "BOUNDED_RESEARCH_ADAPTER_ACTIVE")
+          : unavailable("network.fetch", "FETCH_ADAPTER_UNQUALIFIED"),
+        input.researchCapabilities.includes("network.search")
+          ? available("network.search", "BOUNDED_RESEARCH_ADAPTER_ACTIVE")
+          : unavailable("network.search", "SEARCH_ADAPTER_UNQUALIFIED"),
         available(
           "persistence.local-event-journal",
           "LOCAL_EVENT_JOURNAL_ACTIVE",
         ),
         unavailable("platform.windows", "PLATFORM_UNSUPPORTED"),
-        unavailable("process.execution", "SUPERVISOR_CAPABILITY_DISABLED"),
+        input.supervisor.capabilities.process
+          ? available("process.execution", "CLOSED_PROCESS_PROFILE_ACTIVE")
+          : unavailable("process.execution", "SUPERVISOR_CAPABILITY_DISABLED"),
+        available("user.question", "SIGNED_QUESTION_LIFECYCLE_ACTIVE"),
         unavailable("production", "PRODUCTION_QUALIFICATION_ABSENT"),
         input.providerConfigured
           ? available(
@@ -81,6 +106,7 @@ export const capabilityStatus = (input: {
       filesystemMutation: input.supervisor.capabilities.filesystemMutation,
       filesystemRead: input.supervisor.capabilities.filesystemRead,
       git: input.supervisor.capabilities.git,
+      gitMutation: input.supervisor.capabilities.gitMutation,
       process: input.supervisor.capabilities.process,
       sandbox: input.supervisor.capabilities.sandbox,
     }),

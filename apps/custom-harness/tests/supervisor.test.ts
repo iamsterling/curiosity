@@ -14,12 +14,13 @@ describe("mandatory Rust supervisor", () => {
     const supervisor = await SupervisorClient.start(executable, import.meta.dir);
 
     expect(supervisor.receipt).toMatchObject({
-      protocolVersion: 2,
+      protocolVersion: 4,
       kind: "handshake.accepted",
       capabilities: {
         filesystemMutation: false,
         filesystemRead: true,
         git: false,
+        gitMutation: false,
         process: false,
         sandbox: false,
       },

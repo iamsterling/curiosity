@@ -98,6 +98,9 @@ export const makeChatApi =
         durationMs: assistant.durationMs ?? 0,
         effort: assistant.effort ?? "default",
         modelId: assistant.modelId ?? "",
+        ...(assistant.researchReceipt
+          ? { researchReceipt: assistant.researchReceipt }
+          : {}),
         text: assistant.text,
         threadId: assistant.threadId,
         turnId: assistant.turnId,

@@ -48,9 +48,20 @@ const renderAssistant = (
   ]
     .filter(Boolean)
     .join(" / ");
+  const receipt = message.researchReceipt;
   return [
     ...markdown.split("\n").map((line) => place(inset, line)),
     "",
+    ...(receipt
+      ? [
+          place(
+            inset,
+            theme.muted(
+              `RESEARCH RECEIPT / ${receipt.verification} / ${receipt.sourceCount} sources / ${receipt.citationCount} citations / ${receipt.toolCallCount} calls`,
+            ),
+          ),
+        ]
+      : []),
     place(
       inset,
       `${theme.rule(TUI_DESIGN_TOKENS.glyph.ruleLead)} ${theme.muted(`RESPONSE / ${suffix}`)}`,
@@ -89,20 +100,57 @@ const renderError = (
   ];
 };
 
-export const renderConversation = (
-  state: TuiFrameState,
+interface CachedConversation {
+  readonly lines: readonly string[];
+  readonly width: number;
+}
+
+const conversationCache = new WeakMap<
+  readonly ChatMessageProjection[],
+  WeakMap<TerminalTheme, CachedConversation>
+>();
+
+const renderCompletedConversation = (
+  messages: readonly ChatMessageProjection[],
   width: number,
   theme: TerminalTheme,
 ): readonly string[] => {
-  const result: string[] = [];
-  for (const message of state.messages) {
-    if (result.length > 0) result.push("");
-    result.push(
+  let themeCache = conversationCache.get(messages);
+  if (!themeCache) {
+    themeCache = new WeakMap();
+    conversationCache.set(messages, themeCache);
+  }
+  const cached = themeCache.get(theme);
+  if (cached?.width === width) return cached.lines;
+
+  const lines: string[] = [];
+  for (const message of messages) {
+    if (lines.length > 0) lines.push("");
+    lines.push(
       ...(message.role === "user"
         ? renderPanel(message.text, width, theme)
         : renderAssistant(message, width, theme)),
     );
   }
+  const result = Object.freeze(lines);
+  themeCache.set(theme, { lines: result, width });
+  return result;
+};
+
+export const renderConversation = (
+  state: TuiFrameState,
+  width: number,
+  theme: TerminalTheme,
+): readonly string[] => {
+  const completed = renderCompletedConversation(state.messages, width, theme);
+  if (
+    !state.submittedText &&
+    !state.streamingText &&
+    state.status !== "working" &&
+    !state.error
+  )
+    return completed;
+  const result: string[] = [...completed];
   if (state.submittedText) {
     if (result.length > 0) result.push("");
     result.push(...renderPanel(state.submittedText, width, theme));

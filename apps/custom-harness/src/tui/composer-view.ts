@@ -4,7 +4,7 @@ import { sanitizeTerminalText } from "./terminal-text.js";
 import type { TerminalTheme } from "./theme.js";
 import { TUI_DESIGN_TOKENS } from "./design-system.js";
 
-export const LOGO = ["C U R I O S I T Y", "SYSTEM / READY"] as const;
+export const LOGO = ["CURIOSITY"] as const;
 
 export interface ComposerView {
   readonly cursorColumn?: number;
@@ -146,8 +146,34 @@ export const renderComposer = (
 };
 
 export const renderLogoLine = (line: string, theme: TerminalTheme): string => {
-  if (line === LOGO[0]) return theme.heading(line);
-  return `${theme.success(TUI_DESIGN_TOKENS.glyph.status)} ${theme.muted(line)}`;
+  return theme.heading(line);
+};
+
+export const renderHeader = (
+  state: TuiFrameState,
+  width: number,
+  theme: TerminalTheme,
+): string => {
+  const left = `${TUI_DESIGN_TOKENS.glyph.plugin} curiosity`;
+  const { model } = modelParts(state.modelId);
+  const metadata = [
+    sanitizeTerminalText(state.actorId ?? "local-owner"),
+    sanitizeTerminalText(width < 80 ? model : state.modelId),
+    sanitizeTerminalText(state.effort),
+  ].join("  ");
+  const right = clip(metadata, Math.max(0, width - visibleWidth(left) - 2));
+  const gap = " ".repeat(
+    Math.max(1, width - visibleWidth(left) - visibleWidth(right)),
+  );
+  return `${theme.plugin(TUI_DESIGN_TOKENS.glyph.plugin)}${theme.heading(" curiosity")}${theme.muted(gap)}${theme.secondary(right)}`;
+};
+
+export const renderIdleStatus = (
+  state: TuiFrameState,
+  theme: TerminalTheme,
+): string => {
+  const pluginCount = state.catalog?.pluginIds.length ?? 0;
+  return `${theme.secondary(TUI_DESIGN_TOKENS.glyph.authored)} ${theme.muted(`authority kernel sealed · ${pluginCount} plugins`)}`;
 };
 
 export const renderFooter = (
@@ -163,5 +189,5 @@ export const renderFooter = (
   )}`;
   const rightWidth = 1 + visibleWidth(status);
   const gap = " ".repeat(Math.max(1, width - visibleWidth(left) - rightWidth));
-  return `${theme.muted(left)}${gap}${theme.success(TUI_DESIGN_TOKENS.glyph.status)}${theme.muted(status)}`;
+  return `${theme.muted(left)}${gap}${theme.success(TUI_DESIGN_TOKENS.glyph.healthy)}${theme.muted(status)}`;
 };

@@ -1,0 +1,40 @@
+  ◆ trace attempt fencing                                          thread 7c4a-0031  openai-oauth:gpt-5.4-mini  medium
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   0031  ▌ USER                                                              │  I N S P E C T O R               ctrl+i
+         Trace how attempt fencing survives a supervisor restart.            │──────────────────────────────────────────
+                                                                             │  ⌄  CAPABILITIES trusted-local-single-u
+   0032  ◇ ASSISTANT                                                         │  ✓  filesystem.read              ACTIVE
+         Fencing is enforced at commit, not dispatch. The recovery           │  ✗  filesystem.mutation        DISABLED
+         frontier preserves unresolved effects.                              │──────────────────────────────────────────
+                                                                             │  ⌄  PLUGINS                    2 loaded
+                                                                             │  curiosity.stock.chat curiosity.stock.s
+                                                                             │──────────────────────────────────────────
+                                                                             │  ›  CATALOG                catalog-dig…
+                                                                             │  1 tools · 1 workflows
+                                                                             │
+                                                                             │
+                                                                             │
+                                                                             │
+                                                                             │
+                                                                             │
+                                                                             │
+                                                                             │
+                                                                             │
+                                                                             │
+                                                                             │
+                                                                             │
+                                                                             │
+                                                                             │
+                                                                             │
+                                                                             │
+                                                                             │
+                                                                             │
+                                                                             │
+                                                                             │
+                                                                             │
+   ┌─────────────────────────────────────────────────────────────────────┐   │
+   │›                                                                    │   │
+   └─────────────────────────────────────────────────────────────────────┘   │
+   ⏎ send   ⇧⏎ newline   ⌃i inspect   / command            end · following   │
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ● ready                                                                                          plugins 2   tools 1

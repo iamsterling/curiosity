@@ -20,6 +20,7 @@ const skillKeys = [
   "version",
 ] as const;
 const promptCommandKeys = [
+  "agentId",
   "description",
   "id",
   "instructions",
@@ -43,6 +44,7 @@ const toolKeys = [
   "version",
 ] as const;
 const namePattern = /^[a-z][a-z0-9_-]{0,63}$/u;
+const toolNamePattern = /^[a-z][a-z0-9_.-]{0,63}$/u;
 const versionPattern = /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/u;
 
 const contributionId = (
@@ -119,7 +121,16 @@ export const validatePromptCommand = (
     throw new Error(`PLUGIN_PROMPT_COMMAND_STATUS_INVALID:${id}`);
   if (command.skillName !== null && typeof command.skillName !== "string")
     throw new Error(`PLUGIN_PROMPT_COMMAND_SKILL_INVALID:${id}`);
+  if (command.agentId !== null && typeof command.agentId !== "string")
+    throw new Error(`PLUGIN_PROMPT_COMMAND_AGENT_INVALID:${id}`);
   return {
+    agentId:
+      command.agentId === null
+        ? null
+        : name(
+            command.agentId,
+            `PLUGIN_PROMPT_COMMAND_AGENT_INVALID:${id}`,
+          ),
     description: nonEmptyString(
       command.description,
       `PLUGIN_PROMPT_COMMAND_DESCRIPTION_INVALID:${id}`,
@@ -176,7 +187,15 @@ export const validateTool = (
     ),
     id: id as ToolContribution["id"],
     inputSchema: tool.inputSchema,
-    name: name(tool.name, `PLUGIN_TOOL_NAME_INVALID:${id}`),
+    name: (() => {
+      const result = nonEmptyString(
+        tool.name,
+        `PLUGIN_TOOL_NAME_INVALID:${id}`,
+      );
+      if (!toolNamePattern.test(result))
+        throw new Error(`PLUGIN_TOOL_NAME_INVALID:${id}`);
+      return result;
+    })(),
     outputProvenance: tool.outputProvenance,
     propose: tool.propose as ToolContribution["propose"],
     readOnly: tool.readOnly,

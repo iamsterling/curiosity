@@ -12,11 +12,13 @@ export interface TerminalTheme {
   readonly heading: (value: string) => string;
   readonly link: (value: string) => string;
   readonly muted: (value: string) => string;
+  readonly plugin: (value: string) => string;
   readonly quietSurface: (value: string) => string;
   readonly quietSurfaceMuted: (value: string) => string;
   readonly quietSurfaceText: (value: string) => string;
   readonly reset: string;
   readonly rule: (value: string) => string;
+  readonly secondary: (value: string) => string;
   readonly success: (value: string) => string;
   readonly surface: (value: string) => string;
   readonly surfaceActivity: (value: string) => string;
@@ -61,6 +63,7 @@ export const makeTerminalTheme = (enabled: boolean): TerminalTheme => {
     heading: style(enabled, base, `1;${foreground(color.textPrimary)}`),
     link: style(enabled, base, `4;${foreground(color.focus)}`),
     muted: style(enabled, base, foreground(color.textMuted)),
+    plugin: style(enabled, base, foreground(color.plugin)),
     quietSurface: style(enabled, base, quietSurfaceCode),
     quietSurfaceMuted: style(
       enabled,
@@ -74,6 +77,7 @@ export const makeTerminalTheme = (enabled: boolean): TerminalTheme => {
     ),
     reset: enabled ? "\u001b[0m" : "",
     rule: style(enabled, base, foreground(color.line)),
+    secondary: style(enabled, base, foreground(color.textSecondary)),
     success: style(enabled, base, foreground(color.success)),
     surface: style(enabled, base, surfaceCode),
     surfaceActivity: style(

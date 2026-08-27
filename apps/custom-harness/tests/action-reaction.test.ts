@@ -184,6 +184,7 @@ describe("durable action and reaction spine", () => {
       },
       blocks: [],
       catalogDigest,
+      configDigest: digest("test-config"),
       conversation: {
         includedDigest: digest([]),
         includedMessages: 0,
@@ -208,6 +209,7 @@ describe("durable action and reaction spine", () => {
         resource: action.resource,
       },
       catalogDigest,
+      configDigest: digest("test-config"),
       effort: "default",
       generation: 1,
       grantedCapabilities: ["provider.generate"],
@@ -217,6 +219,11 @@ describe("durable action and reaction spine", () => {
       promptSnapshotDigest,
       providerPurpose: "normal" as const,
       requestDigest,
+      route: {
+        adapterVersion: "test-v1",
+        policyDigest: digest("test-route-policy"),
+        routeId: "test-route",
+      },
       schemaVersion: 1 as const,
     };
     const snapshotDigest = digest(snapshot);
@@ -252,12 +259,14 @@ describe("durable action and reaction spine", () => {
     journal.close();
 
     const reopened = EventJournal.open(databasePath);
+    const emptyCatalog = new StaticPluginCatalog([]);
     const gateway = new ProviderGateway(
       reopened.actions,
       reopened.attempts,
-      new PromptAssembler(new StaticPluginCatalog([]), () =>
+      new PromptAssembler(emptyCatalog, () =>
         reopened.readEvents(),
       ),
+      emptyCatalog,
       undefined,
       () => Date.parse("2026-08-25T00:00:04.000Z"),
       new Set(),
@@ -328,12 +337,12 @@ describe("durable action and reaction spine", () => {
       sourceEventId: source.eventId,
     });
     let called = false;
+    const catalog = createStockPluginCatalog();
     const gateway = new ProviderGateway(
       journal.actions,
       journal.attempts,
-      new PromptAssembler(createStockPluginCatalog(), () =>
-        journal.readEvents(),
-      ),
+      new PromptAssembler(catalog, () => journal.readEvents()),
+      catalog,
       {
         effort: "default",
         modelId: "test:model",

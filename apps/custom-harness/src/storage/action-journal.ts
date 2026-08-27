@@ -1,8 +1,13 @@
 import type { Database } from "bun:sqlite";
+import { createHash } from "node:crypto";
 import type { StoredAction } from "../domain/action.js";
 import type { ProposedEvent } from "../domain/event.js";
 import { canonicalJson } from "../kernel/canonical-json.js";
-import { admitInTransaction } from "./event-append.js";
+import {
+  admitInTransaction,
+  type AdmissionInput,
+  type AdmissionResult,
+} from "./event-append.js";
 
 interface ActionRow {
   readonly action_id: string;
@@ -53,6 +58,15 @@ export interface ReactionCommit {
   readonly sourceEventId: string;
 }
 
+export interface QuestionProjection {
+  readonly allowFreeText: boolean;
+  readonly executionId: string;
+  readonly options: readonly { readonly id: string; readonly label: string }[];
+  readonly prompt: string;
+  readonly questionId: string;
+  readonly status: "pending" | "answered" | "cancelled";
+}
+
 const toAction = (row: ActionRow): StoredAction => ({
   actionId: row.action_id,
   actionSchemaVersion: row.action_schema_version,
@@ -76,6 +90,334 @@ const toAction = (row: ActionRow): StoredAction => ({
 
 export class ActionJournal {
   constructor(private readonly database: Database) {}
+
+  event(eventId: string):
+    | {
+        readonly body: unknown;
+        readonly sequence: number;
+        readonly streamId: string;
+        readonly type: string;
+      }
+    | undefined {
+    const row = this.database
+      .query<
+        {
+          body_json: string;
+          event_type: string;
+          global_sequence: number;
+          stream_id: string;
+        },
+        [string]
+      >(
+        "SELECT body_json,event_type,global_sequence,stream_id FROM events WHERE event_id = ?",
+      )
+      .get(eventId);
+    return row
+      ? {
+          body: JSON.parse(row.body_json) as unknown,
+          sequence: row.global_sequence,
+          streamId: row.stream_id,
+          type: row.event_type,
+        }
+      : undefined;
+  }
+
+  action(actionId: string): StoredAction | undefined {
+    const row = this.database
+      .query<ActionRow, [string]>("SELECT * FROM actions WHERE action_id = ?")
+      .get(actionId);
+    return row ? toAction(row) : undefined;
+  }
+
+  createCompactionAction(input: {
+    readonly acceptedAt: string;
+    readonly actionId: string;
+    readonly executionId: string;
+    readonly input: unknown;
+    readonly inputDigest: string;
+    readonly parentActionId: string;
+    readonly parentExecutionId: string;
+    readonly requestedCapabilities: readonly string[];
+    readonly resource: string;
+  }): StoredAction {
+    return this.database
+      .transaction(() => {
+        const existing = this.action(input.actionId);
+        if (existing) return existing;
+        const parent = this.database
+          .query<
+            { source_event_id: string; status: string },
+            [string, string]
+          >(
+            "SELECT source_event_id,status FROM actions WHERE action_id = ? AND execution_id = ?",
+          )
+          .get(input.parentActionId, input.parentExecutionId);
+        if (!parent || parent.status !== "proposed")
+          throw new Error("COMPACTION_PARENT_NOT_PROPOSED");
+        const event = {
+          body: {
+            actionId: input.actionId,
+            executionId: input.executionId,
+            parentActionId: input.parentActionId,
+            parentExecutionId: input.parentExecutionId,
+            schemaVersion: 1,
+          },
+          streamId: input.executionId,
+          type: "compaction.requested",
+        };
+        const result = admitInTransaction(this.database, {
+          acceptedAt: input.acceptedAt,
+          actorId: "curiosity-kernel",
+          commandDigest: input.inputDigest,
+          commandId: `compaction:${input.actionId}:requested`,
+          events: [event],
+          nonce: `compaction:${input.actionId}:requested`,
+          pluginId: "curiosity.kernel.compaction",
+        });
+        if (result._tag === "Conflict")
+          throw new Error("COMPACTION_REQUEST_CONFLICT");
+        this.database.run(
+          "INSERT INTO executions(execution_id,version,generation,status,cancellation_requested,updated_at) VALUES (?,0,0,'active',0,?)",
+          [input.executionId, input.acceptedAt],
+        );
+        this.database.run(
+          "INSERT INTO execution_ancestry(ancestor_execution_id,descendant_execution_id,depth) SELECT ancestor_execution_id,?,depth + 1 FROM execution_ancestry WHERE descendant_execution_id = ? UNION ALL SELECT ?,?,1",
+          [
+            input.executionId,
+            input.parentExecutionId,
+            input.parentExecutionId,
+            input.executionId,
+          ],
+        );
+        this.database.run(
+          "INSERT INTO actions(action_id,source_event_id,reactor_id,plugin_id,action_type,action_schema_version,execution_id,resource,gate_class,deadline_class,input_json,input_digest,requested_capabilities_json,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'proposed',?,?)",
+          [
+            input.actionId,
+            parent.source_event_id,
+            "curiosity.kernel.compaction",
+            "curiosity.kernel.compaction",
+            "provider.generate",
+            1,
+            input.executionId,
+            input.resource,
+            "none-requested",
+            "background",
+            canonicalJson(input.input),
+            input.inputDigest,
+            canonicalJson(input.requestedCapabilities),
+            input.acceptedAt,
+            input.acceptedAt,
+          ],
+        );
+        return this.action(input.actionId)!;
+      })
+      .immediate();
+  }
+
+  succeededOutput(actionId: string): unknown | undefined {
+    const row = this.database
+      .query<{ body_json: string }, [string]>(
+        "SELECT body_json FROM events WHERE event_type = 'action.succeeded' AND json_extract(body_json,'$.actionId') = ? ORDER BY global_sequence DESC LIMIT 1",
+      )
+      .get(actionId);
+    if (!row) return undefined;
+    const body = JSON.parse(row.body_json) as Record<string, unknown>;
+    return body.output;
+  }
+
+  askQuestion(input: {
+    readonly action: StoredAction;
+    readonly allowFreeText: boolean;
+    readonly askedAt: string;
+    readonly eligibleActorId: string;
+    readonly options: readonly { readonly id: string; readonly label: string }[];
+    readonly prompt: string;
+    readonly questionId: string;
+  }): void {
+    this.database
+      .transaction(() => {
+        const action = this.database
+          .query<{ status: string }, [string]>(
+            "SELECT status FROM actions WHERE action_id = ?",
+          )
+          .get(input.action.actionId);
+        if (action?.status === "running") return;
+        if (action?.status !== "proposed")
+          throw new Error("QUESTION_ACTION_NOT_PROPOSED");
+        const event = {
+          body: {
+            actionId: input.action.actionId,
+            allowFreeText: input.allowFreeText,
+            executionId: input.action.executionId,
+            options: input.options,
+            prompt: input.prompt,
+            questionId: input.questionId,
+            schemaVersion: 1,
+          },
+          streamId: input.questionId,
+          type: "question.asked",
+        };
+        const result = admitInTransaction(this.database, {
+          acceptedAt: input.askedAt,
+          actorId: "curiosity-kernel",
+          commandDigest: input.questionId,
+          commandId: `${input.questionId}:asked`,
+          events: [event],
+          nonce: `${input.questionId}:asked`,
+          pluginId: "curiosity.kernel.questions",
+        });
+        if (result._tag === "Conflict") throw new Error("QUESTION_ASK_CONFLICT");
+        this.database.run(
+          "INSERT INTO questions(question_id,action_id,execution_id,eligible_actor_id,prompt,options_json,allow_free_text,status,asked_at) VALUES (?,?,?,?,?,?,?,'pending',?)",
+          [
+            input.questionId,
+            input.action.actionId,
+            input.action.executionId,
+            input.eligibleActorId,
+            input.prompt,
+            canonicalJson(input.options),
+            input.allowFreeText ? 1 : 0,
+            input.askedAt,
+          ],
+        );
+        this.database.run(
+          "UPDATE actions SET status = 'running', updated_at = ? WHERE action_id = ? AND status = 'proposed'",
+          [input.askedAt, input.action.actionId],
+        );
+      })
+      .immediate();
+  }
+
+  answerQuestion(
+    input: AdmissionInput & {
+      readonly answer: string;
+      readonly answeredAt: string;
+      readonly questionId: string;
+    },
+  ): AdmissionResult {
+    return this.database
+      .transaction(() => {
+        const question = this.database
+          .query<
+            {
+              action_id: string;
+              allow_free_text: number;
+              eligible_actor_id: string;
+              execution_id: string;
+              options_json: string;
+              status: string;
+            },
+            [string]
+          >(
+            "SELECT action_id,allow_free_text,eligible_actor_id,execution_id,options_json,status FROM questions WHERE question_id = ?",
+          )
+          .get(input.questionId);
+        if (
+          !question ||
+          question.status !== "pending" ||
+          question.eligible_actor_id !== input.actorId
+        )
+          throw new Error("QUESTION_ANSWER_DENIED");
+        const options = JSON.parse(question.options_json) as {
+          id: string;
+          label: string;
+        }[];
+        if (
+          !input.answer ||
+          Buffer.byteLength(input.answer) > 4_096 ||
+          (question.allow_free_text !== 1 &&
+            !options.some(({ id }) => id === input.answer))
+        )
+          throw new Error("QUESTION_ANSWER_INVALID");
+        const action = this.database
+          .query<{ input_json: string }, [string]>(
+            "SELECT input_json FROM actions WHERE action_id = ? AND status = 'running'",
+          )
+          .get(question.action_id);
+        if (!action) throw new Error("QUESTION_ACTION_NOT_WAITING");
+        const actionInput = JSON.parse(action.input_json) as Record<
+          string,
+          unknown
+        >;
+        const correlation = actionInput.correlation;
+        const output = {
+          answer: input.answer,
+          provenance: "untrusted-user-answer",
+          questionId: input.questionId,
+          schemaVersion: 1,
+        };
+        const outputDigest = createHash("sha256")
+          .update(canonicalJson(output))
+          .digest("hex");
+        const result = admitInTransaction(this.database, {
+          ...input,
+          events: [
+            ...input.events,
+            {
+              body: {
+                actionId: question.action_id,
+                actionType: "question.ask",
+                correlation,
+                output,
+                schemaVersion: 1,
+              },
+              streamId: question.action_id,
+              type: "action.succeeded",
+            },
+          ],
+        });
+        if (
+          result._tag === "Conflict" ||
+          result.acknowledgement.disposition === "duplicate"
+        )
+          return result;
+        this.database.run(
+          "UPDATE questions SET status = 'answered',answer = ?,answered_at = ?,answer_command_id = ? WHERE question_id = ? AND status = 'pending'",
+          [
+            input.answer,
+            input.answeredAt,
+            input.commandId,
+            input.questionId,
+          ],
+        );
+        this.database.run(
+          "UPDATE actions SET status = 'succeeded',updated_at = ?,output_digest = ?,error_code = NULL WHERE action_id = ? AND status = 'running'",
+          [input.answeredAt, outputDigest, question.action_id],
+        );
+        this.database.run(
+          "UPDATE executions SET status = 'completed',version = version + 1,updated_at = ? WHERE execution_id = ? AND cancellation_requested = 0",
+          [input.answeredAt, question.execution_id],
+        );
+        return result;
+      })
+      .immediate();
+  }
+
+  questions(): readonly QuestionProjection[] {
+    return this.database
+      .query<
+        {
+          allow_free_text: number;
+          execution_id: string;
+          options_json: string;
+          prompt: string;
+          question_id: string;
+          status: QuestionProjection["status"];
+        },
+        []
+      >(
+        "SELECT question_id,execution_id,prompt,options_json,allow_free_text,status FROM questions ORDER BY asked_at,question_id",
+      )
+      .all()
+      .map((row) => ({
+        allowFreeText: row.allow_free_text === 1,
+        executionId: row.execution_id,
+        options: JSON.parse(row.options_json) as QuestionProjection["options"],
+        prompt: row.prompt,
+        questionId: row.question_id,
+        status: row.status,
+      }));
+  }
 
   beginReaction(input: {
     readonly pluginId: string;
@@ -199,7 +541,7 @@ export class ActionJournal {
   proposedActions(): readonly StoredAction[] {
     return this.database
       .query<ActionRow, []>(
-        "SELECT * FROM actions WHERE status = 'proposed' ORDER BY created_at, action_id",
+        "SELECT * FROM actions WHERE status = 'proposed' AND COALESCE(json_extract(input_json,'$.correlation.kind'),'') != 'curiosity.compaction' ORDER BY created_at, action_id",
       )
       .all()
       .map(toAction);

@@ -145,6 +145,91 @@ describe("sealed plugin catalog", () => {
     );
   });
 
+  test("rejects tool capabilities outside an agent ceiling and missing command routes", () => {
+    const base = plugin("curiosity.test.policy", "test.policy");
+    const tool = {
+      ...base,
+      agents: [
+        {
+          childAgents: [],
+          default: true,
+          description: "Test agent",
+          id: "test-agent",
+          maxDelegationDepth: 0,
+          mode: "primary",
+          requestedCapabilities: ["provider.generate"],
+          requestedTools: ["test_search"],
+          schemaVersion: 1,
+          system: "Test policy",
+          version: "1.0.0",
+        },
+      ],
+      tools: [
+        {
+          actionType: "search.test",
+          description: "Test search",
+          id: "curiosity.test.policy.tools.test_search",
+          inputSchema: { additionalProperties: false, type: "object" },
+          name: "test_search",
+          outputProvenance: "untrusted-evidence",
+          propose: (_input: unknown, subject: { executionId: string; resource: string }) =>
+            Effect.succeed({
+              actionSchemaVersion: 1 as const,
+              actionType: "search.test",
+              deadlineClass: "interactive" as const,
+              gateClass: "none-requested" as const,
+              input: {},
+              requestedCapabilities: ["network.search"],
+              schemaVersion: 1 as const,
+              subject,
+            }),
+          readOnly: true,
+          requestedCapabilities: ["network.search"],
+          schemaVersion: 1,
+          version: "1.0.0",
+        },
+      ],
+    } satisfies CuriosityPluginV2;
+    expect(() => new StaticPluginCatalog([tool])).toThrow(
+      "PLUGIN_AGENT_TOOL_CAPABILITY_MISSING:test-agent:test_search:network.search",
+    );
+
+    const routed = {
+      ...base,
+      agents: [
+        {
+          childAgents: [],
+          default: true,
+          description: "Test agent",
+          id: "test-agent",
+          maxDelegationDepth: 0,
+          mode: "primary",
+          requestedCapabilities: [],
+          requestedTools: [],
+          schemaVersion: 1,
+          system: "Test policy",
+          version: "1.0.0",
+        },
+      ],
+      promptCommands: [
+        {
+          agentId: "missing-agent",
+          description: "Missing route",
+          id: "curiosity.test.policy.prompt-commands.missing-route",
+          instructions: "Route nowhere",
+          name: "missing-route",
+          schemaVersion: 1,
+          skillName: null,
+          status: "active",
+          version: "1.0.0",
+        },
+      ],
+    } satisfies CuriosityPluginV2;
+    expect(() => new StaticPluginCatalog([routed])).toThrow(
+      "PLUGIN_PROMPT_COMMAND_AGENT_MISSING:curiosity.test.policy.prompt-commands.missing-route:missing-agent",
+    );
+  });
+
   test("registers event reactors deterministically without granting execution", () => {
     const base = plugin("curiosity.test.reactive", "test.reactive");
     const reactive = {

@@ -79,6 +79,14 @@ closed rather than inheriting these claims.
   authority boundary, capability translation, migration sequence, and binary
   acceptance checks for the native Curiosity intelligence layer. It does not
   amend or supersede the accepted ADRs.
+- [OpenCode2 behavioral parity specification](OPENCODE2-BEHAVIORAL-PARITY-SPEC.md)
+  — complete dependency disposition, native contracts, real-subagent execution,
+  migration requirements, and evidence gates. It records that catalog parity
+  and workflow-child scaffolding are not full behavioral parity.
+- [Bubble Tea presentation protocol](BUBBLETEA-PRESENTATION-PROTOCOL.md) — the
+  opt-in nonce-bound Go↔Bun wire contract, fixed geometry, lifecycle, and
+  digest-verified payload boundary selected by ADR-012 and made experimental by
+  ADR-013.
 
 ## ADR inventory
 
@@ -95,6 +103,9 @@ closed rather than inheriting these claims.
 | [ADR-009](decisions/ADR-009-trusted-local-authentication-readiness.md) | Accepted | Trusted-local authentication, transports, readiness         |
 | [ADR-010](decisions/ADR-010-provenance-updates-licenses.md)            | Accepted | Exact-revision qualification, updates, and license policy   |
 | [ADR-011](decisions/ADR-011-direct-build-and-host-decoupling.md)       | Accepted | Direct build and replaceable copied host adapters           |
+| [ADR-012](decisions/ADR-012-bubbletea-presentation-client.md)          | Accepted | Bubble Tea v2 non-authoritative presentation client         |
+| [ADR-013](decisions/ADR-013-typescript-default-presentation.md)        | Accepted | TypeScript default TTY; Bubble Tea explicit experimental    |
+| [ADR-014](decisions/ADR-014-benchmark-owned-retrieval.md)             | Accepted | Isolated benchmark acquisition and owned Retrieval v3       |
 
 ## Package-wide invariants
 

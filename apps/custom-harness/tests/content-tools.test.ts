@@ -9,6 +9,7 @@ import {
   signCommand,
   type CuriosityHarness,
   type PromptMessage,
+  type ResearchAdapter,
   type TextGenerator,
 } from "../src/index.js";
 import { createStockPluginCatalog } from "../src/plugins/registry.js";
@@ -22,7 +23,10 @@ const supervisorPath = path.resolve(
 );
 let ordinal = 0;
 
-const fixture = (textGenerator?: TextGenerator) => {
+const fixture = (
+  textGenerator?: TextGenerator,
+  researchAdapter?: ResearchAdapter,
+) => {
   const root = mkdtempSync(path.join(tmpdir(), "curiosity-content-"));
   roots.push(root);
   const databasePath = path.join(root, "events.sqlite");
@@ -35,6 +39,7 @@ const fixture = (textGenerator?: TextGenerator) => {
       supervisorPath,
       workspaceRoot: root,
       ...(textGenerator ? { textGenerator } : {}),
+      ...(researchAdapter ? { researchAdapter } : {}),
     }),
   };
 };
@@ -201,6 +206,61 @@ describe("skills, prompt commands, tools, and search", () => {
         )
         .get()?.count,
     ).toBe(2);
+    database.close();
+    await harness.dispose();
+  });
+
+  test("denies non-researcher network actions at the final tool sink", async () => {
+    let searches = 0;
+    const researchAdapter: ResearchAdapter = {
+      close: () => undefined,
+      receipt: {
+        adapterId: "test-search-only",
+        adapterVersion: "1.0.0",
+        capabilities: ["network.search"],
+        securityProfile: "curiosity-runtime-query-v1",
+      },
+      search: async () => {
+        searches += 1;
+        return { queriedAt: new Date().toISOString(), results: [] };
+      },
+    };
+    const { databasePath, harness } = fixture(undefined, researchAdapter);
+    await expect(
+      submit(harness, "search.propose", {
+        input: {
+          maxResults: 5,
+          query: "Curiosity primary sources",
+          schemaVersion: 1,
+        },
+        proposalId: "search-proposal-role-denied-001",
+        schemaVersion: 1,
+        subjectId: "intent-001",
+      }),
+    ).rejects.toMatchObject({
+      _tag: "ActionExecutionFailure",
+      message: "ROLE_CAPABILITY_DENIED",
+    });
+    expect(searches).toBe(0);
+
+    const database = new Database(databasePath, {
+      readonly: true,
+      strict: true,
+    });
+    expect(
+      database
+        .query<{ count: number }, []>(
+          "SELECT count(*) AS count FROM tool_calls",
+        )
+        .get()?.count,
+    ).toBe(0);
+    expect(
+      database
+        .query<{ error_code: string; status: string }, []>(
+          "SELECT error_code,status FROM actions WHERE action_type = 'search.web'",
+        )
+        .get(),
+    ).toEqual({ error_code: "ROLE_CAPABILITY_DENIED", status: "failed" });
     database.close();
     await harness.dispose();
   });

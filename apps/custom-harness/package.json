@@ -22,11 +22,15 @@
   },
   "scripts": {
     "build:supervisor": "cargo build --manifest-path native/supervisor/Cargo.toml --locked",
-    "build": "bun run build:supervisor && tsc -p tsconfig.build.json",
+    "build:tui": "go -C native/tui build -trimpath -ldflags '-s -w' -o dist/curiosity-tui ./cmd/curiosity-tui",
+    "build:experimental-binary": "cargo build --release --manifest-path native/supervisor/Cargo.toml --locked && bun run build:tui && bun tools/build-experimental-binary.mjs",
+    "build": "bun run build:supervisor && bun run build:tui && tsc -p tsconfig.build.json",
     "check-types": "tsc --noEmit",
-    "lint": "cargo fmt --manifest-path native/supervisor/Cargo.toml --check && cargo clippy --manifest-path native/supervisor/Cargo.toml --locked --all-targets -- -D warnings && node tools/verify-architecture.mjs",
-    "test": "bun run build:supervisor && cargo test --manifest-path native/supervisor/Cargo.toml --locked && bun test tests/*.test.ts",
-    "tui": "bun run build:supervisor && bun src/tui.ts",
+    "install:experimental-binary": "bun run build:experimental-binary && bun tools/install-experimental-binary.mjs",
+    "lint": "test -z \"$(gofmt -l native/tui)\" && go -C native/tui mod verify && go -C native/tui vet ./... && cargo fmt --manifest-path native/supervisor/Cargo.toml --check && cargo clippy --manifest-path native/supervisor/Cargo.toml --locked --all-targets -- -D warnings && node tools/verify-architecture.mjs",
+    "test": "bun run build:supervisor && cargo test --manifest-path native/supervisor/Cargo.toml --locked && go -C native/tui test ./... && bun test tests/*.test.ts",
+    "test:experimental-binary": "bun run build:experimental-binary && bun test tests/darwin/binary-distribution.test.ts",
+    "tui": "bun run build:supervisor && bun run build:tui && bun src/tui.ts",
     "verify": "bun run check-types && bun run lint && bun run build && bun run test"
   },
   "dependencies": {
@@ -36,6 +40,7 @@
     "@ai-sdk/openai-compatible": "2.0.72",
     "@openai-oauth/ai-sdk": "2.0.0",
     "@openai-oauth/local": "2.0.0",
+    "@curiosity/runtime": "workspace:*",
     "ai": "6.0.266",
     "effect": "4.0.0-rc.111",
     "marked": "12.0.2",

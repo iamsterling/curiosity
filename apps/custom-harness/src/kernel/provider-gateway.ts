@@ -11,7 +11,14 @@ import { AttemptJournal } from "../storage/attempt-journal.js";
 import { canonicalJson } from "./canonical-json.js";
 import { ActionExecutionFailure } from "./errors.js";
 import { PromptAssembler } from "./prompt-assembler.js";
-import type { PromptMessage, TextGenerator } from "./text-generator.js";
+import type {
+  PromptMessage,
+  ProviderRouteConfig,
+  TextGenerator,
+} from "./text-generator.js";
+import type { StaticPluginCatalog } from "./plugin.js";
+import { childRunAuthority } from "./child-authority.js";
+import type { AssembledPrompt } from "../domain/prompt.js";
 
 export interface ActionStreamDelta {
   readonly actionId: string;
@@ -24,6 +31,21 @@ interface ProviderGenerateInput {
   readonly agentId: string;
   readonly correlation: unknown;
   readonly messages: readonly PromptMessage[];
+}
+
+export interface PreparedProviderCall {
+  readonly action: StoredAction;
+  readonly allocation: AllocatedProviderAttempt;
+  readonly assembled: AssembledPrompt;
+  readonly correlation: Record<string, unknown> | undefined;
+  readonly generator: TextGenerator;
+  readonly input: ProviderGenerateInput;
+  readonly requestDigest: string;
+  readonly route: {
+    readonly adapterVersion: string;
+    readonly policyDigest: string;
+    readonly routeId: string;
+  };
 }
 
 class ProviderActionMessage extends Schema.Class<ProviderActionMessage>(
@@ -64,10 +86,108 @@ export class ProviderGateway {
     private readonly actions: ActionJournal,
     private readonly attempts: AttemptJournal,
     private readonly prompts: PromptAssembler,
-    private readonly generator: TextGenerator | undefined,
+    private readonly catalog: StaticPluginCatalog,
+    private readonly generators:
+      | TextGenerator
+      | Readonly<Record<string, ProviderRouteConfig>>
+      | undefined,
     private readonly now: () => number,
     private readonly grantedCapabilities: ReadonlySet<string>,
+    private readonly configDigest = createHash("sha256")
+      .update("default-config")
+      .digest("hex"),
+    private readonly enabledAgentIds: ReadonlySet<string> = new Set(
+      catalog.agents().map(({ id }) => id),
+    ),
   ) {}
+
+  private route(agentId: string):
+    | {
+        readonly adapterVersion: string;
+        readonly generator: TextGenerator;
+        readonly policyDigest: string;
+        readonly routeId: string;
+      }
+    | undefined {
+    const configured = this.generators;
+    if (!configured) return undefined;
+    if (typeof (configured as TextGenerator).stream === "function") {
+      const shared = configured as TextGenerator;
+      const identity = {
+        adapterVersion: "shared-v1",
+        effort: shared.effort,
+        modelId: shared.modelId,
+        routeId: `shared:${shared.modelId}`,
+      };
+      return {
+        adapterVersion: identity.adapterVersion,
+        generator: shared,
+        policyDigest: createHash("sha256")
+          .update(canonicalJson(identity))
+          .digest("hex"),
+        routeId: identity.routeId,
+      };
+    }
+    const routes = configured as Readonly<Record<string, ProviderRouteConfig>>;
+    const route = routes[agentId];
+    if (!route) return undefined;
+    const policy = Object.fromEntries(
+      Object.entries(routes)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([role, value]) => [
+          role,
+          {
+            adapterVersion: value.adapterVersion,
+            effort: value.generator.effort,
+            modelId: value.generator.modelId,
+            routeId: value.routeId,
+          },
+        ]),
+    );
+    return {
+      adapterVersion: route.adapterVersion,
+      generator: route.generator,
+      policyDigest: createHash("sha256")
+        .update(canonicalJson(policy))
+        .digest("hex"),
+      routeId: route.routeId,
+    };
+  }
+
+  private roleActivationAuthorizes(
+    action: StoredAction,
+    agentId: string,
+    correlation: Record<string, unknown> | undefined,
+  ): boolean {
+    if (
+      typeof correlation?.roleActivationCommand !== "string" ||
+      typeof correlation.roleActivationEventId !== "string" ||
+      typeof correlation.threadId !== "string"
+    )
+      return false;
+    const activation = this.actions.event(correlation.roleActivationEventId);
+    const source = this.actions.event(action.sourceEventId);
+    if (
+      !activation ||
+      !source ||
+      activation.type !== "skill.activated" ||
+      activation.streamId !== correlation.threadId ||
+      activation.sequence >= source.sequence ||
+      !activation.body ||
+      typeof activation.body !== "object" ||
+      Array.isArray(activation.body) ||
+      (activation.body as Record<string, unknown>).commandName !==
+        correlation.roleActivationCommand
+    )
+      return false;
+    return this.catalog
+      .promptCommands()
+      .some(
+        (command) =>
+          command.name === correlation.roleActivationCommand &&
+          command.agentId === agentId,
+      );
+  }
 
   cancelExecution(executionId: string): void {
     this.#active.get(executionId)?.abort("ACTION_CANCELLED");
@@ -138,7 +258,15 @@ export class ProviderGateway {
             actionType: action.actionType,
             correlation,
             errorCode,
-            modelId: this.generator?.modelId ?? "",
+            modelId:
+              (() => {
+                try {
+                  return this.route(parseInput(action.input).agentId)?.generator
+                    .modelId;
+                } catch {
+                  return undefined;
+                }
+              })() ?? "",
             schemaVersion: 1,
           },
           streamId: action.actionId,
@@ -165,6 +293,11 @@ export class ProviderGateway {
 
   private completeAttempt(input: {
     readonly action: StoredAction;
+    readonly additionalEvents?: readonly {
+      readonly body: unknown;
+      readonly streamId: string;
+      readonly type: string;
+    }[];
     readonly allocation: AllocatedProviderAttempt;
     readonly completedAt: string;
     readonly errorCode?: string;
@@ -180,6 +313,9 @@ export class ProviderGateway {
       .digest("hex");
     return this.attempts.completeProviderCall({
       actionId: input.action.actionId,
+      ...(input.additionalEvents
+        ? { additionalEvents: input.additionalEvents }
+        : {}),
       attemptId: input.allocation.attemptId,
       callId: input.allocation.callId,
       completedAt: input.completedAt,
@@ -193,11 +329,158 @@ export class ProviderGateway {
     });
   }
 
-  execute = Effect.fn("ProviderGateway.execute")(function* (
+  compactHistory = Effect.fn("ProviderGateway.compactHistory")(function* (
+    this: ProviderGateway,
+    parentAction: StoredAction,
+    input: ProviderGenerateInput,
+    omittedDigests: readonly string[],
+    route: {
+      readonly adapterVersion: string;
+      readonly generator: TextGenerator;
+      readonly policyDigest: string;
+      readonly routeId: string;
+    },
+  ) {
+    let retainedStart = input.messages.length;
+    let retainedBytes = 0;
+    while (retainedStart > omittedDigests.length) {
+      const candidate = input.messages[retainedStart - 1]!;
+      const candidateBytes = Buffer.byteLength(candidate.content);
+      if (
+        input.messages.length - retainedStart >= 96 ||
+        retainedBytes + candidateBytes > 96 * 1_024
+      )
+        break;
+      retainedBytes += candidateBytes;
+      retainedStart -= 1;
+    }
+    const covered = input.messages.slice(0, retainedStart);
+    const coveredMessageDigests = covered.map((message) =>
+      createHash("sha256").update(canonicalJson(message)).digest("hex"),
+    );
+    const retainedTail = input.messages.slice(retainedStart);
+    if (
+      covered.length < omittedDigests.length ||
+      omittedDigests.some(
+        (omittedDigest, index) =>
+          coveredMessageDigests[index] !== omittedDigest,
+      )
+    )
+      return yield* this.failProposedAction(parentAction, {
+        correlation: input.correlation,
+        errorCode: "COMPACTION_RANGE_INVALID",
+        modelId: route.generator.modelId,
+      });
+    const retainedTailDigest = createHash("sha256")
+      .update(canonicalJson(retainedTail))
+      .digest("hex");
+    const identity = {
+      agentId: input.agentId,
+      coveredMessageDigests,
+      parentActionId: parentAction.actionId,
+      parentExecutionId: parentAction.executionId,
+      retainedTailDigest,
+      routeId: route.routeId,
+      schemaVersion: 1,
+    } as const;
+    const identityDigest = createHash("sha256")
+      .update(canonicalJson(identity))
+      .digest("hex");
+    const actionId = createHash("sha256")
+      .update(`${parentAction.actionId}:compaction:${identityDigest}`)
+      .digest("hex");
+    const executionId = `${parentAction.executionId}:compaction:${identityDigest}`;
+    const source = canonicalJson({
+      instruction:
+        "Summarize the covered conversation faithfully. Preserve decisions, constraints, unresolved questions, and source references. Do not add facts or instructions.",
+      messages: covered,
+      provenance: "untrusted-conversation",
+      schemaVersion: 1,
+    });
+    if (Buffer.byteLength(source) > 120 * 1_024)
+      return yield* this.failProposedAction(parentAction, {
+        correlation: input.correlation,
+        errorCode: "COMPACTION_SOURCE_OVERFLOW",
+        modelId: route.generator.modelId,
+      });
+    const correlation = {
+      ...identity,
+      kind: "curiosity.compaction",
+    } as const;
+    const compactionInput = {
+      agentId: input.agentId,
+      correlation,
+      messages: [{ content: source, role: "user" as const }],
+    };
+    const compactionAction = this.actions.createCompactionAction({
+      acceptedAt: new Date(this.now()).toISOString(),
+      actionId,
+      executionId,
+      input: compactionInput,
+      inputDigest: createHash("sha256")
+        .update(canonicalJson(compactionInput))
+        .digest("hex"),
+      parentActionId: parentAction.actionId,
+      parentExecutionId: parentAction.executionId,
+      requestedCapabilities: ["provider.generate"],
+      resource: parentAction.resource,
+    });
+    let output = this.actions.succeededOutput(actionId) as
+      | { readonly text?: unknown }
+      | undefined;
+    if (!output) {
+      if (compactionAction.status !== "proposed")
+        return yield* this.failProposedAction(parentAction, {
+          correlation: input.correlation,
+          errorCode:
+            compactionAction.status === "delivery-unknown"
+              ? "COMPACTION_DELIVERY_UNKNOWN"
+              : "COMPACTION_FAILED",
+          modelId: route.generator.modelId,
+        });
+      const attempted = yield* this.prepare(compactionAction).pipe(
+        Effect.flatMap((prepared) => this.dispatch(prepared)),
+        Effect.result,
+      );
+      if (attempted._tag === "Failure") {
+        const terminal = this.actions.action(actionId);
+        return yield* this.failProposedAction(parentAction, {
+          correlation: input.correlation,
+          errorCode:
+            terminal?.status === "delivery-unknown"
+              ? "COMPACTION_DELIVERY_UNKNOWN"
+              : "COMPACTION_FAILED",
+          modelId: route.generator.modelId,
+        });
+      }
+      output = attempted.success;
+    }
+    if (typeof output?.text !== "string" || !output.text)
+      return yield* this.failProposedAction(parentAction, {
+        correlation: input.correlation,
+        errorCode: "COMPACTION_ARTIFACT_INVALID",
+        modelId: route.generator.modelId,
+      });
+    const summary = [
+      "--- BEGIN UNTRUSTED COMPACTION SUMMARY ---",
+      output.text,
+      "--- END UNTRUSTED COMPACTION SUMMARY ---",
+    ].join("\n");
+    return {
+      actionId,
+      messages: [
+        { content: summary, role: "user" as const },
+        ...retainedTail,
+      ],
+      retainedTailDigest,
+      summaryDigest: createHash("sha256").update(output.text).digest("hex"),
+    };
+  });
+
+  prepare = Effect.fn("ProviderGateway.prepare")(function* (
     this: ProviderGateway,
     action: StoredAction,
-    onDelta?: (delta: ActionStreamDelta) => void,
-  ) {
+  ): Effect.fn.Return<PreparedProviderCall, ActionExecutionFailure> {
     const parsed = yield* Effect.try({
       try: () => parseInput(action.input),
       catch: () =>
@@ -205,7 +488,7 @@ export class ProviderGateway {
           actionId: action.actionId,
           actionType: action.actionType,
           message: "PROVIDER_ACTION_INPUT_INVALID",
-          modelId: this.generator?.modelId ?? "",
+          modelId: "",
         }),
     }).pipe(Effect.result);
     if (parsed._tag === "Failure") {
@@ -217,21 +500,76 @@ export class ProviderGateway {
       return yield* failure;
     }
     const input = parsed.success;
-    const generator = this.generator;
-    if (!generator) {
+    const agent = this.catalog.agent(input.agentId);
+    const correlation =
+      input.correlation &&
+      typeof input.correlation === "object" &&
+      !Array.isArray(input.correlation)
+        ? (input.correlation as Record<string, unknown>)
+        : undefined;
+    const childCall = correlation?.kind === "curiosity.child.run";
+    const kernelCompaction =
+      correlation?.kind === "curiosity.compaction" &&
+      action.pluginId === "curiosity.kernel.compaction";
+    const activatedRole = this.roleActivationAuthorizes(
+      action,
+      input.agentId,
+      correlation,
+    );
+    if (
+      !agent ||
+      !this.enabledAgentIds.has(input.agentId) ||
+      (!kernelCompaction &&
+        (childCall
+          ? agent.mode !== "subagent"
+          : agent.mode !== "primary" && !activatedRole))
+    )
       return yield* this.failProposedAction(action, {
         correlation: input.correlation,
-        errorCode: "TEXT_GENERATOR_UNAVAILABLE",
+        errorCode: "PROVIDER_ROLE_DENIED",
+        modelId: "",
+      });
+    const selectedRoute = this.route(input.agentId);
+    if (!selectedRoute) {
+      return yield* this.failProposedAction(action, {
+        correlation: input.correlation,
+        errorCode: "PROVIDER_ROUTE_UNAVAILABLE",
         modelId: "",
       });
     }
+    const generator = selectedRoute.generator;
 
+    const childAuthority =
+      correlation?.kind === "curiosity.child.run"
+        ? childRunAuthority({
+            agentId: input.agentId,
+            catalog: this.catalog,
+            correlation: input.correlation,
+            grantedCapabilities: this.grantedCapabilities,
+          })
+        : undefined;
+    if (correlation?.kind === "curiosity.child.run" && !childAuthority)
+      return yield* this.failProposedAction(action, {
+        correlation: input.correlation,
+        errorCode: "CHILD_AUTHORITY_DENIED",
+        modelId: generator.modelId,
+      });
+    const effectiveCapabilities =
+      childAuthority?.capabilities ?? this.grantedCapabilities;
+    const finalizationOnly =
+      correlation?.kind === "curiosity.chat.turn" &&
+      correlation.finalizationOnly === true;
     const assembly = yield* this.prompts
       .assemble({
         actionType: action.actionType,
         agentId: input.agentId,
+        ...(correlation?.kind === "curiosity.compaction" || finalizationOnly
+          ? { allowedTools: new Set<string>() }
+          : childAuthority
+            ? { allowedTools: childAuthority.tools }
+            : {}),
         correlation: input.correlation,
-        grantedCapabilities: this.grantedCapabilities,
+        grantedCapabilities: effectiveCapabilities,
         messages: input.messages,
         sourceEventId: action.sourceEventId,
       })
@@ -255,7 +593,51 @@ export class ProviderGateway {
       });
       return yield* failure;
     }
-    const assembled = assembly.success;
+    let assembled = assembly.success;
+    let effectiveInput = input;
+    if (
+      correlation?.kind !== "curiosity.compaction" &&
+      assembled.snapshot.conversation.omittedDigests.length > 0
+    ) {
+      const compacted = yield* this.compactHistory(
+        action,
+        input,
+        assembled.snapshot.conversation.omittedDigests,
+        selectedRoute,
+      );
+      effectiveInput = { ...input, messages: compacted.messages };
+      assembled = yield* this.prompts
+        .assemble({
+          actionType: action.actionType,
+          agentId: input.agentId,
+          ...(finalizationOnly
+            ? { allowedTools: new Set<string>() }
+            : childAuthority
+              ? { allowedTools: childAuthority.tools }
+              : {}),
+          correlation: input.correlation,
+          grantedCapabilities: effectiveCapabilities,
+          messages: compacted.messages,
+          sourceEventId: action.sourceEventId,
+        })
+        .pipe(
+          Effect.mapError(
+            () =>
+              new ActionExecutionFailure({
+                actionId: action.actionId,
+                actionType: action.actionType,
+                message: "COMPACTION_SUMMARY_OVERFLOW",
+                modelId: generator.modelId,
+              }),
+          ),
+        );
+      if (assembled.snapshot.conversation.omittedDigests.length > 0)
+        return yield* this.failProposedAction(action, {
+          correlation: input.correlation,
+          errorCode: "COMPACTION_SUMMARY_OVERFLOW",
+          modelId: generator.modelId,
+        });
+    }
 
     const requestDigest = createHash("sha256")
       .update(
@@ -263,12 +645,19 @@ export class ProviderGateway {
           effort: generator.effort,
           messages: assembled.messages,
           modelId: generator.modelId,
+          routeId: selectedRoute.routeId,
           tools: assembled.tools,
         }),
       )
       .digest("hex");
     const generation = this.attempts.nextGeneration(action.executionId);
-    const grantedCapabilities = [...this.grantedCapabilities].sort();
+    const grantedCapabilities = [...effectiveCapabilities].sort();
+    const providerPurpose =
+      correlation?.kind === "curiosity.compaction"
+        ? "compaction"
+        : childAuthority
+          ? "child"
+          : "normal";
     const snapshot: ProviderAttemptSnapshot = {
       action: {
         actionId: action.actionId,
@@ -280,6 +669,7 @@ export class ProviderGateway {
         resource: action.resource,
       },
       catalogDigest: assembled.snapshot.catalogDigest,
+      configDigest: this.configDigest,
       effort: generator.effort,
       generation,
       grantedCapabilities,
@@ -287,8 +677,13 @@ export class ProviderGateway {
       policyVersion: "local-v1",
       promptSnapshot: assembled.snapshot,
       promptSnapshotDigest: assembled.snapshotDigest,
-      providerPurpose: "normal",
+      providerPurpose,
       requestDigest,
+      route: {
+        adapterVersion: selectedRoute.adapterVersion,
+        policyDigest: selectedRoute.policyDigest,
+        routeId: selectedRoute.routeId,
+      },
       schemaVersion: 1,
     };
     const snapshotDigest = createHash("sha256")
@@ -314,11 +709,30 @@ export class ProviderGateway {
       ownerId: "curiosity-kernel",
       promptSnapshotDigest: assembled.snapshotDigest,
       promptSnapshotJson: canonicalJson(assembled.snapshot),
-      providerPurpose: "normal",
+      providerPurpose,
       requestDigest,
       snapshot,
       snapshotDigest,
       sourceRevision: assembled.snapshot.revision,
+      ...(childAuthority
+        ? {
+            allocationEvents: [
+              {
+                body: {
+                  agentRunId: correlation?.agentRunId,
+                  agentSessionId: correlation?.agentSessionId,
+                  callId,
+                  childExecutionId: correlation?.childExecutionId,
+                  promptSourceRevision: assembled.snapshot.revision,
+                  schemaVersion: 1,
+                  sessionRevision: correlation?.sessionRevision,
+                },
+                streamId: String(correlation?.agentSessionId),
+                type: "child.run-started",
+              },
+            ],
+          }
+        : {}),
     });
     if (!allocation)
       return yield* new ActionExecutionFailure({
@@ -327,6 +741,34 @@ export class ProviderGateway {
         message: "ATTEMPT_AUTHORIZATION_DENIED",
         modelId: generator.modelId,
       });
+
+    return {
+      action,
+      allocation,
+      assembled,
+      correlation,
+      generator,
+      input: effectiveInput,
+      requestDigest,
+      route: snapshot.route,
+    };
+  });
+
+  dispatch = Effect.fn("ProviderGateway.dispatch")(function* (
+    this: ProviderGateway,
+    prepared: PreparedProviderCall,
+    onDelta?: (delta: ActionStreamDelta) => void,
+  ) {
+    const {
+      action,
+      allocation,
+      assembled,
+      correlation,
+      generator,
+      input,
+      requestDigest,
+    } = prepared;
+    const { attemptId, callId, generation } = allocation;
 
     const dispatchAt = new Date(this.now()).toISOString();
     if (
@@ -432,7 +874,7 @@ export class ProviderGateway {
               throw new Error("TEXT_RESPONSE_TOO_LARGE");
             output += delta;
             try {
-              onDelta?.({
+              if (correlation?.kind === "curiosity.chat.turn") onDelta?.({
                 actionId: action.actionId,
                 actionType: action.actionType,
                 correlation: input.correlation,
@@ -512,6 +954,28 @@ export class ProviderGateway {
     const completion = this.completeAttempt({
       action,
       allocation,
+      ...(correlation?.kind === "curiosity.compaction"
+        ? {
+            additionalEvents: [
+              {
+                body: {
+                  actionId: action.actionId,
+                  coveredMessageDigests:
+                    correlation.coveredMessageDigests,
+                  parentActionId: correlation.parentActionId,
+                  parentExecutionId: correlation.parentExecutionId,
+                  retainedTailDigest: correlation.retainedTailDigest,
+                  schemaVersion: 1,
+                  summaryDigest: createHash("sha256")
+                    .update(output.text)
+                    .digest("hex"),
+                },
+                streamId: action.executionId,
+                type: "compaction.completed",
+              },
+            ],
+          }
+        : {}),
       completedAt,
       event,
       status: "succeeded",
@@ -523,5 +987,15 @@ export class ProviderGateway {
         message: "PROVIDER_RECEIPT_STALE",
         modelId: generator.modelId,
       });
+    return output;
+  });
+
+  execute = Effect.fn("ProviderGateway.execute")(function* (
+    this: ProviderGateway,
+    action: StoredAction,
+    onDelta?: (delta: ActionStreamDelta) => void,
+  ) {
+    const prepared = yield* this.prepare(action);
+    return yield* this.dispatch(prepared, onDelta);
   });
 }

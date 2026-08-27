@@ -17,12 +17,21 @@ The current vertical slice provides:
   lifecycle events;
 - Bun and Node read-only thread projection adapters rebuilt from canonical
   events; and
-- a mandatory nonce-bound Rust supervisor handshake with filesystem mutation,
-  Git, process, and sandbox capabilities disabled.
+- a mandatory nonce-bound Rust supervisor handshake with confined filesystem
+  reads and opt-in, profile-bound filesystem mutation, process execution, Git
+  reads, and locked detached worktree creation; generic shell, sandbox, and
+  broader Git mutation remain disabled. Configured Git mutation is limited to
+  gated locked detached worktree creation, clean non-force removal, and exact
+  compare-and-swap updates under `refs/heads/curiosity/`.
+- an optional provider-neutral bridge to Curiosity's owned query runtime with
+  researcher-only final-sink enforcement, durable source custody, verified
+  citations, and replay-stable research receipts.
 
-Live provider behavior is not yet qualified. External tools, Git mutation,
-sandbox claims, remote access, multi-user operation, and production readiness
-remain unavailable.
+Live model-provider behavior is not yet qualified. Network search remains
+unavailable unless the owned runtime query adapter is explicitly configured;
+generic public fetch has no shipped adapter. Commit, merge, push, force,
+arbitrary-ref, and remote Git mutation; sandbox claims; multi-user operation;
+and production readiness remain unavailable.
 
 ## Verify
 
@@ -42,11 +51,20 @@ bun run --cwd apps/custom-harness tui
 ```
 
 Type directly in the centered composer. Use Shift/Ctrl/Alt+Enter or Ctrl+J for
-a newline, `/new` for another conversation, and `/quit` to exit; use the up/down
-arrows to move through a long transcript. The
-full-screen, differentially rendered terminal client reproduces OpenCode's
-splash, composer, fixed footer, user panels, unboxed assistant hierarchy, and
-responsive compact mode without depending on OpenTUI. Provider deltas update
+a newline, `/new` for another conversation, and `/quit` to exit. Up/down recalls
+composer history; use the mouse wheel or Page Up/Page Down to move through a
+long transcript. Ctrl+K opens the
+catalog-backed command palette, Ctrl+I toggles the read-only capability/plugin
+inspector, and Escape dismisses either surface before exiting the session.
+Palette selection only inserts command text; nothing executes until the
+authenticated turn is submitted.
+
+The full-screen, differentially rendered terminal client takes its Deep Space
+tokens, lifecycle glyph grammar, shell, overlays, and companion-rail foundation
+from [`tui.pen`](tui.pen). The implemented slice includes the idle/session
+shell, responsive composer, command palette, and real kernel inspector without
+depending on OpenTUI. Approval, recovery, and plugin-owned panes remain absent
+until they can project authoritative kernel records. Provider deltas update
 width-aware Markdown in place, while completion metadata remains subordinate.
 Provider work uses one restrained, single-cell braille orbit; set
 `CURIOSITY_MOTION=reduce` for a static `⠿` indicator.
@@ -54,6 +72,10 @@ Untrusted projected and streamed text is control-character sanitized before
 rendering. The default is `openai-oauth:gpt-5.4-mini` at `medium` effort, using
 the community OpenAI OAuth adapter and local Codex credentials. If needed, run
 `npx openai-oauth login` once. Set `NO_COLOR=1` for plain terminal output.
+
+The TypeScript renderer is the default terminal owner. The Bubble Tea migration
+client remains available only for explicit comparison with
+`CURIOSITY_TUI_CLIENT=bubbletea`; it is experimental and is not the default UX.
 
 Set `CURIOSITY_MODEL` to a registry ID such as `openai:<model>`,
 `anthropic:<model>`, `google:<model>`, `compatible:<model>`, or
@@ -66,6 +88,70 @@ variables. `compatible:` also requires
 `high`, `xhigh`, or `max`. Non-default effort is currently restricted to the
 OpenAI and OpenAI OAuth adapters so the displayed value always matches an
 option sent to the provider.
+
+### Optional research search and fetch
+
+The TUI stays fail-closed by default: no research adapter means neither
+`web_search` nor `web_fetch` is model-visible. To use the existing Curiosity
+query runtime, set `CURIOSITY_RESEARCH_ADAPTER` to `runtime-local` or
+`runtime-searxng`, then provide:
+
+- `CURIOSITY_RUNTIME_STATE_ROOT` as an absolute runtime state path;
+- `CURIOSITY_QUERY_CAPABILITY_HEX` as the operator-issued query capability; and
+- either an absolute `CURIOSITY_RUNTIME_LIBRARY_PATH` or
+  `CURIOSITY_RUNTIME_NATIVE_PROFILE=development|release`.
+
+`runtime-searxng` additionally requires `M5_GATEWAY_TOKEN`. These settings grant
+search only to the researcher role. Search results remain untrusted evidence;
+the kernel records source custody, rejects uncaptured answer citations, and
+shows a research-receipt summary after a completed answer.
+
+Public HTTPS retrieval is a separate least-authority grant. Set
+`CURIOSITY_RESEARCH_FETCH_ADAPTER=bounded-http` to expose `web_fetch` to the
+researcher role. The adapter accepts HTTPS on port 443 only, rejects URL
+credentials and local/special-use destinations, resolves and pins public IPs on
+every redirect hop, sends no ambient credentials, requests identity encoding,
+and bounds redirects, headers, time, media type, UTF-8 decoding, and response
+bytes. Fetch content remains provenance-labelled untrusted evidence. The
+runtime search and bounded fetch adapters are combined only when both grants
+are explicitly configured.
+
+For the separately authorized isolated benchmark path, set:
+
+```sh
+export CURIOSITY_RESEARCH_ADAPTER=benchmark-owned
+export CURIOSITY_BENCHMARK_ACQUISITION_ACK=development-benchmark-only
+export CURIOSITY_RESEARCH_FETCH_ADAPTER=bounded-http
+```
+
+`benchmark-owned` performs bounded discovery only through English Wikipedia's
+MediaWiki REST page-search endpoint, writes immutable captures and lexical
+snapshot generations inside the fresh research artifact directory, and serves
+the active snapshot through Curiosity Retrieval v3. It is not a general crawler
+or production corpus. Search output and separately fetched pages remain
+untrusted evidence, and benchmark artifacts must not be committed or published.
+See [ADR-014](../../docs/architecture/custom-harness/decisions/ADR-014-benchmark-owned-retrieval.md).
+
+`curiosity doctor --json` reports research as `ready`, `unavailable`, or
+`error`, including only the adapter receipt, effective capabilities, and a
+stable diagnostic—never capability bytes or gateway credentials.
+
+### Reproducible research run
+
+The experimental binary provides a non-interactive, fresh-state research path:
+
+```sh
+curiosity research \
+  --prompt-file /absolute/path/prompt.txt \
+  --output-dir /absolute/path/new-artifact-directory \
+  --workspace-root /absolute/path/workspace
+```
+
+The prompt must begin with `/research`. The output directory must not already
+exist. The command writes the exact prompt, final answer, metrics, canonical
+ledger exports, isolated SQLite state, and a SHA-256 evidence manifest. A
+terminal `CURIOSITY_NO_GO` is retained as an honest answer but the command exits
+unsuccessfully so it cannot be mistaken for completed evidence coverage.
 
 Other local defaults are `local-owner`, a process-local random authentication
 secret, `~/.curiosity/events.sqlite`, and the package's built supervisor. Set

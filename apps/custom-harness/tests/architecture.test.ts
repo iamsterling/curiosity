@@ -3,12 +3,13 @@ import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 const sourceRoot = path.resolve(import.meta.dir, "../src");
-const sources = (directory: string): string[] =>
+const nativeTuiRoot = path.resolve(import.meta.dir, "../native/tui");
+const sources = (directory: string, extension = ".ts"): string[] =>
   readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const target = path.join(directory, entry.name);
     return entry.isDirectory()
-      ? sources(target)
-      : target.endsWith(".ts")
+      ? sources(target, extension)
+      : target.endsWith(extension)
         ? [target]
         : [];
   });
@@ -28,8 +29,10 @@ describe("architecture boundary", () => {
     ).toEqual([
       "storage/action-journal.ts",
       "storage/attempt-journal.ts",
+      "storage/delegation-journal.ts",
       "storage/event-append.ts",
       "storage/event-journal.ts",
+      "storage/research-evidence-reader.ts",
       "storage/thread-projection-reader.ts",
       "storage/workflow-journal.ts",
     ]);
@@ -45,9 +48,14 @@ describe("architecture boundary", () => {
       path.join(sourceRoot, "storage/node-thread-projection-reader.ts"),
       "utf8",
     );
+    const researchEvidenceReader = readFileSync(
+      path.join(sourceRoot, "storage/research-evidence-reader.ts"),
+      "utf8",
+    );
     expect(reader).toMatch(/readonly:\s*true/u);
     expect(nodeReader).toMatch(/readOnly:\s*true/u);
-    for (const source of [reader, nodeReader])
+    expect(researchEvidenceReader).toMatch(/readonly:\s*true/u);
+    for (const source of [reader, nodeReader, researchEvidenceReader])
       expect(source).not.toMatch(/\.(?:exec|run|transaction)\(/u);
   });
 
@@ -74,7 +82,7 @@ describe("architecture boundary", () => {
     const forbiddenImport =
       /from "(?:bun:[^"]+|node:[^"]+|ai|@ai-sdk\/[^"/]+|@openai-oauth\/[^"/]+|(?:\.\.\/)+(?:providers|storage|supervisor)\/|(?:\.\.\/)+kernel\/(?!(?:errors|plugin)\.js")[^"]+)/u;
     const forbiddenAmbientEffect =
-      /\b(?:Date\.now|Math\.random|process\.|Bun\.|Deno\.|fetch\s*\(|WebSocket|EventSource|globalThis)/u;
+      /\b(?:Date\.now|Math\.random|process\.(?:abort|argv|cwd|env|exit|kill|pid|stdin|stdout)|Bun\.|Deno\.|fetch\s*\(|WebSocket|EventSource|globalThis)/u;
 
     for (const file of semanticPlugins) {
       const source = readFileSync(file, "utf8");
@@ -100,5 +108,19 @@ describe("architecture boundary", () => {
       /(?:message\.appended|turn\.(?:failed|requested))/u,
     );
     expect(streamConsumers).toEqual(["kernel/provider-gateway.ts"]);
+  });
+
+  test("keeps the Go terminal client presentation-only and exactly pinned", () => {
+    const forbiddenAuthority =
+      /"(?:database\/sql|os\/exec|net\/http|crypto\/(?:ed25519|hmac|rsa))"|CURIOSITY_AUTH_SECRET|event\.append|tool\.dispatch/u;
+    const goSource = sources(nativeTuiRoot, ".go")
+      .map((file) => readFileSync(file, "utf8"))
+      .join("\n");
+    expect(goSource).not.toMatch(forbiddenAuthority);
+
+    const goModule = readFileSync(path.join(nativeTuiRoot, "go.mod"), "utf8");
+    expect(goModule).toContain("charm.land/bubbletea/v2 v2.0.9");
+    expect(goModule).toContain("charm.land/bubbles/v2 v2.2.1");
+    expect(goModule).toContain("charm.land/lipgloss/v2 v2.0.6");
   });
 });

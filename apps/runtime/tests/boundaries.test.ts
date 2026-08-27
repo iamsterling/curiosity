@@ -159,6 +159,7 @@ test("runtime source and manifests contain only the exact feature-gated qualific
       new URL("../src/admin.ts", import.meta.url).pathname,
       new URL("../src/index.ts", import.meta.url).pathname,
       new URL("../src/owned-query.ts", import.meta.url).pathname,
+      new URL("../src/owned-retrieval-query.ts", import.meta.url).pathname,
       new URL("../src/owned-web-qualification.ts", import.meta.url).pathname,
       new URL("../src/query.d.ts", import.meta.url).pathname,
       new URL("../src/query.ts", import.meta.url).pathname,
@@ -251,6 +252,7 @@ test("runtime source and manifests contain only the exact feature-gated qualific
     background: new Set([
       "/src/admin.ts",
       "/src/index.ts",
+      "/src/owned-retrieval-query.ts",
       "/src/repository-search.ts",
       "/src/retrieval/retrieve-information.ts",
       "/src/retrieval/retrieve-information-adapters.ts",

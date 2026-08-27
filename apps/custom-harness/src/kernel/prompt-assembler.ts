@@ -41,9 +41,49 @@ const maximumContextBytes = 65_536;
 const maximumHistoryBytes = 131_072;
 const maximumHistoryMessages = 128;
 const deepResearchToolNames = new Set([
+  "web_fetch",
+  "web_search",
+  "workspace_glob",
+  "workspace_grep",
+  "workspace_list",
   "workspace_read",
   "workspace_search",
 ]);
+
+const researchCapabilityNotice = (
+  capabilities: ReadonlySet<string>,
+): PromptSnapshotBlock => {
+  const search = capabilities.has("network.search")
+    ? "available"
+    : "unavailable";
+  const fetch = capabilities.has("network.fetch")
+    ? "available"
+    : "unavailable";
+  const content = [
+    `Research capability boundary: public-web search is ${search}; public-web fetch is ${fetch}.`,
+    "Never imply unavailable capabilities were used.",
+    "If the required evidence is not reachable, stop with CURIOSITY_NO_GO and list the exact missing capability or source coverage.",
+    "After one negative workspace discovery pass establishes that no relevant local corpus exists, do not repeat workspace discovery with synonyms.",
+  ].join(" ");
+  const identity = {
+    content,
+    contributionId: "curiosity.kernel.context.research-capabilities",
+    contributionVersion: "1",
+    id: "kernel:research-capabilities",
+    pluginId: "curiosity.kernel",
+    pluginVersion: "1",
+    provenance: "trusted-durable" as const,
+    rank: 0,
+    required: true,
+    slot: "kernel-notice" as const,
+    sourceEventIds: [] as readonly string[],
+  };
+  return {
+    ...identity,
+    digest: digest(identity),
+    encodedBytes: Buffer.byteLength(content),
+  };
+};
 
 const digest = (value: unknown): string =>
   createHash("sha256").update(canonicalJson(value)).digest("hex");
@@ -193,6 +233,7 @@ export class PromptAssembler {
     input: {
       readonly actionType: string;
       readonly agentId: string;
+      readonly allowedTools?: ReadonlySet<string>;
       readonly correlation: unknown;
       readonly grantedCapabilities: ReadonlySet<string>;
       readonly messages: readonly PromptMessage[];
@@ -215,6 +256,7 @@ export class PromptAssembler {
     const activeSkill = activeSkillName(events, input.correlation);
     const tools: PromptSnapshotTool[] = [];
     for (const name of [...agent.requestedTools].sort()) {
+      if (input.allowedTools && !input.allowedTools.has(name)) continue;
       if (activeSkill === "deep-research" && !deepResearchToolNames.has(name))
         continue;
       const tool = this.catalog.tool(name);
@@ -302,6 +344,9 @@ export class PromptAssembler {
 
     const required = [
       agentBlock,
+      ...(agent.id === "researcher"
+        ? [researchCapabilityNotice(input.grantedCapabilities)]
+        : []),
       ...projected.filter((block) => block.required),
     ];
     const requiredBytes = required.reduce(

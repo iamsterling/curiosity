@@ -20,6 +20,7 @@ export interface ProviderAttemptSnapshot {
     readonly resource: string;
   };
   readonly catalogDigest: string;
+  readonly configDigest: string;
   readonly effort: string;
   readonly generation: number;
   readonly grantedCapabilities: readonly string[];
@@ -28,6 +29,11 @@ export interface ProviderAttemptSnapshot {
   readonly promptSnapshot: PromptSnapshot;
   readonly promptSnapshotDigest: string;
   readonly providerPurpose: ProviderPurpose;
+  readonly route: {
+    readonly adapterVersion: string;
+    readonly policyDigest: string;
+    readonly routeId: string;
+  };
   readonly requestDigest: string;
   readonly schemaVersion: 1;
 }
@@ -44,6 +50,7 @@ export interface AllocatedProviderAttempt {
 export interface ToolAttemptSnapshot {
   readonly action: ProviderAttemptSnapshot["action"];
   readonly catalogDigest: string;
+  readonly configDigest: string;
   readonly generation: number;
   readonly grantedCapabilities: readonly string[];
   readonly policyVersion: "local-v1";

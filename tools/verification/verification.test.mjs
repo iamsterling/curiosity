@@ -171,6 +171,7 @@ test("the required workspace command reaches the harness, starter syntax, and pa
   const taskIds = JSON.parse(stdout).tasks.map(({ taskId }) => taskId).sort();
   assert.deepEqual(taskIds, [
     "@curiosity/custom-harness#verify",
+    "@curiosity/runtime#verify",
     "@repo/eslint-config#verify",
     "@repo/typescript-config#verify",
     "@repo/ui#verify",

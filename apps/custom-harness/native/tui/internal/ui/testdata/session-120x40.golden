@@ -1,0 +1,40 @@
+  ◆ trace attempt fencing                                          thread 7c4a-0031  openai-oauth:gpt-5.4-mini  medium
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   0031  ▌ USER
+         Trace how attempt fencing survives a supervisor restart.
+
+   0032  ◇ ASSISTANT
+         Fencing is enforced at commit, not dispatch. The recovery frontier preserves unresolved effects.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ┌────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+   │›                                                                                                               │
+   └────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+   ⏎ send   ⇧⏎ newline   ⌃i inspect   / command                                                       end · following
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  ● ready                                                                                          plugins 2   tools 1

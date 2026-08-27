@@ -5,6 +5,7 @@ export interface StockSkillDefinition {
 }
 
 export interface StockPromptCommandDefinition {
+  readonly agentId: string | null;
   readonly description: string;
   readonly instructions: string;
   readonly name: string;
@@ -79,7 +80,9 @@ const active = (
   skillName: string,
   description: string,
   instructions: string,
+  agentId: string | null = null,
 ): StockPromptCommandDefinition => ({
+  agentId,
   description,
   instructions,
   name,
@@ -91,6 +94,7 @@ const deprecated = (
   name: string,
   instructions: string,
 ): StockPromptCommandDefinition => ({
+  agentId: null,
   description:
     "Deprecated compatibility alias for the native Ledger and workflow product.",
   instructions,
@@ -216,6 +220,7 @@ export const stockPromptCommandDefinitions: readonly StockPromptCommandDefinitio
     "deep-research",
     "Activate bounded deep research.",
     "Frame a bounded decision, prefer primary sources, label confidence and unknowns, and stop at coverage, saturation, or budget exhaustion.",
+    "researcher",
   ),
   active(
     "review",

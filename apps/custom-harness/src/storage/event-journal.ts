@@ -10,6 +10,7 @@ import {
 import { toStoredEvent, type EventRow } from "./event-record.js";
 import { eventSchema } from "./event-schema.js";
 import { WorkflowJournal } from "./workflow-journal.js";
+import { DelegationJournal } from "./delegation-journal.js";
 
 export type { AdmissionInput, AdmissionResult } from "./event-append.js";
 
@@ -33,6 +34,11 @@ const actionAuthorityColumns = [
   ["gate_class", "TEXT NOT NULL DEFAULT 'none-requested'"],
   ["deadline_class", "TEXT NOT NULL DEFAULT 'interactive'"],
 ] as const;
+const delegationRunSnapshotColumns = [
+  ["budget_json", "TEXT NOT NULL DEFAULT '{}'"],
+  ["resource_claims_json", "TEXT NOT NULL DEFAULT '{}'"],
+  ["catalog_digest", "TEXT NOT NULL DEFAULT ''"],
+] as const;
 
 const migrateSchema = (database: Database): void => {
   const metadata = database
@@ -40,35 +46,84 @@ const migrateSchema = (database: Database): void => {
       "SELECT value FROM harness_metadata WHERE key = ?",
     )
     .get("schema_version");
-  if (!["1", "2", "3", "4", "5", "6", "7", "8"].includes(metadata?.value ?? ""))
+  if (!["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"].includes(metadata?.value ?? ""))
     throw new Error("EVENT_SCHEMA_VERSION_UNSUPPORTED");
-  database
-    .transaction(() => {
-      const columns = new Set(
+  const columns = new Set(
         database
           .query<{ name: string }, []>("PRAGMA table_info(provider_calls)")
           .all()
           .map(({ name }) => name),
       );
-      for (const [name, definition] of providerSnapshotColumns)
-        if (!columns.has(name))
-          database.exec(
-            `ALTER TABLE provider_calls ADD COLUMN ${name} ${definition}`,
-          );
-      const actionColumns = new Set(
+  for (const [name, definition] of providerSnapshotColumns)
+    if (!columns.has(name))
+      database.exec(
+        `ALTER TABLE provider_calls ADD COLUMN ${name} ${definition}`,
+      );
+  const actionColumns = new Set(
         database
           .query<{ name: string }, []>("PRAGMA table_info(actions)")
           .all()
           .map(({ name }) => name),
       );
-      for (const [name, definition] of actionAuthorityColumns)
-        if (!actionColumns.has(name))
-          database.exec(`ALTER TABLE actions ADD COLUMN ${name} ${definition}`);
-      if (metadata?.value !== "8")
-        database.run(
-          "UPDATE harness_metadata SET value = '8' WHERE key = 'schema_version'",
-        );
-      database.exec(`
+  for (const [name, definition] of actionAuthorityColumns)
+    if (!actionColumns.has(name))
+      database.exec(`ALTER TABLE actions ADD COLUMN ${name} ${definition}`);
+  const delegationRunColumns = new Set(
+        database
+          .query<{ name: string }, []>("PRAGMA table_info(agent_runs)")
+          .all()
+          .map(({ name }) => name),
+      );
+  for (const [name, definition] of delegationRunSnapshotColumns)
+    if (!delegationRunColumns.has(name))
+      database.exec(
+        `ALTER TABLE agent_runs ADD COLUMN ${name} ${definition}`,
+      );
+  const requiredColumns = (
+    table: string,
+    required: readonly string[],
+  ): void => {
+    const actual = new Set(
+      database
+        .query<{ name: string }, []>(`PRAGMA table_info(${table})`)
+        .all()
+        .map(({ name }) => name),
+    );
+    if (required.some((name) => !actual.has(name)))
+      throw new Error("EVENT_SCHEMA_SHAPE_INVALID");
+  };
+  requiredColumns("provider_calls", [
+    "call_id",
+    "action_id",
+    "model_id",
+    "request_digest",
+    "source_revision",
+    "status",
+    "allocated_at",
+    ...providerSnapshotColumns.map(([name]) => name),
+  ]);
+  requiredColumns("actions", [
+    "action_id",
+    "source_event_id",
+    "action_type",
+    "input_json",
+    "input_digest",
+    "requested_capabilities_json",
+    "status",
+    ...actionAuthorityColumns.map(([name]) => name),
+  ]);
+  requiredColumns("agent_runs", [
+    "agent_run_id",
+    "agent_session_id",
+    "child_execution_id",
+    "status",
+    ...delegationRunSnapshotColumns.map(([name]) => name),
+  ]);
+  if (metadata?.value !== "13")
+    database.run(
+      "UPDATE harness_metadata SET value = '13' WHERE key = 'schema_version'",
+    );
+  database.exec(`
         DROP TRIGGER IF EXISTS provider_call_snapshot_immutable;
         CREATE TRIGGER provider_call_snapshot_immutable
         BEFORE UPDATE ON provider_calls
@@ -86,7 +141,7 @@ const migrateSchema = (database: Database): void => {
           SELECT RAISE(ABORT, 'PROVIDER_CALL_SNAPSHOT_IMMUTABLE');
         END;
       `);
-      database.exec(`
+  database.exec(`
         DROP TRIGGER IF EXISTS tool_call_snapshot_immutable;
         CREATE TRIGGER tool_call_snapshot_immutable
         BEFORE UPDATE ON tool_calls
@@ -102,20 +157,40 @@ const migrateSchema = (database: Database): void => {
           SELECT RAISE(ABORT, 'TOOL_CALL_SNAPSHOT_IMMUTABLE');
         END;
       `);
-    })
-    .immediate();
+  database.exec(`
+        DROP TRIGGER IF EXISTS agent_run_snapshot_immutable;
+        CREATE TRIGGER agent_run_snapshot_immutable
+        BEFORE UPDATE ON agent_runs
+        WHEN OLD.agent_session_id != NEW.agent_session_id
+          OR OLD.delegation_group_id != NEW.delegation_group_id
+          OR OLD.ordinal != NEW.ordinal
+          OR OLD.child_execution_id != NEW.child_execution_id
+          OR OLD.delegation_action_id != NEW.delegation_action_id
+          OR OLD.provider_action_id != NEW.provider_action_id
+          OR OLD.model_tool_call_id != NEW.model_tool_call_id
+          OR OLD.task_json != NEW.task_json
+          OR OLD.budget_json != NEW.budget_json
+          OR OLD.resource_claims_json != NEW.resource_claims_json
+          OR OLD.catalog_digest != NEW.catalog_digest
+          OR OLD.created_at != NEW.created_at
+        BEGIN
+          SELECT RAISE(ABORT, 'AGENT_RUN_SNAPSHOT_IMMUTABLE');
+        END;
+      `);
 };
 
 export class EventJournal {
   readonly #database: Database;
   readonly actions: ActionJournal;
   readonly attempts: AttemptJournal;
+  readonly delegations: DelegationJournal;
   readonly workflows: WorkflowJournal;
 
   private constructor(database: Database) {
     this.#database = database;
     this.actions = new ActionJournal(database);
     this.attempts = new AttemptJournal(database);
+    this.delegations = new DelegationJournal(database);
     this.workflows = new WorkflowJournal(database);
   }
 
@@ -130,16 +205,68 @@ export class EventJournal {
     database.exec("PRAGMA foreign_keys=ON");
     database.exec("PRAGMA busy_timeout=5000");
     database.exec("PRAGMA trusted_schema=OFF");
-    database.exec(eventSchema);
-    migrateSchema(database);
+    const hasMetadata =
+      database
+        .query<{ count: number }, []>(
+          "SELECT count(*) AS count FROM sqlite_master WHERE type = 'table' AND name = 'harness_metadata'",
+        )
+        .get()?.count === 1;
+    if (hasMetadata) {
+      const preflight = database
+        .query<{ value: string }, [string]>(
+          "SELECT value FROM harness_metadata WHERE key = ?",
+        )
+        .get("schema_version");
+      if (
+        ![
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+        ].includes(preflight?.value ?? "")
+      ) {
+        database.close(true);
+        throw new Error("EVENT_SCHEMA_VERSION_UNSUPPORTED");
+      }
+    }
+    try {
+      database
+        .transaction(() => {
+          database.exec(eventSchema);
+          migrateSchema(database);
+        })
+        .immediate();
+    } catch (error) {
+      database.close(true);
+      throw error;
+    }
     const metadata = database
       .query<{ value: string }, [string]>(
         "SELECT value FROM harness_metadata WHERE key = ?",
       )
       .get("schema_version");
-    if (metadata?.value !== "8") {
+    if (metadata?.value !== "13") {
       database.close(true);
       throw new Error("EVENT_SCHEMA_VERSION_UNSUPPORTED");
+    }
+    if (
+      database.query<{ integrity_check: string }, []>("PRAGMA integrity_check").get()
+        ?.integrity_check !== "ok" ||
+      database
+        .query<Record<string, unknown>, []>("PRAGMA foreign_key_check")
+        .all().length > 0
+    ) {
+      database.close(true);
+      throw new Error("EVENT_SCHEMA_INTEGRITY_FAILED");
     }
     return new EventJournal(database);
   }

@@ -15,10 +15,16 @@ import {
   toolSucceeded,
 } from "../semantics/chat-tool-loop.js";
 import { stockAgentIds } from "./agents.js";
+import { stockPromptCommandDefinitions } from "../product/stock-content.js";
 
 const maximumMessageBytes = 64 * 1_024;
 const maximumIdentifierBytes = 256;
 const emptyReaction = emptyChatReaction;
+const promptCommandAgents = new Map(
+  stockPromptCommandDefinitions.flatMap((command) =>
+    command.agentId ? [[command.name, command.agentId] as const] : [],
+  ),
+);
 
 const titleFrom = (text: string): string => {
   const firstLine = text.split(/\r?\n/u, 1)[0]?.trim() ?? "";
@@ -70,17 +76,23 @@ export const chatPlugin: CuriosityPluginV2 = {
     kernelApi: KERNEL_PLUGIN_API_VERSION,
     provenance: {
       license: "Project-owned",
-      revision: "1.3.0",
+      revision: "1.8.0",
       source: "apps/custom-harness/src/plugins/chat.ts",
     },
     requires: [
-      { pluginId: "curiosity.stock.agents", version: "1.0.0" },
-      { pluginId: "curiosity.stock.context", version: "1.0.0" },
+      { pluginId: "curiosity.stock.agents", version: "1.3.0" },
+      { pluginId: "curiosity.stock.context", version: "1.1.0" },
+      { pluginId: "curiosity.stock.delegation", version: "1.0.0" },
+      { pluginId: "curiosity.stock.git", version: "1.1.0" },
+      { pluginId: "curiosity.stock.process", version: "1.0.0" },
+      { pluginId: "curiosity.stock.question", version: "1.0.0" },
+      { pluginId: "curiosity.stock.search", version: "1.2.0" },
       { pluginId: "curiosity.stock.thread", version: "1.0.0" },
-      { pluginId: "curiosity.stock.workspace", version: "1.0.0" },
+      { pluginId: "curiosity.stock.workspace", version: "1.1.0" },
+      { pluginId: "curiosity.stock.workspace-mutation", version: "1.0.0" },
     ],
     schemaVersion: 2,
-    version: "1.3.0",
+    version: "1.8.0",
   },
   commandDeciders: [
     {
@@ -92,8 +104,24 @@ export const chatPlugin: CuriosityPluginV2 = {
           ),
         );
         yield* validatePayloadBounds(payload);
-        const agentId = payload.agentId ?? "generalist";
-        if (!stockAgentIds.includes(agentId))
+        const agentId = payload.agentId ?? context.defaultPrimaryRole;
+        const roleActivation = [...context.events]
+          .reverse()
+          .find((event) => {
+            const activation = body(event.body);
+            return (
+              event.type === "skill.activated" &&
+              event.streamId === payload.threadId &&
+              typeof activation?.commandName === "string" &&
+              promptCommandAgents.get(activation.commandName) === agentId
+            );
+          });
+        const roleActivationBody = body(roleActivation?.body);
+        if (
+          !stockAgentIds.includes(agentId) ||
+          !context.enabledAgentIds.has(agentId) ||
+          (!context.enabledPrimaryAgentIds.has(agentId) && !roleActivation)
+        )
           return yield* new InputRejected({ message: "CHAT_AGENT_UNKNOWN" });
 
         const events: ProposedEvent[] = [];
@@ -130,6 +158,13 @@ export const chatPlugin: CuriosityPluginV2 = {
             body: {
               assistantMessageId: payload.assistantMessageId,
               agentId,
+              ...(roleActivation &&
+              typeof roleActivationBody?.commandName === "string"
+                ? {
+                    roleActivationCommand: roleActivationBody.commandName,
+                    roleActivationEventId: roleActivation.eventId,
+                  }
+                : {}),
               schemaVersion: 1,
               threadId: payload.threadId,
               turnId: payload.turnId,
@@ -155,7 +190,13 @@ export const chatPlugin: CuriosityPluginV2 = {
             typeof requested?.assistantMessageId !== "string" ||
             typeof requested.agentId !== "string" ||
             typeof requested.threadId !== "string" ||
-            typeof requested.turnId !== "string"
+            typeof requested.turnId !== "string" ||
+            ((requested.roleActivationCommand === undefined) !==
+              (requested.roleActivationEventId === undefined)) ||
+            (requested.roleActivationCommand !== undefined &&
+              typeof requested.roleActivationCommand !== "string") ||
+            (requested.roleActivationEventId !== undefined &&
+              typeof requested.roleActivationEventId !== "string")
           )
             return yield* new PluginFailure({
               message: "CHAT_TURN_REQUEST_EVENT_INVALID",
@@ -179,6 +220,14 @@ export const chatPlugin: CuriosityPluginV2 = {
                   correlation: initialChatCorrelation({
                     agentId: requested.agentId,
                     assistantMessageId: requested.assistantMessageId,
+                    ...(typeof requested.roleActivationCommand === "string" &&
+                    typeof requested.roleActivationEventId === "string"
+                      ? {
+                          roleActivationCommand:
+                            requested.roleActivationCommand,
+                          roleActivationEventId: requested.roleActivationEventId,
+                        }
+                      : {}),
                     threadId: requested.threadId,
                     turnId: requested.turnId,
                   }),

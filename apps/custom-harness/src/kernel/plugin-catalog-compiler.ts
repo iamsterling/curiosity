@@ -360,9 +360,16 @@ export const compilePluginCatalog = (
       if (!agents.has(child))
         throw new Error(`PLUGIN_AGENT_CHILD_MISSING:${agent.id}:${child}`);
   for (const agent of agents.values())
-    for (const toolName of agent.requestedTools)
-      if (!tools.has(toolName))
+    for (const toolName of agent.requestedTools) {
+      const tool = tools.get(toolName);
+      if (!tool)
         throw new Error(`PLUGIN_AGENT_TOOL_MISSING:${agent.id}:${toolName}`);
+      for (const capability of tool.requestedCapabilities)
+        if (!agent.requestedCapabilities.includes(capability))
+          throw new Error(
+            `PLUGIN_AGENT_TOOL_CAPABILITY_MISSING:${agent.id}:${toolName}:${capability}`,
+          );
+    }
   for (const context of contexts)
     for (const agentId of context.agentIds)
       if (!agents.has(agentId))
@@ -373,6 +380,11 @@ export const compilePluginCatalog = (
     if (command.skillName !== null && !skills.has(command.skillName))
       throw new Error(
         `PLUGIN_PROMPT_COMMAND_SKILL_MISSING:${command.id}:${command.skillName}`,
+      );
+  for (const command of promptCommands.values())
+    if (command.agentId !== null && !agents.has(command.agentId))
+      throw new Error(
+        `PLUGIN_PROMPT_COMMAND_AGENT_MISSING:${command.id}:${command.agentId}`,
       );
 
   return {

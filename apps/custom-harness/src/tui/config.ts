@@ -5,16 +5,25 @@ import type { CuriosityHarnessConfig } from "../kernel/runtime.js";
 
 type TuiEnvironment = Readonly<Record<string, string | undefined>>;
 
+export type TuiPresentationClient = "bubbletea" | "typescript";
+
 export interface TuiConfigDefaults {
   readonly createSecret?: () => string;
   readonly homeDirectory?: string;
+  readonly lockedSupervisorPath?: string;
+  readonly lockedTuiPath?: string;
   readonly supervisorPath?: string;
+  readonly tuiPath?: string;
   readonly workingDirectory?: string;
 }
 
 const defaultSupervisorPath = path.resolve(
   import.meta.dirname,
   "../../native/supervisor/target/debug/curiosity-supervisor",
+);
+const defaultTuiPath = path.resolve(
+  import.meta.dirname,
+  "../../native/tui/dist/curiosity-tui",
 );
 
 const configured = (value: string | undefined): string | undefined => {
@@ -25,6 +34,26 @@ const configured = (value: string | undefined): string | undefined => {
 export const resolveTuiAgentId = (
   environment: TuiEnvironment,
 ): string => configured(environment.CURIOSITY_AGENT) ?? "generalist";
+
+export const resolveTuiPresentationClient = (
+  environment: TuiEnvironment,
+): TuiPresentationClient => {
+  const client = configured(environment.CURIOSITY_TUI_CLIENT);
+  if (client === undefined || client === "typescript") return "typescript";
+  if (client === "bubbletea") return "bubbletea";
+  throw new Error("TUI_CLIENT_UNSUPPORTED");
+};
+
+export const resolveTuiExecutablePath = (
+  environment: TuiEnvironment,
+  defaults: TuiConfigDefaults = {},
+): string =>
+  path.resolve(
+    defaults.lockedTuiPath ??
+      configured(environment.CURIOSITY_TUI_PATH) ??
+      defaults.tuiPath ??
+      defaultTuiPath,
+  );
 
 export const resolveTuiConfig = (
   environment: TuiEnvironment,
@@ -44,9 +73,10 @@ export const resolveTuiConfig = (
         path.join(homeDirectory, ".curiosity", "events.sqlite"),
     ),
     supervisorPath: path.resolve(
-      configured(environment.CURIOSITY_SUPERVISOR_PATH) ??
+      defaults.lockedSupervisorPath ??
+        configured(environment.CURIOSITY_SUPERVISOR_PATH) ??
         defaults.supervisorPath ??
-      defaultSupervisorPath,
+        defaultSupervisorPath,
     ),
     workspaceRoot: path.resolve(
       configured(environment.CURIOSITY_WORKSPACE_ROOT) ??

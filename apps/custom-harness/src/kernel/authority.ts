@@ -34,12 +34,32 @@ import { PromptAssembler } from "./prompt-assembler.js";
 import { ProviderGateway, type ActionStreamDelta } from "./provider-gateway.js";
 import { ProjectionEngine } from "./projection-engine.js";
 import { ReactionEngine } from "./reaction-engine.js";
-import type { TextGenerator } from "./text-generator.js";
+import type { ProviderRouteConfig, TextGenerator } from "./text-generator.js";
 import { WorkflowEngine } from "./workflow-engine.js";
 import { capabilityStatus } from "./capability-status.js";
 import { ToolGateway } from "./tool-gateway.js";
+import type { ResearchAdapter } from "../research/adapter.js";
+import type {
+  ChildRunProjection,
+  RootExecutionAccounting,
+} from "../storage/delegation-journal.js";
+import type { QuestionProjection } from "../storage/action-journal.js";
+import {
+  enabledRoleIds,
+  type RolePolicyConfig,
+} from "./role-policy.js";
 
 export interface AuthorityService {
+  readonly childAccounting: (
+    rootExecutionId: string,
+  ) => Effect.Effect<RootExecutionAccounting, PersistenceFailure>;
+  readonly children: (
+    rootExecutionId?: string,
+  ) => Effect.Effect<readonly ChildRunProjection[], PersistenceFailure>;
+  readonly questions: () => Effect.Effect<
+    readonly QuestionProjection[],
+    PersistenceFailure
+  >;
   readonly close: () => void;
   readonly events: () => Effect.Effect<
     readonly StoredEvent[],
@@ -66,10 +86,14 @@ export interface AuthorityService {
 }
 
 export interface AuthorityConfig extends AuthenticatorConfig {
+  readonly configDigest: string;
   readonly databasePath: string;
   readonly plugins: StaticPluginCatalog;
   readonly supervisor: SupervisorClient;
+  readonly researchAdapter?: ResearchAdapter;
   readonly textGenerator?: TextGenerator;
+  readonly providerRoutes?: Readonly<Record<string, ProviderRouteConfig>>;
+  readonly rolePolicy: RolePolicyConfig;
 }
 
 const persistenceFailure = () =>
@@ -79,6 +103,7 @@ export const makeAuthority = (config: AuthorityConfig): AuthorityService => {
   const journal = EventJournal.open(config.databasePath);
   const authenticate = makeAuthenticator(config);
   const runSemaphore = Semaphore.makeUnsafe(1);
+  const enabledAgentIds = enabledRoleIds(config.rolePolicy);
   const promptAssembler = new PromptAssembler(config.plugins, () =>
     journal.readEvents(),
   );
@@ -87,18 +112,35 @@ export const makeAuthority = (config: AuthorityConfig): AuthorityService => {
   );
   const grantedCapabilities = new Set([
     "semantic.command",
-    ...(config.textGenerator ? ["provider.generate"] : []),
+    "user.question",
+    ...(config.textGenerator || config.providerRoutes
+      ? ["child.propose", "provider.generate"]
+      : []),
+    ...(config.researchAdapter?.receipt.capabilities ?? []),
     ...(config.supervisor.receipt.capabilities.filesystemRead
       ? ["filesystem.read"]
+      : []),
+    ...(config.supervisor.receipt.capabilities.filesystemMutation
+      ? ["filesystem.mutation"]
+      : []),
+    ...(config.supervisor.receipt.capabilities.process
+      ? ["process.execution"]
+      : []),
+    ...(config.supervisor.receipt.capabilities.git ? ["git.read"] : []),
+    ...(config.supervisor.receipt.capabilities.gitMutation
+      ? ["git.mutation"]
       : []),
   ]);
   const providerGateway = new ProviderGateway(
     journal.actions,
     journal.attempts,
     promptAssembler,
-    config.textGenerator,
+    config.plugins,
+    config.providerRoutes ?? config.textGenerator,
     config.now,
     grantedCapabilities,
+    config.configDigest,
+    enabledAgentIds,
   );
   const toolGateway = new ToolGateway(
     journal.actions,
@@ -107,6 +149,10 @@ export const makeAuthority = (config: AuthorityConfig): AuthorityService => {
     config.supervisor,
     config.now,
     grantedCapabilities,
+    config.researchAdapter,
+    config.actorId,
+    config.configDigest,
+    enabledAgentIds,
   );
   const reactions = new ReactionEngine(
     journal,
@@ -116,6 +162,7 @@ export const makeAuthority = (config: AuthorityConfig): AuthorityService => {
     config.now,
     grantedCapabilities,
     config.actorId,
+    config.rolePolicy,
   );
   const workflows = new WorkflowEngine(
     journal,
@@ -125,13 +172,39 @@ export const makeAuthority = (config: AuthorityConfig): AuthorityService => {
     config.now,
   );
   const status = capabilityStatus({
-    providerConfigured: config.textGenerator !== undefined,
+    providerConfigured:
+      config.textGenerator !== undefined || config.providerRoutes !== undefined,
+    researchCapabilities:
+      config.researchAdapter?.receipt.capabilities ?? [],
     supervisor: config.supervisor.receipt,
   });
 
   const readEvents = Effect.fn("HarnessAuthority.readEvents")(() =>
     Effect.try({
       try: () => journal.readEvents(),
+      catch: persistenceFailure,
+    }),
+  );
+
+  const children = Effect.fn("HarnessAuthority.children")(
+    (rootExecutionId?: string) =>
+      Effect.try({
+        try: () => journal.delegations.childRuns(rootExecutionId),
+        catch: persistenceFailure,
+      }),
+  );
+
+  const childAccounting = Effect.fn("HarnessAuthority.childAccounting")(
+    (rootExecutionId: string) =>
+      Effect.try({
+        try: () => journal.delegations.accounting(rootExecutionId),
+        catch: persistenceFailure,
+      }),
+  );
+
+  const questions = Effect.fn("HarnessAuthority.questions")(() =>
+    Effect.try({
+      try: () => journal.actions.questions(),
       catch: persistenceFailure,
     }),
   );
@@ -147,7 +220,16 @@ export const makeAuthority = (config: AuthorityConfig): AuthorityService => {
         message: "COMMAND_KIND_UNAVAILABLE",
       });
     const currentEvents = yield* readEvents();
-    const events = yield* owner.decide(command, { events: currentEvents }).pipe(
+    const events = yield* owner
+      .decide(command, {
+        defaultPrimaryRole: config.rolePolicy.defaultPrimaryRole,
+        enabledAgentIds,
+        enabledPrimaryAgentIds: new Set(
+          config.rolePolicy.enabledPrimaryRoles,
+        ),
+        events: currentEvents,
+      })
+      .pipe(
       Effect.mapError((error) =>
         error._tag === "InputRejected"
           ? error
@@ -216,7 +298,30 @@ export const makeAuthority = (config: AuthorityConfig): AuthorityService => {
             streamId: command.executionId,
             type: "execution.cancelled",
           }
-        : {
+        : command.kind === "question.answer"
+          ? {
+              body: {
+                answer: command.answer,
+                questionId: command.questionId,
+                schemaVersion: 1,
+              },
+              streamId: command.questionId,
+              type: "question.answered",
+            }
+          : command.kind === "state.import-observations"
+            ? {
+                body: {
+                  acceptedRows: command.rows.length,
+                  rejectedRows: 0,
+                  schemaVersion: 1,
+                  sourceDigest: command.sourceDigest,
+                  sourcePath: command.sourcePath,
+                  sourceVersion: command.sourceVersion,
+                },
+                streamId: `import:${command.sourceDigest}`,
+                type: "observation.import-reconciled",
+              }
+          : {
             body: {
               decision: command.decision,
               gateId: command.gateId,
@@ -247,7 +352,63 @@ export const makeAuthority = (config: AuthorityConfig): AuthorityService => {
                 ? new InputRejected({ message: error.message })
                 : persistenceFailure(),
           })
-        : yield* Effect.try({
+        : command.kind === "question.answer"
+          ? yield* Effect.try({
+              try: () =>
+                journal.actions.answerQuestion({
+                  acceptedAt,
+                  actorId: envelope.actorId,
+                  answer: command.answer,
+                  answeredAt: acceptedAt,
+                  commandDigest,
+                  commandId: envelope.command.id,
+                  events: [event],
+                  nonce: envelope.nonce,
+                  pluginId: "curiosity.kernel.control",
+                  questionId: command.questionId,
+                }),
+              catch: (error) =>
+                error instanceof Error &&
+                [
+                  "QUESTION_ACTION_NOT_WAITING",
+                  "QUESTION_ANSWER_DENIED",
+                  "QUESTION_ANSWER_INVALID",
+                ].includes(error.message)
+                  ? new InputRejected({ message: error.message })
+                  : persistenceFailure(),
+            })
+          : command.kind === "state.import-observations"
+            ? yield* Effect.try({
+                try: () =>
+                  journal.admit({
+                    acceptedAt,
+                    actorId: envelope.actorId,
+                    commandDigest,
+                    commandId: envelope.command.id,
+                    events: [
+                      ...command.rows.map((row) => ({
+                        body: {
+                          content: row.content,
+                          importAuthority: "non-authoritative",
+                          rowId: row.rowId,
+                          rowType: row.type,
+                          schemaVersion: 1,
+                          sourceDigest: command.sourceDigest,
+                          sourcePath: command.sourcePath,
+                          sourceVersion: command.sourceVersion,
+                          taint: "untrusted-import",
+                        },
+                        streamId: `import:${command.sourceDigest}`,
+                        type: "observation.imported",
+                      })),
+                      event,
+                    ],
+                    nonce: envelope.nonce,
+                    pluginId: "curiosity.kernel.import",
+                  }),
+                catch: persistenceFailure,
+              })
+          : yield* Effect.try({
             try: () =>
               journal.attempts.decideGate({
                 acceptedAt,
@@ -276,7 +437,11 @@ export const makeAuthority = (config: AuthorityConfig): AuthorityService => {
       });
     if (command.kind === "execution.cancel")
       providerGateway.cancelGovernedExecutions();
+    if (command.kind === "execution.cancel")
+      toolGateway.cancelGovernedExecutions();
     if (command.kind === "gate.decide" && command.decision === "approved")
+      yield* runSemaphore.withPermit(coordinate());
+    if (command.kind === "question.answer")
       yield* runSemaphore.withPermit(coordinate());
     return result.acknowledgement;
   });
@@ -325,10 +490,19 @@ export const makeAuthority = (config: AuthorityConfig): AuthorityService => {
   );
 
   return {
-    close: () => journal.close(),
+    childAccounting,
+    children,
+    close: () => {
+      try {
+        config.researchAdapter?.close();
+      } finally {
+        journal.close();
+      }
+    },
     events: readEvents,
     messages,
     projection,
+    questions,
     run,
     status: () => Effect.succeed(status),
     submit,

@@ -6,6 +6,10 @@ import type { EventJournal } from "../storage/event-journal.js";
 import { canonicalJson } from "./canonical-json.js";
 import { ActionExecutionFailure } from "./errors.js";
 import type { StaticPluginCatalog } from "./plugin.js";
+import {
+  enabledRoleIds,
+  type RolePolicyConfig,
+} from "./role-policy.js";
 
 const record = (value: unknown): Record<string, unknown> => {
   if (!value || typeof value !== "object" || Array.isArray(value))
@@ -21,6 +25,7 @@ export class LocalActionGateway {
     private readonly journal: EventJournal,
     private readonly catalog: StaticPluginCatalog,
     private readonly now: () => number,
+    private readonly rolePolicy: RolePolicyConfig,
   ) {}
 
   supports(actionType: string): boolean {
@@ -119,7 +124,14 @@ export class LocalActionGateway {
           payload: request.payload,
           schemaVersion: 1,
         },
-        { events: this.journal.readEvents() },
+        {
+          defaultPrimaryRole: this.rolePolicy.defaultPrimaryRole,
+          enabledAgentIds: enabledRoleIds(this.rolePolicy),
+          enabledPrimaryAgentIds: new Set(
+            this.rolePolicy.enabledPrimaryRoles,
+          ),
+          events: this.journal.readEvents(),
+        },
       )
       .pipe(Effect.result);
     if (decided._tag === "Failure")
