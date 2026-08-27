@@ -1234,6 +1234,12 @@ describe("plugin-native chat turns", () => {
         expect(request.messages.at(-1)?.content).toContain(
           "kernel research/tool budget is exhausted",
         );
+        expect(
+          request.messages.some(({ content, role }) =>
+            role === "user" &&
+            content.includes("BEGIN UNTRUSTED TOOL EVIDENCE"),
+          ),
+        ).toBe(true);
         yield "CURIOSITY_NO_GO: available evidence is insufficient.";
       },
     };

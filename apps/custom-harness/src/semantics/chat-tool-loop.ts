@@ -266,6 +266,8 @@ const budgetFinalization = (
     .map((message) => ({ content: message.text, role: message.role }));
   if (assistantContext)
     messages.push({ content: assistantContext, role: "assistant" });
+  if (correlation.toolEvidence)
+    messages.push({ content: correlation.toolEvidence, role: "user" });
   messages.push({
     content: [
       "The kernel research/tool budget is exhausted. No further tools are available for this turn.",

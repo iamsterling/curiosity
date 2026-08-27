@@ -933,7 +933,7 @@
         {
           "path": "apps/custom-harness/src/semantics/chat-tool-loop.ts",
           "mode": "exact",
-          "sha256": "259b8666f48eb99204cf4753d7cb8add966665f562d5d717a8b7ab7a02aeb435"
+          "sha256": "dd68e31e3e3b75f5b1994be9ba55a0d4f6baa94d817f0c9160940e5396c75bd9"
         },
         {
           "path": "apps/custom-harness/src/storage/action-journal.ts",
@@ -1078,7 +1078,7 @@
         {
           "path": "apps/custom-harness/tests/chat.test.ts",
           "mode": "exact",
-          "sha256": "3b2a10dd75f5c26bcf2cb64a2b33e8269b6bf9f490a2ddfee62512de7130e4b2"
+          "sha256": "8bfc88f68f11274aae5172700f4b90a59abba4605f33055bae7997408bcbd0c0"
         },
         {
           "path": "apps/custom-harness/tests/child-delegation.test.ts",
