@@ -7,6 +7,9 @@ type TuiEnvironment = Readonly<Record<string, string | undefined>>;
 
 export type TuiPresentationClient = "bubbletea" | "typescript";
 
+export const OPENAI_OAUTH_DEVICE_LOGIN_COMMAND =
+  "bunx @openai/codex login --device-auth -c 'cli_auth_credentials_store=\"file\"'";
+
 export interface TuiConfigDefaults {
   readonly createSecret?: () => string;
   readonly homeDirectory?: string;

@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { CuriosityHarness } from "../kernel/runtime.js";
 import { ANIMATION_INTERVAL_MS, type MotionPreference } from "./animation.js";
 import { filterPaletteItems } from "./command-palette-view.js";
+import { OPENAI_OAUTH_DEVICE_LOGIN_COMMAND } from "./config.js";
 import { renderTuiFrame } from "./frame.js";
 import type {
   TuiCatalogView,
@@ -450,7 +451,7 @@ export const runTuiSession = async (
             .join(" · ")}${question.allowFreeText ? " · free text allowed" : ""}`
         : failureTag(cause);
       if (options.modelId.startsWith("openai-oauth:"))
-        error += " · Run `npx openai-oauth login`, then retry.";
+        error += ` · Run \`${OPENAI_OAUTH_DEVICE_LOGIN_COMMAND}\`, then retry.`;
       options.terminal.drainInput();
       draw();
     }

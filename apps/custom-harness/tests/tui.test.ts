@@ -10,6 +10,7 @@ import {
   type TuiScreenTerminal,
 } from "../src/tui/session.js";
 import {
+  OPENAI_OAUTH_DEVICE_LOGIN_COMMAND,
   resolveTuiAgentId,
   resolveTuiConfig,
   resolveTuiExecutablePath,
@@ -801,6 +802,9 @@ describe("custom harness TUI", () => {
         "openai-oauth:gpt-5.4-mini",
       ),
     ).toBe("high");
+    expect(OPENAI_OAUTH_DEVICE_LOGIN_COMMAND).toBe(
+      "bunx @openai/codex login --device-auth -c 'cli_auth_credentials_store=\"file\"'",
+    );
   });
 
   test("renders completed Markdown with terminal structure", () => {

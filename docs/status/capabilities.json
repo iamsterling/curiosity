@@ -988,7 +988,7 @@
         {
           "path": "apps/custom-harness/src/tui/config.ts",
           "mode": "exact",
-          "sha256": "6d98ca0a89690528ab678a510fbe6a20a14afecd52bd23e37c1eb894b21aaff6"
+          "sha256": "a70ed058a7e38efd4f875ef9bf90d31f8435c7b3e1633949070baf7c536ca446"
         },
         {
           "path": "apps/custom-harness/src/tui/frame-text.ts",
@@ -1023,7 +1023,7 @@
         {
           "path": "apps/custom-harness/src/tui/session.ts",
           "mode": "exact",
-          "sha256": "e9aedd566cd58b655276ceb3bf27da67241b9f8e306513c0d4bd95a8b3fb8283"
+          "sha256": "f7e385f0459371f894230285ee17ec461111dc551aeb463d9e101b5f8da2cab6"
         },
         {
           "path": "apps/custom-harness/src/tui/terminal-text.ts",
@@ -1183,7 +1183,7 @@
         {
           "path": "apps/custom-harness/tests/tui.test.ts",
           "mode": "exact",
-          "sha256": "345c0afa6768e5b1b826b363a0c5786d3f1d555edfb04d18a47aa52c8fc864bf"
+          "sha256": "ff0b96763bbac1f6d527ae81741d2f24333d6f218a102d9507a6b4ac72cd7333"
         },
         {
           "path": "apps/custom-harness/tests/workflow-orchestration.test.ts",

@@ -70,8 +70,16 @@ Provider work uses one restrained, single-cell braille orbit; set
 `CURIOSITY_MOTION=reduce` for a static `⠿` indicator.
 Untrusted projected and streamed text is control-character sanitized before
 rendering. The default is `openai-oauth:gpt-5.4-mini` at `medium` effort, using
-the community OpenAI OAuth adapter and local Codex credentials. If needed, run
-`npx openai-oauth login` once. Set `NO_COLOR=1` for plain terminal output.
+the community OpenAI OAuth adapter and local Codex credentials. For cross-device
+login, enable Codex device-code authorization for the ChatGPT account and run:
+
+```sh
+bunx @openai/codex login --device-auth -c 'cli_auth_credentials_store="file"'
+```
+
+The command prints a verification URL and one-time code. File storage is
+required because the local adapter reads `$CODEX_HOME/auth.json` or the default
+`~/.codex/auth.json`. Set `NO_COLOR=1` for plain terminal output.
 
 The TypeScript renderer is the default terminal owner. The Bubble Tea migration
 client remains available only for explicit comparison with

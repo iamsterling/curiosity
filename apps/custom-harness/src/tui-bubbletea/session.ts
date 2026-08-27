@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { signCommand } from "../kernel/authenticator.js";
 import type { ChatMessageProjection } from "../projection/chat-projection.js";
 import type { ThreadProjection } from "../projection/thread-projection.js";
+import { OPENAI_OAUTH_DEVICE_LOGIN_COMMAND } from "../tui/config.js";
 import type { TuiHarness } from "../tui/session.js";
 import {
   failureTag,
@@ -393,7 +394,7 @@ const newThread = (
 const providerFailure = (modelId: string, error: unknown): string => {
   const tag = failureTag(error);
   return modelId.startsWith("openai-oauth:")
-    ? `${tag} · Run \`npx openai-oauth login\`, then retry.`
+    ? `${tag} · Run \`${OPENAI_OAUTH_DEVICE_LOGIN_COMMAND}\`, then retry.`
     : tag;
 };
 
