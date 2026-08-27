@@ -918,7 +918,7 @@
         {
           "path": "apps/custom-harness/src/research/receipt.ts",
           "mode": "exact",
-          "sha256": "b8af3e7009d0f044c39b687b2858ed41fa2e769bdeba80062b8a5cab9b133780"
+          "sha256": "8e2ba9126d68c099cd141aed97c178fc6208149a1846068af21a61bd943afeb8"
         },
         {
           "path": "apps/custom-harness/src/research/runtime-config.ts",
@@ -1158,7 +1158,7 @@
         {
           "path": "apps/custom-harness/tests/research-receipt.test.ts",
           "mode": "exact",
-          "sha256": "ea39e29e9b187d1b3a599470dc69bf0565cabca935e1b615e0a2a6e6fb481306"
+          "sha256": "3cc44892a53797719ee48d65a87a8146abca0169c28a113d1dcb1cec945165a3"
         },
         {
           "path": "apps/custom-harness/tests/research-run.test.ts",

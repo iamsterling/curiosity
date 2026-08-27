@@ -75,6 +75,22 @@ describe("research receipt generation", () => {
       );
   });
 
+  test("preserves balanced URL parentheses while trimming Markdown delimiters", () => {
+    const canonicalUrl =
+      "https://en.wikipedia.org/wiki/Pok%C3%A9mon_(video_game_series)";
+    expect(
+      generate(`Finding [Series](${canonicalUrl}).`, [
+        sourceEvent({ canonicalUrl }),
+      ]),
+    ).toMatchObject({
+      ok: true,
+      receipt: {
+        citationCount: 1,
+        citations: [{ canonicalUrl, sourceIds: [sourceId] }],
+      },
+    });
+  });
+
   test("rejects absent and unresolved citations when sources were captured", () => {
     expect(generate("Finding without a citation.")).toEqual({
       failure: "RESEARCH_CITATIONS_REQUIRED",

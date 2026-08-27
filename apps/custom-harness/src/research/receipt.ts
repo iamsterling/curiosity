@@ -63,6 +63,21 @@ const normalizeUrl = (value: string): string | undefined => {
   }
 };
 
+const trimCitationBoundary = (value: string): string => {
+  let trimmed = value.replace(/[.,;:!?]+$/gu, "");
+  for (const [opening, closing] of [
+    ["(", ")"],
+    ["[", "]"],
+    ["{", "}"],
+  ] as const)
+    while (
+      trimmed.endsWith(closing) &&
+      trimmed.split(closing).length > trimmed.split(opening).length
+    )
+      trimmed = trimmed.slice(0, -1);
+  return trimmed;
+};
+
 const sourceFrom = (event: StoredEvent): CapturedSource | undefined => {
   const source = record(event.body);
   if (
@@ -90,7 +105,7 @@ const sourceFrom = (event: StoredEvent): CapturedSource | undefined => {
 const citedUrls = (text: string): readonly string[] => {
   const matches = text.match(/https?:\/\/[^\s<>"'`]+/giu) ?? [];
   const normalized = matches.flatMap((match) => {
-    const trimmed = match.replace(/[\])},.;:!?]+$/gu, "");
+    const trimmed = trimCitationBoundary(match);
     const url = normalizeUrl(trimmed);
     return url ? [url] : [];
   });
