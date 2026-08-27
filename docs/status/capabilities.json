@@ -778,7 +778,7 @@
         {
           "path": "apps/custom-harness/src/kernel/provider-gateway.ts",
           "mode": "exact",
-          "sha256": "c99c138520d423083e08b79468f82eac628c1a2b9aa0b03fff9d1c18855695eb"
+          "sha256": "4a7ca78711ca6e2adf3505f0d45af887caebc5b0322526d3bfc69440c1391ccd"
         },
         {
           "path": "apps/custom-harness/src/kernel/reaction-engine.ts",
@@ -848,7 +848,7 @@
         {
           "path": "apps/custom-harness/src/plugins/skills.ts",
           "mode": "exact",
-          "sha256": "945b3c15e37ac33c4bd5b513ae1f41107d25a4a18af7ccac70bde0622645c9e2"
+          "sha256": "efa5c0fb2599c56b36f9b361d2e198ea623a0a002edf9c2ca151b5af34498e3a"
         },
         {
           "path": "apps/custom-harness/src/plugins/workspace-mutation.ts",
@@ -873,7 +873,7 @@
         {
           "path": "apps/custom-harness/src/providers/ai-sdk.ts",
           "mode": "exact",
-          "sha256": "6b79128522fac1cc93a2ecd2f78b8217a0421e02f1ebf8d3786d4231f3b7d6ae"
+          "sha256": "9d456e2bb1c72828919187bc28014591a4b805a3f7dc121b6ad059da9d6b782a"
         },
         {
           "path": "apps/custom-harness/src/research/adapter.ts",
@@ -1018,12 +1018,12 @@
         {
           "path": "apps/custom-harness/src/tui/session-turn.ts",
           "mode": "exact",
-          "sha256": "c5099cfff7a51c16c2373450667a15962e4bf9bcdb4f259e704adb96856367b8"
+          "sha256": "e9759104038745857d93ffab6ffb5ba665e3433e65e73e91cd01774914e72709"
         },
         {
           "path": "apps/custom-harness/src/tui/session.ts",
           "mode": "exact",
-          "sha256": "f7e385f0459371f894230285ee17ec461111dc551aeb463d9e101b5f8da2cab6"
+          "sha256": "d7423c2c35e7fb086af0efb9a4b31f65597f3ed12e0ff3b1cdf891787f7b8f10"
         },
         {
           "path": "apps/custom-harness/src/tui/terminal-text.ts",
@@ -1078,7 +1078,7 @@
         {
           "path": "apps/custom-harness/tests/chat.test.ts",
           "mode": "exact",
-          "sha256": "8bfc88f68f11274aae5172700f4b90a59abba4605f33055bae7997408bcbd0c0"
+          "sha256": "bf94287bc1170dae86429956960380219633bfeddf28377dbba1037bad5a18c6"
         },
         {
           "path": "apps/custom-harness/tests/child-delegation.test.ts",
@@ -1133,7 +1133,7 @@
         {
           "path": "apps/custom-harness/tests/prompt-assembler.test.ts",
           "mode": "exact",
-          "sha256": "b10a7fd9a0947a9dfef421f1e66b1006f3f260d74841dcded36b0bb589ee4282"
+          "sha256": "31165d49d8c4d4011737f1f720b26434123750d8b7e57f05d25a0b23fd427b0c"
         },
         {
           "path": "apps/custom-harness/tests/prompt-context.test.ts",
@@ -1183,7 +1183,7 @@
         {
           "path": "apps/custom-harness/tests/tui.test.ts",
           "mode": "exact",
-          "sha256": "ff0b96763bbac1f6d527ae81741d2f24333d6f218a102d9507a6b4ac72cd7333"
+          "sha256": "1d4d4744f2270091f6e0bb65c42d1cbeb65a555297d20828972cc000c34a8d24"
         },
         {
           "path": "apps/custom-harness/tests/workflow-orchestration.test.ts",

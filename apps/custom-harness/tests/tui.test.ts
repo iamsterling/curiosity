@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { PassThrough } from "node:stream";
 import { stripVTControlCharacters } from "node:util";
 import { signCommand, type SignedCommandEnvelope } from "../src/index.js";
+import { InputRejected, TextGenerationFailure } from "../src/kernel/errors.js";
 import {
   runTuiSession,
   sanitizeConversationText,
@@ -29,6 +30,10 @@ import {
 } from "../src/tui/screen-terminal.js";
 import { makeTerminalTheme } from "../src/tui/theme.js";
 import { brailleFrame, resolveMotionPreference } from "../src/tui/animation.js";
+import {
+  failureDiagnostic,
+  formatChatFailure,
+} from "../src/tui/session-turn.js";
 import { TUI_DESIGN_TOKENS } from "../src/tui/design-system.js";
 
 const testCapabilityStatus = Object.freeze({
@@ -805,6 +810,28 @@ describe("custom harness TUI", () => {
     expect(OPENAI_OAUTH_DEVICE_LOGIN_COMMAND).toBe(
       "bunx @openai/codex login --device-auth -c 'cli_auth_credentials_store=\"file\"'",
     );
+  });
+
+  test("does not misdiagnose kernel input rejection as missing OpenAI auth", () => {
+    const rejection = new InputRejected({
+      message:
+        "PROMPT_COMMAND_CAPABILITY_UNAVAILABLE:network.fetch|network.search",
+    });
+    expect(failureDiagnostic(rejection)).toBe(
+      "InputRejected · PROMPT_COMMAND_CAPABILITY_UNAVAILABLE:network.fetch|network.search",
+    );
+    expect(
+      formatChatFailure("openai-oauth:gpt-5.4-mini", rejection),
+    ).not.toContain(OPENAI_OAUTH_DEVICE_LOGIN_COMMAND);
+    expect(
+      formatChatFailure(
+        "openai-oauth:gpt-5.4-mini",
+        new TextGenerationFailure({
+          message: "OPENAI_OAUTH_AUTHENTICATION_REQUIRED",
+          modelId: "openai-oauth:gpt-5.4-mini",
+        }),
+      ),
+    ).toContain(OPENAI_OAUTH_DEVICE_LOGIN_COMMAND);
   });
 
   test("renders completed Markdown with terminal structure", () => {

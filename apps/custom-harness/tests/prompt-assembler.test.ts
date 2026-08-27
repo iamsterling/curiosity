@@ -8,6 +8,7 @@ import {
   type CuriosityPluginV2,
 } from "../src/kernel/plugin.js";
 import { PromptAssembler } from "../src/kernel/prompt-assembler.js";
+import { skillsPlugin } from "../src/plugins/skills.js";
 
 const storedEvent = (
   sequence: number,
@@ -122,6 +123,58 @@ const assemble = (
   );
 
 describe("prompt assembly", () => {
+  test("projects legacy version-one skill activations without newer capability fields", async () => {
+    const threadId = "legacy-thread";
+    const activation: StoredEvent = {
+      ...storedEvent(1, "skill.activated"),
+      body: {
+        activationId: "legacy-activation",
+        arguments: "Compare releases",
+        commandName: "research",
+        commandVersion: "1.0.0",
+        schemaVersion: 1,
+        skillName: "deep-research",
+        skillVersion: "1.0.0",
+        status: "active",
+        threadId,
+      },
+      streamId: threadId,
+    };
+    const source = storedEvent(2, "source.event", "source");
+    const agents = agentPlugin();
+    const testAgent = agents.agents![0]!;
+    const result = await Effect.runPromise(
+      new PromptAssembler(
+        new StaticPluginCatalog([
+          {
+            ...agents,
+            agents: [
+              testAgent,
+              {
+                ...testAgent,
+                default: false,
+                id: "researcher",
+                mode: "subagent",
+              },
+            ],
+          },
+          skillsPlugin,
+        ]),
+        () => [activation, source],
+      ).assemble({
+        actionType: "provider.generate",
+        agentId: "test-agent",
+        correlation: { threadId },
+        grantedCapabilities: new Set(["provider.generate"]),
+        messages: [{ content: "question", role: "user" }],
+        sourceEventId: "source",
+      }),
+    );
+    const prompt = result.messages.map(({ content }) => content).join("\n");
+    expect(prompt).toContain("Before retrieval, state the decision");
+    expect(prompt).toContain("Command capability disposition: available");
+  });
+
   test("reports every unavailable requested capability with a stable kernel code", async () => {
     const events = [storedEvent(1, "source.event", "source")];
     const result = await Effect.runPromise(

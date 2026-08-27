@@ -3,6 +3,7 @@ import { signCommand } from "../kernel/authenticator.js";
 import type { ChatTurnResult } from "../domain/chat.js";
 import type { ChatMessageProjection } from "../projection/chat-projection.js";
 import type { ThreadProjection } from "../projection/thread-projection.js";
+import { OPENAI_OAUTH_DEVICE_LOGIN_COMMAND } from "./config.js";
 
 export interface TurnIdentity {
   readonly agentId?: string;
@@ -44,6 +45,34 @@ export const failureTag = (error: unknown): string => {
   )
     return error._tag;
   return "CHAT_FAILED";
+};
+
+const failureMessage = (error: unknown): string | undefined =>
+  typeof error === "object" &&
+  error !== null &&
+  "message" in error &&
+  typeof error.message === "string" &&
+  error.message.length > 0
+    ? error.message
+    : undefined;
+
+export const failureDiagnostic = (error: unknown): string => {
+  const tag = failureTag(error);
+  const message = failureMessage(error);
+  return message && tag !== "CHAT_FAILED" && message !== tag
+    ? `${tag} · ${message}`
+    : tag;
+};
+
+export const formatChatFailure = (
+  modelId: string,
+  error: unknown,
+): string => {
+  const diagnostic = failureDiagnostic(error);
+  return modelId.startsWith("openai-oauth:") &&
+    failureMessage(error) === "OPENAI_OAUTH_AUTHENTICATION_REQUIRED"
+    ? `${diagnostic} · Run \`${OPENAI_OAUTH_DEVICE_LOGIN_COMMAND}\`, then retry.`
+    : diagnostic;
 };
 
 export const signTurn = (

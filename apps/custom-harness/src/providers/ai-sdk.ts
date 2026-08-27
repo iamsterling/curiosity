@@ -33,6 +33,32 @@ const supportedEfforts = new Set([
   "xhigh",
   "max",
 ]);
+const openAiOAuthAuthenticationMessages = [
+  "ChatGPT access token not found.",
+  "ChatGPT account id not found",
+] as const;
+
+const errorRecord = (value: unknown): Record<string, unknown> | undefined =>
+  value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : undefined;
+
+export const aiSdkStreamFailureCode = (
+  providerId: string,
+  error: unknown,
+): string => {
+  if (providerId !== "openai-oauth") return "AI_SDK_STREAM_FAILED";
+  const record = errorRecord(error);
+  const message = error instanceof Error ? error.message : undefined;
+  const status = record?.statusCode ?? record?.status;
+  return status === 401 ||
+    (message &&
+      openAiOAuthAuthenticationMessages.some((prefix) =>
+        message.startsWith(prefix),
+      ))
+    ? "OPENAI_OAUTH_AUTHENTICATION_REQUIRED"
+    : "AI_SDK_STREAM_FAILED";
+};
 
 const configured = (value: string | undefined): string | undefined => {
   const trimmed = value?.trim();
@@ -120,6 +146,7 @@ export const createAiSdkTextGenerator = (
   const modelId = resolveAiSdkModelId(environment);
   const effort = resolveAiSdkEffort(environment, modelId);
   validateModelId(modelId, environment);
+  const providerId = modelId.slice(0, modelId.indexOf(":"));
   const compatibleBaseUrl =
     configured(environment.CURIOSITY_OPENAI_COMPATIBLE_BASE_URL) ??
     "http://127.0.0.1";
@@ -192,7 +219,8 @@ export const createAiSdkTextGenerator = (
             toolName: part.toolName,
             type: "tool-call" as const,
           };
-        if (part.type === "error") throw new Error("AI_SDK_STREAM_FAILED");
+        if (part.type === "error")
+          throw new Error(aiSdkStreamFailureCode(providerId, part.error));
         if (part.type === "abort") throw new Error("AI_SDK_STREAM_ABORTED");
         if (part.type === "finish") completed = true;
       }

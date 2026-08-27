@@ -86,10 +86,14 @@ class SkillActivated extends Schema.Class<SkillActivated>(
   arguments: Schema.String,
   commandName: Schema.NonEmptyString,
   commandVersion: Schema.NonEmptyString,
-  capabilityDisposition: Schema.Literals(["available", "unavailable"]),
-  missingCapabilities: Schema.Array(Schema.NonEmptyString),
-  requiredAnyCapabilities: Schema.Array(Schema.Array(Schema.NonEmptyString)),
-  requiredCapabilities: Schema.Array(Schema.NonEmptyString),
+  capabilityDisposition: Schema.optional(
+    Schema.Literals(["available", "unavailable"]),
+  ),
+  missingCapabilities: Schema.optional(Schema.Array(Schema.NonEmptyString)),
+  requiredAnyCapabilities: Schema.optional(
+    Schema.Array(Schema.Array(Schema.NonEmptyString)),
+  ),
+  requiredCapabilities: Schema.optional(Schema.Array(Schema.NonEmptyString)),
   schemaVersion: Schema.Literal(1),
   skillName: Schema.optional(Schema.NonEmptyString),
   skillVersion: Schema.optional(Schema.NonEmptyString),
@@ -97,12 +101,36 @@ class SkillActivated extends Schema.Class<SkillActivated>(
   threadId: Schema.NonEmptyString,
 }) {}
 
+type NormalizedSkillActivation = Omit<
+  SkillActivated,
+  | "capabilityDisposition"
+  | "missingCapabilities"
+  | "requiredAnyCapabilities"
+  | "requiredCapabilities"
+> & {
+  readonly capabilityDisposition: "available" | "unavailable";
+  readonly missingCapabilities: readonly string[];
+  readonly requiredAnyCapabilities: readonly (readonly string[])[];
+  readonly requiredCapabilities: readonly string[];
+};
+
 const strict = { onExcessProperty: "error" } as const;
 const decodeInvocation = Schema.decodeUnknownEffect(
   PromptCommandInvocation,
   strict,
 );
-const decodeActivation = Schema.decodeUnknownEffect(SkillActivated, strict);
+const decodeActivation = (input: unknown) =>
+  Schema.decodeUnknownEffect(SkillActivated, strict)(input).pipe(
+    Effect.map(
+      (activation): NormalizedSkillActivation => ({
+        ...activation,
+        capabilityDisposition: activation.capabilityDisposition ?? "available",
+        missingCapabilities: activation.missingCapabilities ?? [],
+        requiredAnyCapabilities: activation.requiredAnyCapabilities ?? [],
+        requiredCapabilities: activation.requiredCapabilities ?? [],
+      }),
+    ),
+  );
 
 export const skillsPlugin: CuriosityPluginV2 = {
   commandDeciders: [
@@ -260,7 +288,10 @@ export const skillsPlugin: CuriosityPluginV2 = {
         if (typeof correlation?.threadId !== "string") return [];
         const latest = new Map<
           string,
-          { readonly eventId: string; readonly activation: SkillActivated }
+          {
+            readonly eventId: string;
+            readonly activation: NormalizedSkillActivation;
+          }
         >();
         for (const event of input.events) {
           const activation = yield* decodeActivation(event.body).pipe(

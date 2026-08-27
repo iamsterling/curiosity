@@ -892,11 +892,15 @@ export class ProviderGateway {
             this.#active.delete(action.executionId);
         }
       },
-      catch: () =>
+      catch: (error) =>
         new ActionExecutionFailure({
           actionId: action.actionId,
           actionType: action.actionType,
-          message: "TEXT_GENERATION_FAILED",
+          message:
+            error instanceof Error &&
+            error.message === "OPENAI_OAUTH_AUTHENTICATION_REQUIRED"
+              ? error.message
+              : "TEXT_GENERATION_FAILED",
           modelId: generator.modelId,
         }),
     });

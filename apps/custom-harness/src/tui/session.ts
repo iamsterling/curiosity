@@ -2,7 +2,6 @@ import { randomUUID } from "node:crypto";
 import type { CuriosityHarness } from "../kernel/runtime.js";
 import { ANIMATION_INTERVAL_MS, type MotionPreference } from "./animation.js";
 import { filterPaletteItems } from "./command-palette-view.js";
-import { OPENAI_OAUTH_DEVICE_LOGIN_COMMAND } from "./config.js";
 import { renderTuiFrame } from "./frame.js";
 import type {
   TuiCatalogView,
@@ -12,7 +11,9 @@ import type {
 import type { TuiScreenTerminal } from "./screen-terminal.js";
 import {
   failureTag,
+  failureDiagnostic,
   fallbackMessages,
+  formatChatFailure,
   latestThread,
   parsePromptCommand,
   signPromptCommand,
@@ -360,7 +361,7 @@ export const runTuiSession = async (
       } catch (cause) {
         status = "idle";
         stopAnimation();
-        error = failureTag(cause);
+        error = failureDiagnostic(cause);
         options.terminal.drainInput();
         draw();
       }
@@ -449,9 +450,7 @@ export const runTuiSession = async (
         ? `${question.prompt} · ${question.options
             .map(({ id, label }) => `${id}: ${label}`)
             .join(" · ")}${question.allowFreeText ? " · free text allowed" : ""}`
-        : failureTag(cause);
-      if (options.modelId.startsWith("openai-oauth:"))
-        error += ` · Run \`${OPENAI_OAUTH_DEVICE_LOGIN_COMMAND}\`, then retry.`;
+        : formatChatFailure(options.modelId, cause);
       options.terminal.drainInput();
       draw();
     }

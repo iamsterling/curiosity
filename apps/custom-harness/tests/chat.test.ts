@@ -11,6 +11,7 @@ import {
   type TextGenerator,
 } from "../src/index.js";
 import {
+  aiSdkStreamFailureCode,
   createAiSdkTextGenerator,
   splitAiSdkPrompt,
 } from "../src/providers/ai-sdk.js";
@@ -275,6 +276,24 @@ describe("plugin-native chat turns", () => {
     } finally {
       await server.stop(true);
     }
+  });
+
+  test("classifies only OpenAI OAuth credential failures as requiring login", () => {
+    expect(
+      aiSdkStreamFailureCode(
+        "openai-oauth",
+        new Error("ChatGPT access token not found. Run login."),
+      ),
+    ).toBe("OPENAI_OAUTH_AUTHENTICATION_REQUIRED");
+    expect(
+      aiSdkStreamFailureCode("openai-oauth", { statusCode: 401 }),
+    ).toBe("OPENAI_OAUTH_AUTHENTICATION_REQUIRED");
+    expect(
+      aiSdkStreamFailureCode("openai-oauth", new Error("connection reset")),
+    ).toBe("AI_SDK_STREAM_FAILED");
+    expect(
+      aiSdkStreamFailureCode("compatible", { statusCode: 401 }),
+    ).toBe("AI_SDK_STREAM_FAILED");
   });
 
   test("persists the prompt, streams the provider result, and recovers completion", async () => {
@@ -1425,6 +1444,31 @@ describe("plugin-native chat turns", () => {
     expect(await harness.projections.messages("thread-chat-001")).toEqual([
       expect.objectContaining({ role: "user", text: "Hello Curiosity" }),
     ]);
+    await harness.dispose();
+  });
+
+  test("retains the stable OpenAI OAuth authentication failure code", async () => {
+    const databasePath = databaseFixture();
+    const harness = createCuriosityHarness({
+      actorId,
+      authenticationSecret: secret,
+      databasePath,
+      supervisorPath,
+      textGenerator: {
+        effort: "medium",
+        modelId: "openai-oauth:gpt-5.4-mini",
+        stream: async function* () {
+          throw new Error("OPENAI_OAUTH_AUTHENTICATION_REQUIRED");
+        },
+      },
+      workspaceRoot: path.dirname(databasePath),
+    });
+
+    await expect(harness.chat(turn())).rejects.toMatchObject({
+      _tag: "TextGenerationFailure",
+      message: "OPENAI_OAUTH_AUTHENTICATION_REQUIRED",
+      modelId: "openai-oauth:gpt-5.4-mini",
+    });
     await harness.dispose();
   });
 });
