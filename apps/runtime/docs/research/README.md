@@ -22,6 +22,11 @@ dates, methods, and uncertainty.
 
 ## Current dossier
 
+- [Hindsight and agent memory systems: competitive architecture record
+  (2026-08-26)](hindsight-agent-memory-competitive-architecture-2026-08-26.md)
+  compares six current memory architectures against the custom harness authority
+  boundary, defines a projection-only provider seam and Curiosity-owned
+  evaluation, and records why no surveyed product is canonical memory authority.
 - [Curiosity-owned lexical reader research synthesis
   (2026-08-19)](owned-lexical-reader-synthesis-2026-08-19.md) separates primary
   IR and exact pinned-upstream facts from Curiosity inferences and unknowns, and
