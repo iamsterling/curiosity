@@ -100,9 +100,24 @@ const persistenceFailure = () =>
   new PersistenceFailure({ message: "EVENT_JOURNAL_UNAVAILABLE" });
 
 export const makeAuthority = (config: AuthorityConfig): AuthorityService => {
-  const journal = EventJournal.open(config.databasePath);
+  const journal = EventJournal.open(
+    config.databasePath,
+    config.plugins.catalogDigest,
+  );
   const authenticate = makeAuthenticator(config);
   const runSemaphore = Semaphore.makeUnsafe(1);
+  const coordinationSemaphore = Semaphore.makeUnsafe(1);
+  const deltaSinks = new Map<string, (delta: ActionStreamDelta) => void>();
+  const routeDelta = (delta: ActionStreamDelta): void => {
+    const correlation =
+      delta.correlation &&
+      typeof delta.correlation === "object" &&
+      !Array.isArray(delta.correlation)
+        ? (delta.correlation as Record<string, unknown>)
+        : undefined;
+    if (typeof correlation?.turnId === "string")
+      deltaSinks.get(correlation.turnId)?.(delta);
+  };
   const enabledAgentIds = enabledRoleIds(config.rolePolicy);
   const promptAssembler = new PromptAssembler(config.plugins, () =>
     journal.readEvents(),
@@ -228,6 +243,7 @@ export const makeAuthority = (config: AuthorityConfig): AuthorityService => {
           config.rolePolicy.enabledPrimaryRoles,
         ),
         events: currentEvents,
+        grantedCapabilities,
       })
       .pipe(
       Effect.mapError((error) =>
@@ -252,6 +268,8 @@ export const makeAuthority = (config: AuthorityConfig): AuthorityService => {
           actorId: authenticated.envelope.actorId,
           commandDigest: authenticated.commandDigest,
           commandId: command.id,
+          contributionId: owner.contributionId,
+          contributionVersion: String(owner.contributionVersion),
           events,
           nonce: authenticated.envelope.nonce,
           pluginId: owner.pluginId,
@@ -268,10 +286,13 @@ export const makeAuthority = (config: AuthorityConfig): AuthorityService => {
 
   const coordinate = Effect.fn("HarnessAuthority.coordinate")(function* (
     onDelta?: (delta: ActionStreamDelta) => void,
+    failureExecutionId?: string,
   ) {
     for (let cycle = 0; cycle < 128; cycle += 1) {
       const before = yield* workflows.drain();
-      const reaction = yield* reactions.drain(onDelta).pipe(Effect.result);
+      const reaction = yield* reactions
+        .drain(onDelta, failureExecutionId)
+        .pipe(Effect.result);
       const after = yield* workflows.drain();
       if (reaction._tag === "Failure") return yield* reaction.failure;
       if (before + after === 0) return;
@@ -348,7 +369,9 @@ export const makeAuthority = (config: AuthorityConfig): AuthorityService => {
               }),
             catch: (error) =>
               error instanceof Error &&
-              ["EXECUTION_NOT_FOUND"].includes(error.message)
+              ["EXECUTION_NOT_FOUND", "EXECUTION_NOT_CANCELLABLE"].includes(
+                error.message,
+              )
                 ? new InputRejected({ message: error.message })
                 : persistenceFailure(),
           })
@@ -439,31 +462,75 @@ export const makeAuthority = (config: AuthorityConfig): AuthorityService => {
       providerGateway.cancelGovernedExecutions();
     if (command.kind === "execution.cancel")
       toolGateway.cancelGovernedExecutions();
-    if (command.kind === "gate.decide" && command.decision === "approved")
-      yield* runSemaphore.withPermit(coordinate());
-    if (command.kind === "question.answer")
-      yield* runSemaphore.withPermit(coordinate());
     return result.acknowledgement;
   });
 
-  const execute = Effect.fn("HarnessAuthority.run")(function* (
+  const admitAuthenticated = Effect.fn("HarnessAuthority.admit")(function* (
     authenticated: AuthenticatedCommand,
-    onDelta?: (delta: ActionStreamDelta) => void,
   ) {
     yield* config.supervisor.ensureAvailable();
-    const acknowledgement = yield* admit(authenticated);
-    yield* coordinate(onDelta);
-    return acknowledgement;
+    return yield* admit(authenticated);
   });
   const run: AuthorityService["run"] = (input, onDelta) =>
     authenticate(input).pipe(
       Effect.flatMap((authenticated) =>
         decodeKernelControlCommand(authenticated.envelope.command).pipe(
-          Effect.flatMap((command) =>
-            command
+          Effect.flatMap((command) => {
+            const admission = command
               ? control(authenticated, command)
-              : runSemaphore.withPermit(execute(authenticated, onDelta)),
-          ),
+              : admitAuthenticated(authenticated);
+            const payload = authenticated.envelope.command.payload;
+            const turnId =
+              !command &&
+              payload &&
+              typeof payload === "object" &&
+              !Array.isArray(payload) &&
+              typeof (payload as Record<string, unknown>).turnId === "string"
+                ? ((payload as Record<string, unknown>).turnId as string)
+                : undefined;
+            const failureExecutionId =
+              command?.kind === "question.answer"
+                ? journal.actions.questionExecutionId(command.questionId)
+                : command?.kind === "gate.decide"
+                  ? journal.actions.gateExecutionId(command.gateId)
+                  : !command &&
+                      payload &&
+                      typeof payload === "object" &&
+                      !Array.isArray(payload)
+                    ? (["turnId", "executionId", "subjectId", "instanceId"]
+                        .map((key) => (payload as Record<string, unknown>)[key])
+                        .find(
+                          (value): value is string =>
+                            typeof value === "string" && value.length > 0,
+                        ) ?? undefined)
+                    : undefined;
+            if (turnId && onDelta) deltaSinks.set(turnId, onDelta);
+            return runSemaphore.withPermit(admission).pipe(
+              Effect.flatMap((acknowledgement) => {
+                reactions.notifyAdmission();
+                const shouldCoordinate =
+                  !command ||
+                  command.kind === "question.answer" ||
+                  (command.kind === "gate.decide" &&
+                    command.decision === "approved");
+                return shouldCoordinate
+                  ? coordinationSemaphore
+                      .withPermit(
+                        coordinate(routeDelta, failureExecutionId),
+                      )
+                      .pipe(
+                      Effect.map(() => acknowledgement),
+                    )
+                  : Effect.succeed(acknowledgement);
+              }),
+              Effect.ensuring(
+                Effect.sync(() => {
+                  if (turnId && onDelta && deltaSinks.get(turnId) === onDelta)
+                    deltaSinks.delete(turnId);
+                }),
+              ),
+            );
+          }),
         ),
       ),
     );

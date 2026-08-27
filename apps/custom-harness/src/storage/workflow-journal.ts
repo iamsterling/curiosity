@@ -166,6 +166,19 @@ export class WorkflowJournal {
             input.startedAt,
           ],
         );
+        const source = this.database
+          .query<
+            {
+              correlation_id: string;
+              parent_execution_id: string;
+              root_execution_id: string;
+            },
+            [string]
+          >(
+            "SELECT correlation_id,parent_execution_id,root_execution_id FROM events WHERE event_id = ?",
+          )
+          .get(input.sourceEventId);
+        if (!source) throw new Error("WORKFLOW_SOURCE_EVENT_MISSING");
         const event = {
           body: {
             capabilityCeiling: input.capabilityCeiling,
@@ -183,6 +196,19 @@ export class WorkflowJournal {
           actorId: "curiosity-kernel",
           commandDigest: hash(event),
           commandId: `workflow-start:${input.instanceId}`,
+          contributionId: input.contribution.id,
+          contributionVersion: input.contribution.version,
+          eventContexts: [
+            {
+              causationId: input.sourceEventId,
+              childExecutionId: input.instanceId,
+              contributionId: input.contribution.id,
+              contributionVersion: input.contribution.version,
+              correlationId: source.correlation_id,
+              parentExecutionId: source.parent_execution_id,
+              rootExecutionId: source.root_execution_id,
+            },
+          ],
           events: [event],
           nonce: `workflow-start:${input.instanceId}`,
           pluginId: "curiosity.kernel.workflows",
@@ -198,6 +224,15 @@ export class WorkflowJournal {
     return this.database
       .query<WorkflowRow, []>(
         "SELECT workflow_instances.* FROM workflow_instances WHERE workflow_instances.status = 'running' AND NOT EXISTS (SELECT 1 FROM workflow_instances AS child WHERE child.parent_instance_id = workflow_instances.instance_id AND child.status IN ('running', 'completion-requested')) AND NOT EXISTS (SELECT 1 FROM actions WHERE actions.execution_id = workflow_instances.execution_id AND actions.status IN ('proposed', 'running')) ORDER BY workflow_instances.depth DESC, workflow_instances.instance_id",
+      )
+      .all()
+      .map(toInstance);
+  }
+
+  instances(): readonly StoredWorkflowInstance[] {
+    return this.database
+      .query<WorkflowRow, []>(
+        "SELECT * FROM workflow_instances ORDER BY depth, instance_id",
       )
       .all()
       .map(toInstance);
@@ -254,6 +289,42 @@ export class WorkflowJournal {
             : 0;
         if (noProgress > row.max_no_progress)
           throw new Error("WORKFLOW_NO_PROGRESS_EXCEEDED");
+        const source = this.database
+          .query<
+            {
+              correlation_id: string;
+              event_id: string;
+              root_execution_id: string;
+            },
+            [string]
+          >(
+            "SELECT event_id,correlation_id,root_execution_id FROM events WHERE stream_id = ? ORDER BY aggregate_version DESC LIMIT 1",
+          )
+          .get(input.instanceId);
+        if (!source) throw new Error("WORKFLOW_SOURCE_EVENT_MISSING");
+        const parentExecutionId = row.parent_instance_id
+          ? this.database
+              .query<{ execution_id: string }, [string]>(
+                "SELECT execution_id FROM workflow_instances WHERE instance_id = ?",
+              )
+              .get(row.parent_instance_id)?.execution_id
+          : row.execution_id;
+        if (!parentExecutionId)
+          throw new Error("WORKFLOW_PARENT_EXECUTION_MISSING");
+        for (const child of input.children) {
+          this.database.run(
+            "INSERT INTO executions(execution_id,version,generation,status,cancellation_requested,updated_at) VALUES (?,?,?,?,?,?)",
+            [child.executionId, 0, 0, "active", 0, input.committedAt],
+          );
+          this.database.run(
+            "INSERT INTO execution_ancestry(ancestor_execution_id,descendant_execution_id,depth) SELECT ancestor_execution_id,?,depth + 1 FROM execution_ancestry WHERE descendant_execution_id = ?",
+            [child.executionId, row.execution_id],
+          );
+          this.database.run(
+            "INSERT INTO execution_ancestry(ancestor_execution_id,descendant_execution_id,depth) VALUES (?,?,?)",
+            [child.executionId, child.executionId, 0],
+          );
+        }
         const events = [
           {
             body: {
@@ -289,6 +360,35 @@ export class WorkflowJournal {
           actorId: "curiosity-kernel",
           commandDigest: input.transitionDigest,
           commandId,
+          eventContexts: [
+            {
+              causationId: source.event_id,
+              childExecutionId: row.execution_id,
+              contributionId: row.contribution_id,
+              contributionVersion: row.contribution_version,
+              correlationId: source.correlation_id,
+              parentExecutionId,
+              rootExecutionId: source.root_execution_id,
+            },
+            ...input.children.map((child) => ({
+              causationId: source.event_id,
+              childExecutionId: child.executionId,
+              contributionId: child.contribution.id,
+              contributionVersion: child.contribution.version,
+              correlationId: source.correlation_id,
+              parentExecutionId: row.execution_id,
+              rootExecutionId: source.root_execution_id,
+            })),
+            ...input.actions.map((action) => ({
+              causationId: action.sourceEventId,
+              childExecutionId: action.executionId,
+              contributionId: action.reactorId,
+              contributionVersion: "1",
+              correlationId: source.correlation_id,
+              parentExecutionId: row.execution_id,
+              rootExecutionId: source.root_execution_id,
+            })),
+          ],
           events,
           nonce: commandId,
           pluginId: "curiosity.kernel.workflows",
@@ -344,18 +444,6 @@ export class WorkflowJournal {
             )
             .get(commandId, child.instanceId);
           if (!source) throw new Error("WORKFLOW_CHILD_EVENT_MISSING");
-          this.database.run(
-            "INSERT INTO executions(execution_id,version,generation,status,cancellation_requested,updated_at) VALUES (?,?,?,?,?,?)",
-            [child.executionId, 0, 0, "active", 0, input.committedAt],
-          );
-          this.database.run(
-            "INSERT INTO execution_ancestry(ancestor_execution_id,descendant_execution_id,depth) SELECT ancestor_execution_id,?,depth + 1 FROM execution_ancestry WHERE descendant_execution_id = ?",
-            [child.executionId, row.execution_id],
-          );
-          this.database.run(
-            "INSERT INTO execution_ancestry(ancestor_execution_id,descendant_execution_id,depth) VALUES (?,?,?)",
-            [child.executionId, child.executionId, 0],
-          );
           this.database.run(
             "INSERT INTO workflow_instances(instance_id,source_event_id,workflow_name,contribution_id,contribution_version,plugin_id,execution_id,parent_instance_id,child_key,depth,status,input_json,state_json,capability_ceiling_json,step_count,no_progress_count,action_count,child_count,max_steps,max_no_progress,max_actions,max_children,max_delegation_depth,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             [
@@ -504,6 +592,28 @@ export class WorkflowJournal {
           [status, errorCode ?? null, at, row.instance_id],
         );
         if (updated.changes !== 1) return 0;
+        const source = this.database
+          .query<
+            {
+              correlation_id: string;
+              event_id: string;
+              root_execution_id: string;
+            },
+            [string]
+          >(
+            "SELECT event_id,correlation_id,root_execution_id FROM events WHERE stream_id = ? ORDER BY aggregate_version DESC LIMIT 1",
+          )
+          .get(row.instance_id);
+        if (!source) throw new Error("WORKFLOW_SOURCE_EVENT_MISSING");
+        const parentExecutionId = row.parent_instance_id
+          ? this.database
+              .query<{ execution_id: string }, [string]>(
+                "SELECT execution_id FROM workflow_instances WHERE instance_id = ?",
+              )
+              .get(row.parent_instance_id)?.execution_id
+          : row.execution_id;
+        if (!parentExecutionId)
+          throw new Error("WORKFLOW_PARENT_EXECUTION_MISSING");
         this.database.run(
           "UPDATE executions SET status = ?, version = version + 1, updated_at = ? WHERE execution_id = ?",
           [status === "completed" ? "completed" : status, at, row.execution_id],
@@ -526,6 +636,17 @@ export class WorkflowJournal {
           actorId: "curiosity-kernel",
           commandDigest: hash(event),
           commandId,
+          eventContexts: [
+            {
+              causationId: source.event_id,
+              childExecutionId: row.execution_id,
+              contributionId: row.contribution_id,
+              contributionVersion: row.contribution_version,
+              correlationId: source.correlation_id,
+              parentExecutionId,
+              rootExecutionId: source.root_execution_id,
+            },
+          ],
           events: [event],
           nonce: commandId,
           pluginId: "curiosity.kernel.workflows",

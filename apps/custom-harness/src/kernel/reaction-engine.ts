@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { Effect } from "effect";
+import { Effect, Fiber, Result } from "effect";
 import type { StoredAction } from "../domain/action.js";
 import type { ProposedEvent, StoredEvent } from "../domain/event.js";
 import type { EventJournal } from "../storage/event-journal.js";
@@ -57,6 +57,28 @@ const isRecoverableResearchFailure = (action: StoredAction): boolean => {
   );
 };
 
+const concurrentExternalActionTypes = new Set([
+  "fetch.web",
+  "git.diff",
+  "git.ref.inspect",
+  "git.ref.update",
+  "git.status",
+  "git.worktree.create",
+  "git.worktree.inspect",
+  "git.worktree.remove",
+  "process.run",
+  "provider.generate",
+  "question.ask",
+  "search.web",
+  "workspace.delete",
+  "workspace.glob",
+  "workspace.list",
+  "workspace.patch",
+  "workspace.read",
+  "workspace.search",
+  "workspace.write",
+]);
+
 const actionRecord = (
   event: StoredEvent,
   reactor: ReturnType<StaticPluginCatalog["reactorsFor"]>[number],
@@ -113,6 +135,8 @@ const actionProposedEvent = (
 export class ReactionEngine {
   private readonly children: ChildScheduler;
   private readonly localActions: LocalActionGateway;
+  private readonly wakeWaiters = new Set<() => void>();
+  private wakeRevision = 0;
 
   constructor(
     private readonly journal: EventJournal,
@@ -122,9 +146,15 @@ export class ReactionEngine {
     private readonly now: () => number,
     private readonly grantedCapabilities: ReadonlySet<string>,
     private readonly eligibleActorId: string,
-    rolePolicy: RolePolicyConfig,
+    private readonly rolePolicy: RolePolicyConfig,
   ) {
-    this.localActions = new LocalActionGateway(journal, catalog, now, rolePolicy);
+    this.localActions = new LocalActionGateway(
+      journal,
+      catalog,
+      now,
+      rolePolicy,
+      grantedCapabilities,
+    );
     this.children = new ChildScheduler(
       journal.actions,
       journal.delegations,
@@ -133,6 +163,29 @@ export class ReactionEngine {
       grantedCapabilities,
       rolePolicy,
     );
+  }
+
+  notifyAdmission(): void {
+    this.wakeRevision += 1;
+    for (const wake of this.wakeWaiters) wake();
+    this.wakeWaiters.clear();
+  }
+
+  private admissionWait(revision: number): {
+    readonly cancel: () => void;
+    readonly promise: Promise<void>;
+  } {
+    if (this.wakeRevision !== revision)
+      return { cancel: () => undefined, promise: Promise.resolve() };
+    let wake!: () => void;
+    const promise = new Promise<void>((resolve) => {
+      wake = resolve;
+      this.wakeWaiters.add(wake);
+    });
+    return {
+      cancel: () => this.wakeWaiters.delete(wake),
+      promise,
+    };
   }
 
   private processReactions = Effect.fn("ReactionEngine.processReactions")(
@@ -314,7 +367,7 @@ export class ReactionEngine {
       prepared.map((call) =>
         this.providers.dispatch(call).pipe(Effect.result),
       ),
-      { concurrency: "unbounded" },
+      { concurrency: this.rolePolicy.maximumConcurrentChildren },
     );
     for (const result of results)
       if (result._tag === "Failure") failures.push(result.failure);
@@ -324,27 +377,105 @@ export class ReactionEngine {
   drain = Effect.fn("ReactionEngine.drain")(function* (
     this: ReactionEngine,
     onDelta?: (delta: ActionStreamDelta) => void,
+    failureExecutionId?: string,
   ) {
     yield* this.providers.reconcileInterrupted();
     yield* this.tools.reconcileInterrupted();
     let firstFailure: ActionExecutionFailure | undefined;
+    const capturesFailure = (action: StoredAction): boolean =>
+      !failureExecutionId ||
+      this.journal.attempts.isExecutionInTree(
+        failureExecutionId,
+        action.executionId,
+      );
+    const interruptedActionIds = new Set<string>();
+    const activeExternal: Array<{
+      readonly action?: StoredAction;
+      readonly actionIds: readonly string[];
+      readonly executionIds: readonly string[];
+      readonly fiber: Fiber.Fiber<
+        | Result.Result<unknown, ActionExecutionFailure>
+        | readonly ActionExecutionFailure[],
+        never
+      >;
+    }> = [];
     let steps = 0;
     while (steps < maximumDrainSteps) {
+      for (let index = activeExternal.length - 1; index >= 0; index -= 1) {
+        const active = activeExternal[index]!;
+        if (!active.fiber.pollUnsafe()) continue;
+        const result = yield* Fiber.join(active.fiber);
+        activeExternal.splice(index, 1);
+        if (Result.isResult(result)) {
+          if (
+            Result.isFailure(result) &&
+            !firstFailure &&
+            active.action &&
+            capturesFailure(active.action) &&
+            active.action.actionType !== "provider.generate" &&
+            actionCorrelation(active.action)?.kind !== "curiosity.child.run" &&
+            !isRecoverableResearchFailure(active.action)
+          )
+            firstFailure = result.failure;
+        } else {
+          for (const failure of result)
+            if (
+              this.journal.actions.action(failure.actionId)?.status ===
+              "proposed"
+            ) {
+              interruptedActionIds.add(failure.actionId);
+              const action = this.journal.actions.action(failure.actionId);
+              if (action && capturesFailure(action)) firstFailure ??= failure;
+            }
+        }
+      }
+      const cycleWakeRevision = this.wakeRevision;
       const reconciledChildren = yield* this.children.reconcile();
       const reactions = yield* this.processReactions();
       steps += reconciledChildren + reactions;
-      const actions = this.journal.actions
+      const activeActionIds = new Set(
+        activeExternal.flatMap(({ actionIds }) => actionIds),
+      );
+      const activeExecutionIds = new Set(
+        activeExternal.flatMap(({ executionIds }) => executionIds),
+      );
+      const dispatchableActions = this.journal.actions
         .proposedActions()
+        .filter((action) => !activeActionIds.has(action.actionId))
+        .filter((action) => !interruptedActionIds.has(action.actionId))
+        .filter((action) => !activeExecutionIds.has(action.executionId))
         .filter((action) =>
           this.journal.attempts.isActionDispatchReady(
             action,
             new Date(this.now()).toISOString(),
           ),
         );
-      const childProviderActions = actions.filter(isChildProviderAction);
-      const serialActions = actions.filter(
+      const nonChildActions = dispatchableActions.filter(
         (action) => !isChildProviderAction(action),
       );
+      const concurrentCandidates = nonChildActions.filter((action) =>
+        concurrentExternalActionTypes.has(action.actionType),
+      );
+      const serialActions = nonChildActions.filter(
+        (action) => !concurrentExternalActionTypes.has(action.actionType),
+      );
+      const selectedExecutionIds = new Set<string>();
+      const concurrentActions = concurrentCandidates.filter((action) => {
+        if (selectedExecutionIds.has(action.executionId)) return false;
+        selectedExecutionIds.add(action.executionId);
+        return true;
+      });
+      const childProviderActions = dispatchableActions
+        .filter(isChildProviderAction)
+        .filter((action) => {
+          if (selectedExecutionIds.has(action.executionId)) return false;
+          selectedExecutionIds.add(action.executionId);
+          return true;
+        });
+      const selectedActionCount =
+        serialActions.length +
+        concurrentActions.length +
+        childProviderActions.length;
       for (const action of serialActions) {
         const result = yield* this.executeAction(action, onDelta).pipe(
           Effect.result,
@@ -352,23 +483,88 @@ export class ReactionEngine {
         if (
           result._tag === "Failure" &&
           !firstFailure &&
+          capturesFailure(action) &&
           actionCorrelation(action)?.kind !== "curiosity.child.run" &&
           !isRecoverableResearchFailure(action)
         )
           firstFailure = result.failure;
+        if (
+          result._tag === "Failure" &&
+          this.journal.actions.action(action.actionId)?.status === "proposed"
+        )
+          interruptedActionIds.add(action.actionId);
+        steps += 1;
+      }
+      for (const action of concurrentActions) {
+        activeExternal.push({
+          action,
+          actionIds: [action.actionId],
+          executionIds: [action.executionId],
+          fiber: yield* this.executeAction(action, onDelta).pipe(
+            Effect.result,
+            Effect.forkChild,
+          ),
+        });
         steps += 1;
       }
       if (childProviderActions.length > 0) {
-        yield* this.executeChildProviderBatch(childProviderActions);
+        const failures = yield* this.executeChildProviderBatch(
+          childProviderActions,
+        );
+        for (const failure of failures)
+          if (
+            this.journal.actions.action(failure.actionId)?.status === "proposed"
+          ) {
+            interruptedActionIds.add(failure.actionId);
+            const action = this.journal.actions.action(failure.actionId);
+            if (action && capturesFailure(action)) firstFailure ??= failure;
+          }
         steps += childProviderActions.length;
       }
       if (
         reconciledChildren === 0 &&
         reactions === 0 &&
-        actions.length === 0
+        selectedActionCount === 0
       ) {
-        if (firstFailure) return yield* firstFailure;
-        return;
+        if (activeExternal.length === 0) {
+          if (firstFailure) return yield* firstFailure;
+          return;
+        }
+        const active = activeExternal[0]!;
+        const admission = this.admissionWait(cycleWakeRevision);
+        const settled = yield* Effect.race(
+          Fiber.join(active.fiber).pipe(
+            Effect.map((result) => ({ result, type: "settled" as const })),
+          ),
+          Effect.promise(() => admission.promise).pipe(
+            Effect.map(() => ({ type: "admitted" as const })),
+          ),
+        );
+        admission.cancel();
+        if (settled.type === "admitted") continue;
+        activeExternal.shift();
+        const { result } = settled;
+        if (
+          Result.isResult(result) &&
+          Result.isFailure(result) &&
+          !firstFailure &&
+          active.action &&
+          capturesFailure(active.action) &&
+          active.action.actionType !== "provider.generate" &&
+          actionCorrelation(active.action)?.kind !== "curiosity.child.run" &&
+          !isRecoverableResearchFailure(active.action)
+        )
+          firstFailure = result.failure;
+        if (!Result.isResult(result))
+          for (const failure of result)
+            if (
+              this.journal.actions.action(failure.actionId)?.status ===
+              "proposed"
+            ) {
+              interruptedActionIds.add(failure.actionId);
+              const action = this.journal.actions.action(failure.actionId);
+              if (action && capturesFailure(action)) firstFailure ??= failure;
+            }
       }
     }
     return yield* new PluginFailure({

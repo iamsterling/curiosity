@@ -2,7 +2,9 @@ import { afterEach, describe, expect, test } from "bun:test";
 import { Database } from "bun:sqlite";
 import { createHash, randomBytes } from "node:crypto";
 import {
+  mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   symlinkSync,
@@ -16,6 +18,7 @@ import {
   type TextGenerator,
 } from "../src/index.js";
 import { SupervisorClient } from "../src/supervisor/client.js";
+import { resourceClaimsOverlap } from "../src/storage/attempt-journal.js";
 
 const roots: string[] = [];
 const actorId = "local-owner";
@@ -238,6 +241,20 @@ describe("preconditioned workspace mutation", () => {
       }),
     ).rejects.toThrow("WORKSPACE_PATCH_OCCURRENCE_MISMATCH");
     expect(readFileSync(file, "utf8")).toBe("one one\n");
+    await expect(
+      supervisor.workspacePatch("partial-patch", {
+        expectedSha256: sha256("one one\n"),
+        path: "baseline.txt",
+        replacements: [
+          { expectedOccurrences: 2, new: "two", old: "one" },
+          { expectedOccurrences: 1, new: "four", old: "three" },
+        ],
+      }),
+    ).rejects.toThrow("WORKSPACE_PATCH_OCCURRENCE_MISMATCH");
+    expect(readFileSync(file, "utf8")).toBe("one one\n");
+    expect(
+      readdirSync(root).filter((name) => name.startsWith(".curiosity-")),
+    ).toEqual([]);
     await supervisor.close();
   });
 
@@ -269,6 +286,39 @@ describe("preconditioned workspace mutation", () => {
       }),
     ).rejects.toThrow("WORKSPACE_PATH_UNSAFE");
     expect(readFileSync(outside, "utf8")).toBe("outside\n");
+    const outsideDirectory = path.join(outsideRoot, "directory");
+    mkdirSync(outsideDirectory);
+    symlinkSync(outsideDirectory, path.join(root, "ancestor"));
+    await expect(
+      supervisor.workspaceWrite("ancestor-symlink", {
+        content: "changed\n",
+        expectedSha256: null,
+        path: "ancestor/created.txt",
+      }),
+    ).rejects.toThrow("WORKSPACE_PATH_UNSAFE");
+    expect(() => readFileSync(path.join(outsideDirectory, "created.txt"))).toThrow();
     await supervisor.close();
+  });
+
+  test("treats ancestor and descendant mutation claims as one exclusive scope", () => {
+    expect(
+      resourceClaimsOverlap(
+        "workspace:path:src",
+        "workspace:path:src/index.ts",
+      ),
+    ).toBe(true);
+    expect(
+      resourceClaimsOverlap(
+        "workspace:path:src/index.ts",
+        "workspace:path:src/index.ts",
+      ),
+    ).toBe(true);
+    expect(
+      resourceClaimsOverlap(
+        "workspace:path:src-a/index.ts",
+        "workspace:path:src-b/index.ts",
+      ),
+    ).toBe(false);
+    expect(resourceClaimsOverlap("git:ref:a", "git:ref:b")).toBe(false);
   });
 });

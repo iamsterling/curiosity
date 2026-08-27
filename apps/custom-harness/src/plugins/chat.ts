@@ -87,7 +87,7 @@ export const chatPlugin: CuriosityPluginV2 = {
       { pluginId: "curiosity.stock.process", version: "1.0.0" },
       { pluginId: "curiosity.stock.question", version: "1.0.0" },
       { pluginId: "curiosity.stock.search", version: "1.2.0" },
-      { pluginId: "curiosity.stock.thread", version: "1.0.0" },
+      { pluginId: "curiosity.stock.thread", version: "1.1.0" },
       { pluginId: "curiosity.stock.workspace", version: "1.1.0" },
       { pluginId: "curiosity.stock.workspace-mutation", version: "1.0.0" },
     ],

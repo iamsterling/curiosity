@@ -73,6 +73,17 @@ const toAction = (row: ActionAttemptRow): StoredAction => ({
 const hash = (value: unknown): string =>
   createHash("sha256").update(canonicalJson(value)).digest("hex");
 
+export const resourceClaimsOverlap = (left: string, right: string): boolean => {
+  if (left === right) return true;
+  const prefix = "workspace:path:";
+  if (!left.startsWith(prefix) || !right.startsWith(prefix)) return false;
+  const leftPath = left.slice(prefix.length).replaceAll("\\", "/");
+  const rightPath = right.slice(prefix.length).replaceAll("\\", "/");
+  return (
+    leftPath.startsWith(`${rightPath}/`) || rightPath.startsWith(`${leftPath}/`)
+  );
+};
+
 const runFinalized = (
   database: Database,
   sql: string,
@@ -364,10 +375,13 @@ export class AttemptJournal {
             [input.allocatedAt, input.allocatedAt],
           );
           const collision = this.database
-            .query<{ lease_id: string }, [string]>(
-              "SELECT lease_id FROM resource_leases WHERE resource = ? AND status IN ('active','fenced') LIMIT 1",
+            .query<{ resource: string }, []>(
+              "SELECT resource FROM resource_leases WHERE status IN ('active','fenced') ORDER BY resource",
             )
-            .get(input.action.resource);
+            .all()
+            .some(({ resource }) =>
+              resourceClaimsOverlap(resource, input.action.resource),
+            );
           if (collision) return "resource-collision";
         }
         this.database.run(
@@ -918,18 +932,68 @@ export class AttemptJournal {
   ): AdmissionResult {
     return this.database
       .transaction(() => {
-        const result = admitInTransaction(this.database, input);
+        const execution = this.database
+          .query<{ execution_id: string; status: string }, [string]>(
+            "SELECT execution_id,status FROM executions WHERE execution_id = ?",
+          )
+          .get(input.executionId);
+        if (!execution) throw new Error("EXECUTION_NOT_FOUND");
+        const source = this.database
+          .query<
+            {
+              child_execution_id: string;
+              correlation_id: string;
+              event_id: string;
+              parent_execution_id: string;
+              root_execution_id: string;
+            },
+            [string]
+          >(
+            "SELECT event_id,correlation_id,root_execution_id,parent_execution_id,child_execution_id FROM events WHERE child_execution_id = ? ORDER BY global_sequence DESC LIMIT 1",
+          )
+          .get(input.executionId);
+        if (!source) throw new Error("EXECUTION_SOURCE_EVENT_MISSING");
+        const result = admitInTransaction(this.database, {
+          ...input,
+          eventContexts:
+            input.eventContexts ??
+            input.events.map(() => ({
+              causationId: source.event_id,
+              childExecutionId: source.child_execution_id,
+              contributionId: input.contributionId ?? input.pluginId,
+              contributionVersion: input.contributionVersion ?? "1",
+              correlationId: source.correlation_id,
+              parentExecutionId: source.parent_execution_id,
+              rootExecutionId: source.root_execution_id,
+            })),
+        });
         if (
           result._tag === "Conflict" ||
           result.acknowledgement.disposition === "duplicate"
         )
           return result;
-        const execution = this.database
+        const activeDescendant = this.database
           .query<{ execution_id: string }, [string]>(
-            "SELECT execution_id FROM executions WHERE execution_id = ?",
+            "SELECT executions.execution_id FROM executions JOIN execution_ancestry ON execution_ancestry.descendant_execution_id = executions.execution_id WHERE execution_ancestry.ancestor_execution_id = ? AND executions.execution_id <> execution_ancestry.ancestor_execution_id AND executions.status IN ('active','cancelling') LIMIT 1",
           )
           .get(input.executionId);
-        if (!execution) throw new Error("EXECUTION_NOT_FOUND");
+        const activeAction = this.database
+          .query<{ action_id: string }, [string, string]>(
+            "SELECT action_id FROM actions WHERE (execution_id = ? OR execution_id IN (SELECT descendant_execution_id FROM execution_ancestry WHERE ancestor_execution_id = ?)) AND status IN ('proposed','running') LIMIT 1",
+          )
+          .get(input.executionId, input.executionId);
+        const activeWorkflow = this.database
+          .query<{ instance_id: string }, [string, string]>(
+            "SELECT instance_id FROM workflow_instances WHERE (execution_id = ? OR execution_id IN (SELECT descendant_execution_id FROM execution_ancestry WHERE ancestor_execution_id = ?)) AND status IN ('running','completion-requested') LIMIT 1",
+          )
+          .get(input.executionId, input.executionId);
+        if (
+          execution.status !== "active" &&
+          !activeDescendant &&
+          !activeAction &&
+          !activeWorkflow
+        )
+          throw new Error("EXECUTION_NOT_CANCELLABLE");
         runFinalized(
           this.database,
           "UPDATE executions SET cancellation_requested = 1, generation = generation + 1, status = 'cancelled', version = version + 1, updated_at = ? WHERE execution_id = ? OR execution_id IN (SELECT descendant_execution_id FROM execution_ancestry WHERE ancestor_execution_id = ?)",
@@ -976,6 +1040,17 @@ export class AttemptJournal {
           "SELECT cancellation_requested FROM executions WHERE execution_id = ?",
         )
         .get(executionId)?.cancellation_requested === 1
+    );
+  }
+
+  isExecutionInTree(rootExecutionId: string, executionId: string): boolean {
+    if (rootExecutionId === executionId) return true;
+    return Boolean(
+      this.database
+        .query<{ descendant_execution_id: string }, [string, string]>(
+          "SELECT descendant_execution_id FROM execution_ancestry WHERE ancestor_execution_id = ? AND descendant_execution_id = ?",
+        )
+        .get(rootExecutionId, executionId),
     );
   }
 
@@ -1049,26 +1124,57 @@ export class AttemptJournal {
   ): AdmissionResult {
     return this.database
       .transaction(() => {
-        const result = admitInTransaction(this.database, input);
+        const gate = this.database
+          .query<
+            {
+              action_id: string;
+              eligible_actor_id: string;
+              execution_id: string;
+              expires_at: string;
+              payload_digest: string;
+              proposal_revision: number;
+              reactor_id: string;
+              source_event_id: string;
+              status: string;
+            },
+            [string]
+          >(
+            "SELECT gates.action_id,gates.eligible_actor_id,actions.execution_id,gates.expires_at,gates.payload_digest,gates.proposal_revision,actions.reactor_id,actions.source_event_id,gates.status FROM gates JOIN actions ON actions.action_id = gates.action_id WHERE gates.gate_id = ?",
+          )
+          .get(input.gateId);
+        if (!gate) throw new Error("GATE_DECISION_DENIED");
+        const source = this.database
+          .query<
+            {
+              correlation_id: string;
+              parent_execution_id: string;
+              root_execution_id: string;
+            },
+            [string]
+          >(
+            "SELECT correlation_id,parent_execution_id,root_execution_id FROM events WHERE event_id = ?",
+          )
+          .get(gate.source_event_id);
+        if (!source) throw new Error("GATE_SOURCE_EVENT_MISSING");
+        const result = admitInTransaction(this.database, {
+          ...input,
+          eventContexts:
+            input.eventContexts ??
+            input.events.map(() => ({
+              causationId: gate.source_event_id,
+              childExecutionId: gate.execution_id,
+              contributionId: input.contributionId ?? input.pluginId,
+              contributionVersion: input.contributionVersion ?? "1",
+              correlationId: source.correlation_id,
+              parentExecutionId: source.parent_execution_id,
+              rootExecutionId: source.root_execution_id,
+            })),
+        });
         if (
           result._tag === "Conflict" ||
           result.acknowledgement.disposition === "duplicate"
         )
           return result;
-        const gate = this.database
-          .query<
-            {
-              eligible_actor_id: string;
-              expires_at: string;
-              payload_digest: string;
-              proposal_revision: number;
-              status: string;
-            },
-            [string]
-          >(
-            "SELECT eligible_actor_id,expires_at,payload_digest,proposal_revision,status FROM gates WHERE gate_id = ?",
-          )
-          .get(input.gateId);
         if (
           gate?.status !== "pending" ||
           gate.eligible_actor_id !== input.actorId ||

@@ -37,6 +37,14 @@ export class ProjectionEngine {
       });
     let state = JSON.parse(canonicalJson(projection.initialState)) as unknown;
     for (const event of this.readEvents()) {
+      if (
+        event.eventSchemaVersion !== 0 &&
+        event.eventSchemaVersion !== 1
+      )
+        return yield* new PluginFailure({
+          message: "PROJECTION_EVENT_SCHEMA_UNSUPPORTED",
+          pluginId: projection.pluginId,
+        });
       const accepted = projection.eventSchemas.find(
         ({ eventType }) => eventType === event.type,
       );

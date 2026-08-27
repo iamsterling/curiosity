@@ -849,7 +849,7 @@ export class ProviderGateway {
                 !part.toolCallId ||
                 Buffer.byteLength(part.toolCallId) > 256 ||
                 toolCallIds.has(part.toolCallId) ||
-                toolCalls.length >= 4 ||
+                toolCalls.length >= 8 ||
                 Buffer.byteLength(canonicalJson(part.input)) > 16_384
               )
                 throw new Error("PROVIDER_TOOL_CALL_INVALID");

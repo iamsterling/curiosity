@@ -43,7 +43,7 @@ const testCapabilityStatus = Object.freeze({
       id: "filesystem.mutation",
       qualifiedForProduction: false as const,
       reason: "SUPERVISOR_CAPABILITY_DISABLED",
-      state: "unavailable" as const,
+      state: "scaffolded" as const,
     }),
   ]),
   deploymentReady: false as const,

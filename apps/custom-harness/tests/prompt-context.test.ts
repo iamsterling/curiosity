@@ -79,11 +79,15 @@ describe("native agent policy and bounded context", () => {
     expect(captured.map(({ role }) => role)).toEqual([
       "system",
       "system",
+      "system",
       "user",
     ]);
     expect(captured[0]?.content).toContain("Curiosity");
     expect(captured[1]?.content).toContain("thread-context-001");
-    expect(captured[2]?.content).toBe("Explain the plugin boundary");
+    expect(captured[2]?.content).toContain(
+      "CURIOSITY_CAPABILITY_UNAVAILABLE:filesystem.mutation",
+    );
+    expect(captured[3]?.content).toBe("Explain the plugin boundary");
     await harness.dispose();
 
     const database = new Database(databasePath, {
@@ -108,6 +112,7 @@ describe("native agent policy and bounded context", () => {
       blocks: [
         expect.objectContaining({ required: true, slot: "agent-policy" }),
         expect.objectContaining({ slot: "durable-context" }),
+        expect.objectContaining({ required: true, slot: "kernel-notice" }),
       ],
     });
     const snapshot = JSON.parse(call!.prompt_snapshot_json) as {

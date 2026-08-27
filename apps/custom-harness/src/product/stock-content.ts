@@ -9,9 +9,39 @@ export interface StockPromptCommandDefinition {
   readonly description: string;
   readonly instructions: string;
   readonly name: string;
+  readonly requiredAnyCapabilities: readonly (readonly string[])[];
+  readonly requiredCapabilities: readonly string[];
   readonly skillName: string | null;
   readonly status: "active" | "compatibility-deprecated";
 }
+
+const activeCommandCapabilities = (name: string): readonly string[] => {
+  if (["bug", "feature", "task"].includes(name))
+    return [
+      "filesystem.mutation",
+      "filesystem.read",
+      "process.execution",
+      "provider.generate",
+    ];
+  if (name === "verify")
+    return ["filesystem.read", "process.execution", "provider.generate"];
+  if (name === "review")
+    return ["filesystem.read", "provider.generate"];
+  if (name === "research") return ["filesystem.read", "provider.generate"];
+  if (name === "landscape") return ["provider.generate"];
+  if (name === "teardown")
+    return ["filesystem.read", "provider.generate"];
+  if (name === "secure") return ["provider.generate"];
+  if (name === "goal") return ["provider.generate", "semantic.command"];
+  return ["provider.generate"];
+};
+
+const activeCommandAnyCapabilities = (
+  name: string,
+): readonly (readonly string[])[] =>
+  ["landscape", "research"].includes(name)
+    ? [["network.fetch", "network.search"]]
+    : [];
 
 export const stockSkillDefinitions: readonly StockSkillDefinition[] = [
   {
@@ -86,6 +116,8 @@ const active = (
   description,
   instructions,
   name,
+  requiredAnyCapabilities: activeCommandAnyCapabilities(name),
+  requiredCapabilities: activeCommandCapabilities(name),
   skillName,
   status: "active",
 });
@@ -99,6 +131,8 @@ const deprecated = (
     "Deprecated compatibility alias for the native Ledger and workflow product.",
   instructions,
   name,
+  requiredAnyCapabilities: [],
+  requiredCapabilities: [],
   skillName: null,
   status: "compatibility-deprecated",
 });
@@ -253,3 +287,37 @@ export const stockPromptCommandDefinitions: readonly StockPromptCommandDefinitio
     "Run relevant focused tests and project verification commands, retain raw output, and map every acceptance criterion to evidence.",
   ),
 ];
+
+export const stockCompatibilityCommandDispositions = Object.freeze({
+  "loop-ask": "unsupported:OPENCODE2_COMPAT_LOOP_ASK_UNSUPPORTED",
+  "loop-clear": "unsupported:OPENCODE2_COMPAT_LOOP_CLEAR_UNSUPPORTED",
+  "loop-cmd": "unsupported:OPENCODE2_COMPAT_LOOP_CMD_UNSUPPORTED",
+  "loop-command": "unsupported:OPENCODE2_COMPAT_LOOP_COMMAND_UNSUPPORTED",
+  "loop-compact": "manual-guidance:HOST_COMPACTION_CONTROL",
+  "loop-dev": "unsupported:OPENCODE2_COMPAT_LOOP_DEV_UNSUPPORTED",
+  "loop-doctor": "manual-guidance:PACKAGE_DOCTOR",
+  "loop-export": "unsupported:OPENCODE2_COMPAT_LOOP_EXPORT_UNSUPPORTED",
+  "loop-goal-blocked": "ledger-proposal:ledger_progress_propose",
+  "loop-goal-clear":
+    "unsupported:OPENCODE2_COMPAT_LOOP_GOAL_CLEAR_UNSUPPORTED",
+  "loop-goal-done": "ledger-proposal:ledger_resolution_propose",
+  "loop-goal-pause": "native-tool:native_loop_pause",
+  "loop-goal-resume": "native-tool:native_loop_resume",
+  "loop-goal-status": "native-tool:native_loop_status",
+  "loop-goal": "native-tool:native_loop_start",
+  "loop-help": "manual-guidance:NATIVE_TOOL_INVENTORY",
+  "loop-init": "unsupported:OPENCODE2_COMPAT_LOOP_INIT_UNSUPPORTED",
+  "loop-logs": "unsupported:OPENCODE2_COMPAT_LOOP_LOGS_UNSUPPORTED",
+  "loop-now": "native-tool:native_loop_start",
+  "loop-pause": "native-tool:native_loop_pause",
+  "loop-progress": "ledger-proposal:ledger_progress_propose",
+  "loop-prompt": "unsupported:OPENCODE2_COMPAT_LOOP_PROMPT_UNSUPPORTED",
+  "loop-remove": "unsupported:OPENCODE2_COMPAT_LOOP_REMOVE_UNSUPPORTED",
+  "loop-resume": "native-tool:native_loop_resume",
+  "loop-safe-dev": "unsupported:OPENCODE2_COMPAT_LOOP_SAFE_DEV_UNSUPPORTED",
+  "loop-shell": "unsupported:OPENCODE2_COMPAT_SHELL_UNSUPPORTED",
+  "loop-status": "native-tool:native_loop_status",
+  "loop-stop": "native-tool:native_loop_stop",
+  "loop-testfix": "unsupported:OPENCODE2_COMPAT_LOOP_TESTFIX_UNSUPPORTED",
+  loop: "native-tool:native_loop_start",
+} as const);

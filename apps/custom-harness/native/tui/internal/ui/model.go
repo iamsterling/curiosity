@@ -160,6 +160,10 @@ func (model Model) updateKey(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 			return model, nil
 		}
 		if model.snapshot.Status == "working" {
+			if text == "/cancel" || strings.HasPrefix(text, "/cancel ") {
+				model.input.Reset()
+				return model, sendCommand(model.sender, protocol.TypeTurn, protocol.TurnSubmit{Text: text})
+			}
 			return model, nil
 		}
 		model.input.Reset()

@@ -155,7 +155,7 @@ describe("identity-bound Git reads", () => {
     expect(await harness.status()).toMatchObject({
       capabilities: expect.arrayContaining([
         expect.objectContaining({ id: "git.read", state: "available" }),
-        expect.objectContaining({ id: "git.mutation", state: "unavailable" }),
+        expect.objectContaining({ id: "git.mutation", state: "scaffolded" }),
       ]),
       supervisor: { git: true },
     });

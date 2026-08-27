@@ -23,11 +23,11 @@ export const readNodeThreadProjections = (
     const metadata = database
       .prepare("SELECT value FROM harness_metadata WHERE key = ?")
       .get("schema_version") as MetadataRow | undefined;
-    if (metadata?.value !== "1") throw unavailable();
+    if (metadata?.value !== "15") throw unavailable();
 
     const events = database
       .prepare(
-        "SELECT global_sequence,event_id,command_id,actor_id,plugin_id,event_type,stream_id,body_json,occurred_at,previous_hash,event_hash FROM events ORDER BY global_sequence",
+        "SELECT * FROM events ORDER BY global_sequence",
       )
       .all() as unknown as EventRow[];
     return projectThreads(events.map(toStoredEvent));

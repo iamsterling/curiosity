@@ -10,6 +10,7 @@ export interface PluginDecisionContext {
   readonly enabledAgentIds: ReadonlySet<string>;
   readonly enabledPrimaryAgentIds: ReadonlySet<string>;
   readonly events: readonly StoredEvent[];
+  readonly grantedCapabilities: ReadonlySet<string>;
 }
 
 export interface PluginReactionContext {
@@ -156,6 +157,8 @@ export interface PromptCommandContribution {
   readonly id: `${string}.prompt-commands.${string}`;
   readonly instructions: string;
   readonly name: string;
+  readonly requiredAnyCapabilities: readonly (readonly string[])[];
+  readonly requiredCapabilities: readonly string[];
   readonly schemaVersion: 1;
   readonly skillName: string | null;
   readonly status: "active" | "compatibility-deprecated";

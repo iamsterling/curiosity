@@ -90,7 +90,7 @@ const parseInput = (
     typeof correlation.turnId !== "string" ||
     !delegationCallIds ||
     delegationCallIds.length < 1 ||
-    delegationCallIds.length > 2 ||
+    delegationCallIds.length > 4 ||
     !delegationCallIds.includes(correlation.toolCallId)
   )
     throw new Error("DELEGATION_ACTION_INPUT_INVALID");
@@ -250,13 +250,9 @@ export class ChildScheduler {
       return yield* this.deny(action, correlation, "CHILD_DEPTH_EXCEEDED");
     if (
       correlation.delegationCallIds.length >
-      this.rolePolicy.maximumConcurrentChildren
+      this.rolePolicy.maximumChildrenPerTurn
     )
-      return yield* this.deny(
-        action,
-        correlation,
-        "CHILD_CONCURRENCY_EXCEEDED",
-      );
+      return yield* this.deny(action, correlation, "CHILD_COUNT_EXCEEDED");
     if (request.task.contextRefs.length > 0)
       return yield* this.deny(
         action,
@@ -436,10 +432,14 @@ export class ChildScheduler {
         ),
       catch: (cause) => {
         const message = cause instanceof Error ? cause.message : "";
-        const errorCode = /^CHILD_SESSION_[A-Z_]+$/u.test(message)
-          ? message
-          : "CHILD_ALLOCATION_FAILED";
-        return this.deny(action, correlation, errorCode);
+        if (/^CHILD_SESSION_[A-Z_]+$/u.test(message))
+          return this.deny(action, correlation, message);
+        return new ActionExecutionFailure({
+          actionId: action.actionId,
+          actionType: action.actionType,
+          message: "CHILD_ALLOCATION_INTERRUPTED",
+          modelId: "",
+        });
       },
     });
   });

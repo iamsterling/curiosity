@@ -4,7 +4,12 @@ export const TUI_PROTOCOL_FRAME_LIMIT = 1 << 20;
 export interface TuiCapabilitySnapshot {
   readonly id: string;
   readonly reason: string;
-  readonly state: "available" | "unavailable";
+  readonly state:
+    | "catalogued"
+    | "scaffolded"
+    | "available"
+    | "qualified"
+    | "unavailable";
 }
 
 export interface TuiCatalogSnapshot {
@@ -25,6 +30,7 @@ export interface TuiHostSnapshot {
   readonly catalog: TuiCatalogSnapshot;
   readonly effort: string;
   readonly error: string;
+  readonly inspectorText: string;
   readonly messages: readonly {
     readonly role: "assistant" | "user";
     readonly sequence: number;

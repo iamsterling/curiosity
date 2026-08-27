@@ -4,6 +4,7 @@ import { generateResearchReceipt } from "../src/research/receipt.js";
 
 const sourceId = `source:${"a".repeat(64)}`;
 const sourceEvent = (overrides: Record<string, unknown> = {}): StoredEvent => ({
+  aggregateVersion: 1,
   actorId: "curiosity-kernel",
   body: {
     callId: "call-001",
@@ -18,12 +19,21 @@ const sourceEvent = (overrides: Record<string, unknown> = {}): StoredEvent => ({
     turnId: "turn-001",
     ...overrides,
   },
+  catalogDigest: "c".repeat(64),
+  causationId: "command-001",
+  childExecutionId: "turn-001",
   commandId: "command-001",
+  contributionId: "curiosity.stock.search",
+  contributionVersion: "1",
+  correlationId: "turn-001",
   eventHash: "event-hash",
   eventId: "event-001",
+  eventSchemaVersion: 1,
   occurredAt: "2026-08-26T15:00:00.000Z",
+  parentExecutionId: "turn-001",
   pluginId: "curiosity.stock.search",
   previousHash: "previous-hash",
+  rootExecutionId: "turn-001",
   sequence: 1,
   streamId: sourceId,
   type: "source.captured",

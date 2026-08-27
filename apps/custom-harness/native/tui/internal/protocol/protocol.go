@@ -70,6 +70,7 @@ type Snapshot struct {
 	Catalog          Catalog      `json:"catalog"`
 	Effort           string       `json:"effort"`
 	Error            string       `json:"error"`
+	InspectorText    string       `json:"inspectorText"`
 	Messages         []Message    `json:"messages"`
 	ModelID          string       `json:"modelId"`
 	Profile          string       `json:"profile"`

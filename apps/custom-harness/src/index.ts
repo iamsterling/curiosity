@@ -7,7 +7,7 @@ export type {
 } from "./domain/command.js";
 export type { CommandAcknowledgement } from "./domain/event.js";
 export type {
-  CapabilityAvailability,
+  CapabilityMaturity,
   CapabilityStatusEntry,
   CapabilityStatusReport,
 } from "./domain/capability-status.js";

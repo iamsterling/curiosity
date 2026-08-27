@@ -25,6 +25,8 @@ const promptCommandKeys = [
   "id",
   "instructions",
   "name",
+  "requiredAnyCapabilities",
+  "requiredCapabilities",
   "schemaVersion",
   "skillName",
   "status",
@@ -123,6 +125,26 @@ export const validatePromptCommand = (
     throw new Error(`PLUGIN_PROMPT_COMMAND_SKILL_INVALID:${id}`);
   if (command.agentId !== null && typeof command.agentId !== "string")
     throw new Error(`PLUGIN_PROMPT_COMMAND_AGENT_INVALID:${id}`);
+  if (!Array.isArray(command.requiredAnyCapabilities))
+    throw new Error(`PLUGIN_PROMPT_COMMAND_ANY_CAPABILITIES_INVALID:${id}`);
+  const requiredAnyCapabilities = command.requiredAnyCapabilities.map(
+    (group, index) => {
+      const validated = uniqueStringArray(
+        group,
+        `PLUGIN_PROMPT_COMMAND_ANY_CAPABILITIES_INVALID:${id}:${index}`,
+      );
+      if (validated.length < 2)
+        throw new Error(
+          `PLUGIN_PROMPT_COMMAND_ANY_CAPABILITIES_INVALID:${id}:${index}`,
+        );
+      return validated;
+    },
+  );
+  if (
+    new Set(requiredAnyCapabilities.map((group) => canonicalJson(group))).size !==
+    requiredAnyCapabilities.length
+  )
+    throw new Error(`PLUGIN_PROMPT_COMMAND_ANY_CAPABILITIES_INVALID:${id}`);
   return {
     agentId:
       command.agentId === null
@@ -141,6 +163,11 @@ export const validatePromptCommand = (
       `PLUGIN_PROMPT_COMMAND_INSTRUCTIONS_INVALID:${id}`,
     ),
     name: name(command.name, `PLUGIN_PROMPT_COMMAND_NAME_INVALID:${id}`),
+    requiredAnyCapabilities,
+    requiredCapabilities: uniqueStringArray(
+      command.requiredCapabilities,
+      `PLUGIN_PROMPT_COMMAND_CAPABILITIES_INVALID:${id}`,
+    ),
     schemaVersion: 1,
     skillName:
       command.skillName === null

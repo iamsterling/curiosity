@@ -15,6 +15,7 @@ export interface RolePolicyConfig {
   readonly defaultPrimaryRole: PrimaryRoleId;
   readonly enabledPrimaryRoles: readonly PrimaryRoleId[];
   readonly enabledSubagentRoles: readonly SubagentRoleId[];
+  readonly maximumChildrenPerTurn: 2 | 3 | 4;
   readonly maximumConcurrentChildren: 1 | 2;
   readonly maximumDelegationDepth: 0 | 1;
   readonly schemaVersion: 1;
@@ -24,6 +25,7 @@ export const defaultRolePolicy: RolePolicyConfig = Object.freeze({
   defaultPrimaryRole: "generalist",
   enabledPrimaryRoles: Object.freeze([...primaryRoleIds]),
   enabledSubagentRoles: Object.freeze([...subagentRoleIds]),
+  maximumChildrenPerTurn: 2,
   maximumConcurrentChildren: 2,
   maximumDelegationDepth: 1,
   schemaVersion: 1,
@@ -41,6 +43,7 @@ export const validateRolePolicy = (policy: RolePolicyConfig): void => {
         "defaultPrimaryRole",
         "enabledPrimaryRoles",
         "enabledSubagentRoles",
+        "maximumChildrenPerTurn",
         "maximumConcurrentChildren",
         "maximumDelegationDepth",
         "schemaVersion",
@@ -62,6 +65,8 @@ export const validateRolePolicy = (policy: RolePolicyConfig): void => {
     policy.enabledSubagentRoles.some(
       (role) => !subagentRoleIds.includes(role),
     ) ||
+    ![2, 3, 4].includes(policy.maximumChildrenPerTurn) ||
+    policy.maximumConcurrentChildren > policy.maximumChildrenPerTurn ||
     ![1, 2].includes(policy.maximumConcurrentChildren) ||
     ![0, 1].includes(policy.maximumDelegationDepth)
   )

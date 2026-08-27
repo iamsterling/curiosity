@@ -14,14 +14,24 @@ const storedEvent = (
   type: string,
   eventId = `event-${sequence}`,
 ): StoredEvent => ({
+  aggregateVersion: sequence,
   actorId: "actor",
   body: { sequence },
+  catalogDigest: "c".repeat(64),
+  causationId: `command-${sequence}`,
+  childExecutionId: "stream",
   commandId: `command-${sequence}`,
+  contributionId: "curiosity.test.source",
+  contributionVersion: "1",
+  correlationId: "stream",
   eventHash: `${sequence}`.padStart(64, "a"),
   eventId,
+  eventSchemaVersion: 1,
   occurredAt: "2026-08-25T00:00:00.000Z",
+  parentExecutionId: "stream",
   pluginId: "curiosity.test.source",
   previousHash: `${sequence - 1}`.padStart(64, "a"),
+  rootExecutionId: "stream",
   sequence,
   streamId: "stream",
   type,
@@ -105,13 +115,31 @@ const assemble = (
       actionType: "provider.generate",
       agentId: "test-agent",
       correlation: { kind: "test" },
-      grantedCapabilities: new Set(),
+      grantedCapabilities: new Set(["provider.generate"]),
       messages: [{ content: "question", role: "user" }],
       sourceEventId,
     }),
   );
 
 describe("prompt assembly", () => {
+  test("reports every unavailable requested capability with a stable kernel code", async () => {
+    const events = [storedEvent(1, "source.event", "source")];
+    const result = await Effect.runPromise(
+      new PromptAssembler(new StaticPluginCatalog([agentPlugin()]), () => events)
+        .assemble({
+          actionType: "provider.generate",
+          agentId: "test-agent",
+          correlation: { kind: "test" },
+          grantedCapabilities: new Set(),
+          messages: [{ content: "question", role: "user" }],
+          sourceEventId: "source",
+        }),
+    );
+    expect(result.messages[1]?.content).toContain(
+      "CURIOSITY_CAPABILITY_UNAVAILABLE:provider.generate",
+    );
+  });
+
   test("bounds context by source revision, event selector, and count", async () => {
     const seen: StoredEvent[][] = [];
     const context = contribution("bounded", {

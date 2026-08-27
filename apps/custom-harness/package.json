@@ -28,10 +28,11 @@
     "check-types": "tsc --noEmit",
     "install:experimental-binary": "bun run build:experimental-binary && bun tools/install-experimental-binary.mjs",
     "lint": "test -z \"$(gofmt -l native/tui)\" && go -C native/tui mod verify && go -C native/tui vet ./... && cargo fmt --manifest-path native/supervisor/Cargo.toml --check && cargo clippy --manifest-path native/supervisor/Cargo.toml --locked --all-targets -- -D warnings && node tools/verify-architecture.mjs",
+    "parity:check": "bun tools/verify-parity-qualification.ts",
     "test": "bun run build:supervisor && cargo test --manifest-path native/supervisor/Cargo.toml --locked && go -C native/tui test ./... && bun test tests/*.test.ts",
     "test:experimental-binary": "bun run build:experimental-binary && bun test tests/darwin/binary-distribution.test.ts",
     "tui": "bun run build:supervisor && bun run build:tui && bun src/tui.ts",
-    "verify": "bun run check-types && bun run lint && bun run build && bun run test"
+    "verify": "bun run parity:check && bun run check-types && bun run lint && bun run build && bun run test"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "3.0.113",

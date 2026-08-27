@@ -28,11 +28,11 @@ export const readThreadProjections = (
         "SELECT value FROM harness_metadata WHERE key = ?",
       )
       .get("schema_version");
-    if (metadata?.value !== "1") throw unavailable();
+    if (metadata?.value !== "15") throw unavailable();
 
     const events = database
       .query<EventRow, []>(
-        "SELECT global_sequence,event_id,command_id,actor_id,plugin_id,event_type,stream_id,body_json,occurred_at,previous_hash,event_hash FROM events ORDER BY global_sequence",
+        "SELECT * FROM events ORDER BY global_sequence",
       )
       .all()
       .map(toStoredEvent);

@@ -22,8 +22,11 @@ func ValidateSnapshot(snapshot Snapshot) error {
 	if len(snapshot.Capabilities) > 256 || len(snapshot.Messages) > 512 {
 		return errors.New("PROTOCOL_SNAPSHOT_BOUNDS_INVALID")
 	}
+	if len(snapshot.InspectorText) > 128*1024 {
+		return errors.New("PROTOCOL_SNAPSHOT_INSPECTOR_INVALID")
+	}
 	for _, capability := range snapshot.Capabilities {
-		if capability.ID == "" || (capability.State != "available" && capability.State != "unavailable") {
+		if capability.ID == "" || (capability.State != "catalogued" && capability.State != "scaffolded" && capability.State != "available" && capability.State != "qualified" && capability.State != "unavailable") {
 			return errors.New("PROTOCOL_SNAPSHOT_CAPABILITY_INVALID")
 		}
 	}

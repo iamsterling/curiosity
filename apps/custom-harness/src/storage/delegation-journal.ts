@@ -159,45 +159,101 @@ export class DelegationJournal {
   childRuns(rootExecutionId?: string): readonly ChildRunProjection[] {
     const rows = this.database
       .query<
-        {
-          agent_id: string;
-          agent_run_id: string;
-          agent_session_id: string;
-          budget_json: string;
-          child_execution_id: string;
-          delegation_group_id: string;
-          ordinal: number;
-          parent_execution_id: string;
-          resource_claims_json: string;
-          root_execution_id: string;
-          session_revision: number;
-          status: ChildRunProjection["status"];
-          terminal_result_json: string | null;
-        },
-        [string | null, string | null]
+        { body_json: string; event_type: string },
+        []
       >(
-        "SELECT agent_sessions.agent_id,agent_runs.agent_run_id,agent_runs.agent_session_id,agent_runs.budget_json,agent_runs.child_execution_id,agent_runs.delegation_group_id,agent_runs.ordinal,agent_sessions.parent_execution_id,agent_runs.resource_claims_json,agent_sessions.root_execution_id,COALESCE(json_extract(agent_runs.task_json, '$.continuation.expectedRevision'), 0) AS session_revision,agent_runs.status,agent_runs.terminal_result_json FROM agent_runs JOIN agent_sessions ON agent_sessions.agent_session_id = agent_runs.agent_session_id WHERE (? IS NULL OR agent_sessions.root_execution_id = ?) ORDER BY agent_sessions.root_execution_id,agent_runs.delegation_group_id,agent_runs.ordinal,agent_runs.agent_run_id",
+        "SELECT event_type,body_json FROM events WHERE event_type IN ('child.allocated','child.run-started','child.completed','child.failed','child.cancelled') ORDER BY global_sequence",
       )
-      .all(rootExecutionId ?? null, rootExecutionId ?? null);
-    return rows.map((row) => ({
-      agentId: row.agent_id,
-      agentRunId: row.agent_run_id,
-      agentSessionId: row.agent_session_id,
-      budget: JSON.parse(row.budget_json) as ChildRunProjection["budget"],
-      childExecutionId: row.child_execution_id,
-      delegationGroupId: row.delegation_group_id,
-      ordinal: row.ordinal,
-      parentExecutionId: row.parent_execution_id,
-      resourceClaims: JSON.parse(
-        row.resource_claims_json,
-      ) as ChildRunProjection["resourceClaims"],
-      rootExecutionId: row.root_execution_id,
-      sessionRevision: row.session_revision,
-      status: row.status,
-      ...(row.terminal_result_json
-        ? { terminalResult: JSON.parse(row.terminal_result_json) as unknown }
-        : {}),
-    }));
+      .all();
+    const runs = new Map<string, ChildRunProjection>();
+    for (const row of rows) {
+      const body = record(JSON.parse(row.body_json));
+      if (!body || body.schemaVersion !== 1)
+        throw new Error("CHILD_PROJECTION_SCHEMA_UNKNOWN");
+      if (row.event_type === "child.allocated") {
+        const budget = record(body.budgetSnapshot);
+        const resourceClaims = record(body.resourceClaims);
+        if (
+          typeof body.agentId !== "string" ||
+          typeof body.agentRunId !== "string" ||
+          typeof body.agentSessionId !== "string" ||
+          typeof body.childExecutionId !== "string" ||
+          typeof body.delegationGroupId !== "string" ||
+          typeof body.ordinal !== "number" ||
+          typeof body.parentExecutionId !== "string" ||
+          typeof body.rootExecutionId !== "string" ||
+          typeof body.sessionRevision !== "number" ||
+          typeof budget?.maximumProviderCalls !== "number" ||
+          typeof budget.maximumToolCalls !== "number" ||
+          typeof resourceClaims?.mode !== "string" ||
+          !Array.isArray(resourceClaims.resources) ||
+          !resourceClaims.resources.every(
+            (resource) => typeof resource === "string",
+          ) ||
+          typeof resourceClaims.scopeState !== "string"
+        )
+          throw new Error("CHILD_PROJECTION_EVENT_INVALID");
+        runs.set(body.agentRunId, {
+          agentId: body.agentId,
+          agentRunId: body.agentRunId,
+          agentSessionId: body.agentSessionId,
+          budget: {
+            maximumProviderCalls: budget.maximumProviderCalls,
+            maximumToolCalls: budget.maximumToolCalls,
+          },
+          childExecutionId: body.childExecutionId,
+          delegationGroupId: body.delegationGroupId,
+          ordinal: body.ordinal,
+          parentExecutionId: body.parentExecutionId,
+          resourceClaims: {
+            mode: resourceClaims.mode,
+            resources: resourceClaims.resources as string[],
+            scopeState: resourceClaims.scopeState,
+          },
+          rootExecutionId: body.rootExecutionId,
+          sessionRevision: body.sessionRevision,
+          status: "allocated",
+        });
+        continue;
+      }
+      if (typeof body.agentRunId !== "string")
+        throw new Error("CHILD_PROJECTION_EVENT_INVALID");
+      const current = runs.get(body.agentRunId);
+      if (!current) throw new Error("CHILD_PROJECTION_ALLOCATION_MISSING");
+      if (row.event_type === "child.run-started") {
+        runs.set(body.agentRunId, { ...current, status: "running" });
+        continue;
+      }
+      if (
+        ![
+          "completed",
+          "failed",
+          "cancelled",
+          "delivery-unknown",
+        ].includes(String(body.status))
+      )
+        throw new Error("CHILD_PROJECTION_EVENT_INVALID");
+      const { delegationGroupId: _group, ordinal: _ordinal, ...terminalResult } =
+        body;
+      void _group;
+      void _ordinal;
+      runs.set(body.agentRunId, {
+        ...current,
+        status: body.status as ChildRunProjection["status"],
+        terminalResult,
+      });
+    }
+    return [...runs.values()]
+      .filter(
+        (run) => !rootExecutionId || run.rootExecutionId === rootExecutionId,
+      )
+      .sort(
+        (left, right) =>
+          left.rootExecutionId.localeCompare(right.rootExecutionId) ||
+          left.delegationGroupId.localeCompare(right.delegationGroupId) ||
+          left.ordinal - right.ordinal ||
+          left.agentRunId.localeCompare(right.agentRunId),
+      );
   }
 
   accounting(rootExecutionId: string): RootExecutionAccounting {

@@ -1,10 +1,14 @@
-export type CapabilityAvailability = "available" | "unavailable";
+export type CapabilityMaturity =
+  | "catalogued"
+  | "scaffolded"
+  | "available"
+  | "qualified";
 
 export interface CapabilityStatusEntry {
   readonly id: string;
   readonly qualifiedForProduction: false;
   readonly reason: string;
-  readonly state: CapabilityAvailability;
+  readonly state: CapabilityMaturity;
 }
 
 export interface CapabilityStatusReport {

@@ -334,6 +334,19 @@ describe("attempt, gate, cancellation, and fencing governance", () => {
         usageState: "UNKNOWN",
       }),
     ).toBe("stale");
+    const accounting = journal.delegations.accounting("execution-fenced");
+    expect(accounting).toMatchObject({
+      totals: {
+        childCalls: 0,
+        compactionCalls: 0,
+        providerCalls: 2,
+        toolCalls: 0,
+        unknownUsageCalls: 2,
+      },
+    });
+    expect(
+      accounting.physicalCalls.map(({ generation }) => generation).sort(),
+    ).toEqual([1, 2]);
     journal.close();
 
     const database = new Database(databasePath, { strict: true });

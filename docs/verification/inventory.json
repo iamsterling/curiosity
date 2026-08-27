@@ -117,10 +117,11 @@
         "check-types": "tsc --noEmit",
         "install:experimental-binary": "bun run build:experimental-binary && bun tools/install-experimental-binary.mjs",
         "lint": "test -z \"$(gofmt -l native/tui)\" && go -C native/tui mod verify && go -C native/tui vet ./... && cargo fmt --manifest-path native/supervisor/Cargo.toml --check && cargo clippy --manifest-path native/supervisor/Cargo.toml --locked --all-targets -- -D warnings && node tools/verify-architecture.mjs",
+        "parity:check": "bun tools/verify-parity-qualification.ts",
         "test": "bun run build:supervisor && cargo test --manifest-path native/supervisor/Cargo.toml --locked && go -C native/tui test ./... && bun test tests/*.test.ts",
         "test:experimental-binary": "bun run build:experimental-binary && bun test tests/darwin/binary-distribution.test.ts",
         "tui": "bun run build:supervisor && bun run build:tui && bun src/tui.ts",
-        "verify": "bun run check-types && bun run lint && bun run build && bun run test"
+        "verify": "bun run parity:check && bun run check-types && bun run lint && bun run build && bun run test"
       },
       "exports": {
         ".": {
@@ -1785,14 +1786,21 @@
         "apps/custom-harness/tests/bounded-http-adapter.test.ts",
         "apps/custom-harness/tests/chat.test.ts",
         "apps/custom-harness/tests/child-delegation.test.ts",
+        "apps/custom-harness/tests/child-failure-matrix.test.ts",
+        "apps/custom-harness/tests/child-resource-policy.test.ts",
+        "apps/custom-harness/tests/child-restart-boundaries.test.ts",
+        "apps/custom-harness/tests/client-lifecycle.test.ts",
         "apps/custom-harness/tests/compaction.test.ts",
         "apps/custom-harness/tests/content-tools.test.ts",
+        "apps/custom-harness/tests/context-replay.test.ts",
         "apps/custom-harness/tests/git-read.test.ts",
+        "apps/custom-harness/tests/host-independence.test.ts",
         "apps/custom-harness/tests/import-safety.test.ts",
         "apps/custom-harness/tests/intelligence-projections.test.ts",
         "apps/custom-harness/tests/opencode2-parity.test.ts",
         "apps/custom-harness/tests/plugin-catalog.test.ts",
         "apps/custom-harness/tests/process-execution.test.ts",
+        "apps/custom-harness/tests/projection-rebuild-matrix.test.ts",
         "apps/custom-harness/tests/prompt-assembler.test.ts",
         "apps/custom-harness/tests/prompt-context.test.ts",
         "apps/custom-harness/tests/provider-routing.test.ts",
@@ -1800,13 +1808,15 @@
         "apps/custom-harness/tests/question-lifecycle.test.ts",
         "apps/custom-harness/tests/research-receipt.test.ts",
         "apps/custom-harness/tests/research-run.test.ts",
+        "apps/custom-harness/tests/role-sink-policy.test.ts",
         "apps/custom-harness/tests/runtime-research-adapter.test.ts",
         "apps/custom-harness/tests/schema-migration.test.ts",
         "apps/custom-harness/tests/supervisor.test.ts",
         "apps/custom-harness/tests/tui-bubbletea.test.ts",
         "apps/custom-harness/tests/tui.test.ts",
         "apps/custom-harness/tests/workflow-orchestration.test.ts",
-        "apps/custom-harness/tests/workspace-mutation.test.ts"
+        "apps/custom-harness/tests/workspace-mutation.test.ts",
+        "apps/custom-harness/tests/workspace-read-boundaries.test.ts"
       ],
       "reason": "Required independent harness authority, durability, architecture, mandatory-supervisor verification, and non-authoritative Bubble Tea protocol verification."
     },
@@ -1914,6 +1924,50 @@
       ]
     },
     {
+      "path": "apps/custom-harness/tests/child-failure-matrix.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/custom-harness/tests/child-resource-policy.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/custom-harness/tests/child-restart-boundaries.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/custom-harness/tests/client-lifecycle.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
       "path": "apps/custom-harness/tests/compaction.test.ts",
       "owner": "harness",
       "profiles": [
@@ -1936,6 +1990,17 @@
       ]
     },
     {
+      "path": "apps/custom-harness/tests/context-replay.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
       "path": "apps/custom-harness/tests/darwin/binary-distribution.test.ts",
       "owner": "harness",
       "profiles": [
@@ -1947,6 +2012,17 @@
     },
     {
       "path": "apps/custom-harness/tests/git-read.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/custom-harness/tests/host-independence.test.ts",
       "owner": "harness",
       "profiles": [
         "custom-harness"
@@ -2002,6 +2078,17 @@
     },
     {
       "path": "apps/custom-harness/tests/process-execution.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/custom-harness/tests/projection-rebuild-matrix.test.ts",
       "owner": "harness",
       "profiles": [
         "custom-harness"
@@ -2089,6 +2176,17 @@
       ]
     },
     {
+      "path": "apps/custom-harness/tests/role-sink-policy.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
       "path": "apps/custom-harness/tests/runtime-research-adapter.test.ts",
       "owner": "harness",
       "profiles": [
@@ -2156,6 +2254,17 @@
     },
     {
       "path": "apps/custom-harness/tests/workspace-mutation.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/custom-harness/tests/workspace-read-boundaries.test.ts",
       "owner": "harness",
       "profiles": [
         "custom-harness"

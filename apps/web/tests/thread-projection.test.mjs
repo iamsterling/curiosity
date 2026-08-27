@@ -20,7 +20,7 @@ const createProjectionFixture = (databasePath) => {
   const database = new DatabaseSync(databasePath);
   database.exec(`
     CREATE TABLE harness_metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL) STRICT;
-    INSERT INTO harness_metadata(key, value) VALUES ('schema_version', '1');
+    INSERT INTO harness_metadata(key, value) VALUES ('schema_version', '15');
     CREATE TABLE events (
       global_sequence INTEGER PRIMARY KEY,
       event_id TEXT NOT NULL UNIQUE,
@@ -32,11 +32,21 @@ const createProjectionFixture = (databasePath) => {
       body_json TEXT NOT NULL,
       occurred_at TEXT NOT NULL,
       previous_hash TEXT NOT NULL,
-      event_hash TEXT NOT NULL UNIQUE
+      event_hash TEXT NOT NULL UNIQUE,
+      event_schema_version INTEGER NOT NULL,
+      aggregate_version INTEGER NOT NULL,
+      causation_id TEXT NOT NULL,
+      correlation_id TEXT NOT NULL,
+      root_execution_id TEXT NOT NULL,
+      parent_execution_id TEXT NOT NULL,
+      child_execution_id TEXT NOT NULL,
+      contribution_id TEXT NOT NULL,
+      contribution_version TEXT NOT NULL,
+      catalog_digest TEXT NOT NULL
     ) STRICT;
   `);
   database
-    .prepare("INSERT INTO events VALUES (?,?,?,?,?,?,?,?,?,?,?)")
+    .prepare("INSERT INTO events VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
     .run(
       1,
       "event-001",
@@ -49,6 +59,16 @@ const createProjectionFixture = (databasePath) => {
       "2026-08-25T00:00:00.000Z",
       "0".repeat(64),
       "1".repeat(64),
+      1,
+      1,
+      "command-001",
+      "thread-001",
+      "thread-001",
+      "thread-001",
+      "thread-001",
+      "curiosity.stock.thread",
+      "1",
+      "2".repeat(64),
     );
   database.close();
 };
@@ -90,6 +110,22 @@ test("web reports an unconfigured view without fabricating data", async () => {
 
   assert.deepEqual(await loadThreadProjectionView(), {
     status: "unconfigured",
+    threads: [],
+  });
+});
+
+test("web fails closed for an unsupported outer event schema", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "curiosity-web-projection-"));
+  roots.push(root);
+  const databasePath = path.join(root, "events.sqlite");
+  createProjectionFixture(databasePath);
+  const database = new DatabaseSync(databasePath);
+  database.exec("UPDATE events SET event_schema_version = 99");
+  database.close();
+  process.env.CURIOSITY_DATABASE_PATH = databasePath;
+
+  assert.deepEqual(await loadThreadProjectionView(), {
+    status: "unavailable",
     threads: [],
   });
 });

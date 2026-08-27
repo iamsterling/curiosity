@@ -90,6 +90,12 @@ describe("finite workflows and orchestration", () => {
       "workflow.advanced",
       "workflow.completed",
     ]);
+    await expect(
+      submit(harness, "execution.cancel", {
+        executionId: "workflow-goal-001",
+        schemaVersion: 1,
+      }),
+    ).rejects.toMatchObject({ message: "EXECUTION_NOT_CANCELLABLE" });
     await harness.dispose();
 
     const database = new Database(databasePath, { strict: true });
@@ -100,6 +106,20 @@ describe("finite workflows and orchestration", () => {
         )
         .get("workflow-goal-001"),
     ).toEqual({ status: "completed", step_count: 2 });
+    expect(
+      database
+        .query<{ status: string }, [string]>(
+          "SELECT status FROM executions WHERE execution_id = ?",
+        )
+        .get("workflow-goal-001")?.status,
+    ).toBe("completed");
+    expect(
+      database
+        .query<{ count: number }, []>(
+          "SELECT count(*) AS count FROM events WHERE event_type = 'execution.cancelled'",
+        )
+        .get()?.count,
+    ).toBe(0);
     expect(
       database
         .query<{ plugin_id: string }, []>(
@@ -193,6 +213,59 @@ describe("finite workflows and orchestration", () => {
         status: "completed",
       },
     ]);
+    const childLineage = database
+      .query<
+        {
+          causation_id: string;
+          child_execution_id: string;
+          correlation_id: string;
+          parent_execution_id: string;
+          root_execution_id: string;
+        },
+        []
+      >(
+        "SELECT causation_id,child_execution_id,correlation_id,parent_execution_id,root_execution_id FROM events WHERE event_type = 'workflow.child-created' AND json_extract(body_json, '$.parentInstanceId') = 'orchestration-review-001'",
+      )
+      .get();
+    expect(childLineage).toMatchObject({
+      causation_id: expect.stringMatching(/^[a-f0-9]{64}$/u),
+      correlation_id: "orchestration-review-001",
+      parent_execution_id: "orchestration-review-001",
+      root_execution_id: "orchestration-review-001",
+    });
+    expect(childLineage?.child_execution_id).not.toBe(
+      "orchestration-review-001",
+    );
+    expect(
+      database
+        .query<
+          {
+            child_execution_id: string;
+            correlation_id: string;
+            parent_execution_id: string;
+            root_execution_id: string;
+          },
+          [string]
+        >(
+          "SELECT child_execution_id,correlation_id,parent_execution_id,root_execution_id FROM events WHERE event_type = 'workflow.completed' AND child_execution_id = ?",
+        )
+        .get(childLineage!.child_execution_id),
+    ).toEqual({
+      child_execution_id: childLineage!.child_execution_id,
+      correlation_id: "orchestration-review-001",
+      parent_execution_id: "orchestration-review-001",
+      root_execution_id: "orchestration-review-001",
+    });
+    expect(
+      database
+        .query<{ count: number }, [string, string]>(
+          "SELECT count(*) AS count FROM execution_ancestry WHERE ancestor_execution_id = ? AND descendant_execution_id = ? AND depth = 1",
+        )
+        .get(
+          "orchestration-review-001",
+          childLineage!.child_execution_id,
+        )?.count,
+    ).toBe(1);
     expect(
       database
         .query<

@@ -5,13 +5,23 @@ export interface ProposedEvent {
 }
 
 export interface StoredEvent extends ProposedEvent {
+  readonly aggregateVersion: number;
   readonly sequence: number;
   readonly eventId: string;
+  readonly eventSchemaVersion: number;
   readonly commandId: string;
   readonly actorId: string;
+  readonly catalogDigest: string;
+  readonly causationId: string;
+  readonly childExecutionId: string;
+  readonly contributionId: string;
+  readonly contributionVersion: string;
+  readonly correlationId: string;
   readonly pluginId: string;
   readonly occurredAt: string;
+  readonly parentExecutionId: string;
   readonly previousHash: string;
+  readonly rootExecutionId: string;
   readonly eventHash: string;
 }
 

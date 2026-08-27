@@ -239,9 +239,10 @@ describe("role-specific provider routing", () => {
     });
     const rolePolicy = {
       defaultPrimaryRole: "orchestrator",
-      enabledPrimaryRoles: ["orchestrator"],
-      enabledSubagentRoles: ["reviewer"],
-      maximumConcurrentChildren: 1,
+        enabledPrimaryRoles: ["orchestrator"],
+        enabledSubagentRoles: ["reviewer"],
+        maximumChildrenPerTurn: 2,
+        maximumConcurrentChildren: 1,
       maximumDelegationDepth: 1,
       schemaVersion: 1,
     } as const;

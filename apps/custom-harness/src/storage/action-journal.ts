@@ -154,6 +154,20 @@ export class ActionJournal {
           .get(input.parentActionId, input.parentExecutionId);
         if (!parent || parent.status !== "proposed")
           throw new Error("COMPACTION_PARENT_NOT_PROPOSED");
+        const source = this.database
+          .query<
+            {
+              child_execution_id: string;
+              correlation_id: string;
+              parent_execution_id: string;
+              root_execution_id: string;
+            },
+            [string]
+          >(
+            "SELECT child_execution_id,correlation_id,parent_execution_id,root_execution_id FROM events WHERE event_id = ?",
+          )
+          .get(parent.source_event_id);
+        if (!source) throw new Error("COMPACTION_SOURCE_EVENT_MISSING");
         const event = {
           body: {
             actionId: input.actionId,
@@ -165,17 +179,6 @@ export class ActionJournal {
           streamId: input.executionId,
           type: "compaction.requested",
         };
-        const result = admitInTransaction(this.database, {
-          acceptedAt: input.acceptedAt,
-          actorId: "curiosity-kernel",
-          commandDigest: input.inputDigest,
-          commandId: `compaction:${input.actionId}:requested`,
-          events: [event],
-          nonce: `compaction:${input.actionId}:requested`,
-          pluginId: "curiosity.kernel.compaction",
-        });
-        if (result._tag === "Conflict")
-          throw new Error("COMPACTION_REQUEST_CONFLICT");
         this.database.run(
           "INSERT INTO executions(execution_id,version,generation,status,cancellation_requested,updated_at) VALUES (?,0,0,'active',0,?)",
           [input.executionId, input.acceptedAt],
@@ -209,6 +212,26 @@ export class ActionJournal {
             input.acceptedAt,
           ],
         );
+        const result = admitInTransaction(this.database, {
+          acceptedAt: input.acceptedAt,
+          actorId: "curiosity-kernel",
+          commandDigest: input.inputDigest,
+          commandId: `compaction:${input.actionId}:requested`,
+          contributionId: "curiosity.kernel.compaction",
+          contributionVersion: "1",
+          events: [event],
+          lineage: {
+            causationId: parent.source_event_id,
+            childExecutionId: input.executionId,
+            correlationId: source.correlation_id,
+            parentExecutionId: input.parentExecutionId,
+            rootExecutionId: source.root_execution_id,
+          },
+          nonce: `compaction:${input.actionId}:requested`,
+          pluginId: "curiosity.kernel.compaction",
+        });
+        if (result._tag === "Conflict")
+          throw new Error("COMPACTION_REQUEST_CONFLICT");
         return this.action(input.actionId)!;
       })
       .immediate();
@@ -244,6 +267,20 @@ export class ActionJournal {
         if (action?.status === "running") return;
         if (action?.status !== "proposed")
           throw new Error("QUESTION_ACTION_NOT_PROPOSED");
+        const source = this.database
+          .query<
+            {
+              correlation_id: string;
+              event_id: string;
+              parent_execution_id: string;
+              root_execution_id: string;
+            },
+            [string]
+          >(
+            "SELECT event_id,correlation_id,parent_execution_id,root_execution_id FROM events WHERE event_id = ?",
+          )
+          .get(input.action.sourceEventId);
+        if (!source) throw new Error("QUESTION_SOURCE_EVENT_MISSING");
         const event = {
           body: {
             actionId: input.action.actionId,
@@ -262,6 +299,17 @@ export class ActionJournal {
           actorId: "curiosity-kernel",
           commandDigest: input.questionId,
           commandId: `${input.questionId}:asked`,
+          eventContexts: [
+            {
+              causationId: input.action.sourceEventId,
+              childExecutionId: input.action.executionId,
+              contributionId: "curiosity.kernel.questions",
+              contributionVersion: "1",
+              correlationId: source.correlation_id,
+              parentExecutionId: source.parent_execution_id,
+              rootExecutionId: source.root_execution_id,
+            },
+          ],
           events: [event],
           nonce: `${input.questionId}:asked`,
           pluginId: "curiosity.kernel.questions",
@@ -330,11 +378,26 @@ export class ActionJournal {
         )
           throw new Error("QUESTION_ANSWER_INVALID");
         const action = this.database
-          .query<{ input_json: string }, [string]>(
-            "SELECT input_json FROM actions WHERE action_id = ? AND status = 'running'",
+          .query<{ input_json: string; reactor_id: string }, [string]>(
+            "SELECT input_json,reactor_id FROM actions WHERE action_id = ? AND status = 'running'",
           )
           .get(question.action_id);
         if (!action) throw new Error("QUESTION_ACTION_NOT_WAITING");
+        const asked = this.database
+          .query<
+            {
+              child_execution_id: string;
+              correlation_id: string;
+              event_id: string;
+              parent_execution_id: string;
+              root_execution_id: string;
+            },
+            [string]
+          >(
+            "SELECT event_id,correlation_id,root_execution_id,parent_execution_id,child_execution_id FROM events WHERE event_type = 'question.asked' AND stream_id = ? ORDER BY global_sequence DESC LIMIT 1",
+          )
+          .get(input.questionId);
+        if (!asked) throw new Error("QUESTION_ASK_EVENT_MISSING");
         const actionInput = JSON.parse(action.input_json) as Record<
           string,
           unknown
@@ -351,6 +414,26 @@ export class ActionJournal {
           .digest("hex");
         const result = admitInTransaction(this.database, {
           ...input,
+          eventContexts: [
+            ...input.events.map(() => ({
+              causationId: asked.event_id,
+              childExecutionId: asked.child_execution_id,
+              contributionId: input.contributionId ?? input.pluginId,
+              contributionVersion: input.contributionVersion ?? "1",
+              correlationId: asked.correlation_id,
+              parentExecutionId: asked.parent_execution_id,
+              rootExecutionId: asked.root_execution_id,
+            })),
+            {
+              causationId: asked.event_id,
+              childExecutionId: asked.child_execution_id,
+              contributionId: action.reactor_id,
+              contributionVersion: "1",
+              correlationId: asked.correlation_id,
+              parentExecutionId: asked.parent_execution_id,
+              rootExecutionId: asked.root_execution_id,
+            },
+          ],
           events: [
             ...input.events,
             {
@@ -419,6 +502,22 @@ export class ActionJournal {
       }));
   }
 
+  questionExecutionId(questionId: string): string | undefined {
+    return this.database
+      .query<{ execution_id: string }, [string]>(
+        "SELECT actions.execution_id FROM questions JOIN actions ON actions.action_id = questions.action_id WHERE questions.question_id = ?",
+      )
+      .get(questionId)?.execution_id;
+  }
+
+  gateExecutionId(gateId: string): string | undefined {
+    return this.database
+      .query<{ execution_id: string }, [string]>(
+        "SELECT actions.execution_id FROM gates JOIN actions ON actions.action_id = gates.action_id WHERE gates.gate_id = ?",
+      )
+      .get(gateId)?.execution_id;
+  }
+
   beginReaction(input: {
     readonly pluginId: string;
     readonly reactorId: string;
@@ -468,13 +567,56 @@ export class ActionJournal {
           )
           .get(input.sourceEventId, input.reactorId, input.reactorVersion);
         if (row?.status === "completed") return;
+        const source = this.database
+          .query<
+            {
+              child_execution_id: string;
+              correlation_id: string;
+              parent_execution_id: string;
+              root_execution_id: string;
+            },
+            [string]
+          >(
+            "SELECT child_execution_id,correlation_id,parent_execution_id,root_execution_id FROM events WHERE event_id = ?",
+          )
+          .get(input.sourceEventId);
+        if (!source) throw new Error("REACTION_SOURCE_EVENT_MISSING");
         if (row?.status !== "running") throw new Error("REACTION_NOT_CLAIMED");
         if (input.events.length > 0) {
+          const actions = new Map(
+            input.actions.map((action) => [action.actionId, action] as const),
+          );
           const result = admitInTransaction(this.database, {
             acceptedAt: input.acceptedAt,
             actorId: "curiosity-kernel",
             commandDigest: input.outputDigest,
             commandId: input.reactionId,
+            contributionId: input.reactorId,
+            contributionVersion: String(input.reactorVersion),
+            eventContexts: input.events.map((event) => {
+              const body =
+                event.body &&
+                typeof event.body === "object" &&
+                !Array.isArray(event.body)
+                  ? (event.body as Record<string, unknown>)
+                  : undefined;
+              const action =
+                typeof body?.actionId === "string"
+                  ? actions.get(body.actionId)
+                  : undefined;
+              return {
+                causationId: input.sourceEventId,
+                childExecutionId:
+                  action?.executionId ?? source.child_execution_id,
+                contributionId: input.reactorId,
+                contributionVersion: String(input.reactorVersion),
+                correlationId: source.correlation_id,
+                parentExecutionId: action
+                  ? source.child_execution_id
+                  : source.parent_execution_id,
+                rootExecutionId: source.root_execution_id,
+              };
+            }),
             events: input.events,
             nonce: input.reactionId,
             pluginId: input.pluginId,

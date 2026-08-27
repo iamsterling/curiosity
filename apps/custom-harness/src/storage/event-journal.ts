@@ -1,4 +1,5 @@
 import { Database } from "bun:sqlite";
+import { createHash } from "node:crypto";
 import type { StoredEvent } from "../domain/event.js";
 import { ActionJournal } from "./action-journal.js";
 import { AttemptJournal } from "./attempt-journal.js";
@@ -11,6 +12,7 @@ import { toStoredEvent, type EventRow } from "./event-record.js";
 import { eventSchema } from "./event-schema.js";
 import { WorkflowJournal } from "./workflow-journal.js";
 import { DelegationJournal } from "./delegation-journal.js";
+import { canonicalJson } from "../kernel/canonical-json.js";
 
 export type { AdmissionInput, AdmissionResult } from "./event-append.js";
 
@@ -39,6 +41,102 @@ const delegationRunSnapshotColumns = [
   ["resource_claims_json", "TEXT NOT NULL DEFAULT '{}'"],
   ["catalog_digest", "TEXT NOT NULL DEFAULT ''"],
 ] as const;
+const currentSchemaVersion = "15";
+const supportedSchemaVersions = new Set(
+  Array.from({ length: Number(currentSchemaVersion) }, (_, index) =>
+    String(index + 1),
+  ),
+);
+
+const migrateDelegationGroupCapacity = (database: Database): void => {
+  const definition = database
+    .query<{ sql: string | null }, [string]>(
+      "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?",
+    )
+    .get("delegation_groups")?.sql;
+  if (!definition || !/expected_children\s+BETWEEN\s+1\s+AND\s+2/iu.test(definition))
+    return;
+  database.exec(`
+    CREATE TABLE delegation_groups_v14 (
+      delegation_group_id TEXT PRIMARY KEY,
+      root_execution_id TEXT NOT NULL REFERENCES executions(execution_id),
+      parent_execution_id TEXT NOT NULL REFERENCES executions(execution_id),
+      parent_provider_action_id TEXT NOT NULL REFERENCES actions(action_id),
+      expected_children INTEGER NOT NULL CHECK(expected_children BETWEEN 1 AND 4),
+      status TEXT NOT NULL CHECK(status IN ('allocated', 'ready', 'delivered')),
+      result_digest TEXT,
+      allocated_at TEXT NOT NULL,
+      ready_at TEXT,
+      delivered_at TEXT
+    ) STRICT;
+    INSERT INTO delegation_groups_v14
+      SELECT * FROM delegation_groups;
+    DROP TABLE delegation_groups;
+    ALTER TABLE delegation_groups_v14 RENAME TO delegation_groups;
+  `);
+};
+
+const eventEnvelopeColumns = [
+  ["event_schema_version", "INTEGER NOT NULL DEFAULT 1"],
+  ["aggregate_version", "INTEGER NOT NULL DEFAULT 0"],
+  ["causation_id", "TEXT NOT NULL DEFAULT ''"],
+  ["correlation_id", "TEXT NOT NULL DEFAULT ''"],
+  ["root_execution_id", "TEXT NOT NULL DEFAULT ''"],
+  ["parent_execution_id", "TEXT NOT NULL DEFAULT ''"],
+  ["child_execution_id", "TEXT NOT NULL DEFAULT ''"],
+  ["contribution_id", "TEXT NOT NULL DEFAULT ''"],
+  ["contribution_version", "TEXT NOT NULL DEFAULT '1'"],
+  ["catalog_digest", "TEXT NOT NULL DEFAULT ''"],
+] as const;
+
+const migrateEventEnvelope = (database: Database, legacy: boolean): void => {
+  database.exec(`
+    DROP TRIGGER IF EXISTS events_no_update;
+    DROP TRIGGER IF EXISTS events_no_delete;
+  `);
+  const columns = new Set(
+    database
+      .query<{ name: string }, []>("PRAGMA table_info(events)")
+      .all()
+      .map(({ name }) => name),
+  );
+  for (const [name, definition] of eventEnvelopeColumns)
+    if (!columns.has(name))
+      database.exec(`ALTER TABLE events ADD COLUMN ${name} ${definition}`);
+  if (legacy)
+    database.run("UPDATE events SET event_schema_version = 0");
+  database.exec(`
+    UPDATE events
+    SET aggregate_version = (
+      SELECT count(*) FROM events AS earlier
+      WHERE earlier.stream_id = events.stream_id
+        AND earlier.global_sequence <= events.global_sequence
+    )
+    WHERE aggregate_version = 0;
+    UPDATE events
+    SET causation_id = command_id WHERE causation_id = '';
+    UPDATE events
+    SET correlation_id = stream_id WHERE correlation_id = '';
+    UPDATE events
+    SET root_execution_id = stream_id WHERE root_execution_id = '';
+    UPDATE events
+    SET parent_execution_id = root_execution_id WHERE parent_execution_id = '';
+    UPDATE events
+    SET child_execution_id = root_execution_id WHERE child_execution_id = '';
+    UPDATE events
+    SET contribution_id = plugin_id WHERE contribution_id = '';
+    UPDATE events
+    SET catalog_digest = 'legacy:catalog-unbound' WHERE catalog_digest = '';
+    CREATE UNIQUE INDEX IF NOT EXISTS events_aggregate_version_idx
+      ON events(stream_id, aggregate_version);
+    CREATE TRIGGER events_no_update BEFORE UPDATE ON events BEGIN
+      SELECT RAISE(ABORT, 'EVENT_LOG_IMMUTABLE');
+    END;
+    CREATE TRIGGER events_no_delete BEFORE DELETE ON events BEGIN
+      SELECT RAISE(ABORT, 'EVENT_LOG_IMMUTABLE');
+    END;
+  `);
+};
 
 const migrateSchema = (database: Database): void => {
   const metadata = database
@@ -46,8 +144,10 @@ const migrateSchema = (database: Database): void => {
       "SELECT value FROM harness_metadata WHERE key = ?",
     )
     .get("schema_version");
-  if (!["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"].includes(metadata?.value ?? ""))
+  if (!supportedSchemaVersions.has(metadata?.value ?? ""))
     throw new Error("EVENT_SCHEMA_VERSION_UNSUPPORTED");
+  migrateDelegationGroupCapacity(database);
+  migrateEventEnvelope(database, metadata?.value !== currentSchemaVersion);
   const columns = new Set(
         database
           .query<{ name: string }, []>("PRAGMA table_info(provider_calls)")
@@ -119,9 +219,17 @@ const migrateSchema = (database: Database): void => {
     "status",
     ...delegationRunSnapshotColumns.map(([name]) => name),
   ]);
-  if (metadata?.value !== "13")
+  requiredColumns("events", [
+    "global_sequence",
+    "event_id",
+    "event_type",
+    "stream_id",
+    ...eventEnvelopeColumns.map(([name]) => name),
+  ]);
+  if (metadata?.value !== currentSchemaVersion)
     database.run(
-      "UPDATE harness_metadata SET value = '13' WHERE key = 'schema_version'",
+      "UPDATE harness_metadata SET value = ? WHERE key = 'schema_version'",
+      [currentSchemaVersion],
     );
   database.exec(`
         DROP TRIGGER IF EXISTS provider_call_snapshot_immutable;
@@ -179,6 +287,67 @@ const migrateSchema = (database: Database): void => {
       `);
 };
 
+const verifyEventChain = (database: Database): void => {
+  const emptyHash = "0".repeat(64);
+  let previousHash = emptyHash;
+  const rows = database
+    .query<EventRow, []>("SELECT * FROM events ORDER BY global_sequence")
+    .all();
+  for (const row of rows) {
+    if (
+      row.previous_hash !== previousHash ||
+      (row.event_schema_version !== 0 && row.event_schema_version !== 1)
+    )
+      throw new Error("EVENT_HASH_CHAIN_INVALID");
+    const base = {
+      actorId: row.actor_id,
+      body: JSON.parse(row.body_json) as unknown,
+      commandId: row.command_id,
+      occurredAt: row.occurred_at,
+      pluginId: row.plugin_id,
+      previousHash: row.previous_hash,
+      sequence: row.global_sequence,
+      streamId: row.stream_id,
+      type: row.event_type,
+    };
+    const hashInput =
+      row.event_schema_version === 0
+        ? base
+        : {
+            ...base,
+            aggregateVersion: row.aggregate_version,
+            catalogDigest: row.catalog_digest,
+            causationId: row.causation_id,
+            childExecutionId: row.child_execution_id,
+            contributionId: row.contribution_id,
+            contributionVersion: row.contribution_version,
+            correlationId: row.correlation_id,
+            eventSchemaVersion: row.event_schema_version,
+            parentExecutionId: row.parent_execution_id,
+            rootExecutionId: row.root_execution_id,
+          };
+    const eventHash = createHash("sha256")
+      .update(canonicalJson(hashInput))
+      .digest("hex");
+    const eventId = createHash("sha256")
+      .update(
+        `${row.actor_id}:${row.command_id}:${
+          row.global_sequence -
+          (database
+            .query<{ first_sequence: number }, [string, string]>(
+              "SELECT first_sequence FROM command_admissions WHERE actor_id = ? AND command_id = ?",
+            )
+            .get(row.actor_id, row.command_id)?.first_sequence ??
+            row.global_sequence)
+        }:${eventHash}`,
+      )
+      .digest("hex");
+    if (eventHash !== row.event_hash || eventId !== row.event_id)
+      throw new Error("EVENT_HASH_CHAIN_INVALID");
+    previousHash = row.event_hash;
+  }
+};
+
 export class EventJournal {
   readonly #database: Database;
   readonly actions: ActionJournal;
@@ -194,7 +363,7 @@ export class EventJournal {
     this.workflows = new WorkflowJournal(database);
   }
 
-  static open(databasePath: string): EventJournal {
+  static open(databasePath: string, catalogDigest = "0".repeat(64)): EventJournal {
     const database = new Database(databasePath, {
       create: true,
       readwrite: true,
@@ -202,7 +371,9 @@ export class EventJournal {
     });
     database.exec("PRAGMA journal_mode=WAL");
     database.exec("PRAGMA synchronous=FULL");
-    database.exec("PRAGMA foreign_keys=ON");
+    // Table-rebuild migrations run atomically with foreign-key enforcement
+    // disabled, then are checked before commit and re-enabled before use.
+    database.exec("PRAGMA foreign_keys=OFF");
     database.exec("PRAGMA busy_timeout=5000");
     database.exec("PRAGMA trusted_schema=OFF");
     const hasMetadata =
@@ -217,23 +388,7 @@ export class EventJournal {
           "SELECT value FROM harness_metadata WHERE key = ?",
         )
         .get("schema_version");
-      if (
-        ![
-          "1",
-          "2",
-          "3",
-          "4",
-          "5",
-          "6",
-          "7",
-          "8",
-          "9",
-          "10",
-          "11",
-          "12",
-          "13",
-        ].includes(preflight?.value ?? "")
-      ) {
+      if (!supportedSchemaVersions.has(preflight?.value ?? "")) {
         database.close(true);
         throw new Error("EVENT_SCHEMA_VERSION_UNSUPPORTED");
       }
@@ -242,19 +397,31 @@ export class EventJournal {
       database
         .transaction(() => {
           database.exec(eventSchema);
+          database.run(
+            "INSERT INTO harness_metadata(key,value) VALUES ('active_catalog_digest',?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+            [catalogDigest],
+          );
           migrateSchema(database);
+          verifyEventChain(database);
+          if (
+            database
+              .query<Record<string, unknown>, []>("PRAGMA foreign_key_check")
+              .all().length > 0
+          )
+            throw new Error("EVENT_SCHEMA_INTEGRITY_FAILED");
         })
         .immediate();
     } catch (error) {
       database.close(true);
       throw error;
     }
+    database.exec("PRAGMA foreign_keys=ON");
     const metadata = database
       .query<{ value: string }, [string]>(
         "SELECT value FROM harness_metadata WHERE key = ?",
       )
       .get("schema_version");
-    if (metadata?.value !== "13") {
+    if (metadata?.value !== currentSchemaVersion) {
       database.close(true);
       throw new Error("EVENT_SCHEMA_VERSION_UNSUPPORTED");
     }
@@ -285,7 +452,6 @@ export class EventJournal {
   }
 
   close(): void {
-    Bun.gc(true);
-    this.#database.close(true);
+    this.#database.close(false);
   }
 }

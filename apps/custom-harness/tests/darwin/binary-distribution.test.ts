@@ -1,5 +1,15 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { mkdtempSync, readlinkSync, realpathSync, rmSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readlinkSync,
+  realpathSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
+import { createHash } from "node:crypto";
 import { chmod, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -12,6 +22,33 @@ const temporary = (): string => {
 };
 const packageRoot = path.resolve(import.meta.dirname, "../..");
 const binary = path.join(packageRoot, "dist/curiosity");
+const sha256 = (value: string | Buffer): string =>
+  createHash("sha256").update(value).digest("hex");
+const installReceipt = (
+  dataDirectory: string,
+  launcher: string,
+  selected: string,
+  previous: string | null = null,
+): string => {
+  const receipt = {
+    launcher,
+    operation: "install",
+    previous,
+    schemaVersion: 1,
+    selected,
+    selectedSha256: sha256(readFileSync(selected)),
+  };
+  const bytes = `${JSON.stringify(receipt)}\n`;
+  const receiptDirectory = path.join(
+    dataDirectory,
+    "curiosity",
+    "selection-receipts",
+  );
+  mkdirSync(receiptDirectory, { recursive: true });
+  const receiptPath = path.join(receiptDirectory, `${sha256(bytes)}.json`);
+  writeFileSync(receiptPath, bytes, { flag: "wx", mode: 0o600 });
+  return receiptPath;
+};
 
 afterEach(() => {
   for (const root of roots.splice(0))
@@ -291,5 +328,215 @@ describe("experimental single-binary distribution", () => {
     const doctor = run(launcher, ["doctor", "--json"], root);
     expect(doctor.exitCode).toBe(0);
     expect(JSON.parse(doctor.stdout.toString()).supervisor.status).toBe("ready");
+  });
+
+  test("retains a startable prior selection when staged cutover preconditions fail", () => {
+    const root = temporary();
+    const binDirectory = path.join(root, "bin");
+    const dataDirectory = path.join(root, "data");
+    const priorDirectory = path.join(
+      dataDirectory,
+      "curiosity",
+      "versions",
+      "prior",
+    );
+    const prior = path.join(priorDirectory, "curiosity");
+    const launcher = path.join(binDirectory, "curiosity");
+    const globalConfig = path.join(root, ".config", "opencode", "opencode.json");
+    mkdirSync(priorDirectory, { recursive: true });
+    mkdirSync(binDirectory, { recursive: true });
+    mkdirSync(path.dirname(globalConfig), { recursive: true });
+    writeFileSync(prior, "#!/bin/sh\nprintf 'prior-startable\\n'\n", {
+      mode: 0o755,
+    });
+    writeFileSync(globalConfig, '{"preserve":true}\n');
+    symlinkSync(prior, launcher);
+
+    const failed = Bun.spawnSync(
+      [
+        "bun",
+        "tools/install-experimental-binary.mjs",
+        "--bin-dir",
+        binDirectory,
+        "--data-dir",
+        dataDirectory,
+        "--expected-current",
+        path.join(root, "wrong-prior"),
+      ],
+      {
+        cwd: packageRoot,
+        env: { HOME: root, PATH: process.env.PATH ?? "" },
+        stderr: "pipe",
+        stdout: "pipe",
+      },
+    );
+    expect(failed.exitCode).not.toBe(0);
+    expect(failed.stderr.toString()).toContain(
+      "INSTALL_SELECTION_PRECONDITION_FAILED",
+    );
+    expect(readlinkSync(launcher)).toBe(prior);
+    expect(run(launcher, [], root).stdout.toString()).toBe("prior-startable\n");
+    expect(readFileSync(globalConfig, "utf8")).toBe('{"preserve":true}\n');
+  });
+
+  test("rolls back a completed cutover through an exact retained selection and immutable receipt", () => {
+    const root = temporary();
+    const binDirectory = path.join(root, "bin");
+    const dataDirectory = path.join(root, "data");
+    const globalConfig = path.join(root, ".config", "opencode", "opencode.json");
+    mkdirSync(path.dirname(globalConfig), { recursive: true });
+    writeFileSync(globalConfig, '{"preserve":true}\n');
+    const launcher = path.join(binDirectory, "curiosity");
+    const prior = path.join(
+      dataDirectory,
+      "curiosity",
+      "versions",
+      "prior",
+      "curiosity",
+    );
+    mkdirSync(path.dirname(prior), { recursive: true });
+    mkdirSync(binDirectory, { recursive: true });
+    writeFileSync(
+      prior,
+      '#!/bin/sh\nprintf \'{"version":"prior"}\\n\'\n',
+      { mode: 0o755 },
+    );
+    installReceipt(dataDirectory, launcher, prior);
+    symlinkSync(prior, launcher);
+    const install = Bun.spawnSync(
+      [
+        "bun",
+        "tools/install-experimental-binary.mjs",
+        "--bin-dir",
+        binDirectory,
+        "--data-dir",
+        dataDirectory,
+        "--expected-current",
+        prior,
+      ],
+      { cwd: packageRoot, stderr: "pipe", stdout: "pipe" },
+    );
+    expect(install.exitCode).toBe(0);
+    const selected = readlinkSync(launcher);
+
+    const rollback = Bun.spawnSync(
+      [
+        "bun",
+        "tools/install-experimental-binary.mjs",
+        "--bin-dir",
+        binDirectory,
+        "--data-dir",
+        dataDirectory,
+        "--expected-current",
+        selected,
+        "--rollback-to",
+        prior,
+      ],
+      { cwd: packageRoot, stderr: "pipe", stdout: "pipe" },
+    );
+    expect(rollback.exitCode).toBe(0);
+    expect(readlinkSync(launcher)).toBe(prior);
+    expect(run(launcher, ["--version"], root).stdout.toString()).toBe(
+      '{"version":"prior"}\n',
+    );
+    const receiptPath = rollback.stdout.toString().trim().split("\n").at(-1)!;
+    expect(JSON.parse(readFileSync(receiptPath, "utf8"))).toMatchObject({
+      launcher,
+      operation: "rollback",
+      previous: selected,
+      schemaVersion: 1,
+      selected: prior,
+      selectedSha256: expect.stringMatching(/^[a-f0-9]{64}$/u),
+    });
+    expect(readFileSync(globalConfig, "utf8")).toBe('{"preserve":true}\n');
+  });
+
+  test("rejects rollback to an unreceipted retained binary", () => {
+    const root = temporary();
+    const binDirectory = path.join(root, "bin");
+    const dataDirectory = path.join(root, "data");
+    const install = Bun.spawnSync(
+      [
+        "bun",
+        "tools/install-experimental-binary.mjs",
+        "--bin-dir",
+        binDirectory,
+        "--data-dir",
+        dataDirectory,
+      ],
+      { cwd: packageRoot, stderr: "pipe", stdout: "pipe" },
+    );
+    expect(install.exitCode).toBe(0);
+    const launcher = path.join(binDirectory, "curiosity");
+    const selected = readlinkSync(launcher);
+    const unreceipted = path.join(
+      dataDirectory,
+      "curiosity",
+      "versions",
+      "unreceipted",
+      "curiosity",
+    );
+    mkdirSync(path.dirname(unreceipted), { recursive: true });
+    writeFileSync(
+      unreceipted,
+      '#!/bin/sh\nprintf \'{"version":"unreceipted"}\\n\'\n',
+      { mode: 0o755 },
+    );
+
+    const rollback = Bun.spawnSync(
+      [
+        "bun",
+        "tools/install-experimental-binary.mjs",
+        "--bin-dir",
+        binDirectory,
+        "--data-dir",
+        dataDirectory,
+        "--expected-current",
+        selected,
+        "--rollback-to",
+        unreceipted,
+      ],
+      { cwd: packageRoot, stderr: "pipe", stdout: "pipe" },
+    );
+    expect(rollback.exitCode).not.toBe(0);
+    expect(rollback.stderr.toString()).toContain(
+      "INSTALL_ROLLBACK_RECEIPT_REQUIRED",
+    );
+    expect(readlinkSync(launcher)).toBe(selected);
+  });
+
+  test("does not switch the launcher when receipt creation fails", () => {
+    const root = temporary();
+    const binDirectory = path.join(root, "bin");
+    const dataDirectory = path.join(root, "data");
+    const launcher = path.join(binDirectory, "curiosity");
+    const prior = path.join(root, "prior");
+    const receiptsPath = path.join(
+      dataDirectory,
+      "curiosity",
+      "selection-receipts",
+    );
+    mkdirSync(binDirectory, { recursive: true });
+    mkdirSync(path.dirname(receiptsPath), { recursive: true });
+    writeFileSync(prior, "#!/bin/sh\nprintf 'prior\\n'\n", { mode: 0o755 });
+    writeFileSync(receiptsPath, "occupied\n");
+    symlinkSync(prior, launcher);
+
+    const install = Bun.spawnSync(
+      [
+        "bun",
+        "tools/install-experimental-binary.mjs",
+        "--bin-dir",
+        binDirectory,
+        "--data-dir",
+        dataDirectory,
+        "--expected-current",
+        prior,
+      ],
+      { cwd: packageRoot, stderr: "pipe", stdout: "pipe" },
+    );
+    expect(install.exitCode).not.toBe(0);
+    expect(readlinkSync(launcher)).toBe(prior);
+    expect(run(launcher, [], root).stdout.toString()).toBe("prior\n");
   });
 });

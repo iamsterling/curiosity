@@ -395,6 +395,27 @@ func TestTurnSubmissionUsesProtocolSender(t *testing.T) {
 	}
 }
 
+func TestActiveTurnCancellationUsesProtocolSender(t *testing.T) {
+	sender := &recordingSender{}
+	snapshot := fixtureSnapshot()
+	snapshot.Status = "working"
+	model := NewModel(snapshot, sender)
+	model.input.SetValue("/cancel")
+	updated, command := model.Update(key("enter", ""))
+	model = updated.(Model)
+	if command == nil {
+		t.Fatal("expected an active cancellation protocol command")
+	}
+	command()
+	if model.input.Value() != "" || len(sender.messages) != 1 {
+		t.Fatalf("unexpected cancellation state: input=%q messages=%d", model.input.Value(), len(sender.messages))
+	}
+	message := sender.messages[0]
+	if message.messageType != protocol.TypeTurn || message.payload.(protocol.TurnSubmit).Text != "/cancel" {
+		t.Fatalf("unexpected cancellation message: %#v", message)
+	}
+}
+
 func assertGeometry(t *testing.T, rendered string, width, height int) {
 	t.Helper()
 	lines := strings.Split(rendered, "\n")

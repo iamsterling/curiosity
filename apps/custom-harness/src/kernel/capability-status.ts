@@ -1,12 +1,20 @@
 import type { CapabilityStatusReport } from "../domain/capability-status.js";
 import type { SupervisorReceipt } from "../supervisor/client.js";
 
-const unavailable = (id: string, reason: string) =>
+const catalogued = (id: string, reason: string) =>
   Object.freeze({
     id,
     qualifiedForProduction: false as const,
     reason,
-    state: "unavailable" as const,
+    state: "catalogued" as const,
+  });
+
+const scaffolded = (id: string, reason: string) =>
+  Object.freeze({
+    id,
+    qualifiedForProduction: false as const,
+    reason,
+    state: "scaffolded" as const,
   });
 
 const available = (id: string, reason: string) =>
@@ -15,6 +23,14 @@ const available = (id: string, reason: string) =>
     qualifiedForProduction: false as const,
     reason,
     state: "available" as const,
+  });
+
+const qualified = (id: string, reason: string) =>
+  Object.freeze({
+    id,
+    qualifiedForProduction: false as const,
+    reason,
+    state: "qualified" as const,
   });
 
 export const capabilityStatus = (input: {
@@ -26,71 +42,71 @@ export const capabilityStatus = (input: {
     candidateReady: true,
     capabilities: Object.freeze(
       [
-        available(
+        qualified(
           "auth.local-command",
           "LOCAL_AUTHENTICATED_COMMAND_PORT_ACTIVE",
         ),
         input.providerConfigured
           ? available("child.propose", "DURABLE_CHILD_SCHEDULER_ACTIVE")
-          : unavailable("child.propose", "PROVIDER_ADAPTER_NOT_CONFIGURED"),
-        unavailable("deployment", "DEPLOYMENT_SURFACE_ABSENT"),
+          : scaffolded("child.propose", "PROVIDER_ADAPTER_NOT_CONFIGURED"),
+        catalogued("deployment", "DEPLOYMENT_SURFACE_ABSENT"),
         input.supervisor.capabilities.filesystemMutation
           ? available(
               "filesystem.mutation",
               "PRECONDITIONED_ATOMIC_WORKSPACE_MUTATION_ACTIVE",
             )
-          : unavailable("filesystem.mutation", "SUPERVISOR_CAPABILITY_DISABLED"),
+          : scaffolded("filesystem.mutation", "SUPERVISOR_CAPABILITY_DISABLED"),
         input.supervisor.capabilities.filesystemRead
-          ? available("filesystem.read", "WORKSPACE_READ_SUPERVISOR_ACTIVE")
-          : unavailable("filesystem.read", "SUPERVISOR_CAPABILITY_DISABLED"),
+          ? qualified("filesystem.read", "WORKSPACE_READ_SUPERVISOR_ACTIVE")
+          : scaffolded("filesystem.read", "SUPERVISOR_CAPABILITY_DISABLED"),
         input.supervisor.capabilities.git
           ? available("git.read", "IDENTITY_BOUND_GIT_READ_ACTIVE")
-          : unavailable("git.read", "SUPERVISOR_CAPABILITY_DISABLED"),
+          : scaffolded("git.read", "SUPERVISOR_CAPABILITY_DISABLED"),
         input.supervisor.capabilities.gitMutation
           ? available(
               "git.mutation",
               "GATED_WORKTREE_AND_REF_MUTATION_ACTIVE",
             )
-          : unavailable("git.mutation", "GIT_MUTATION_PROFILE_DISABLED"),
-        unavailable("mobile", "MOBILE_SURFACE_ABSENT"),
+          : scaffolded("git.mutation", "GIT_MUTATION_PROFILE_DISABLED"),
+        catalogued("mobile", "MOBILE_SURFACE_ABSENT"),
         input.researchCapabilities.includes("network.fetch")
           ? available("network.fetch", "BOUNDED_RESEARCH_ADAPTER_ACTIVE")
-          : unavailable("network.fetch", "FETCH_ADAPTER_UNQUALIFIED"),
+          : scaffolded("network.fetch", "FETCH_ADAPTER_UNQUALIFIED"),
         input.researchCapabilities.includes("network.search")
           ? available("network.search", "BOUNDED_RESEARCH_ADAPTER_ACTIVE")
-          : unavailable("network.search", "SEARCH_ADAPTER_UNQUALIFIED"),
-        available(
+          : scaffolded("network.search", "SEARCH_ADAPTER_UNQUALIFIED"),
+        qualified(
           "persistence.local-event-journal",
           "LOCAL_EVENT_JOURNAL_ACTIVE",
         ),
-        unavailable("platform.windows", "PLATFORM_UNSUPPORTED"),
+        catalogued("platform.windows", "PLATFORM_UNSUPPORTED"),
         input.supervisor.capabilities.process
           ? available("process.execution", "CLOSED_PROCESS_PROFILE_ACTIVE")
-          : unavailable("process.execution", "SUPERVISOR_CAPABILITY_DISABLED"),
-        available("user.question", "SIGNED_QUESTION_LIFECYCLE_ACTIVE"),
-        unavailable("production", "PRODUCTION_QUALIFICATION_ABSENT"),
+          : scaffolded("process.execution", "SUPERVISOR_CAPABILITY_DISABLED"),
+        qualified("user.question", "SIGNED_QUESTION_LIFECYCLE_ACTIVE"),
+        catalogued("production", "PRODUCTION_QUALIFICATION_ABSENT"),
         input.providerConfigured
           ? available(
               "provider.generate",
               "CANDIDATE_LOCAL_PROVIDER_CONFIGURED",
             )
-          : unavailable("provider.generate", "PROVIDER_ADAPTER_NOT_CONFIGURED"),
-        unavailable("publication", "PUBLICATION_SURFACE_ABSENT"),
-        unavailable("remote.transport", "REMOTE_TRANSPORT_ABSENT"),
-        unavailable("sandbox.execution", "SANDBOX_QUALIFICATION_ABSENT"),
-        unavailable(
+          : scaffolded("provider.generate", "PROVIDER_ADAPTER_NOT_CONFIGURED"),
+        catalogued("publication", "PUBLICATION_SURFACE_ABSENT"),
+        catalogued("remote.transport", "REMOTE_TRANSPORT_ABSENT"),
+        scaffolded("sandbox.execution", "SANDBOX_QUALIFICATION_ABSENT"),
+        scaffolded(
           "storage.hard-reset-durability",
           "HARD_RESET_QUALIFICATION_ABSENT",
         ),
-        unavailable("tool.evidence-read", "TOOL_ADAPTER_UNAVAILABLE"),
-        unavailable("tool.projection-read", "TOOL_ADAPTER_UNAVAILABLE"),
-        available(
+        scaffolded("tool.evidence-read", "TOOL_ADAPTER_UNAVAILABLE"),
+        scaffolded("tool.projection-read", "TOOL_ADAPTER_UNAVAILABLE"),
+        qualified(
           "tool.semantic-command",
           "DURABLE_SEMANTIC_COMMAND_GATEWAY_ACTIVE",
         ),
-        unavailable("updates.automatic", "AUTO_UPDATE_FORBIDDEN"),
-        available("workflow.loop", "BOUNDED_WORKFLOW_KERNEL_ACTIVE"),
-        available(
+        catalogued("updates.automatic", "AUTO_UPDATE_FORBIDDEN"),
+        qualified("workflow.loop", "BOUNDED_WORKFLOW_KERNEL_ACTIVE"),
+        qualified(
           "workflow.orchestration",
           "BOUNDED_ORCHESTRATION_KERNEL_ACTIVE",
         ),

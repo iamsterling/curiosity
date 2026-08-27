@@ -218,6 +218,8 @@ describe("sealed plugin catalog", () => {
           id: "curiosity.test.policy.prompt-commands.missing-route",
           instructions: "Route nowhere",
           name: "missing-route",
+          requiredAnyCapabilities: [],
+          requiredCapabilities: [],
           schemaVersion: 1,
           skillName: null,
           status: "active",

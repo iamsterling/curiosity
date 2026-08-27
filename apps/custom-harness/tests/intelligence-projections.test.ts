@@ -206,6 +206,7 @@ describe("native observation, Ledger, and evidence projections", () => {
 
   test("fails closed on an unknown projection event schema version", async () => {
     const event: StoredEvent = {
+      aggregateVersion: 1,
       actorId,
       body: {
         category: "action",
@@ -217,12 +218,21 @@ describe("native observation, Ledger, and evidence projections", () => {
         summary: "unknown version",
         taint: "trusted-kernel-metadata",
       },
+      catalogDigest: "c".repeat(64),
+      causationId: "command-001",
+      childExecutionId: "stream-001",
       commandId: "command-001",
+      contributionId: "curiosity.stock.observations",
+      contributionVersion: "1",
+      correlationId: "stream-001",
       eventHash: "b".repeat(64),
       eventId: "event-002",
+      eventSchemaVersion: 1,
       occurredAt: "2026-08-25T00:00:00.000Z",
+      parentExecutionId: "stream-001",
       pluginId: "curiosity.stock.observations",
       previousHash: "0".repeat(64),
+      rootExecutionId: "stream-001",
       sequence: 1,
       streamId: "stream-001",
       type: "observation.recorded",

@@ -32,6 +32,39 @@ class ScriptedConnection implements BubbleTeaConnection {
   }
 }
 
+class InteractiveConnection implements BubbleTeaConnection {
+  readonly sent: TuiHostMessage[] = [];
+  readonly #messages: TuiClientMessage[];
+  #waiting: ((message: TuiClientMessage) => void) | undefined;
+
+  constructor(messages: TuiClientMessage[]) {
+    this.#messages = messages;
+  }
+
+  next(): Promise<TuiClientMessage> {
+    const message = this.#messages.shift();
+    if (message) return Promise.resolve(message);
+    return new Promise((resolve) => {
+      this.#waiting = resolve;
+    });
+  }
+
+  push(message: TuiClientMessage): void {
+    const waiting = this.#waiting;
+    if (waiting) {
+      this.#waiting = undefined;
+      waiting(message);
+      return;
+    }
+    this.#messages.push(message);
+  }
+
+  send(message: TuiHostMessage): Promise<void> {
+    this.sent.push(structuredClone(message));
+    return Promise.resolve();
+  }
+}
+
 const nonce = "a".repeat(64);
 const hello = {
   payload: { nonce },
@@ -149,6 +182,62 @@ describe("Bubble Tea presentation protocol", () => {
     await running;
   });
 
+  test("submits authenticated cancellation for the active turn", async () => {
+    let providerStarted!: () => void;
+    let rejectProvider!: (error: Error) => void;
+    const started = new Promise<void>((resolve) => {
+      providerStarted = resolve;
+    });
+    const provider = new Promise<never>((_, reject) => {
+      rejectProvider = reject;
+    });
+    const chats: SignedCommandEnvelope[] = [];
+    const submissions: SignedCommandEnvelope[] = [];
+    const base = testHarness(async (envelope) => {
+      chats.push(envelope as SignedCommandEnvelope);
+      providerStarted();
+      return await provider;
+    });
+    const harness: TuiHarness = {
+      ...base,
+      submit: async (input) => {
+        const envelope = input as SignedCommandEnvelope;
+        submissions.push(envelope);
+        if (envelope.command.kind === "execution.cancel")
+          rejectProvider(new Error("EXECUTION_CANCELLED"));
+        return base.submit(input);
+      },
+    };
+    const connection = new InteractiveConnection([hello]);
+    const running = runBubbleTeaConnection(
+      sessionOptions(harness),
+      connection,
+      nonce,
+    );
+    await waitFor(() => connection.sent.length > 0);
+
+    connection.push(turn("Keep working until cancelled"));
+    await started;
+    connection.push(turn("/cancel"));
+    await waitFor(() =>
+      submissions.some(({ command }) => command.kind === "execution.cancel"),
+    );
+    const turnId = (
+      chats[0]!.command.payload as { readonly turnId: string }
+    ).turnId;
+    expect(
+      submissions.find(({ command }) => command.kind === "execution.cancel")
+        ?.command.payload,
+    ).toEqual({ executionId: turnId, schemaVersion: 1 });
+    expect(
+      snapshot(connection.sent.at(-1)!)?.inspectorText,
+    ).toContain('"status":"cancelling"');
+
+    await waitFor(() => snapshot(connection.sent.at(-1)!)?.status === "idle");
+    connection.push(quit);
+    await running;
+  });
+
   test("waits for in-flight authority work after presentation disconnects", async () => {
     let releaseProvider!: () => void;
     let providerStarted!: () => void;
@@ -185,7 +274,203 @@ describe("Bubble Tea presentation protocol", () => {
     releaseProvider();
     await expect(running).rejects.toThrow("TEST_MESSAGES_EXHAUSTED");
   });
+
+  test("runs thread, role, command, question, gate, cancellation, and child lifecycle through the native client", async () => {
+    const submissions: SignedCommandEnvelope[] = [];
+    const chats: SignedCommandEnvelope[] = [];
+    const questionId = "a".repeat(64);
+    const payloadDigest = "b".repeat(64);
+    const base = testHarness(async (envelope) => {
+      chats.push(envelope as SignedCommandEnvelope);
+      return resultFor(envelope as SignedCommandEnvelope, "native lifecycle result");
+    });
+    const harness: TuiHarness = {
+      ...base,
+      catalog: {
+        ...base.catalog,
+        agents: [
+          { description: "Direct execution", id: "generalist", mode: "primary" },
+          { description: "Coordination", id: "orchestrator", mode: "primary" },
+        ],
+        promptCommands: [
+          {
+            description: "Feature pursuit",
+            name: "feature",
+            status: "active",
+          },
+        ],
+      },
+      projections: {
+        ...base.projections,
+        childAccounting: async (rootExecutionId) => ({
+          physicalCalls: [],
+          rootExecutionId,
+          totals: {
+            childCalls: 1,
+            compactionCalls: 0,
+            providerCalls: 1,
+            toolCalls: 0,
+            unknownUsageCalls: 0,
+          },
+        }),
+        children: async (rootExecutionId) => [
+          {
+            agentId: "reviewer",
+            agentRunId: "child-run",
+            agentSessionId: "child-session",
+            budget: { maximumProviderCalls: 1, maximumToolCalls: 0 },
+            childExecutionId: "child-execution",
+            delegationGroupId: "child-group",
+            ordinal: 0,
+            parentExecutionId: rootExecutionId ?? "root-execution",
+            resourceClaims: {
+              mode: "read-only",
+              resources: ["workspace:path:src"],
+              scopeState: "claimed",
+            },
+            rootExecutionId: rootExecutionId ?? "root-execution",
+            sessionRevision: 1,
+            status: "completed",
+          },
+        ],
+        messages: async (threadId) =>
+          threadId === "thread-existing"
+            ? [
+                {
+                  messageId: "existing-user",
+                  role: "user",
+                  sequence: 2,
+                  text: "existing message",
+                  threadId,
+                  turnId: "existing-turn",
+                },
+              ]
+            : [],
+        questions: async () => [
+          {
+            allowFreeText: true,
+            executionId: "root-execution",
+            options: [],
+            prompt: "Continue?",
+            questionId,
+            status: "pending",
+          },
+        ],
+        threads: async () => [
+          {
+            openedBy: "local-owner",
+            sequence: 2,
+            threadId: "thread-existing",
+            title: "Existing",
+          },
+        ],
+      },
+      submit: async (input) => {
+        submissions.push(input as SignedCommandEnvelope);
+        return base.submit(input);
+      },
+    };
+    const connection = new InteractiveConnection([hello]);
+    const running = runBubbleTeaConnection(
+      sessionOptions(harness),
+      connection,
+      nonce,
+    );
+    await waitFor(() => connection.sent.length > 0);
+
+    connection.push(turn("/threads"));
+    await waitFor(() =>
+      snapshot(connection.sent.at(-1)!)?.inspectorText.includes("thread-existing") ??
+      false,
+    );
+    const beforeResume = connection.sent.length;
+    connection.push(turn("/resume thread-existing"));
+    await waitFor(
+      () =>
+        connection.sent.length > beforeResume &&
+        snapshot(connection.sent.at(-1)!)?.threadId === "thread-existing",
+    );
+    connection.push(turn("/agent orchestrator"));
+    await waitFor(() =>
+      snapshot(connection.sent.at(-1)!)?.inspectorText.includes("orchestrator") ??
+      false,
+    );
+    connection.push(turn("use selected role"));
+    await waitFor(
+      () =>
+        chats.length === 1 &&
+        snapshot(connection.sent.at(-1)!)?.status === "idle",
+    );
+    expect(
+      (chats[0]!.command.payload as { readonly agentId?: string }).agentId,
+    ).toBe("orchestrator");
+
+    connection.push(turn("/questions"));
+    await waitFor(() =>
+      snapshot(connection.sent.at(-1)!)?.inspectorText.includes(questionId) ?? false,
+    );
+    connection.push(turn(`/answer ${questionId} yes`));
+    await waitFor(() =>
+      snapshot(connection.sent.at(-1)!)?.inspectorText.includes('"status":"answered"') ??
+      false,
+    );
+    connection.push(
+      turn(`/gate gate-1 1 ${payloadDigest} approved`),
+    );
+    await waitFor(() =>
+      snapshot(connection.sent.at(-1)!)?.inspectorText.includes("gate-1") ?? false,
+    );
+    connection.push(turn("/cancel root-execution"));
+    await waitFor(() =>
+      snapshot(connection.sent.at(-1)!)?.inspectorText.includes("cancelling") ?? false,
+    );
+    connection.push(turn("/children root-execution"));
+    await waitFor(() =>
+      snapshot(connection.sent.at(-1)!)?.inspectorText.includes("child-run") ?? false,
+    );
+    connection.push(turn("/new"));
+    await waitFor(() => snapshot(connection.sent.at(-1)!)?.threadId === "");
+    connection.push(turn("/feature implement bounded slice"));
+    await waitFor(
+      () =>
+        chats.length === 2 &&
+        snapshot(connection.sent.at(-1)!)?.status === "idle",
+    );
+    expect(
+      submissions.some(
+        ({ command }) =>
+          command.kind === "prompt.command.invoke" &&
+          (command.payload as { readonly name?: string }).name === "feature",
+      ),
+    ).toBe(true);
+    expect(
+      submissions
+        .filter(({ command }) => command.kind === "client.lifecycle")
+        .map(
+          ({ command }) =>
+            (command.payload as { readonly operation: string }).operation,
+        ),
+    ).toEqual([
+      "threads",
+      "resume",
+      "agent",
+      "questions",
+      "children",
+      "new",
+    ]);
+
+    connection.push(quit);
+    await running;
+  });
 });
+
+const waitFor = async (predicate: () => boolean): Promise<void> => {
+  for (let attempt = 0; attempt < 200; attempt += 1) {
+    if (predicate()) return;
+    await Bun.sleep(1);
+  }
+  throw new Error("TEST_WAIT_TIMEOUT");
+};
 
 const testHarness = (chat: TuiHarness["chat"]): TuiHarness => ({
   catalog: {

@@ -125,6 +125,33 @@ describe("explicit conversation compaction", () => {
       )
       .get();
     expect(completion?.event_type).toBe("compaction.completed");
+    const requested = database
+      .query<
+        {
+          body_json: string;
+          causation_id: string;
+          correlation_id: string;
+          parent_execution_id: string;
+          root_execution_id: string;
+        },
+        []
+      >(
+        "SELECT body_json,causation_id,correlation_id,parent_execution_id,root_execution_id FROM events WHERE event_type = 'compaction.requested'",
+      )
+      .get();
+    const requestedBody = JSON.parse(requested!.body_json) as {
+      readonly parentActionId: string;
+    };
+    expect(requested).toMatchObject({
+      causation_id: database
+        .query<{ source_event_id: string }, [string]>(
+          "SELECT source_event_id FROM actions WHERE action_id = ?",
+        )
+        .get(requestedBody.parentActionId)?.source_event_id,
+      correlation_id: "turn-compaction-65",
+      parent_execution_id: "turn-compaction-65",
+      root_execution_id: "turn-compaction-65",
+    });
     const body = JSON.parse(completion!.body_json) as Record<string, unknown>;
     expect(body.summaryDigest).toMatch(/^[a-f0-9]{64}$/u);
     expect(body.retainedTailDigest).toMatch(/^[a-f0-9]{64}$/u);

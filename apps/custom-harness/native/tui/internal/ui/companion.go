@@ -82,7 +82,7 @@ func (model Model) renderInspector(width, height int) []string {
 	}
 	for _, capability := range model.snapshot.Capabilities {
 		glyph := model.theme.Danger.Render("✗")
-		if capability.State == "available" {
+		if capability.State == "available" || capability.State == "qualified" {
 			glyph = model.theme.Success.Render("✓")
 		}
 		name := glyph + "  " + model.theme.Secondary.Render(safe(capability.ID))
@@ -104,6 +104,13 @@ func (model Model) renderInspector(width, height int) []string {
 	lines = append(lines, model.theme.Line.Render(strings.Repeat("─", width)))
 	lines = append(lines, inspectorSection(model, "›  CATALOG", shortID(model.snapshot.Catalog.Digest), inner, width))
 	lines = append(lines, insetLine(model.theme.Muted.Render(fmt.Sprintf("%d tools · %d workflows", len(model.snapshot.Catalog.ToolNames), len(model.snapshot.Catalog.WorkflowNames))), 2, width))
+	if strings.TrimSpace(model.snapshot.InspectorText) != "" {
+		lines = append(lines, model.theme.Line.Render(strings.Repeat("─", width)))
+		lines = append(lines, inspectorSection(model, "⌄  LIFECYCLE", "signed native state", inner, width))
+		for _, line := range strings.Split(safe(model.snapshot.InspectorText), "\n") {
+			lines = append(lines, insetLine(model.theme.Muted.Render(fit(line, inner)), 2, width))
+		}
+	}
 	result := fixedLines(lines, width, height)
 	for index, line := range result {
 		result[index] = model.theme.Quiet.Width(width).Render(line)

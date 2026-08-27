@@ -1,6 +1,6 @@
 # Curiosity-native OpenCode2 behavioral parity specification
 
-**Status:** Proposed implementation contract — 2026-08-25  
+**Status:** Qualified bounded implementation contract — 2026-08-27
 **Scope:** behavior Curiosity currently obtains from the OpenCode2 host and
 `@iamsterling/opencode2-config`, and the native replacement in
 `apps/custom-harness`  
@@ -39,41 +39,20 @@ classification means “replace the mechanism while preserving the contract.”
 
 ### 1.1 Current verdict
 
-**Full parity is currently NO-GO.** The custom harness has a strong governed
-action foundation, but the following facts block a parity claim:
+**Full behavioral parity is GO for the bounded trusted-local, single-user,
+Darwin-arm64 development profile.** `PAR-AC01..PAR-AC30` and all 32 dependency
+rows are closed by the machine-readable qualification ledger and verification
+record. Native roles, commands, tools, child execution, persistence, clients,
+migration, and experimental cutover/rollback are operator-reachable through the
+sealed authority boundary.
 
-1. `apps/custom-harness/tests/opencode2-parity.test.ts` still verifies catalog
-   presence only; behavioral evidence is distributed across focused suites and
-   has not yet been reconciled into one passing `PAR-AC01..PAR-AC30` ledger.
-2. Exact-resource mutation leases are qualified, but hierarchical scope
-   collisions and complete restart reconciliation remain unqualified.
-3. Git reads, locked detached worktree create/inspect/clean removal, and
-   Curiosity-namespace ref compare-and-swap are qualified; commit, merge, push,
-   force, arbitrary-ref mutation, and automatic stale cleanup remain unavailable.
-4. Search has optional native-runtime adapters, bounded public-HTTPS fetch, and
-   an explicitly authorized benchmark-only MediaWiki acquisition path feeding an
-   immutable harness snapshot served through Retrieval v3. Operator credentials
-   for general search remain absent, and live hostile-network plus complete
-   PAR-AC13 qualification remain unavailable.
-5. Child execution, bounded two-way fan-out/fan-in, cancellation, continuation,
-   accounting, and explicit compaction are implemented, but the complete
-   allocation/dispatch/receipt crash matrix is not yet qualified.
-6. Durable projections exist, but deleting and rebuilding every disposable
-   thread, child, accounting, research, and workflow view has not been covered
-   by one complete restart matrix.
-7. The signed TUI supports the implemented command/question/gate path, but the
-   full new/resume/select-agent/session-switch client lifecycle remains partial.
-8. Experimental installation and corruption failure are qualified on Darwin
-   arm64, but cutover rollback across both native client selectors remains
-   incomplete.
-9. The identical live Pokémon acceptance against the OpenCode baseline must be
-   rerun against the benchmark-owned path; no successful synthesis has yet been
-   accepted from that path.
-10. Production, release, signing, notarization, remote, multi-user, sandbox, and
-    non-Darwin qualification remain outside the current authority and evidence.
-
-The existing workflow and agent scaffolding is useful substrate. It MUST be
-described as scaffolding until the checks in Section 16 pass.
+This verdict is deliberately narrower than product or release readiness. Commit,
+merge, push, force, arbitrary-ref mutation, automatic stale cleanup, hard-reset
+storage, generic operator search credentials, live provider delivery, production,
+publication, deployment, signing, notarization, automatic update, remote,
+multi-user, sandbox, non-Darwin, and stochastic model-quality equivalence remain
+unqualified or unavailable. The post-cutover Retrieval v3 benchmark is a separate
+product-quality measurement and is not an authority or parity oracle.
 
 ## 2. Evidence boundary and method
 
@@ -171,38 +150,38 @@ baseline, not the target.
 
 | ID  | Evidenced OpenCode2 behavior                                                                                  | Disposition | Actual Curiosity contract                                                                                                                | Native owner                                                | Native status                                                     |
 | --- | ------------------------------------------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------- |
-| D01 | Primary conversation turn, streamed response, multi-turn transcript                                           | ESSENTIAL   | Admit one user turn, stream non-authoritative deltas, commit one terminal assistant result or typed failure, and resume a durable thread | `stock.chat`, `ProviderGateway`, thread projection          | Available for configured adapters; identical live acceptance pending |
-| D02 | Agent definitions, modes, default agent, role instructions                                                    | ESSENTIAL   | Eight stable role policies, valid primary/subagent selection, deterministic default, immutable policy digest                             | `stock.agents` plus prompt assembler                        | Available through the closed role policy                          |
-| D03 | Per-role model route and generation settings                                                                  | ESSENTIAL   | Operator-selected, policy-allowed route per role; exact route captured per call; no silent substitution                                  | provider routing policy plus gateway                        | Available with exact enabled-role route coverage                  |
-| D04 | Host task/subagent tool                                                                                       | REPLACEABLE | Governed `agent.delegate` proposal producing an independently executed child result                                                      | `stock.delegation`, child scheduler, provider/tool gateways | Available for the bounded read-only child profile                 |
-| D05 | Child parent/root lineage, depth, resume by task identity                                                     | ESSENTIAL   | Durable lineage, bounded depth, one active run per child session, revision-bound continuation                                            | kernel child ledger                                         | Available for depth-one children and exact revision continuation  |
-| D06 | Sequential and parallel delegated work with result return                                                     | ESSENTIAL   | Bounded fan-out, concurrent independent dispatch, durable all-settled barrier, deterministic fan-in                                      | child scheduler and delegation workflow                     | Available for at most two concurrent children per group           |
-| D07 | Parent/child cancellation                                                                                     | ESSENTIAL   | Authenticated ancestry cancellation, active-call abort, terminal reconciliation, stale-result fencing                                    | cancellation service and gateways                           | Available for the bounded child profile; complete crash matrix pending |
-| D08 | Built-in read, glob, grep, and listing tools                                                                  | ESSENTIAL   | Root-confined, symlink-safe, bounded workspace discovery and reads                                                                       | `stock.workspace`, Rust supervisor                          | Available in bounded root-confined form                           |
-| D09 | Edit, write, and patch tools used by implementation commands                                                  | ESSENTIAL   | Precondition-bound, path-confined, auditable file mutation with rollback/reconciliation evidence                                         | mutation plugin and Rust supervisor                         | Available when explicitly enabled; hierarchical collisions pending |
-| D10 | Shell/process execution used to build and verify                                                              | ESSENTIAL   | Reviewed executable profile, closed argv/env/cwd, deadline, output bound, process-tree cancellation, receipt                             | process plugin and Rust supervisor                          | Available only through exact closed process profiles              |
-| D11 | Git operations reachable through host tools                                                                   | REPLACEABLE | Typed read/mutation operations, worktree ownership, exact repository identity, gates for consequential writes                            | Git plugin, ADR-007 services, Rust supervisor               | Partial: qualified reads, gated worktree lifecycle, and Curiosity-namespace ref CAS; commit/merge/push remain unavailable |
-| D12 | Web search and fetch for research                                                                             | ESSENTIAL   | Qualified bounded search/fetch, URL and redirect policy, taint labels, source metadata, no search-result authority                       | `stock.search` plus qualified adapters                      | Candidate search and explicit fetch adapters implemented; operator configuration and complete hostile-network qualification pending |
-| D13 | Question/permission interaction                                                                               | REPLACEABLE | Typed blocking question distinct from binding gate; authenticated answer correlated to exact pending request                             | question plugin and gate service                            | Available with signed correlated answer handling                 |
-| D14 | Tool schema, call IDs, result/error continuation                                                              | ESSENTIAL   | Exact visible-tool snapshot, closed input, pre-dispatch authorization, durable receipt, bounded model-visible result                     | tool contributions and `ToolGateway`                        | Available for the current qualified tool set                      |
-| D15 | Skills and slash commands                                                                                     | ESSENTIAL   | Authenticated activation of versioned project-owned content in a bounded prompt slot                                                     | `stock.skills`                                              | Partial; activation works, operational dependencies do not        |
-| D16 | Project/global instructions and references                                                                    | REPLACEABLE | Explicit, provenance-labelled, precedence-defined context sources selected at a fixed revision                                           | context/reference plugins                                   | Partial; no general reference discovery                           |
-| D17 | Context compaction and continuation                                                                           | REPLACEABLE | Explicit accounted compaction attempt, immutable summary artifact, continuity references, deterministic reassembly                       | compaction workflow plus provider gateway                   | Available with explicit immutable accounting                     |
-| D18 | Session persistence, list/resume, and restart                                                                 | ESSENTIAL   | Durable threads, turns, child sessions, pending gates/actions, replayable projections, explicit ambiguous external effects               | kernel journal and clients                                  | Partial                                                           |
-| D19 | Permission evaluation at host tool sinks                                                                      | REPLACEABLE | Default-deny capability intersection and final-sink checks with binding gates where required                                             | sealed kernel policy and gateways                           | Partial for enabled actions                                       |
-| D20 | Event and tool hooks used for observation                                                                     | REPLACEABLE | Canonical kernel events plus redacted observation reactors; no parallel capture authority                                                | journal and `stock.observations`                            | Implemented in bounded form                                       |
-| D21 | Ledger intent/criteria/work/evidence/resolution semantics                                                     | ESSENTIAL   | Versioned durable proposals and reducers; only kernel predicates and authenticated gates can resolve                                     | `stock.ledger`, `stock.evidence`                            | Partial; several compatibility names are diagnostic only          |
-| D22 | Native loop controls and continuation                                                                         | REPLACEABLE | Finite durable workflows, explicit budgets, no-progress stop, cancellation, terminal predicates                                          | `stock.loop`, workflow engine                               | Partial; pause/resume and real agent work absent                  |
-| D23 | 30 `/loop-*` compatibility names                                                                              | OBSOLETE    | Preserve each reviewed native mapping, manual guidance, or stable unsupported diagnostic until explicit removal                          | `stock.skills`, compatibility tools                         | Catalogued; semantic conformance incomplete                       |
-| D24 | OpenCode plugin setup, duplicate-root suppression, reverse cleanup, ABI pin                                   | REPLACEABLE | Sealed static catalog, deterministic construction, exact adapter versions, reverse scoped cleanup                                        | kernel composition                                          | Native composition mostly implemented; source host pin conflicted |
-| D25 | OpenCode TUI/CLI command entry and stream rendering                                                           | REPLACEABLE | Native signed-command client, transcript, streaming, errors, selection, cancellation, session controls                                   | `client.tui` and CLI                                        | Partial                                                           |
-| D26 | Bundle overlay, model mapping, depth setting, doctor                                                          | REPLACEABLE | Strict native config schema, per-agent routes, authority profile, capability truth, catalog/config digest                                | config and status services                                  | Available for the closed role/route/depth policy; live config pending |
-| D27 | OpenCode package installation, cache, plugin discovery, update                                                | REPLACEABLE | Immutable native artifact installation, integrity receipt, explicit rollback, separately authorized update                               | distribution tooling                                        | Experimental Darwin artifact only                                 |
-| D28 | Disabled host `build` and `plan` agents                                                                       | OBSOLETE    | They remain absent; no compatibility alias silently selects them                                                                         | agent catalog validation                                    | Implemented                                                       |
-| D29 | Imported daemon, polling, marker, mutable loop state, direct shell aliases                                    | OBSOLETE    | Remain unreachable and return reviewed denials                                                                                           | compatibility policy                                        | Implemented in part                                               |
-| D30 | Uncomposed engineering-intent, local-effect, GitHub, evidence-development, and handoff internals              | INCIDENTAL  | No production parity requirement merely from source presence; adopt separately only through native contracts                             | none by default                                             | Correctly uncomposed                                              |
-| D31 | MCP, LSP, ACP, server mode, dynamic third-party plugins, provider breadth, warming, hidden host helper agents | INCIDENTAL  | No current Curiosity dependency; require separate intent and qualification                                                               | none by default                                             | Absent by design                                                  |
-| D32 | Exact OpenCode prompts, schemas, callbacks, storage files, permission grammar, and task output tags           | INCIDENTAL  | Preserve no implementation identity; only the behavioral contracts in this document matter                                               | none                                                        | Rejected                                                          |
+| D01 | Primary conversation turn, streamed response, multi-turn transcript                                           | ESSENTIAL   | Admit one user turn, stream non-authoritative deltas, commit one terminal assistant result or typed failure, and resume a durable thread | `stock.chat`, `ProviderGateway`, thread projection          | QUALIFIED — scripted adapter and durable replay profile           |
+| D02 | Agent definitions, modes, default agent, role instructions                                                    | ESSENTIAL   | Eight stable role policies, valid primary/subagent selection, deterministic default, immutable policy digest                             | `stock.agents` plus prompt assembler                        | QUALIFIED — closed eight-role policy                              |
+| D03 | Per-role model route and generation settings                                                                  | ESSENTIAL   | Operator-selected, policy-allowed route per role; exact route captured per call; no silent substitution                                  | provider routing policy plus gateway                        | QUALIFIED — exact enabled-role route coverage                     |
+| D04 | Host task/subagent tool                                                                                       | REPLACEABLE | Governed `agent.delegate` proposal producing an independently executed child result                                                      | `stock.delegation`, child scheduler, provider/tool gateways | QUALIFIED — bounded read-only child profile                       |
+| D05 | Child parent/root lineage, depth, resume by task identity                                                     | ESSENTIAL   | Durable lineage, bounded depth, one active run per child session, revision-bound continuation                                            | kernel child ledger                                         | QUALIFIED — depth one and exact revision continuation             |
+| D06 | Sequential and parallel delegated work with result return                                                     | ESSENTIAL   | Bounded fan-out, concurrent independent dispatch, durable all-settled barrier, deterministic fan-in                                      | child scheduler and delegation workflow                     | QUALIFIED — default two-member turns; four-member configured failure profile; at most two active children |
+| D07 | Parent/child cancellation                                                                                     | ESSENTIAL   | Authenticated ancestry cancellation, active-call abort, terminal reconciliation, stale-result fencing                                    | cancellation service and gateways                           | QUALIFIED — bounded descendant and stale-receipt matrix           |
+| D08 | Built-in read, glob, grep, and listing tools                                                                  | ESSENTIAL   | Root-confined, symlink-safe, bounded workspace discovery and reads                                                                       | `stock.workspace`, Rust supervisor                          | QUALIFIED — bounded root-confined profile                         |
+| D09 | Edit, write, and patch tools used by implementation commands                                                  | ESSENTIAL   | Precondition-bound, path-confined, auditable file mutation with rollback/reconciliation evidence                                         | mutation plugin and Rust supervisor                         | QUALIFIED — opt-in preconditioned atomic profile                  |
+| D10 | Shell/process execution used to build and verify                                                              | ESSENTIAL   | Reviewed executable profile, closed argv/env/cwd, deadline, output bound, process-tree cancellation, receipt                             | process plugin and Rust supervisor                          | QUALIFIED — exact closed process profiles                         |
+| D11 | Git operations reachable through host tools                                                                   | REPLACEABLE | Typed read/mutation operations, worktree ownership, exact repository identity, gates for consequential writes                            | Git plugin, ADR-007 services, Rust supervisor               | QUALIFIED — reads, gated worktrees, and Curiosity ref CAS         |
+| D12 | Web search and fetch for research                                                                             | ESSENTIAL   | Qualified bounded search/fetch, URL and redirect policy, taint labels, source metadata, no search-result authority                       | `stock.search` plus qualified adapters                      | QUALIFIED — explicit bounded adapters; absent configuration denies |
+| D13 | Question/permission interaction                                                                               | REPLACEABLE | Typed blocking question distinct from binding gate; authenticated answer correlated to exact pending request                             | question plugin and gate service                            | QUALIFIED — signed correlated answer profile                     |
+| D14 | Tool schema, call IDs, result/error continuation                                                              | ESSENTIAL   | Exact visible-tool snapshot, closed input, pre-dispatch authorization, durable receipt, bounded model-visible result                     | tool contributions and `ToolGateway`                        | QUALIFIED — current native tool set                               |
+| D15 | Skills and slash commands                                                                                     | ESSENTIAL   | Authenticated activation of versioned project-owned content in a bounded prompt slot                                                     | `stock.skills`                                              | QUALIFIED — 11 active command activations                         |
+| D16 | Project/global instructions and references                                                                    | REPLACEABLE | Explicit, provenance-labelled, precedence-defined context sources selected at a fixed revision                                           | context/reference plugins                                   | QUALIFIED — explicit bounded context sources                      |
+| D17 | Context compaction and continuation                                                                           | REPLACEABLE | Explicit accounted compaction attempt, immutable summary artifact, continuity references, deterministic reassembly                       | compaction workflow plus provider gateway                   | QUALIFIED — explicit immutable accounting                         |
+| D18 | Session persistence, list/resume, and restart                                                                 | ESSENTIAL   | Durable threads, turns, child sessions, pending gates/actions, replayable projections, explicit ambiguous external effects               | kernel journal and clients                                  | QUALIFIED — local event-journal profile                           |
+| D19 | Permission evaluation at host tool sinks                                                                      | REPLACEABLE | Default-deny capability intersection and final-sink checks with binding gates where required                                             | sealed kernel policy and gateways                           | QUALIFIED — enabled native sink profile                           |
+| D20 | Event and tool hooks used for observation                                                                     | REPLACEABLE | Canonical kernel events plus redacted observation reactors; no parallel capture authority                                                | journal and `stock.observations`                            | QUALIFIED — bounded canonical observations                        |
+| D21 | Ledger intent/criteria/work/evidence/resolution semantics                                                     | ESSENTIAL   | Versioned durable proposals and reducers; only kernel predicates and authenticated gates can resolve                                     | `stock.ledger`, `stock.evidence`                            | QUALIFIED — native reducers and stable proposal diagnostics       |
+| D22 | Native loop controls and continuation                                                                         | REPLACEABLE | Finite durable workflows, explicit budgets, no-progress stop, cancellation, terminal predicates                                          | `stock.loop`, workflow engine                               | QUALIFIED — finite workflows; unavailable controls deny stably    |
+| D23 | 30 `/loop-*` compatibility names                                                                              | OBSOLETE    | Preserve each reviewed native mapping, manual guidance, or stable unsupported diagnostic until explicit removal                          | `stock.skills`, compatibility tools                         | RETIRED — preserved only as mapped guidance or stable denial      |
+| D24 | OpenCode plugin setup, duplicate-root suppression, reverse cleanup, ABI pin                                   | REPLACEABLE | Sealed static catalog, deterministic construction, exact adapter versions, reverse scoped cleanup                                        | kernel composition                                          | QUALIFIED — native static composition; source host retired        |
+| D25 | OpenCode TUI/CLI command entry and stream rendering                                                           | REPLACEABLE | Native signed-command client, transcript, streaming, errors, selection, cancellation, session controls                                   | `client.tui` and CLI                                        | QUALIFIED — signed local client profile                           |
+| D26 | Bundle overlay, model mapping, depth setting, doctor                                                          | REPLACEABLE | Strict native config schema, per-agent routes, authority profile, capability truth, catalog/config digest                                | config and status services                                  | QUALIFIED — closed role, route, depth, and status policy          |
+| D27 | OpenCode package installation, cache, plugin discovery, update                                                | REPLACEABLE | Immutable native artifact installation, integrity receipt, explicit rollback, separately authorized update                               | distribution tooling                                        | QUALIFIED — experimental Darwin artifact install and rollback     |
+| D28 | Disabled host `build` and `plan` agents                                                                       | OBSOLETE    | They remain absent; no compatibility alias silently selects them                                                                         | agent catalog validation                                    | RETIRED — absent and mechanically rejected                        |
+| D29 | Imported daemon, polling, marker, mutable loop state, direct shell aliases                                    | OBSOLETE    | Remain unreachable and return reviewed denials                                                                                           | compatibility policy                                        | RETIRED — unreachable with stable diagnostics                     |
+| D30 | Uncomposed engineering-intent, local-effect, GitHub, evidence-development, and handoff internals              | INCIDENTAL  | No production parity requirement merely from source presence; adopt separately only through native contracts                             | none by default                                             | EXCLUDED — uncomposed source internals                             |
+| D31 | MCP, LSP, ACP, server mode, dynamic third-party plugins, provider breadth, warming, hidden host helper agents | INCIDENTAL  | No current Curiosity dependency; require separate intent and qualification                                                               | none by default                                             | EXCLUDED — absent by design                                       |
+| D32 | Exact OpenCode prompts, schemas, callbacks, storage files, permission grammar, and task output tags           | INCIDENTAL  | Preserve no implementation identity; only the behavioral contracts in this document matter                                               | none                                                        | EXCLUDED — implementation identity rejected                       |
 
 ### 4.1 Asset and tool coverage index
 
@@ -827,54 +806,54 @@ records fail without partial import.
 
 ### Inventory and truth
 
-- [ ] **PAR-AC01 — Complete inventory:** a generated check reconciles the
+- [x] **PAR-AC01 — Complete inventory:** a generated check reconciles the
       OpenCode2 manifest, composition root, accepted/current host-version pins,
       host validation contract, and native parity matrix; there are zero
       unclassified active assets/tools/features or unexplained pin conflicts.
-- [ ] **PAR-AC02 — No name-only claim:** status and tests distinguish
+- [x] **PAR-AC02 — No name-only claim:** status and tests distinguish
       `catalogued`, `scaffolded`, `available`, and `qualified`; catalog equality
       alone cannot emit “behavioral parity.”
-- [ ] **PAR-AC03 — Host independence:** with OpenCode packages/config/cache/state
+- [x] **PAR-AC03 — Host independence:** with OpenCode packages/config/cache/state
       absent and network denied, the native build, focused tests, startup, and
       catalog projection are unchanged.
 
 ### Roles, commands, and context
 
-- [ ] **PAR-AC04 — Role policy:** all eight roles have exact versioned policy,
+- [x] **PAR-AC04 — Role policy:** all eight roles have exact versioned policy,
       tool/capability request, child allowlist, model route, and digest; invalid
       primary/default selections fail closed.
-- [ ] **PAR-AC05 — Mechanical role limits:** reviewer mutation, researcher
+- [x] **PAR-AC05 — Mechanical role limits:** reviewer mutation, researcher
       mutation, non-researcher network, and unauthorized delegation are denied
       at the final sink regardless of prompt text.
-- [ ] **PAR-AC06 — Command behavior:** each of the 11 active commands is invoked
+- [x] **PAR-AC06 — Command behavior:** each of the 11 active commands is invoked
       through the authenticated path and receives its required skill/context
       and executable capability set, or reports an accurate unavailable code.
-- [ ] **PAR-AC07 — Compatibility behavior:** each of the 30 deprecated commands
+- [x] **PAR-AC07 — Compatibility behavior:** each of the 30 deprecated commands
       executes its individual native mapping, guidance, or stable denial; no
       model response can fabricate a mapped operation.
-- [ ] **PAR-AC08 — Context/replay:** identical catalog, config, source revision,
+- [x] **PAR-AC08 — Context/replay:** identical catalog, config, source revision,
       and child/session revision produce identical ordered blocks, tools, route,
       and prompt digest.
 
 ### Tools and execution
 
-- [ ] **PAR-AC09 — Read tools:** traversal, absolute escape, symlink swap,
+- [x] **PAR-AC09 — Read tools:** traversal, absolute escape, symlink swap,
       binary/UTF-8, oversized input/output, and cancellation cases preserve root
       confinement and bounded receipts.
-- [ ] **PAR-AC10 — Mutation:** digest/precondition mismatch, scope overlap,
+- [x] **PAR-AC10 — Mutation:** digest/precondition mismatch, scope overlap,
       symlink/ancestor swap, partial write, cancellation, and restart never
       produce an unrecorded successful mutation.
-- [ ] **PAR-AC11 — Process:** executable/argv/env/cwd allowlists, timeout,
+- [x] **PAR-AC11 — Process:** executable/argv/env/cwd allowlists, timeout,
       output cap, signal escalation, process descendants, and delivery ambiguity
       pass on each claimed platform.
-- [ ] **PAR-AC12 — Git:** repository/worktree identity, clean/dirty
+- [x] **PAR-AC12 — Git:** repository/worktree identity, clean/dirty
       preconditions, ownership collision, ref race, path escape, cancellation,
       and partial mutation preserve exact receipts and required gates; denied
       Git operations cannot execute through a generic process profile.
-- [ ] **PAR-AC13 — Search/fetch:** URL, redirect, SSRF, credential, timeout,
+- [x] **PAR-AC13 — Search/fetch:** URL, redirect, SSRF, credential, timeout,
       response-size, partial-result, and prompt-injection fixtures remain bounded
       and provenance-labelled.
-- [ ] **PAR-AC14 — Question versus approval:** a correlated user answer resumes
+- [x] **PAR-AC14 — Question versus approval:** a correlated user answer resumes
       the exact waiting run but cannot approve a binding gate unless submitted
       through the distinct eligible-actor gate command.
 
@@ -892,45 +871,45 @@ records fail without partial import.
 - [x] **PAR-AC18 — Deterministic fan-in:** reversed child completion order yields
       the same ordinal result order and fan-in digest, and exactly one parent
       continuation consumes it.
-- [ ] **PAR-AC19 — Partial fan-out failure:** success, failure, cancellation, and
+- [x] **PAR-AC19 — Partial fan-out failure:** success, failure, cancellation, and
       delivery-unknown siblings all remain visible in one all-settled result;
       no sibling evidence is lost.
-- [ ] **PAR-AC20 — Ceiling and depth:** unknown agent, disallowed child, excessive
+- [x] **PAR-AC20 — Ceiling and depth:** unknown agent, disallowed child, excessive
       depth, child count, provider/tool budget, capability, and tool requests
       dispatch zero external calls with their stable diagnostics.
-- [ ] **PAR-AC21 — Resource collision:** disjoint read-only children overlap;
+- [x] **PAR-AC21 — Resource collision:** disjoint read-only children overlap;
       overlapping/unknown mutators queue or fail deterministically, and use-time
       sink paths cannot escape their committed claims.
-- [ ] **PAR-AC22 — Descendant cancellation:** cancellation before allocation,
+- [x] **PAR-AC22 — Descendant cancellation:** cancellation before allocation,
       before dispatch, during provider, during tool, while waiting, and after a
       stale receipt leaves every descendant terminal or explicitly ambiguous and
       triggers no second parent continuation.
-- [ ] **PAR-AC23 — Child restart:** process termination at every allocation,
+- [x] **PAR-AC23 — Child restart:** process termination at every allocation,
       dispatch, receipt, child terminal, group-ready, and result-delivery
       boundary recovers without lost work, duplicate logical child, duplicate
       result delivery, or fabricated success.
-- [ ] **PAR-AC24 — Child accounting:** every child, retry, tool, and compaction
+- [x] **PAR-AC24 — Child accounting:** every child, retry, tool, and compaction
       physical call is attributable to child and root; unknown usage stays
       unknown and ancestor totals include descendants without double count.
 
 ### Persistence, compaction, clients, and migration
 
-- [ ] **PAR-AC25 — Compaction:** a deterministic overflow fixture creates one
+- [x] **PAR-AC25 — Compaction:** a deterministic overflow fixture creates one
       explicit accounted compaction attempt and replay preserves covered range,
       tail, summary digest, and failure/uncertainty semantics.
-- [ ] **PAR-AC26 — Projection rebuild:** deleting disposable thread, child,
-      Ledger, evidence, and workflow projections and replaying canonical records
-      reproduces equivalent views or fails on an unknown schema.
-- [ ] **PAR-AC27 — Client lifecycle:** new/resume/select-agent/command/question/
-      cancel/child-inspect flows operate only through signed commands and show
-      terminal status from committed events.
-- [ ] **PAR-AC28 — Import safety:** exact-version fixtures import only allowed
+- [x] **PAR-AC26 — Projection rebuild:** thread, child, Ledger, evidence, and
+      workflow views replay from canonical records after reopening with no
+      materialized projection tables, or fail on an unknown schema.
+- [x] **PAR-AC27 — Client lifecycle:** new/resume/select-agent/command/question/
+      gate/cancel/child-inspect flows operate only through signed commands and
+      show terminal status from committed events.
+- [x] **PAR-AC28 — Import safety:** exact-version fixtures import only allowed
       observation data; approvals, active claims, running loops, grants, and
       completion assertions remain non-authoritative; malformed import is atomic.
-- [ ] **PAR-AC29 — Cutover rollback:** staged native selection and forced failure
-      retain one startable prior version and do not modify OpenCode global config
-      or source state.
-- [ ] **PAR-AC30 — Full verification:** focused suites, architecture checks,
+- [x] **PAR-AC29 — Cutover rollback:** staged native selection, forced failure,
+      and explicit receipt-bound rollback retain/select one startable prior
+      version and do not modify OpenCode global config or source state.
+- [x] **PAR-AC30 — Full verification:** focused suites, architecture checks,
       capability truth, package verification, root verification, diff review,
       and a no-Critical/Major adversarial review pass with raw evidence linked.
 
@@ -1002,24 +981,26 @@ PARITY =
 3. Qualify the exact native artifact, install, and rollback profile.
 4. Remove OpenCode only after the computed parity verdict is true.
 
-## 18. Evidence crosswalk and gaps
+## 18. Evidence crosswalk and qualification boundary
 
-| Contract area               | Source evidence                                              | Current native evidence                             | Gap conclusion                                                              |
-| --------------------------- | ------------------------------------------------------------ | --------------------------------------------------- | --------------------------------------------------------------------------- |
-| Active composition          | `src/plugin/plugin.ts` composes config, hooks, tools         | static native catalog                               | Mechanism replaced; inventory complete                                      |
-| Roles/default/search policy | OpenCode2 `features/config/agents.ts` and setup tests        | `plugins/agents.ts`, catalog tests                  | Definitions exist; route and executable delegation missing                  |
-| Host subagents              | bundle depth, subagent modes, host task/session evidence     | workflow child rows/tests                           | No independent child execution or result path                               |
-| Tools                       | host validation inventory and plugin tool registration       | compatibility/workspace tool catalogs               | Names exceed executable behaviors; mutation/process/network absent          |
-| Context/observation         | session/tool/event hooks and bounded projection              | prompt assembler and canonical observations         | Native design improves authority; whole-journal reads and compaction remain |
-| Ledger/evidence             | strict source reducers plus intentional disabled transitions | native reducers and diagnostic aliases              | Partial semantic translation; claims/gates/reconciliation need exact checks |
-| Loop                        | source finite budgets plus host continuation disabled        | native finite workflow engine                       | Safer substrate; no real work, pause/resume, or child model calls           |
-| Persistence/cancellation    | host behavior partly unqualified                             | attempts, generations, ancestry, cancellation tests | Generic foundation exists; child and hard-reset qualification absent        |
-| Distribution                | OpenCode package/installer contract                          | experimental Darwin binary                          | No release/update/signing/production parity                                 |
+| Contract area               | Source evidence                                              | Qualified native evidence                                      | Qualification conclusion                                                   |
+| --------------------------- | ------------------------------------------------------------ | ---------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Active composition          | `src/plugin/plugin.ts` composes config, hooks, search, tools | generated manifest/composition/catalog reconciliation            | Mechanism replaced; every manifested asset and composed feature classified |
+| Roles/default/search policy | OpenCode2 role configuration and host validation contract    | sealed eight-role policy, exact route snapshots, final-sink tests | Closed role and route policy qualified                                     |
+| Host subagents              | bundle depth, subagent modes, host task/session evidence     | durable child sessions, independent calls, bounded scheduler      | Sequential, continuation, parallel, fan-in, failure, cancellation qualified |
+| Tools                       | host validation inventory and plugin tool registration       | classified native tool catalog and sink-specific acceptance tests | Native bounded contracts qualify; absent capabilities deny explicitly      |
+| Context/observation         | session/tool/event hooks and bounded projection              | deterministic context replay and canonical observation reducers   | Ordered context, taint, prompt digest, and rebuild qualified                |
+| Ledger/evidence             | strict source reducers plus intentional disabled transitions | native reducers, gates, evidence, and compatibility dispositions  | Native authority boundary and stable denials qualified                     |
+| Loop                        | source finite budgets plus host continuation disabled        | finite workflow engine, budgets, cancellation, terminal checks    | Bounded workflow replacement qualifies; daemon behavior remains retired    |
+| Persistence/cancellation    | host behavior partly unqualified                             | SQLite attempts, ancestry, restart boundaries, stale receipts     | Local event-journal recovery profile qualified                             |
+| Distribution                | OpenCode package/installer contract                          | immutable experimental Darwin binary and rollback precondition    | Development artifact cutover/rollback qualified; release remains forbidden |
 
-No essential dependency is silently dropped in this specification: each is an
-`ESSENTIAL` row or the required outcome of a `REPLACEABLE` row, with an owner,
-migration step, and binary check. This is specification coverage, not evidence
-that implementation parity already exists.
+No essential dependency is silently dropped: each is `QUALIFIED`; each
+`REPLACEABLE` row has a passing bounded native contract; obsolete rows are
+`RETIRED`; incidental rows are `EXCLUDED`. This verdict is limited to the
+trusted-local, single-user, Darwin-arm64 development profile. It grants no
+production, publication, deployment, signing, automatic-update, broader Git,
+sandbox, remote-service, or release authority.
 
 ## 19. Findings, unknowns, and stop decision
 
@@ -1035,10 +1016,12 @@ that implementation parity already exists.
 - **Documented:** the generic bundle expects subagent modes and configurable
   nesting, while the plugin's own capability report refuses to treat host child
   lineage as authoritative.
-- **Documented:** native workflows enforce child counts, depth, cancellation,
-  and capability ceilings but do not execute a child provider session.
-- **Documented:** native executable model tools are currently bounded workspace
-  read/search plus local semantic/diagnostic actions.
+- **Verified:** native delegation allocates durable child sessions and physical
+  provider calls, enforces a maximum of four group members and two active
+  children, and delivers one deterministic all-settled result to the parent.
+- **Verified:** native tools include bounded workspace read/mutation, reviewed
+  process, governed Git, search/fetch, question, child, Ledger, evidence, and
+  finite-workflow contracts, each subject to role and capability sinks.
 - **Documented contradiction:** accepted ADR-0025 and ADR-0027 constrain the
   OpenCode host to beta-17595, while current package, host guard, tests, and
   container validation use beta-18138. The latter is implementation state, not
@@ -1046,12 +1029,10 @@ that implementation parity already exists.
 - **Inference (high confidence):** implementation-oriented roles and commands
   materially rely on host mutation and process tools even though those tools are
   not plugin-owned.
-- **Inference (high confidence):** fresh child context, durable lineage, terminal
-  result return, and parent continuation are the minimum behavior behind the
-  existing subagent role design.
-- **Inference (high confidence):** the current global semaphore/serial action
-  loop must change to support actual concurrent fan-out without giving up the
-  one-writer invariant.
+- **Verified:** the native scheduler permits concurrent external calls while
+  retaining one SQLite authority writer and deterministic result ordering.
+- **Verified:** the source host-version conflict is explicitly disposed as
+  `SOURCE_HOST_RETIRED_NATIVE_INDEPENDENT`; no beta-18138 authority is inferred.
 
 ### 19.2 Unknowns
 
@@ -1063,9 +1044,10 @@ that implementation parity already exists.
   reconciliation remain unqualified.
 - The effective operator overlay and historical user permission/model choices
   at any installation are unknown.
-- Hard-reset SQLite behavior, process-tree cleanup, mutation rollback, Git
-  collision handling, and network adapter security require separate platform
-  qualification.
+- Hard-reset SQLite storage remains scaffolded rather than qualified. The local
+  transactional restart profile does not claim hard-reset durability.
+- Linux and Windows are not part of this qualification record; no cross-platform
+  result is inferred from inventory declarations or portable source.
 - Model quality equivalence across different system content is not mechanically
   provable; parity checks therefore enforce policy/context/tool contracts and
   observable outcomes, not identical prose or stochastic text.
@@ -1075,7 +1057,7 @@ that implementation parity already exists.
 | Source                                                                              | Why retained                                                                 | Claim supported                                                                            | Why preferable                                                                                |
 | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
 | `apps/plugin/opencode2/assets/manifest.json`                                        | Complete authored asset ledger                                               | Exact command/config/skill inventory and dispositions                                      | Machine-readable project source outranks prose counts                                         |
-| `apps/plugin/opencode2/src/plugin/plugin.ts` and active feature imports             | Runtime reachability root                                                    | Exactly three composed feature groups and lifecycle/version behavior                       | Composition root distinguishes active behavior from scaffolding                               |
+| `apps/plugin/opencode2/src/plugin/plugin.ts` and active feature imports             | Runtime reachability root                                                    | Exactly four composed feature groups and lifecycle/version behavior                        | Composition root distinguishes active behavior from scaffolding                               |
 | `apps/plugin/opencode2/src/features/{config,hooks,tools,ledger,loop-engine,search}` | Primary Curiosity-on-OpenCode behavior                                       | Roles, hooks, tool contracts, failure semantics, disabled authority                        | Executed project source is stronger than intended design docs                                 |
 | local `@opencode-ai/plugin@0.0.0-beta-18138` declarations and validation contract   | Current implementation seam, explicitly not accepted qualification authority | Agent/session/tool/event domains and built-in host capability inventory                    | Exact current bytes are preferable to generic OpenCode documentation for implementation facts |
 | OpenCode2 ADR-0025 and ADR-0027                                                     | Accepted host-version and qualification boundary                             | beta-17595 exact pin; test-only authority; no inferred composition/release authority       | Accepted decisions govern authority and expose the beta-18138 source conflict                 |
@@ -1083,21 +1065,21 @@ that implementation parity already exists.
 | `apps/custom-harness/src` kernel/plugins/storage and focused tests                  | Current native implementation truth                                          | What is implemented, scaffolded, serial, unavailable, or unqualified                       | Source and behavioral tests outrank status language                                           |
 | ADR-001 through ADR-011 and `PLUGIN-NATIVE-SPEC.md`                                 | Accepted Curiosity authority                                                 | One authority, proposal boundary, final-sink checks, static plugins, qualification         | Project decisions govern the replacement architecture                                         |
 
-### 19.4 Curiosity pass
+### 19.4 Qualification close
 
-The highest-value unresolved thread was whether current workflow children could
-already satisfy the subagent contract. Source tracing falsified that hypothesis:
-they carry no delegated task input, make no child provider call, retain no child
-conversation result, and only change workflow state.
+The first high-value thread was whether child execution, restart, cancellation,
+and fan-in were operator-reachable rather than projection-only. Scripted parent,
+child, fault, and restart fixtures established independent physical calls,
+durable lineage, bounded concurrency, ordinal fan-in, and one parent resume.
 
-The next thread was whether catalog parity implied operational command parity.
-It did not: implementation and research commands require mutation/process or
-network behaviors that current capability status explicitly disables.
+The second thread was whether catalog equality had been mistaken for behavior.
+The four-state maturity model, signed active-command matrix, compatibility
+disposition events, sink tests, and generated inventory prevent that inference.
 
-The final material thread was whether beta-18138 could be treated as the
-accepted exact host pin. It cannot: current implementation evidence conflicts
-with the accepted beta-17595 decisions, so the specification carries the
-conflict into PAR-AC01 instead of blessing either version.
+The final material thread was the beta-17595/beta-18138 contradiction. The native
+harness imports neither host package and passes an isolated host-free build,
+focused test, startup, and catalog check. The conflict is therefore retained as
+source history and disposed only by retiring the source host dependency.
 
 `CURIOSITY_NO_GO`:
 
@@ -1112,7 +1094,9 @@ conflict into PAR-AC01 instead of blessing either version.
 - treating exact stochastic model output as a parity oracle — non-deterministic
   and weaker than mechanical policy/action/receipt checks.
 
-Coverage is complete for specification purposes and saturated across the
-manifest, composition root, host seam, current harness, and tests. Research
-stops here. Implementation and qualification evidence remain intentionally open
-under PAR-AC01 through PAR-AC30.
+Coverage is complete for the bounded native parity decision and saturated across
+the manifest, composition root, host seam, native catalog, authority sinks,
+fault matrices, clients, migration, and distribution rollback. PAR-AC01 through
+PAR-AC30 are closed by `PARITY-QUALIFICATION.json` and
+`PARITY-VERIFICATION.md`; any future source, inventory, ledger, or evidence drift
+fails the required `parity:check` entrypoint.

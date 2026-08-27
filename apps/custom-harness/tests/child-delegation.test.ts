@@ -124,10 +124,14 @@ describe("durable child-agent execution", () => {
           expect(request.tools).toEqual([]);
           expect(request.messages.map(({ role }) => role)).toEqual([
             "system",
+            "system",
             "user",
           ]);
           expect(request.messages[0]?.content).toContain("Review independently");
           expect(request.messages[1]?.content).toContain(
+            "CURIOSITY_CAPABILITY_UNAVAILABLE:semantic.command",
+          );
+          expect(request.messages[2]?.content).toContain(
             "Review the bounded task independently.",
           );
           expect(
@@ -1323,7 +1327,7 @@ describe("durable child-agent execution", () => {
     }
   });
 
-  test("denies a third child before any child allocation or dispatch", async () => {
+  test("denies a third child under the default profile before any child allocation or dispatch", async () => {
     const { databasePath, root } = fixture();
     let generations = 0;
     const generator: TextGenerator = {
@@ -1498,15 +1502,19 @@ describe("durable child-agent execution", () => {
         if (generations === 4) {
           expect(request.messages.map(({ role }) => role)).toEqual([
             "system",
+            "system",
             "user",
             "assistant",
             "user",
           ]);
           expect(request.messages[1]?.content).toContain(
+            "CURIOSITY_CAPABILITY_UNAVAILABLE:semantic.command",
+          );
+          expect(request.messages[2]?.content).toContain(
             "Review the bounded task independently.",
           );
-          expect(request.messages[2]?.content).toBe("Initial child result.");
-          expect(request.messages[3]?.content).toContain(
+          expect(request.messages[3]?.content).toBe("Initial child result.");
+          expect(request.messages[4]?.content).toContain(
             "Refine the exact prior child result.",
           );
           yield "Refined child result.";
@@ -1793,27 +1801,41 @@ describe("durable child-agent execution", () => {
     await harness.dispose();
   });
 
-  test("enforces the configured child concurrency ceiling before allocation", async () => {
+  test("queues a delegation group without exceeding the configured child concurrency ceiling", async () => {
     const { databasePath, root } = fixture();
     let generations = 0;
+    let activeChildren = 0;
+    let peakChildren = 0;
     const generator: TextGenerator = {
       effort: "medium",
       modelId: "test:child-policy-ceiling",
-      stream: async function* () {
+      stream: async function* (request) {
         generations += 1;
-        for (const child of ["A", "B"])
-          yield {
-            input: delegateInput({
-              description: `Policy child ${child}`,
-              ownership: {
-                readOnly: true,
-                resources: [`workspace:${child.toLowerCase()}`],
-              },
-            }),
-            toolCallId: `delegate-policy-${child.toLowerCase()}`,
-            toolName: "agent.delegate",
-            type: "tool-call",
-          } as never;
+        if (generations === 1) {
+          for (const child of ["A", "B"])
+            yield {
+              input: delegateInput({
+                description: `Policy child ${child}`,
+                ownership: {
+                  readOnly: true,
+                  resources: [`workspace:${child.toLowerCase()}`],
+                },
+              }),
+              toolCallId: `delegate-policy-${child.toLowerCase()}`,
+              toolName: "agent.delegate",
+              type: "tool-call",
+            } as never;
+          return;
+        }
+        if (request.tools?.length === 0) {
+          activeChildren += 1;
+          peakChildren = Math.max(peakChildren, activeChildren);
+          await Bun.sleep(10);
+          activeChildren -= 1;
+          yield "Queued child complete.";
+          return;
+        }
+        yield "Queued parent complete.";
       },
     };
     const harness = createCuriosityHarness({
@@ -1824,6 +1846,7 @@ describe("durable child-agent execution", () => {
         defaultPrimaryRole: "generalist",
         enabledPrimaryRoles: ["generalist"],
         enabledSubagentRoles: ["reviewer"],
+        maximumChildrenPerTurn: 2,
         maximumConcurrentChildren: 1,
         maximumDelegationDepth: 1,
         schemaVersion: 1,
@@ -1832,16 +1855,17 @@ describe("durable child-agent execution", () => {
       textGenerator: generator,
       workspaceRoot: root,
     });
-    await expect(
-      harness.chat(turn("generalist", "policy-ceiling")),
-    ).rejects.toMatchObject({ message: "CHILD_CONCURRENCY_EXCEEDED" });
-    expect(generations).toBe(1);
+    expect(
+      await harness.chat(turn("generalist", "policy-ceiling")),
+    ).toMatchObject({ text: "Queued parent complete." });
+    expect(generations).toBe(4);
+    expect(peakChildren).toBe(1);
     expect(
       await harness.projections.children("turn-child-policy-ceiling"),
-    ).toEqual([]);
+    ).toHaveLength(2);
     expect(
       await harness.projections.childAccounting("turn-child-policy-ceiling"),
-    ).toMatchObject({ totals: { childCalls: 0, providerCalls: 1 } });
+    ).toMatchObject({ totals: { childCalls: 2, providerCalls: 4 } });
     await harness.dispose();
   });
 

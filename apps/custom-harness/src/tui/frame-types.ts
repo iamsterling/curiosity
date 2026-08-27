@@ -11,7 +11,12 @@ export interface TuiCatalogView {
 export interface TuiCapabilityView {
   readonly id: string;
   readonly reason: string;
-  readonly state: "available" | "unavailable";
+  readonly state:
+    | "catalogued"
+    | "scaffolded"
+    | "available"
+    | "qualified"
+    | "unavailable";
 }
 
 export interface TuiInspectorView {

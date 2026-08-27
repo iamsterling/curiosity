@@ -1,0 +1,315 @@
+{
+  "schemaVersion": 1,
+  "verdict": "PASS",
+  "sourceHostPinConflict": {
+    "accepted": "0.0.0-beta-17595",
+    "current": "0.0.0-beta-18138",
+    "disposition": "SOURCE_HOST_RETIRED_NATIVE_INDEPENDENT"
+  },
+  "featureGroups": [
+    { "ids": ["config"], "dependencyRows": ["D02", "D03", "D26"] },
+    { "ids": ["hooks"], "dependencyRows": ["D20"] },
+    { "ids": ["search"], "dependencyRows": ["D12"] },
+    { "ids": ["tools"], "dependencyRows": ["D14", "D21", "D22"] }
+  ],
+  "toolGroups": [
+    { "ids": ["agent.delegate"], "dependencyRows": ["D04", "D14"] },
+    {
+      "ids": ["evidence_query", "ledger_approval_request", "ledger_approval_status", "ledger_claim_release", "ledger_claim_request", "ledger_evidence_submit", "ledger_fact_record", "ledger_intent_activate", "ledger_intent_frame", "ledger_intent_propose", "ledger_progress_propose", "ledger_query", "ledger_resolution_propose", "ledger_review_propose", "ledger_work_propose"],
+      "dependencyRows": ["D14", "D21"]
+    },
+    {
+      "ids": ["git_diff", "git_ref_inspect", "git_ref_update", "git_status", "git_worktree_create", "git_worktree_inspect", "git_worktree_remove"],
+      "dependencyRows": ["D11", "D14"]
+    },
+    {
+      "ids": ["native_loop_pause", "native_loop_resume", "native_loop_start", "native_loop_status", "native_loop_stop"],
+      "dependencyRows": ["D14", "D22"]
+    },
+    { "ids": ["process_run"], "dependencyRows": ["D10", "D14"] },
+    { "ids": ["user_question"], "dependencyRows": ["D13", "D14"] },
+    { "ids": ["formerhuman_search", "web_fetch", "web_search"], "dependencyRows": ["D12", "D14", "D23"] },
+    {
+      "ids": ["workspace_delete", "workspace_patch", "workspace_write"],
+      "dependencyRows": ["D09", "D14"]
+    },
+    {
+      "ids": ["workspace_glob", "workspace_grep", "workspace_list", "workspace_read", "workspace_search"],
+      "dependencyRows": ["D08", "D14"]
+    }
+  ],
+  "acceptance": [
+    {
+      "id": "PAR-AC01",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tools/verify-parity-qualification.ts#PARITY_UNCLASSIFIED_ASSET"
+      ]
+    },
+    {
+      "id": "PAR-AC02",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/qualification-status.test.ts#uses available only for configured but not profile-qualified capability"
+      ]
+    },
+    {
+      "id": "PAR-AC03",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/host-independence.test.ts#builds and starts from an isolated host-free home with network capability denied"
+      ]
+    },
+    {
+      "id": "PAR-AC04",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/provider-routing.test.ts#enforces one closed enabled-role policy at admission, catalog, and route resolution"
+      ]
+    },
+    {
+      "id": "PAR-AC05",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/content-tools.test.ts#denies non-researcher network actions at the final tool sink",
+        "apps/custom-harness/tests/role-sink-policy.test.ts#denies reviewer and researcher mutation at the final sink regardless of model output"
+      ]
+    },
+    {
+      "id": "PAR-AC06",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/opencode2-parity.test.ts#invokes all eleven active commands through signed activation and exact prompt context"
+      ]
+    },
+    {
+      "id": "PAR-AC07",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/opencode2-parity.test.ts#resolves all thirty compatibility commands mechanically and keeps model text non-authoritative"
+      ]
+    },
+    {
+      "id": "PAR-AC08",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/context-replay.test.ts#reproduces ordered blocks, tools, route, source revision, child revision, and prompt digest"
+      ]
+    },
+    {
+      "id": "PAR-AC09",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/workspace-read-boundaries.test.ts#confines traversal, absolute, symlink, binary, UTF-8, oversized, and cancelled reads"
+      ]
+    },
+    {
+      "id": "PAR-AC10",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/workspace-mutation.test.ts#preserves the file on digest and patch-occurrence mismatches",
+        "apps/custom-harness/tests/workspace-mutation.test.ts#rejects traversal and final symlinks without changing outside content",
+        "apps/custom-harness/tests/attempt-governance.test.ts#releases a known resource completion and fences delivery ambiguity"
+      ]
+    },
+    {
+      "id": "PAR-AC11",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/process-execution.test.ts#bounds timeout and output and escalates cancellation across descendants"
+      ]
+    },
+    {
+      "id": "PAR-AC12",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/git-read.test.ts#denies dirty, foreign, and replaced worktree roots without using the replacement",
+        "apps/custom-harness/tests/git-read.test.ts#fences a governed worktree lease when cancellation races dispatched creation"
+      ]
+    },
+    {
+      "id": "PAR-AC13",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/bounded-http-adapter.test.ts#rejects oversized, encoded, non-text, malformed, and late responses",
+        "apps/custom-harness/tests/bounded-http-adapter.test.ts#denies unsafe schemes, credentials, private answers, and mixed DNS",
+        "apps/custom-harness/tests/chat.test.ts#searches, fetches, captures source custody, and continues a research turn"
+      ]
+    },
+    {
+      "id": "PAR-AC14",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/question-lifecycle.test.ts#resumes the exact waiting turn while keeping answers distinct from gate approval",
+        "apps/custom-harness/tests/question-lifecycle.test.ts#does not leak an independent root failure into question-answer coordination"
+      ]
+    },
+    {
+      "id": "PAR-AC15",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/child-delegation.test.ts#runs a fresh child call and resumes the parent exactly once"
+      ]
+    },
+    {
+      "id": "PAR-AC16",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/child-delegation.test.ts#continues the exact child session revision with preserved history"
+      ]
+    },
+    {
+      "id": "PAR-AC17",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/child-delegation.test.ts#preallocates two children, dispatches them concurrently, and fans in by ordinal"
+      ]
+    },
+    {
+      "id": "PAR-AC18",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/child-delegation.test.ts#keeps the fan-in digest stable when sibling completion order reverses"
+      ]
+    },
+    {
+      "id": "PAR-AC19",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/child-failure-matrix.test.ts#retains success, failure, cancellation, and delivery uncertainty in one ordered result"
+      ]
+    },
+    {
+      "id": "PAR-AC20",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/child-delegation.test.ts#denies unknown agents, mutation, context, and provider or tool budget widening before dispatch",
+        "apps/custom-harness/tests/child-delegation.test.ts#denies a third child under the default profile before any child allocation or dispatch",
+        "apps/custom-harness/tests/child-delegation.test.ts#denies nested delegation at the depth-one child provider sink"
+      ]
+    },
+    {
+      "id": "PAR-AC21",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/child-resource-policy.test.ts#overlaps disjoint read-only claims and rejects overlapping or unknown mutators before dispatch"
+      ]
+    },
+    {
+      "id": "PAR-AC22",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/child-delegation.test.ts#fences root cancellation before a child can be allocated",
+        "apps/custom-harness/tests/attempt-governance.test.ts#cancellation after allocation but before dispatch leaves the physical call not delivered",
+        "apps/custom-harness/tests/child-delegation.test.ts#cancels a root turn through every active descendant without parent continuation",
+        "apps/custom-harness/tests/process-execution.test.ts#propagates an authenticated execution cancellation through the process tool and quarantines its late receipt"
+      ]
+    },
+    {
+      "id": "PAR-AC23",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/child-restart-boundaries.test.ts#survives SIGKILL at allocation, dispatch, receipt, terminal, group-ready, and result-delivery boundaries",
+        "apps/custom-harness/tests/child-delegation.test.ts#recovers a dispatched child after process death without duplicate child or parent calls",
+        "apps/custom-harness/tests/child-delegation.test.ts#does not redispatch or fabricate success when process death interrupts the parent resume",
+        "apps/custom-harness/tests/child-restart-boundaries.test.ts#recovers a committed provider receipt after terminal and group-ready interruption",
+        "apps/custom-harness/tests/child-restart-boundaries.test.ts#recovers a ready group after result-delivery interruption with one parent continuation"
+      ]
+    },
+    {
+      "id": "PAR-AC24",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/child-delegation.test.ts#preallocates two children, dispatches them concurrently, and fans in by ordinal",
+        "apps/custom-harness/tests/attempt-governance.test.ts#fences an older generation, quarantines its receipt, and preserves immutable snapshots",
+        "apps/custom-harness/tests/schema-migration.test.ts#upgrades a supported prior version while preserving canonical event identity",
+        "apps/custom-harness/tests/chat.test.ts#executes bounded workspace evidence tools and continues the governed turn",
+        "apps/custom-harness/tests/compaction.test.ts#accounts one immutable compaction artifact and reuses it on replay"
+      ]
+    },
+    {
+      "id": "PAR-AC25",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/compaction.test.ts#accounts one immutable compaction artifact and reuses it on replay"
+      ]
+    },
+    {
+      "id": "PAR-AC26",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/projection-rebuild-matrix.test.ts#rebuilds thread, child, Ledger, evidence, and workflow views with no disposable projection tables and rejects unknown schema",
+        "apps/custom-harness/tests/schema-migration.test.ts#rejects a current envelope whose hash-bound lineage was altered"
+      ]
+    },
+    {
+      "id": "PAR-AC27",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/tui-bubbletea.test.ts#runs thread, role, command, question, gate, cancellation, and child lifecycle through the native client",
+        "apps/custom-harness/tests/tui-bubbletea.test.ts#submits authenticated cancellation for the active turn",
+        "apps/custom-harness/native/tui/internal/ui/model_test.go#TestActiveTurnCancellationUsesProtocolSender",
+        "apps/custom-harness/tests/question-lifecycle.test.ts#resumes the exact waiting turn while keeping answers distinct from gate approval",
+        "apps/custom-harness/tests/child-delegation.test.ts#cancels a root turn through every active descendant without parent continuation"
+      ]
+    },
+    {
+      "id": "PAR-AC28",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/import-safety.test.ts#rejects authority-bearing, malformed, wrong-version, and digest-mismatched fixtures without partial import"
+      ]
+    },
+    {
+      "id": "PAR-AC29",
+      "status": "PASS",
+      "evidence": [
+        "apps/custom-harness/tests/darwin/binary-distribution.test.ts#retains a startable prior selection when staged cutover preconditions fail",
+        "apps/custom-harness/tests/darwin/binary-distribution.test.ts#rolls back a completed cutover through an exact retained selection and immutable receipt",
+        "apps/custom-harness/tests/darwin/binary-distribution.test.ts#rejects rollback to an unreceipted retained binary",
+        "apps/custom-harness/tests/darwin/binary-distribution.test.ts#does not switch the launcher when receipt creation fails"
+      ]
+    },
+    {
+      "id": "PAR-AC30",
+      "status": "PASS",
+      "evidence": [
+        "docs/architecture/custom-harness/PARITY-VERIFICATION.md#Verdict: PASS"
+      ]
+    }
+  ],
+  "dependencyRows": [
+    { "id": "D01", "disposition": "ESSENTIAL", "status": "QUALIFIED" },
+    { "id": "D02", "disposition": "ESSENTIAL", "status": "QUALIFIED" },
+    { "id": "D03", "disposition": "ESSENTIAL", "status": "QUALIFIED" },
+    { "id": "D04", "disposition": "REPLACEABLE", "status": "QUALIFIED" },
+    { "id": "D05", "disposition": "ESSENTIAL", "status": "QUALIFIED" },
+    { "id": "D06", "disposition": "ESSENTIAL", "status": "QUALIFIED" },
+    { "id": "D07", "disposition": "ESSENTIAL", "status": "QUALIFIED" },
+    { "id": "D08", "disposition": "ESSENTIAL", "status": "QUALIFIED" },
+    { "id": "D09", "disposition": "ESSENTIAL", "status": "QUALIFIED" },
+    { "id": "D10", "disposition": "ESSENTIAL", "status": "QUALIFIED" },
+    { "id": "D11", "disposition": "REPLACEABLE", "status": "QUALIFIED" },
+    { "id": "D12", "disposition": "ESSENTIAL", "status": "QUALIFIED" },
+    { "id": "D13", "disposition": "REPLACEABLE", "status": "QUALIFIED" },
+    { "id": "D14", "disposition": "ESSENTIAL", "status": "QUALIFIED" },
+    { "id": "D15", "disposition": "ESSENTIAL", "status": "QUALIFIED" },
+    { "id": "D16", "disposition": "REPLACEABLE", "status": "QUALIFIED" },
+    { "id": "D17", "disposition": "REPLACEABLE", "status": "QUALIFIED" },
+    { "id": "D18", "disposition": "ESSENTIAL", "status": "QUALIFIED" },
+    { "id": "D19", "disposition": "REPLACEABLE", "status": "QUALIFIED" },
+    { "id": "D20", "disposition": "REPLACEABLE", "status": "QUALIFIED" },
+    { "id": "D21", "disposition": "ESSENTIAL", "status": "QUALIFIED" },
+    { "id": "D22", "disposition": "REPLACEABLE", "status": "QUALIFIED" },
+    { "id": "D23", "disposition": "OBSOLETE", "status": "RETIRED" },
+    { "id": "D24", "disposition": "REPLACEABLE", "status": "QUALIFIED" },
+    { "id": "D25", "disposition": "REPLACEABLE", "status": "QUALIFIED" },
+    { "id": "D26", "disposition": "REPLACEABLE", "status": "QUALIFIED" },
+    { "id": "D27", "disposition": "REPLACEABLE", "status": "QUALIFIED" },
+    { "id": "D28", "disposition": "OBSOLETE", "status": "RETIRED" },
+    { "id": "D29", "disposition": "OBSOLETE", "status": "RETIRED" },
+    { "id": "D30", "disposition": "INCIDENTAL", "status": "EXCLUDED" },
+    { "id": "D31", "disposition": "INCIDENTAL", "status": "EXCLUDED" },
+    { "id": "D32", "disposition": "INCIDENTAL", "status": "EXCLUDED" }
+  ]
+}

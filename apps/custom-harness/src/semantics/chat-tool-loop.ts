@@ -178,7 +178,7 @@ const chatToolCorrelation = (
     typeof candidate.toolName !== "string" ||
     typeof candidate.toolVersion !== "string" ||
     !Array.isArray(delegationCallIds) ||
-    delegationCallIds.length > 2 ||
+    delegationCallIds.length > 4 ||
     delegationCallIds.some((id) => typeof id !== "string" || !id) ||
     (candidate.delegationGroupId !== undefined &&
       typeof candidate.delegationGroupId !== "string") ||
@@ -209,7 +209,7 @@ const chatToolCorrelation = (
 };
 
 const decodeToolCalls = (value: unknown): readonly ModelToolCall[] | undefined => {
-  if (!Array.isArray(value) || value.length > 4) return undefined;
+  if (!Array.isArray(value) || value.length > 8) return undefined;
   const calls: ModelToolCall[] = [];
   for (const item of value) {
     const call = record(item);
@@ -433,7 +433,7 @@ export const providerSucceeded = Effect.fn(
   const delegationCallIds = toolCalls
     .filter(({ toolName }) => toolName === "agent.delegate")
     .map(({ toolCallId }) => toolCallId);
-  if (delegationCallIds.length > 2)
+  if (delegationCallIds.length > 4)
     return turnFailed(correlation, "CHILD_COUNT_EXCEEDED", output.modelId);
   const actions: ReactionProposal["actions"][number][] = [];
   for (const call of toolCalls) {

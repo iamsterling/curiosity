@@ -79,6 +79,44 @@ const semanticTool = (
   version: "1.0.0",
 });
 
+const kernelTool = (
+  name: string,
+  description: string,
+  actionType: string,
+  inputSchema: unknown,
+  requestedCapabilities: readonly string[],
+  readOnly: boolean,
+): ToolContribution => ({
+  actionType,
+  description,
+  id: `curiosity.stock.compatibility-tools.tools.${name}`,
+  inputSchema,
+  name,
+  outputProvenance: "trusted-durable",
+  propose: (input, subject) =>
+    Effect.try({
+      try: () => ({
+        actionSchemaVersion: 1 as const,
+        actionType,
+        deadlineClass: "interactive" as const,
+        gateClass: "none-requested" as const,
+        input: record(input),
+        requestedCapabilities,
+        schemaVersion: 1 as const,
+        subject,
+      }),
+      catch: () =>
+        new PluginFailure({
+          message: "TOOL_INPUT_INVALID",
+          pluginId: "curiosity.stock.compatibility-tools",
+        }),
+    }),
+  readOnly,
+  requestedCapabilities,
+  schemaVersion: 1,
+  version: "1.0.0",
+});
+
 const diagnosticTool = (
   name: string,
   description: string,
@@ -126,6 +164,8 @@ const evidenceSchema = closedSchema(
   { evidence: { type: "object" } },
   ["evidence"],
 );
+
+const compatibilityToolByName = new Map<string, ToolContribution>();
 
 export const compatibilityToolContributions: readonly ToolContribution[] = [
   semanticTool(
@@ -273,6 +313,12 @@ export const compatibilityToolContributions: readonly ToolContribution[] = [
       const dispatch = nested(input, "dispatch");
       if (typeof claim.workID !== "string" || typeof dispatch.id !== "string")
         throw new Error("TOOL_INPUT_INVALID");
+      if (
+        dispatch.workflowName !== undefined &&
+        dispatch.workflowName !== "goal-loop" &&
+        dispatch.workflowName !== "gated-wait"
+      )
+        throw new Error("TOOL_INPUT_INVALID");
       return {
         kind: "workflow.start",
         payload: {
@@ -280,7 +326,7 @@ export const compatibilityToolContributions: readonly ToolContribution[] = [
           instanceId: dispatch.id,
           objective: `Continue accepted claim ${claim.workID}`,
           schemaVersion: 1,
-          workflowName: "goal-loop",
+          workflowName: dispatch.workflowName ?? "goal-loop",
         },
       };
     },
@@ -295,18 +341,25 @@ export const compatibilityToolContributions: readonly ToolContribution[] = [
     "Resume is fail-closed until a durable native pause state is qualified.",
     "CURIOSITY_WORKFLOW_RESUME_UNAVAILABLE",
   ),
-  diagnosticTool(
+  kernelTool(
     "native_loop_stop",
     "Use the kernel execution-cancellation command for the exact workflow execution.",
-    "CURIOSITY_USE_EXECUTION_CANCEL",
+    "workflow.cancel",
+    closedSchema({ executionId: identity }, ["executionId"]),
+    ["semantic.command"],
+    false,
   ),
-  diagnosticTool(
+  kernelTool(
     "native_loop_status",
     "Read the native workflow projection without changing lifecycle state.",
-    "CURIOSITY_USE_WORKFLOW_PROJECTION",
+    "workflow.status",
+    closedSchema({}),
+    [],
     true,
   ),
 ];
+for (const tool of compatibilityToolContributions)
+  compatibilityToolByName.set(tool.name, tool);
 
 export const compatibilityToolsPlugin: CuriosityPluginV2 = {
   manifest: {
@@ -323,9 +376,82 @@ export const compatibilityToolsPlugin: CuriosityPluginV2 = {
       { pluginId: "curiosity.stock.evidence", version: "1.0.0" },
       { pluginId: "curiosity.stock.ledger", version: "1.0.0" },
       { pluginId: "curiosity.stock.loop", version: "1.0.0" },
+      { pluginId: "curiosity.stock.skills", version: "1.1.0" },
     ],
     schemaVersion: 2,
     version: "1.0.0",
   },
+  eventReactors: [
+    {
+      eventTypes: ["compatibility.command.resolved"],
+      id: "curiosity.stock.compatibility-tools.reactors.command-mapping",
+      react: Effect.fn("CompatibilityCommandMapping.react")(function* (event) {
+        let body: Record<string, unknown>;
+        try {
+          body = record(event.body);
+        } catch {
+          return yield* new PluginFailure({
+            message: "COMPATIBILITY_COMMAND_EVENT_INVALID",
+            pluginId: "curiosity.stock.compatibility-tools",
+          });
+        }
+        if (
+          body.schemaVersion !== 1 ||
+          typeof body.resolution !== "string" ||
+          typeof body.target !== "string" ||
+          typeof body.threadId !== "string" ||
+          typeof body.arguments !== "string"
+        )
+          return yield* new PluginFailure({
+            message: "COMPATIBILITY_COMMAND_EVENT_INVALID",
+            pluginId: "curiosity.stock.compatibility-tools",
+          });
+        if (
+          body.resolution !== "native-tool" &&
+          body.resolution !== "ledger-proposal"
+        )
+          return { actions: [], events: [] };
+        const tool = compatibilityToolByName.get(body.target);
+        if (!tool)
+          return yield* new PluginFailure({
+            message: "COMPATIBILITY_COMMAND_TARGET_INVALID",
+            pluginId: "curiosity.stock.compatibility-tools",
+          });
+        let input: unknown;
+        try {
+          input = body.arguments.trim() ? JSON.parse(body.arguments) : {};
+        } catch {
+          return yield* new PluginFailure({
+            message: "COMPATIBILITY_COMMAND_ARGUMENTS_INVALID",
+            pluginId: "curiosity.stock.compatibility-tools",
+          });
+        }
+        const proposed = yield* tool.propose(input, {
+          executionId: `compatibility:${event.eventId}`,
+          resource: `thread:${body.threadId}`,
+        });
+        return {
+          actions: [
+            {
+              ...proposed,
+              input: {
+                correlation: {
+                  activationId: body.activationId,
+                  commandName: body.commandName,
+                  kind: "curiosity.compatibility.command",
+                  sourceEventId: event.eventId,
+                  target: body.target,
+                  threadId: body.threadId,
+                },
+                request: proposed.input,
+              },
+            },
+          ],
+          events: [],
+        };
+      }),
+      schemaVersion: 1,
+    },
+  ],
   tools: compatibilityToolContributions,
 };

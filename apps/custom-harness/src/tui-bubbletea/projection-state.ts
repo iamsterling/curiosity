@@ -17,6 +17,7 @@ export class BubbleTeaProjectionState {
   readonly #identity: BubbleTeaProjectionIdentity;
   readonly #profile: string;
   error = "";
+  inspectorText = "";
   messages: readonly ChatMessageProjection[];
   status: "idle" | "working" = "idle";
   streamingText = "";
@@ -88,6 +89,7 @@ export class BubbleTeaProjectionState {
       capabilities: this.#capabilities,
       catalog: this.#catalog,
       error: presentationText(this.error, 2 * 1024),
+      inspectorText: presentationText(this.inspectorText, 128 * 1024),
       messages: Object.freeze(
         this.messages
           .slice(-64)
@@ -110,6 +112,7 @@ export class BubbleTeaProjectionState {
 
   begin(text: string): void {
     this.error = "";
+    this.inspectorText = "";
     this.status = "working";
     this.streamingText = "";
     this.submittedText = text;
@@ -140,6 +143,27 @@ export class BubbleTeaProjectionState {
     this.streamingText = "";
     this.submittedText = "";
     this.thread = undefined;
+  }
+
+  inspect(text: string): void {
+    this.error = "";
+    this.inspectorText = text;
+    this.status = "idle";
+    this.streamingText = "";
+    this.submittedText = "";
+  }
+
+  selectThread(
+    thread: ThreadProjection,
+    messages: readonly ChatMessageProjection[],
+  ): void {
+    this.error = "";
+    this.inspectorText = "";
+    this.messages = messages;
+    this.status = "idle";
+    this.streamingText = "";
+    this.submittedText = "";
+    this.thread = thread;
   }
 }
 

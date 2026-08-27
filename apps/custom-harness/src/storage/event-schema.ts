@@ -3,7 +3,7 @@ export const eventSchema = `
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
   ) STRICT;
-  INSERT OR IGNORE INTO harness_metadata(key, value) VALUES ('schema_version', '13');
+  INSERT OR IGNORE INTO harness_metadata(key, value) VALUES ('schema_version', '15');
   CREATE TABLE IF NOT EXISTS command_admissions (
     actor_id TEXT NOT NULL,
     command_id TEXT NOT NULL,
@@ -26,15 +26,19 @@ export const eventSchema = `
     body_json TEXT NOT NULL,
     occurred_at TEXT NOT NULL,
     previous_hash TEXT NOT NULL,
-    event_hash TEXT NOT NULL UNIQUE
+    event_hash TEXT NOT NULL UNIQUE,
+    event_schema_version INTEGER NOT NULL,
+    aggregate_version INTEGER NOT NULL,
+    causation_id TEXT NOT NULL,
+    correlation_id TEXT NOT NULL,
+    root_execution_id TEXT NOT NULL,
+    parent_execution_id TEXT NOT NULL,
+    child_execution_id TEXT NOT NULL,
+    contribution_id TEXT NOT NULL,
+    contribution_version TEXT NOT NULL,
+    catalog_digest TEXT NOT NULL
   ) STRICT;
   CREATE INDEX IF NOT EXISTS events_command_idx ON events(actor_id, command_id, global_sequence);
-  CREATE TRIGGER IF NOT EXISTS events_no_update BEFORE UPDATE ON events BEGIN
-    SELECT RAISE(ABORT, 'EVENT_LOG_IMMUTABLE');
-  END;
-  CREATE TRIGGER IF NOT EXISTS events_no_delete BEFORE DELETE ON events BEGIN
-    SELECT RAISE(ABORT, 'EVENT_LOG_IMMUTABLE');
-  END;
   CREATE TABLE IF NOT EXISTS reaction_runs (
     source_event_id TEXT NOT NULL,
     reactor_id TEXT NOT NULL,
@@ -247,7 +251,7 @@ export const eventSchema = `
     root_execution_id TEXT NOT NULL REFERENCES executions(execution_id),
     parent_execution_id TEXT NOT NULL REFERENCES executions(execution_id),
     parent_provider_action_id TEXT NOT NULL REFERENCES actions(action_id),
-    expected_children INTEGER NOT NULL CHECK(expected_children BETWEEN 1 AND 2),
+    expected_children INTEGER NOT NULL CHECK(expected_children BETWEEN 1 AND 4),
     status TEXT NOT NULL CHECK(status IN ('allocated', 'ready', 'delivered')),
     result_digest TEXT,
     allocated_at TEXT NOT NULL,

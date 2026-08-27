@@ -85,6 +85,41 @@ const researchCapabilityNotice = (
   };
 };
 
+const unavailableCapabilityNotice = (
+  requested: readonly string[],
+  granted: ReadonlySet<string>,
+): PromptSnapshotBlock | undefined => {
+  const unavailable = requested
+    .filter((capability) => !granted.has(capability))
+    .sort();
+  if (unavailable.length === 0) return undefined;
+  const content = [
+    "Unavailable capability boundary (trusted kernel policy):",
+    ...unavailable.map(
+      (capability) => `CURIOSITY_CAPABILITY_UNAVAILABLE:${capability}`,
+    ),
+    "Do not claim work requiring an unavailable capability completed.",
+  ].join("\n");
+  const identity = {
+    content,
+    contributionId: "curiosity.kernel.context.unavailable-capabilities",
+    contributionVersion: "1",
+    id: "kernel:unavailable-capabilities",
+    pluginId: "curiosity.kernel",
+    pluginVersion: "1",
+    provenance: "trusted-durable" as const,
+    rank: 0,
+    required: true,
+    slot: "kernel-notice" as const,
+    sourceEventIds: [] as readonly string[],
+  };
+  return {
+    ...identity,
+    digest: digest(identity),
+    encodedBytes: Buffer.byteLength(content),
+  };
+};
+
 const digest = (value: unknown): string =>
   createHash("sha256").update(canonicalJson(value)).digest("hex");
 
@@ -342,8 +377,13 @@ export class PromptAssembler {
       projected.push(...blocks);
     }
 
+    const unavailableNotice = unavailableCapabilityNotice(
+      agent.requestedCapabilities,
+      input.grantedCapabilities,
+    );
     const required = [
       agentBlock,
+      ...(unavailableNotice ? [unavailableNotice] : []),
       ...(agent.id === "researcher"
         ? [researchCapabilityNotice(input.grantedCapabilities)]
         : []),

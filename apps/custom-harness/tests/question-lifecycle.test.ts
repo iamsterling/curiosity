@@ -167,6 +167,137 @@ describe("signed question lifecycle", () => {
     expect(eventTypes.filter((type) => type === "gate.decision-recorded")).toHaveLength(
       0,
     );
+    expect(
+      database
+        .query<
+          {
+            child_execution_id: string;
+            correlation_id: string;
+            parent_execution_id: string;
+            root_execution_id: string;
+          },
+          []
+        >(
+          "SELECT child_execution_id,correlation_id,parent_execution_id,root_execution_id FROM events WHERE event_type = 'question.answered'",
+        )
+        .get(),
+    ).toEqual({
+      child_execution_id: "turn-question",
+      correlation_id: "turn-question",
+      parent_execution_id: "turn-question",
+      root_execution_id: "turn-question",
+    });
     database.close();
+  });
+
+  test("does not leak an independent root failure into question-answer coordination", async () => {
+    const root = mkdtempSync(path.join(tmpdir(), "curiosity-question-isolation-"));
+    roots.push(root);
+    const databasePath = path.join(root, "events.sqlite");
+    let answerProviderStarted!: () => void;
+    let failingProviderStarted!: () => void;
+    let releaseAnswer!: () => void;
+    const answerStarted = new Promise<void>((resolve) => {
+      answerProviderStarted = resolve;
+    });
+    const failingStarted = new Promise<void>((resolve) => {
+      failingProviderStarted = resolve;
+    });
+    const answerRelease = new Promise<void>((resolve) => {
+      releaseAnswer = resolve;
+    });
+    const generator: TextGenerator = {
+      effort: "medium",
+      modelId: "test:question-failure-isolation",
+      stream: async function* (request) {
+        const latest = request.messages.at(-1)?.content ?? "";
+        if (latest.includes("Ask which bounded mode")) {
+          yield {
+            input: {
+              allowFreeText: false,
+              options: [{ id: "safe", label: "Safe mode" }],
+              prompt: "Which bounded mode should this turn use?",
+              schemaVersion: 1,
+            },
+            toolCallId: "isolated-question-tool-call",
+            toolName: "user_question",
+            type: "tool-call",
+          } as never;
+          return;
+        }
+        if (latest.includes('"answer":"safe"')) {
+          answerProviderStarted();
+          await answerRelease;
+          yield "Question answer remained isolated.";
+          return;
+        }
+        failingProviderStarted();
+        yield {
+          input: {
+            maxLines: 10,
+            path: "missing-question-isolation.txt",
+            schemaVersion: 1,
+            startLine: 1,
+          },
+          toolCallId: "question-isolation-failing-read",
+          toolName: "workspace_read",
+          type: "tool-call",
+        } as never;
+      },
+    };
+    const harness = createCuriosityHarness({
+      actorId,
+      authenticationSecret: secret,
+      databasePath,
+      supervisorPath,
+      textGenerator: generator,
+      workspaceRoot: root,
+    });
+    await harness.submit(turn());
+    const questionId = (await harness.projections.questions())[0]!.questionId;
+    const answered = harness.submit(answer(questionId, "safe", "isolated"));
+    await answerStarted;
+    const failing = harness.chat(
+      signCommand(
+        {
+          actorId,
+          command: {
+            id: "command-question-independent-failure",
+            kind: "chat.turn",
+            payload: {
+              assistantMessageId: "assistant-question-independent-failure",
+              text: "Fail independently.",
+              threadId: "thread-question-independent-failure",
+              turnId: "turn-question-independent-failure",
+              userMessageId: "user-question-independent-failure",
+            },
+            schemaVersion: 1,
+          },
+          issuedAt: new Date().toISOString(),
+          nonce: "nonce-question-independent-failure",
+          schemaVersion: 1,
+        },
+        secret,
+      ),
+    );
+    await failingStarted;
+    await Bun.sleep(10);
+    releaseAnswer();
+
+    const [answerResult, failingResult] = await Promise.allSettled([
+      answered,
+      failing,
+    ]);
+    expect(answerResult).toMatchObject({ status: "fulfilled" });
+    expect(failingResult).toMatchObject({
+      reason: { message: "WORKSPACE_PATH_NOT_FOUND" },
+      status: "rejected",
+    });
+    expect(await harness.projections.messages("thread-question")).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ text: "Question answer remained isolated." }),
+      ]),
+    );
+    await harness.dispose();
   });
 });

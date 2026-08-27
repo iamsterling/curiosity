@@ -26,10 +26,16 @@ export class LocalActionGateway {
     private readonly catalog: StaticPluginCatalog,
     private readonly now: () => number,
     private readonly rolePolicy: RolePolicyConfig,
+    private readonly grantedCapabilities: ReadonlySet<string>,
   ) {}
 
   supports(actionType: string): boolean {
-    return actionType === "diagnostic.report" || actionType === "semantic.command";
+    return [
+      "diagnostic.report",
+      "semantic.command",
+      "workflow.cancel",
+      "workflow.status",
+    ].includes(actionType);
   }
 
   private fail(
@@ -109,6 +115,59 @@ export class LocalActionGateway {
       this.succeed(action, envelope.correlation, request);
       return;
     }
+    if (action.actionType === "workflow.status") {
+      this.succeed(action, envelope.correlation, {
+        instances: this.journal.workflows.instances(),
+        schemaVersion: 1,
+      });
+      return;
+    }
+    if (action.actionType === "workflow.cancel") {
+      if (
+        typeof request.executionId !== "string" ||
+        request.executionId.length === 0 ||
+        request.executionId.length > 128
+      )
+        return yield* this.fail(action, "WORKFLOW_CANCEL_INPUT_INVALID");
+      const acceptedAt = new Date(this.now()).toISOString();
+      const event = {
+        body: {
+          executionId: request.executionId,
+          schemaVersion: 1,
+        },
+        streamId: request.executionId,
+        type: "execution.cancelled",
+      };
+      const cancelled = yield* Effect.try({
+        try: () =>
+          this.journal.attempts.cancelExecution({
+            acceptedAt,
+            actorId: "curiosity-kernel",
+            commandDigest: digest(event),
+            commandId: `workflow-cancel:${action.actionId}`,
+            events: [event],
+            executionId: request.executionId as string,
+            nonce: `workflow-cancel:${action.actionId}`,
+            pluginId: "curiosity.kernel.workflows",
+          }),
+        catch: (cause) =>
+          this.fail(
+            action,
+            cause instanceof Error &&
+              ["EXECUTION_NOT_FOUND", "EXECUTION_NOT_CANCELLABLE"].includes(
+                cause.message,
+              )
+              ? cause.message
+              : "WORKFLOW_CANCEL_FAILED",
+          ),
+      }).pipe(Effect.result);
+      if (cancelled._tag === "Failure") return yield* cancelled.failure;
+      this.succeed(action, envelope.correlation, {
+        executionId: request.executionId,
+        status: "cancelled",
+      });
+      return;
+    }
 
     const kind = request.kind;
     if (typeof kind !== "string" || !("payload" in request))
@@ -131,6 +190,7 @@ export class LocalActionGateway {
             this.rolePolicy.enabledPrimaryRoles,
           ),
           events: this.journal.readEvents(),
+          grantedCapabilities: this.grantedCapabilities,
         },
       )
       .pipe(Effect.result);

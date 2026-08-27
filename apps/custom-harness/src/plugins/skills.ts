@@ -8,6 +8,7 @@ import {
 } from "../kernel/plugin.js";
 import {
   stockPromptCommandDefinitions,
+  stockCompatibilityCommandDispositions,
   stockSkillDefinitions,
 } from "../product/stock-content.js";
 
@@ -33,6 +34,8 @@ const promptCommand = (
   name: string,
   description: string,
   instructions: string,
+  requiredAnyCapabilities: readonly (readonly string[])[],
+  requiredCapabilities: readonly string[],
   skillName: string | null,
   status: PromptCommandContribution["status"],
 ): PromptCommandContribution => ({
@@ -41,6 +44,8 @@ const promptCommand = (
   id: `curiosity.stock.skills.prompt-commands.${name}`,
   instructions,
   name,
+  requiredAnyCapabilities,
+  requiredCapabilities,
   schemaVersion: 1,
   skillName,
   status,
@@ -53,6 +58,8 @@ const promptCommands = stockPromptCommandDefinitions.map((definition) =>
     definition.name,
     definition.description,
     definition.instructions,
+    definition.requiredAnyCapabilities,
+    definition.requiredCapabilities,
     definition.skillName,
     definition.status,
   ),
@@ -79,6 +86,10 @@ class SkillActivated extends Schema.Class<SkillActivated>(
   arguments: Schema.String,
   commandName: Schema.NonEmptyString,
   commandVersion: Schema.NonEmptyString,
+  capabilityDisposition: Schema.Literals(["available", "unavailable"]),
+  missingCapabilities: Schema.Array(Schema.NonEmptyString),
+  requiredAnyCapabilities: Schema.Array(Schema.Array(Schema.NonEmptyString)),
+  requiredCapabilities: Schema.Array(Schema.NonEmptyString),
   schemaVersion: Schema.Literal(1),
   skillName: Schema.optional(Schema.NonEmptyString),
   skillVersion: Schema.optional(Schema.NonEmptyString),
@@ -136,6 +147,42 @@ export const skillsPlugin: CuriosityPluginV2 = {
           return yield* new InputRejected({
             message: "SKILL_ACTIVATION_ID_IMMUTABLE",
           });
+        const disposition =
+          prompt.status === "compatibility-deprecated"
+            ? stockCompatibilityCommandDispositions[
+                prompt.name as keyof typeof stockCompatibilityCommandDispositions
+              ]
+            : undefined;
+        if (prompt.status === "compatibility-deprecated" && !disposition)
+          return yield* new InputRejected({
+            message: "COMPATIBILITY_DISPOSITION_MISSING",
+          });
+        const [resolution, target] = disposition?.split(":", 2) ?? [];
+        const missingCapabilities = prompt.requiredCapabilities.filter(
+          (capability) => !context.grantedCapabilities.has(capability),
+        );
+        const missingAnyCapabilities = prompt.requiredAnyCapabilities.filter(
+          (group) =>
+            !group.some((capability) =>
+              context.grantedCapabilities.has(capability),
+            ),
+        );
+        if (
+          prompt.status === "active" &&
+          (missingCapabilities.length > 0 || missingAnyCapabilities.length > 0)
+        )
+          return yield* new InputRejected({
+            message: `PROMPT_COMMAND_CAPABILITY_UNAVAILABLE:${[
+              ...missingCapabilities,
+              ...missingAnyCapabilities.map((group) => group.join("|")),
+            ].join(",")}`,
+          });
+        const outcome =
+          resolution === "unsupported"
+            ? "denied"
+            : resolution === "manual-guidance"
+              ? "guidance"
+              : "mapped-requires-typed-tool-call";
         return [
           {
             body: {
@@ -143,6 +190,11 @@ export const skillsPlugin: CuriosityPluginV2 = {
               arguments: input.arguments,
               commandName: prompt.name,
               commandVersion: prompt.version,
+              capabilityDisposition:
+                missingCapabilities.length === 0 ? "available" : "unavailable",
+              missingCapabilities,
+              requiredAnyCapabilities: prompt.requiredAnyCapabilities,
+              requiredCapabilities: prompt.requiredCapabilities,
               schemaVersion: 1,
               ...(selectedSkill
                 ? {
@@ -156,6 +208,33 @@ export const skillsPlugin: CuriosityPluginV2 = {
             streamId: input.threadId,
             type: "skill.activated",
           },
+          ...(disposition && resolution && target
+            ? [
+                {
+                  body: {
+                    activationId: input.activationId,
+                    arguments: input.arguments,
+                    authority:
+                      resolution === "unsupported" ||
+                      resolution === "manual-guidance"
+                        ? "none"
+                        : "signed-command",
+                    commandName: prompt.name,
+                    disposition,
+                    ...(resolution === "unsupported"
+                      ? { diagnosticCode: target }
+                      : {}),
+                    outcome,
+                    resolution,
+                    schemaVersion: 1,
+                    target,
+                    threadId: input.threadId,
+                  },
+                  streamId: input.threadId,
+                  type: "compatibility.command.resolved",
+                },
+              ]
+            : []),
         ];
       }),
       id: "curiosity.stock.skills.commands.invoke",
@@ -228,6 +307,22 @@ export const skillsPlugin: CuriosityPluginV2 = {
                 provenance: "trusted-durable" as const,
                 sourceEventIds: [eventId],
               },
+              {
+                content:
+                  activation.capabilityDisposition === "available"
+                    ? `Command capability disposition: available (${activation.requiredCapabilities.join(",") || "none"}).`
+                    : [
+                        "Command capability disposition: unavailable.",
+                        ...activation.missingCapabilities.map(
+                          (capability) =>
+                            `CURIOSITY_COMMAND_CAPABILITY_UNAVAILABLE:${capability}`,
+                        ),
+                        "Do not claim command work requiring these capabilities completed.",
+                      ].join("\n"),
+                id: `command-capabilities:${command.name}@${command.version}`,
+                provenance: "trusted-durable" as const,
+                sourceEventIds: [eventId],
+              },
               ...(selected
                 ? [
                     {
@@ -257,7 +352,7 @@ export const skillsPlugin: CuriosityPluginV2 = {
       revision: "1.1.0",
       source: "apps/custom-harness/src/plugins/skills.ts",
     },
-    requires: [],
+        requires: [],
     schemaVersion: 2,
     version: "1.1.0",
   },

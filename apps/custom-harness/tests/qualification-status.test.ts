@@ -69,46 +69,41 @@ describe("qualification and capability truth", () => {
     );
     expect(capabilities.get("workflow.loop")).toMatchObject({
       qualifiedForProduction: false,
-      state: "available",
+      state: "qualified",
     });
     expect(capabilities.get("workflow.orchestration")).toMatchObject({
       qualifiedForProduction: false,
-      state: "available",
+      state: "qualified",
     });
     expect(capabilities.get("provider.generate")).toEqual({
       id: "provider.generate",
       qualifiedForProduction: false,
       reason: "PROVIDER_ADAPTER_NOT_CONFIGURED",
-      state: "unavailable",
+      state: "scaffolded",
     });
     expect(capabilities.get("filesystem.read")).toEqual({
       id: "filesystem.read",
       qualifiedForProduction: false,
       reason: "WORKSPACE_READ_SUPERVISOR_ACTIVE",
-      state: "available",
+      state: "qualified",
     });
+    expect(new Set(status.capabilities.map(({ state }) => state))).toEqual(
+      new Set(["catalogued", "scaffolded", "qualified"]),
+    );
+    for (const id of ["deployment", "mobile", "production", "publication"])
+      expect(capabilities.get(id)?.state).toBe("catalogued");
     for (const id of [
-      "deployment",
       "filesystem.mutation",
       "git.mutation",
-      "mobile",
       "network.fetch",
       "network.search",
-      "platform.windows",
       "process.execution",
-      "production",
-      "publication",
-      "remote.transport",
       "sandbox.execution",
       "storage.hard-reset-durability",
       "tool.evidence-read",
       "tool.projection-read",
-      "updates.automatic",
     ])
-      expect(capabilities.get(id)).toMatchObject({
-        qualifiedForProduction: false,
-        state: "unavailable",
-      });
+      expect(capabilities.get(id)?.state).toBe("scaffolded");
     expect(Object.isFrozen(status)).toBe(true);
     expect(Object.isFrozen(status.capabilities)).toBe(true);
     expect(status.capabilities.every(Object.isFrozen)).toBe(true);
@@ -172,5 +167,28 @@ describe("qualification and capability truth", () => {
         .get()?.count,
     ).toBe(0);
     database.close(true);
+  });
+
+  test("uses available only for configured but not profile-qualified capability", async () => {
+    const root = mkdtempSync(path.join(tmpdir(), "curiosity-status-provider-"));
+    roots.push(root);
+    const harness = createCuriosityHarness({
+      actorId,
+      authenticationSecret: secret,
+      databasePath: path.join(root, "events.sqlite"),
+      supervisorPath,
+      textGenerator: {
+        effort: "medium",
+        modelId: "test:status",
+        stream: async function* () {
+          yield "unused";
+        },
+      },
+      workspaceRoot: root,
+    });
+    const status = byId((await harness.status()).capabilities);
+    expect(status.get("provider.generate")?.state).toBe("available");
+    expect(status.get("child.propose")?.state).toBe("available");
+    await harness.dispose();
   });
 });
