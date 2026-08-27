@@ -17,6 +17,7 @@ import { questionTool } from "../plugins/question.js";
 import { generateResearchReceipt } from "../research/receipt.js";
 
 const maximumAssistantContextBytes = 32 * 1_024;
+const maximumToolCallsPerBatch = 8;
 const standardToolBudget = Object.freeze({
   maximumEvidenceBytes: 48 * 1_024,
   maximumToolCalls: 8,
@@ -184,7 +185,7 @@ const chatToolCorrelation = (
       typeof candidate.delegationGroupId !== "string") ||
     !Array.isArray(candidate.expectedToolCallIds) ||
     candidate.expectedToolCallIds.length < 1 ||
-    candidate.expectedToolCallIds.length > 4 ||
+    candidate.expectedToolCallIds.length > maximumToolCallsPerBatch ||
     candidate.expectedToolCallIds.some(
       (id) => typeof id !== "string" || !id,
     ) ||
@@ -209,7 +210,8 @@ const chatToolCorrelation = (
 };
 
 const decodeToolCalls = (value: unknown): readonly ModelToolCall[] | undefined => {
-  if (!Array.isArray(value) || value.length > 8) return undefined;
+  if (!Array.isArray(value) || value.length > maximumToolCallsPerBatch)
+    return undefined;
   const calls: ModelToolCall[] = [];
   for (const item of value) {
     const call = record(item);

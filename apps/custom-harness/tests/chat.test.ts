@@ -520,6 +520,125 @@ describe("plugin-native chat turns", () => {
     await harness.dispose();
   });
 
+  test("continues exactly once after a six-call research tool batch", async () => {
+    const databasePath = databaseFixture();
+    const queries: string[] = [];
+    const researchAdapter: ResearchAdapter = {
+      close: () => undefined,
+      receipt: {
+        adapterId: "test-six-call-research",
+        adapterVersion: "1.0.0",
+        capabilities: ["network.search"],
+        securityProfile: "curiosity-runtime-query-v1",
+      },
+      search: async ({ query }) => {
+        queries.push(query);
+        const ordinal = Number(query.split("-").at(-1));
+        return {
+          queriedAt: "2026-08-27T00:00:00.000Z",
+          results: [
+            {
+              canonicalUrl: `https://example.com/source-${ordinal}`,
+              snippet: `Evidence ${ordinal}.`,
+              title: `Source ${ordinal}`,
+            },
+          ],
+        };
+      },
+    };
+    let generations = 0;
+    const textGenerator: TextGenerator = {
+      effort: "high",
+      modelId: "test:six-call-research",
+      stream: async function* (request) {
+        generations += 1;
+        if (generations === 1) {
+          for (let ordinal = 0; ordinal < 6; ordinal += 1)
+            yield {
+              input: {
+                maxResults: 1,
+                query: `evidence-${ordinal}`,
+                schemaVersion: 1,
+              },
+              toolCallId: `six-call-search-${ordinal}`,
+              toolName: "web_search",
+              type: "tool-call",
+            } as never;
+          return;
+        }
+        expect(request.messages.at(-1)?.content).toContain("Evidence 5.");
+        yield "Documented finding [Source 0](https://example.com/source-0).";
+      },
+    };
+    const harness = createCuriosityHarness({
+      actorId,
+      authenticationSecret: secret,
+      databasePath,
+      researchAdapter,
+      supervisorPath,
+      textGenerator,
+      workspaceRoot: path.dirname(databasePath),
+    });
+
+    await harness.submit(
+      signCommand(
+        {
+          actorId,
+          command: {
+            id: "command-six-call-research",
+            kind: "prompt.command.invoke",
+            payload: {
+              activationId: "activation-six-call-research",
+              arguments: "Collect six sources",
+              name: "research",
+              schemaVersion: 1,
+              threadId: "thread-chat-001",
+            },
+            schemaVersion: 1,
+          },
+          issuedAt: new Date().toISOString(),
+          nonce: "nonce-six-call-research",
+          schemaVersion: 1,
+        },
+        secret,
+      ),
+    );
+    expect(await harness.chat(turn("researcher"))).toMatchObject({
+      text: "Documented finding [Source 0](https://example.com/source-0).",
+    });
+    expect(generations).toBe(2);
+    expect(queries.sort()).toEqual(
+      Array.from({ length: 6 }, (_, ordinal) => `evidence-${ordinal}`),
+    );
+    const database = new Database(databasePath, {
+      readonly: true,
+      strict: true,
+    });
+    expect(
+      database
+        .query<{ count: number }, []>(
+          "SELECT count(*) AS count FROM actions WHERE action_type = 'provider.generate'",
+        )
+        .get()?.count,
+    ).toBe(2);
+    expect(
+      database
+        .query<{ count: number }, []>(
+          "SELECT count(*) AS count FROM events WHERE event_type = 'turn.completed'",
+        )
+        .get()?.count,
+    ).toBe(1);
+    expect(
+      database
+        .query<{ count: number }, []>(
+          "SELECT count(*) AS count FROM events WHERE event_type = 'turn.failed'",
+        )
+        .get()?.count,
+    ).toBe(0);
+    database.close();
+    await harness.dispose();
+  });
+
   test("terminates malformed model tool input without stranding the reaction", async () => {
     const databasePath = databaseFixture();
     let generations = 0;
