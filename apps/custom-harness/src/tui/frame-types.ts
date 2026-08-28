@@ -1,5 +1,6 @@
 import type { ChatMessageProjection } from "../projection/chat-projection.js";
 import type { MotionPreference } from "./animation.js";
+import type { StreamTextLayout } from "./stream-layout.js";
 
 export interface TuiCatalogView {
   readonly digest: string;
@@ -54,6 +55,7 @@ export interface TuiFrameState {
   readonly rows: number;
   readonly scrollOffset: number;
   readonly status: "idle" | "working";
+  readonly streamingLayout?: StreamTextLayout;
   readonly streamingText?: string;
   readonly submittedText?: string;
   readonly threadTitle?: string;

@@ -1,5 +1,5 @@
-const DEFAULT_FRAME_INTERVAL_MS = 24;
-const DEFAULT_FRAME_CODE_POINTS = 64;
+const DEFAULT_FRAME_INTERVAL_MS = 16;
+const DEFAULT_FRAME_CODE_POINTS = 128;
 const DEFAULT_MAXIMUM_CODE_POINTS = 128 * 1024;
 
 export interface StreamPresentationOptions {

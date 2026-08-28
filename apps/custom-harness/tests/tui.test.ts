@@ -23,7 +23,10 @@ import {
 } from "../src/providers/ai-sdk.js";
 import { renderMarkdown } from "../src/tui/markdown.js";
 import { renderTuiFrame, type TerminalFrame } from "../src/tui/frame.js";
-import { renderConversation } from "../src/tui/transcript-view.js";
+import {
+  renderConversation,
+  renderConversationWindow,
+} from "../src/tui/transcript-view.js";
 import {
   createNodeScreenTerminal,
   type TuiKey,
@@ -31,6 +34,7 @@ import {
 import { makeTerminalTheme } from "../src/tui/theme.js";
 import { brailleFrame, resolveMotionPreference } from "../src/tui/animation.js";
 import { createStreamPresentation } from "../src/tui/stream-presentation.js";
+import { createStreamTextLayout } from "../src/tui/stream-layout.js";
 import {
   failureDiagnostic,
   formatChatFailure,
@@ -248,6 +252,49 @@ describe("custom harness TUI", () => {
     expect(frames.join("")).toBe("x".repeat(1_000));
     expect(frames).toHaveLength(63);
     expect(frames.every((frame) => Array.from(frame).length <= 16)).toBe(true);
+  });
+
+  test("lays out only appended stream text and materializes only visible rows", () => {
+    const layout = createStreamTextLayout();
+    const theme = makeTerminalTheme(false);
+    const state = {
+      animationTick: 0,
+      columns: 120,
+      effort: "medium",
+      input: "",
+      inputCursor: 0,
+      messages: Object.freeze([]),
+      modelId: "test:model",
+      motion: "reduced" as const,
+      rows: 40,
+      scrollOffset: 0,
+      status: "working" as const,
+      streamingLayout: layout,
+      workingDirectory: "/workspace",
+    };
+    layout.append("x".repeat(10_000));
+
+    const first = renderConversationWindow(state, 100, theme, 8, 0);
+    const firstMetrics = layout.metrics();
+    expect(first.lines).toHaveLength(8);
+    expect(first.totalLines).toBeGreaterThan(100);
+    expect(firstMetrics).toEqual({ processedGraphemes: 10_000, rebuilds: 1 });
+
+    renderConversationWindow(
+      { ...state, animationTick: 1 },
+      100,
+      theme,
+      8,
+      0,
+    );
+    expect(layout.metrics()).toEqual(firstMetrics);
+
+    layout.append("yz");
+    renderConversationWindow(state, 100, theme, 8, 0);
+    expect(layout.metrics()).toEqual({
+      processedGraphemes: 10_002,
+      rebuilds: 1,
+    });
   });
 
   test("activates a slash-command skill before submitting its chat turn", async () => {

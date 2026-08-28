@@ -26,6 +26,10 @@ import {
   type StreamPresentation,
 } from "./stream-presentation.js";
 import {
+  createStreamTextLayout,
+  type StreamTextLayout,
+} from "./stream-layout.js";
+import {
   sanitizeConversationText,
   sanitizeTerminalText,
 } from "./terminal-text.js";
@@ -97,7 +101,7 @@ export const runTuiSession = async (
   let animationTimer: ReturnType<typeof setInterval> | undefined;
   let scrollOffset = 0;
   let status: "idle" | "working" = "idle";
-  let streamingText: string | undefined;
+  let streamingLayout: StreamTextLayout | undefined;
   let submittedText: string | undefined;
   let error: string | undefined;
   let inspectorOpen = false;
@@ -152,7 +156,7 @@ export const runTuiSession = async (
           rows: size.rows,
           scrollOffset,
           status,
-          ...(streamingText ? { streamingText } : {}),
+          ...(streamingLayout ? { streamingLayout } : {}),
           ...(submittedText ? { submittedText } : {}),
           ...(thread?.title ? { threadTitle: thread.title } : {}),
           workingDirectory: options.workingDirectory,
@@ -357,7 +361,7 @@ export const runTuiSession = async (
       thread = undefined;
       messages = [];
       scrollOffset = 0;
-      streamingText = undefined;
+      streamingLayout = undefined;
       submittedText = undefined;
       error = undefined;
       draw();
@@ -436,7 +440,7 @@ export const runTuiSession = async (
       issuedAt,
     );
     submittedText = text;
-    streamingText = undefined;
+    streamingLayout = undefined;
     error = undefined;
     status = "working";
     scrollOffset = 0;
@@ -445,9 +449,11 @@ export const runTuiSession = async (
     activeExecutionId = (
       envelope.command.payload as { readonly turnId: string }
     ).turnId;
+    const turnLayout = createStreamTextLayout();
+    streamingLayout = turnLayout;
     const presentation = createStreamPresentation({
       onFrame: (delta) => {
-        streamingText = `${streamingText ?? ""}${delta}`;
+        turnLayout.append(delta);
         draw();
       },
     });
@@ -470,7 +476,7 @@ export const runTuiSession = async (
           title: text,
         };
         submittedText = undefined;
-        streamingText = undefined;
+        streamingLayout = undefined;
         error = undefined;
         status = "idle";
         stopAnimation();
@@ -488,7 +494,7 @@ export const runTuiSession = async (
             title: text,
           };
         }
-        streamingText = undefined;
+        streamingLayout = undefined;
         status = "idle";
         stopAnimation();
         const question = (await options.harness.projections.questions()).find(

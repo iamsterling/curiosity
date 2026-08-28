@@ -11,7 +11,10 @@ import type { TerminalFrame, TuiFrameState } from "./frame-types.js";
 import { fitLine, place, setLine, visibleWidth } from "./frame-text.js";
 import { sanitizeTerminalText } from "./terminal-text.js";
 import type { TerminalTheme } from "./theme.js";
-import { renderConversation, renderTitlePanel } from "./transcript-view.js";
+import {
+  renderConversationWindow,
+  renderTitlePanel,
+} from "./transcript-view.js";
 import { TUI_DESIGN_TOKENS } from "./design-system.js";
 import { renderInspector } from "./inspector-view.js";
 
@@ -36,6 +39,7 @@ export const renderTuiFrame = (
   const active =
     state.messages.length > 0 ||
     Boolean(state.submittedText) ||
+    Boolean(state.streamingLayout) ||
     Boolean(state.streamingText) ||
     Boolean(state.error);
   const availableWidth = Math.max(20, mainWidth - layout.contentInset * 2);
@@ -96,21 +100,23 @@ export const renderTuiFrame = (
     );
     const transcriptStart = 2 + titleRows.length + 1;
     const available = Math.max(0, composerRow - 1 - transcriptStart);
-    const content = renderConversation(state, contentWidth, theme);
-    const latestStart = Math.max(0, content.length - available);
-    const start = Math.max(0, latestStart - state.scrollOffset);
+    const content = renderConversationWindow(
+      state,
+      contentWidth,
+      theme,
+      available,
+      state.scrollOffset,
+    );
     if (available > 0 && !state.palette && !state.inspector) {
       transcriptViewport = {
         endRow: transcriptStart + available,
-        offset: latestStart - start,
+        offset: content.offset,
         startRow: transcriptStart,
       };
     }
-    content
-      .slice(start, start + available)
-      .forEach((line, index) =>
-        setLine(lines, transcriptStart + index, place(contentColumn, line)),
-      );
+    content.lines.forEach((line, index) =>
+      setLine(lines, transcriptStart + index, place(contentColumn, line)),
+    );
   }
 
   if (state.palette) {
