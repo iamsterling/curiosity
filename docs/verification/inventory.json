@@ -114,14 +114,16 @@
         "build:tui": "go -C native/tui build -trimpath -ldflags '-s -w' -o dist/curiosity-tui ./cmd/curiosity-tui",
         "build:experimental-binary": "cargo build --release --manifest-path native/supervisor/Cargo.toml --locked && bun run build:tui && bun tools/build-experimental-binary.mjs",
         "build": "bun run build:supervisor && bun run build:tui && tsc -p tsconfig.build.json",
+        "bench:efficiency": "bun run build:supervisor && bun tools/efficiency-eval.ts",
         "check-types": "tsc --noEmit",
+        "eval:efficiency": "bun run build:supervisor && bun tools/efficiency-eval.ts --enforce",
         "install:experimental-binary": "bun run build:experimental-binary && bun tools/install-experimental-binary.mjs",
         "lint": "test -z \"$(gofmt -l native/tui)\" && go -C native/tui mod verify && go -C native/tui vet ./... && cargo fmt --manifest-path native/supervisor/Cargo.toml --check && cargo clippy --manifest-path native/supervisor/Cargo.toml --locked --all-targets -- -D warnings && node tools/verify-architecture.mjs",
         "parity:check": "bun tools/verify-parity-qualification.ts",
         "test": "bun run build:supervisor && cargo test --manifest-path native/supervisor/Cargo.toml --locked && go -C native/tui test ./... && bun test tests/*.test.ts",
         "test:experimental-binary": "bun run build:experimental-binary && bun test tests/darwin/binary-distribution.test.ts",
         "tui": "bun run build:supervisor && bun run build:tui && bun src/tui.ts",
-        "verify": "bun run parity:check && bun run check-types && bun run lint && bun run build && bun run test"
+        "verify": "bun run parity:check && bun run check-types && bun run lint && bun run build && bun run test && bun run eval:efficiency"
       },
       "exports": {
         ".": {
@@ -1793,6 +1795,7 @@
         "apps/custom-harness/tests/compaction.test.ts",
         "apps/custom-harness/tests/content-tools.test.ts",
         "apps/custom-harness/tests/context-replay.test.ts",
+        "apps/custom-harness/tests/efficiency-eval.test.ts",
         "apps/custom-harness/tests/git-read.test.ts",
         "apps/custom-harness/tests/host-independence.test.ts",
         "apps/custom-harness/tests/import-safety.test.ts",
@@ -2007,6 +2010,17 @@
         "experimental-binary-darwin"
       ],
       "platforms": [
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/custom-harness/tests/efficiency-eval.test.ts",
+      "owner": "harness",
+      "profiles": [
+        "custom-harness"
+      ],
+      "platforms": [
+        "linux",
         "darwin"
       ]
     },

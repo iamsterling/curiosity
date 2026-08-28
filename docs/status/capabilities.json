@@ -403,7 +403,7 @@
           },
           {
             "kind": "test",
-            "ref": "apps/custom-harness/tests/tui.test.ts#accepts a prompt immediately and streams through a signed chat turn"
+            "ref": "apps/custom-harness/tests/tui.test.ts#accepts input and cancellation while a signed chat turn streams"
           },
           {
             "kind": "test",
@@ -742,7 +742,7 @@
         {
           "path": "apps/custom-harness/package.json",
           "mode": "exact",
-          "sha256": "2e91397d2bb5405b7aca1463208924c01a5670616c0f84c586221f5a7039c0a5"
+          "sha256": "064225f335a2c8130985d2021638e791d9f47d1ed043131590395c69e01b0835"
         },
         {
           "path": "apps/custom-harness/src/adapters/process.ts",
@@ -1027,12 +1027,12 @@
         {
           "path": "apps/custom-harness/src/tui/frame-types.ts",
           "mode": "exact",
-          "sha256": "0382a935a459f13a3b3121dbd88f8ef6e0214b3d2d60ede894fd0951bc29ebbf"
+          "sha256": "1892d06e65060a7de533205285435198228d7b93b8fef17764f5d792d4c13ad4"
         },
         {
           "path": "apps/custom-harness/src/tui/frame.ts",
           "mode": "exact",
-          "sha256": "a08a6e026fd063dcab2cd98c2491fd049958154a3a5dcf7332e2413bf58cf2c7"
+          "sha256": "7075f7fe66ca9e4da5b4a7fd2d40882d2f4ce4fb4e4ae37f0e1549771d7c9bae"
         },
         {
           "path": "apps/custom-harness/src/tui/markdown.ts",
@@ -1047,12 +1047,12 @@
         {
           "path": "apps/custom-harness/src/tui/session-turn.ts",
           "mode": "exact",
-          "sha256": "e9759104038745857d93ffab6ffb5ba665e3433e65e73e91cd01774914e72709"
+          "sha256": "2a47cfab26b92ca6d16f5b50699645d3b2b9df101bfea7a55c2c080e11226a89"
         },
         {
           "path": "apps/custom-harness/src/tui/session.ts",
           "mode": "exact",
-          "sha256": "d7423c2c35e7fb086af0efb9a4b31f65597f3ed12e0ff3b1cdf891787f7b8f10"
+          "sha256": "1e5090bed892f8c0b32a815158b81b2a7ec14c0ae992429e00db7797a489ea59"
         },
         {
           "path": "apps/custom-harness/src/tui/terminal-text.ts",
@@ -1067,7 +1067,7 @@
         {
           "path": "apps/custom-harness/src/tui/transcript-view.ts",
           "mode": "exact",
-          "sha256": "ad7bffddce0c15852940b385e6775e366d7766d641fd9ac075187b25ac8d6cd5"
+          "sha256": "16ac433631870433ef87ca2e763b555ab829ce0080ab6b86474950b6e4169302"
         },
         {
           "path": "apps/custom-harness/src/types/marked-terminal.d.ts",
@@ -1212,7 +1212,7 @@
         {
           "path": "apps/custom-harness/tests/tui.test.ts",
           "mode": "exact",
-          "sha256": "1d4d4744f2270091f6e0bb65c42d1cbeb65a555297d20828972cc000c34a8d24"
+          "sha256": "1aa42c37162899642df0afdaab61e061b1ae0ca89e77dd4e6c01ffdd1f32997d"
         },
         {
           "path": "apps/custom-harness/tests/workflow-orchestration.test.ts",

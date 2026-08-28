@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "budgets": {
+    "event_loop.drain_duration_ms": { "maximum": 400 },
+    "event_loop.frame_count": { "maximum": 16, "minimum": 16 },
+    "event_loop.heap_delta_bytes": { "maximum": 8388608 },
+    "event_loop.lag_max_ms": { "maximum": 40 },
+    "event_loop.lag_p95_ms": { "maximum": 12 },
+    "event_loop.raw_deltas_per_frame": { "minimum": 256 },
+    "kernel_turn.delta_count": { "maximum": 160, "minimum": 160 },
+    "kernel_turn.heap_delta_bytes": { "maximum": 33554432 },
+    "kernel_turn.startup_ms": { "maximum": 500 },
+    "kernel_turn.turn_p50_ms": { "maximum": 80 },
+    "kernel_turn.turn_p95_ms": { "maximum": 150 },
+    "research_turn.duration_ms": { "maximum": 250 },
+    "research_turn.generation_count": { "maximum": 3, "minimum": 3 },
+    "research_turn.source_count": { "maximum": 2, "minimum": 2 },
+    "research_turn.tool_call_count": { "maximum": 2, "minimum": 2 },
+    "tui_render.changed_rows_per_frame": { "maximum": 8 },
+    "tui_render.duration_p50_ms": { "maximum": 80 },
+    "tui_render.frame_p95_ms": { "maximum": 1 },
+    "tui_render.heap_delta_bytes": { "maximum": 8388608 },
+    "tui_render.layout_rebuilds": { "maximum": 1, "minimum": 1 },
+    "tui_render.output_byte_amplification": { "maximum": 8 },
+    "tui_render.work_amplification": { "maximum": 1, "minimum": 1 }
+  }
+}

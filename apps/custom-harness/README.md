@@ -39,6 +39,35 @@ and production readiness remain unavailable.
 bun run --cwd apps/custom-harness verify
 ```
 
+## Efficiency benchmark and evaluation
+
+Run the deterministic efficiency suite and retain its machine-readable report:
+
+```sh
+bun run --cwd apps/custom-harness bench:efficiency -- \
+  --output /absolute/path/efficiency.json
+```
+
+The suite measures a 20,000-character incremental TUI stream, changed-row and
+output amplification, presentation event-loop lag, retained heap, five durable
+kernel turns, and a complete deterministic research turn with search, fetch,
+source custody, and citation verification. It performs no external network or
+model calls. Every report binds the source revision, dirty state, machine
+profile, Bun version, budget digest, raw metrics, and pass/fail decisions.
+
+Compare a later run with a retained report:
+
+```sh
+bun run --cwd apps/custom-harness bench:efficiency -- \
+  --baseline /absolute/path/baseline.json \
+  --output /absolute/path/comparison.json
+```
+
+`bun run --cwd apps/custom-harness eval:efficiency` enforces
+[`tools/efficiency-budgets.json`](tools/efficiency-budgets.json) and exits
+nonzero on regression. The package `verify` task runs this enforced evaluation.
+Use `--samples 1..30` to control repeated TUI measurements; the default is 7.
+
 ## TUI
 
 The terminal UI is a prompt-first command client and projection—it does not own
@@ -64,8 +93,9 @@ tokens, lifecycle glyph grammar, shell, overlays, and companion-rail foundation
 from [`tui.pen`](tui.pen). The implemented slice includes the idle/session
 shell, responsive composer, command palette, and real kernel inspector without
 depending on OpenTUI. Approval, recovery, and plugin-owned panes remain absent
-until they can project authoritative kernel records. Provider deltas update
-width-aware Markdown in place, while completion metadata remains subordinate.
+until they can project authoritative kernel records. Provider deltas use
+incremental width-aware plain-text layout over visible rows; completed responses
+render Markdown once, while completion metadata remains subordinate.
 Provider work uses one restrained, single-cell braille orbit; set
 `CURIOSITY_MOTION=reduce` for a static `⠿` indicator.
 Untrusted projected and streamed text is control-character sanitized before
