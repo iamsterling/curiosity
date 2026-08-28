@@ -376,6 +376,176 @@
       ]
     },
     {
+      "path": "apps/mobile",
+      "manifest": "apps/mobile/package.json",
+      "name": "@curiosity/mobile",
+      "private": true,
+      "role": "starter-app",
+      "scripts": {
+        "dev": "expo start",
+        "ios": "expo run:ios",
+        "build": "expo export --platform ios --output-dir dist",
+        "lint": "expo lint",
+        "check-types": "tsc --noEmit",
+        "test": "bun test tests/*.test.mjs",
+        "verify": "bun run lint && bun run check-types && bun run test && bun run build"
+      },
+      "exports": null,
+      "bin": null,
+      "files": [],
+      "implicitConfigSubpaths": [
+        "app.json",
+        "eslint.config.cjs",
+        "plugins/with-ios-scene-lifecycle.cjs",
+        "tsconfig.json"
+      ],
+      "dependencies": [
+        {
+          "name": "@expo/config-plugins",
+          "section": "devDependencies",
+          "version": "~57.0.9",
+          "classification": "external",
+          "protocol": "tilde"
+        },
+        {
+          "name": "@expo/ui",
+          "section": "dependencies",
+          "version": "~57.0.14",
+          "classification": "external",
+          "protocol": "tilde"
+        },
+        {
+          "name": "@types/react",
+          "section": "devDependencies",
+          "version": "~19.2.4",
+          "classification": "external",
+          "protocol": "tilde"
+        },
+        {
+          "name": "eslint-config-expo",
+          "section": "devDependencies",
+          "version": "~57.0.2",
+          "classification": "external",
+          "protocol": "tilde"
+        },
+        {
+          "name": "eslint",
+          "section": "devDependencies",
+          "version": "^9.39.1",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "expo-constants",
+          "section": "dependencies",
+          "version": "~57.0.16",
+          "classification": "external",
+          "protocol": "tilde"
+        },
+        {
+          "name": "expo-linking",
+          "section": "dependencies",
+          "version": "~57.0.8",
+          "classification": "external",
+          "protocol": "tilde"
+        },
+        {
+          "name": "expo-router",
+          "section": "dependencies",
+          "version": "~57.0.17",
+          "classification": "external",
+          "protocol": "tilde"
+        },
+        {
+          "name": "expo-status-bar",
+          "section": "dependencies",
+          "version": "~57.0.1",
+          "classification": "external",
+          "protocol": "tilde"
+        },
+        {
+          "name": "expo",
+          "section": "dependencies",
+          "version": "~57.0.18",
+          "classification": "external",
+          "protocol": "tilde"
+        },
+        {
+          "name": "react-native-drawer-layout",
+          "section": "dependencies",
+          "version": "4.2.10",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "react-native-gesture-handler",
+          "section": "dependencies",
+          "version": "~2.32.0",
+          "classification": "external",
+          "protocol": "tilde"
+        },
+        {
+          "name": "react-native-reanimated",
+          "section": "dependencies",
+          "version": "4.5.1",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "react-native-safe-area-context",
+          "section": "dependencies",
+          "version": "~5.7.0",
+          "classification": "external",
+          "protocol": "tilde"
+        },
+        {
+          "name": "react-native-screens",
+          "section": "dependencies",
+          "version": "~4.26.0",
+          "classification": "external",
+          "protocol": "tilde"
+        },
+        {
+          "name": "react-native-worklets",
+          "section": "dependencies",
+          "version": "0.10.1",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "react-native",
+          "section": "dependencies",
+          "version": "0.86.3",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "react",
+          "section": "dependencies",
+          "version": "19.2.3",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "typescript",
+          "section": "devDependencies",
+          "version": "~6.0.3",
+          "classification": "external",
+          "protocol": "tilde"
+        }
+      ],
+      "workspaceMember": true,
+      "executionMetadata": [
+        {
+          "kind": "lifecycle-script",
+          "path": "scripts.test",
+          "value": "bun test tests/*.test.mjs",
+          "classification": "reviewed",
+          "reason": "Reviewed mobile contract-test entrypoint; execution is limited to the checked-in Node test sources."
+        }
+      ]
+    },
+    {
       "path": "apps/plugin/opencode2",
       "manifest": "apps/plugin/opencode2/package.json",
       "name": "@iamsterling/opencode2-config",
@@ -1835,6 +2005,21 @@
         "apps/custom-harness/tests/darwin/binary-distribution.test.ts"
       ],
       "reason": "Manual Darwin arm64 qualification for the experimental embedded supervisor and Go TUI payloads plus the local installer."
+    },
+    "mobile-ios": {
+      "disposition": "required",
+      "entrypoints": [
+        {
+          "package": "apps/mobile",
+          "script": "verify"
+        }
+      ],
+      "tests": [
+        "apps/mobile/tests/config.test.mjs",
+        "apps/mobile/tests/curiosity-api.test.mjs",
+        "apps/mobile/tests/workstation-commands.test.mjs"
+      ],
+      "reason": "Required iOS/iPadOS Expo configuration, API contract, static analysis, and iOS bundle verification."
     }
   },
   "tests": [
@@ -2293,6 +2478,39 @@
       "owner": "docs",
       "profiles": [
         "scaffold"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/mobile/tests/config.test.mjs",
+      "owner": "mobile",
+      "profiles": [
+        "mobile-ios"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/mobile/tests/curiosity-api.test.mjs",
+      "owner": "mobile",
+      "profiles": [
+        "mobile-ios"
+      ],
+      "platforms": [
+        "linux",
+        "darwin"
+      ]
+    },
+    {
+      "path": "apps/mobile/tests/workstation-commands.test.mjs",
+      "owner": "mobile",
+      "profiles": [
+        "mobile-ios"
       ],
       "platforms": [
         "linux",
@@ -3755,6 +3973,7 @@
     "authoritativeWorkspaces": [
       "apps/custom-harness",
       "apps/docs",
+      "apps/mobile",
       "apps/plugin/opencode2",
       "apps/runtime",
       "apps/web",

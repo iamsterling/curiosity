@@ -18,6 +18,13 @@ coverage
 # Turbo
 .turbo
 
+# Expo
+.expo/
+apps/mobile/ios/
+
+# Local Apple build tooling
+.xcodebuildmcp/
+
 # Vercel
 .vercel
 

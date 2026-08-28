@@ -1,0 +1,39 @@
+{
+  "name": "@curiosity/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "expo-router/entry",
+  "scripts": {
+    "dev": "expo start",
+    "ios": "expo run:ios",
+    "build": "expo export --platform ios --output-dir dist",
+    "lint": "expo lint",
+    "check-types": "tsc --noEmit",
+    "test": "bun test tests/*.test.mjs",
+    "verify": "bun run lint && bun run check-types && bun run test && bun run build"
+  },
+  "dependencies": {
+    "@expo/ui": "~57.0.14",
+    "expo": "~57.0.18",
+    "expo-constants": "~57.0.16",
+    "expo-linking": "~57.0.8",
+    "expo-router": "~57.0.17",
+    "expo-status-bar": "~57.0.1",
+    "react": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-drawer-layout": "4.2.10",
+    "react-native-gesture-handler": "~2.32.0",
+    "react-native-reanimated": "4.5.1",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.0",
+    "react-native-worklets": "0.10.1"
+  },
+  "devDependencies": {
+    "@expo/config-plugins": "~57.0.9",
+    "@types/react": "~19.2.4",
+    "eslint": "^9.39.1",
+    "eslint-config-expo": "~57.0.2",
+    "typescript": "~6.0.3"
+  }
+}

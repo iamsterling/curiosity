@@ -24,6 +24,12 @@
       "private": true
     },
     {
+      "path": "apps/mobile",
+      "name": "@curiosity/mobile",
+      "kind": "starter-app",
+      "private": true
+    },
+    {
       "path": "apps/web",
       "name": "web",
       "kind": "starter-app",

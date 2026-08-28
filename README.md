@@ -28,6 +28,7 @@ navigation, verification, contribution, provenance, and licensing guidance.
 | `apps/custom-harness` | `@curiosity/custom-harness` | Independent authority harness workspace | private |
 | `apps/plugin/opencode2` | `@iamsterling/opencode2-config` | Plugin package workspace | registry-ready; publication unknown |
 | `apps/runtime` | `@curiosity/runtime` | Runtime package workspace | private |
+| `apps/mobile` | `@curiosity/mobile` | Native iPadOS project-system workspace | private |
 | `apps/web` | `web` | Starter application workspace | private |
 | `apps/docs` | `docs` | Starter application workspace | private |
 | `packages/ui` | `@repo/ui` | Starter library workspace | private |

@@ -1,0 +1,7 @@
+{
+  "platforms": ["apple"],
+  "apple": {
+    "appDelegateSubscribers": ["CuriosityCommandsAppDelegateSubscriber"],
+    "modules": ["CuriosityCommandsModule"]
+  }
+}

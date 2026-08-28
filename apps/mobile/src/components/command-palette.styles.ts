@@ -1,0 +1,60 @@
+import { StyleSheet } from "react-native";
+import { palette } from "../theme";
+
+export const styles = StyleSheet.create({
+  backdrop: {
+    alignItems: "center",
+    backgroundColor: palette.overlay,
+    flex: 1,
+    paddingHorizontal: 18,
+    paddingTop: 86,
+  },
+  check: { color: palette.controlTint, fontSize: 15, fontWeight: "700" },
+  command: {
+    alignItems: "center",
+    borderRadius: 12,
+    flexDirection: "row",
+    gap: 10,
+    minHeight: 58,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+  },
+  commandCopy: { flex: 1 },
+  commandDescription: { color: palette.textMuted, fontSize: 11, marginTop: 3 },
+  commandTitle: { color: palette.textPrimary, fontSize: 14, fontWeight: "600" },
+  disabled: { opacity: 0.4 },
+  dismissTarget: {
+    bottom: 0,
+    left: 0,
+    position: "absolute",
+    right: 0,
+    top: 0,
+  },
+  empty: { color: palette.textMuted, padding: 20, textAlign: "center" },
+  list: { marginTop: 8 },
+  panel: {
+    backgroundColor: palette.sidebar,
+    borderColor: palette.line,
+    borderRadius: 20,
+    borderWidth: StyleSheet.hairlineWidth,
+    maxHeight: 520,
+    maxWidth: 620,
+    padding: 10,
+    width: "100%",
+  },
+  placeholder: { color: palette.textMuted },
+  pressed: { backgroundColor: palette.surface },
+  search: {
+    backgroundColor: palette.surface,
+    borderRadius: 12,
+    color: palette.textPrimary,
+    fontSize: 16,
+    minHeight: 46,
+    paddingHorizontal: 14,
+  },
+  shortcut: {
+    color: palette.textSecondary,
+    fontSize: 12,
+    fontVariant: ["tabular-nums"],
+  },
+});

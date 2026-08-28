@@ -376,6 +376,7 @@
             "plugin",
             "runtime",
             "web",
+            "mobile",
             "docs",
             "ui",
             "eslint-config",
