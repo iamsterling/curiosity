@@ -1148,7 +1148,7 @@ describe("plugin-native chat turns", () => {
     await harness.dispose();
   });
 
-  test("reports unavailable research capabilities without repeating discovery", async () => {
+  test("sends research through the provider when retrieval is unavailable", async () => {
     const databasePath = databaseFixture();
     let generations = 0;
     const textGenerator: TextGenerator = {
@@ -1206,11 +1206,11 @@ describe("plugin-native chat turns", () => {
           secret,
         ),
       ),
-    ).rejects.toMatchObject({
-      message:
-        "PROMPT_COMMAND_CAPABILITY_UNAVAILABLE:network.fetch|network.search",
+    ).resolves.toMatchObject({ disposition: "accepted" });
+    await expect(harness.chat(turn("researcher"))).resolves.toMatchObject({
+      text: "CURIOSITY_NO_GO: public-web search and fetch are unavailable; no source corpus was supplied.",
     });
-    expect(generations).toBe(0);
+    expect(generations).toBe(1);
     await harness.dispose();
   });
 

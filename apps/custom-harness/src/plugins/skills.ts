@@ -195,15 +195,20 @@ export const skillsPlugin: CuriosityPluginV2 = {
               context.grantedCapabilities.has(capability),
             ),
         );
+        const missingCapabilityLabels = [
+          ...missingCapabilities,
+          ...missingAnyCapabilities.map((group) => group.join("|")),
+        ];
+        const permitsUnavailableRetrieval =
+          prompt.name === "research" && missingCapabilities.length === 0;
         if (
           prompt.status === "active" &&
-          (missingCapabilities.length > 0 || missingAnyCapabilities.length > 0)
+          (missingCapabilities.length > 0 ||
+            (missingAnyCapabilities.length > 0 &&
+              !permitsUnavailableRetrieval))
         )
           return yield* new InputRejected({
-            message: `PROMPT_COMMAND_CAPABILITY_UNAVAILABLE:${[
-              ...missingCapabilities,
-              ...missingAnyCapabilities.map((group) => group.join("|")),
-            ].join(",")}`,
+            message: `PROMPT_COMMAND_CAPABILITY_UNAVAILABLE:${missingCapabilityLabels.join(",")}`,
           });
         const outcome =
           resolution === "unsupported"
@@ -219,8 +224,10 @@ export const skillsPlugin: CuriosityPluginV2 = {
               commandName: prompt.name,
               commandVersion: prompt.version,
               capabilityDisposition:
-                missingCapabilities.length === 0 ? "available" : "unavailable",
-              missingCapabilities,
+                missingCapabilityLabels.length === 0
+                  ? "available"
+                  : "unavailable",
+              missingCapabilities: missingCapabilityLabels,
               requiredAnyCapabilities: prompt.requiredAnyCapabilities,
               requiredCapabilities: prompt.requiredCapabilities,
               schemaVersion: 1,

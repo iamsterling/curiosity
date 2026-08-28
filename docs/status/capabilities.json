@@ -535,7 +535,7 @@
           },
           {
             "kind": "test",
-            "ref": "apps/custom-harness/tests/chat.test.ts#reports unavailable research capabilities without repeating discovery"
+            "ref": "apps/custom-harness/tests/chat.test.ts#sends research through the provider when retrieval is unavailable"
           },
           {
             "kind": "test",
@@ -848,7 +848,7 @@
         {
           "path": "apps/custom-harness/src/plugins/skills.ts",
           "mode": "exact",
-          "sha256": "efa5c0fb2599c56b36f9b361d2e198ea623a0a002edf9c2ca151b5af34498e3a"
+          "sha256": "6f76e00d78fd97e0258e3dc17e36ca54f4e3b1eb27014e6ad242542ad54357d2"
         },
         {
           "path": "apps/custom-harness/src/plugins/workspace-mutation.ts",
@@ -1078,7 +1078,7 @@
         {
           "path": "apps/custom-harness/tests/chat.test.ts",
           "mode": "exact",
-          "sha256": "bf94287bc1170dae86429956960380219633bfeddf28377dbba1037bad5a18c6"
+          "sha256": "2b6c37db0fb97aa3257840ba2565f96f09f78850cd2383905da8bb4b68982e0a"
         },
         {
           "path": "apps/custom-harness/tests/child-delegation.test.ts",
@@ -1118,7 +1118,7 @@
         {
           "path": "apps/custom-harness/tests/opencode2-parity.test.ts",
           "mode": "exact",
-          "sha256": "0d62dcce2e28bc676f2d2dfccd8fc8e8bc8a79d6895c63a5c2961adadae5ce70"
+          "sha256": "74f2091aa9d3d6c96f5c2f9d5bf0d13ea1921adb9da3e89efaf60cdc7ee1f3ae"
         },
         {
           "path": "apps/custom-harness/tests/plugin-catalog.test.ts",
