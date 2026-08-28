@@ -145,6 +145,8 @@ export const renderTuiFrame = (
   const hints =
     state.status === "working"
       ? theme.activity("● ACTIVE")
+      : !active
+        ? ""
       : state.input
         ? theme.muted("↵ send   ctrl+j newline   ctrl+k palette")
         : mainCompact

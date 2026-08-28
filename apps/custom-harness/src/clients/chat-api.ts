@@ -75,8 +75,12 @@ export const makeChatApi =
           correlation?.kind === "curiosity.chat.turn" &&
           correlation.turnId === payload.turnId
         ) {
-          streamed = true;
-          onTextDelta?.(stream.delta);
+          // Research output is only user-visible after citation verification.
+          // This also keeps a discarded repairable draft out of the transcript.
+          if (correlation.agentId !== "researcher") {
+            streamed = true;
+            onTextDelta?.(stream.delta);
+          }
         }
       });
     } catch (error) {

@@ -12,6 +12,8 @@ class ChatCorrelation extends Schema.Class<ChatCorrelation>(
   assistantContext: Schema.String,
   finalizationOnly: Schema.Boolean,
   kind: Schema.Literal("curiosity.chat.turn"),
+  recoveryAttempts: Schema.optional(Schema.Number),
+  recoveryCodes: Schema.optional(Schema.Array(Schema.String)),
   roleActivationCommand: Schema.optional(Schema.NonEmptyString),
   roleActivationEventId: Schema.optional(Schema.NonEmptyString),
   threadId: Schema.NonEmptyString,

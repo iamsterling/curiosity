@@ -110,6 +110,10 @@ bunx @openai/codex login --device-auth -c 'cli_auth_credentials_store="file"'
 The command prints a verification URL and one-time code. File storage is
 required because the local adapter reads `$CODEX_HOME/auth.json` or the default
 `~/.codex/auth.json`. Set `NO_COLOR=1` for plain terminal output.
+The terminal clients leave the terminal background untouched and select a
+contrast-safe foreground palette from the terminal's reported background color.
+Set `CURIOSITY_TERMINAL_BACKGROUND=light` or `dark` only when a terminal cannot
+answer the standard background-color query correctly.
 
 The TypeScript renderer is the default terminal owner. The Bubble Tea migration
 client remains available only for explicit comparison with
@@ -151,6 +155,13 @@ existing Curiosity query runtime instead, set `CURIOSITY_RESEARCH_ADAPTER` to
 search only to the researcher role. Search results remain untrusted evidence;
 the kernel records source custody, rejects uncaptured answer citations, and
 shows a research-receipt summary after a completed answer.
+
+Recoverable model-output and tool-execution failures stay inside the active
+turn. The kernel records a bounded recovery diagnostic, returns it to the same
+agent with its currently granted tools, and requires a changed action or a
+useful final answer. Recovery is capped at three attempts and two occurrences
+of one error code. Cancellation, authority denial, child-policy failure, and
+ambiguous mutation delivery remain terminal rather than being retried.
 
 For non-OAuth research adapters, public HTTPS retrieval is a separate
 least-authority grant. Set

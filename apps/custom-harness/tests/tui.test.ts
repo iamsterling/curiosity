@@ -31,7 +31,12 @@ import {
   createNodeScreenTerminal,
   type TuiKey,
 } from "../src/tui/screen-terminal.js";
-import { makeTerminalTheme } from "../src/tui/theme.js";
+import {
+  colorSchemeForRgb,
+  detectTerminalColorScheme,
+  makeTerminalTheme,
+  resolveTerminalColorScheme,
+} from "../src/tui/theme.js";
 import { brailleFrame, resolveMotionPreference } from "../src/tui/animation.js";
 import { createStreamPresentation } from "../src/tui/stream-presentation.js";
 import { createStreamTextLayout } from "../src/tui/stream-layout.js";
@@ -202,7 +207,7 @@ describe("custom harness TUI", () => {
       .join("\n");
     expect(rendered).toContain("│");
     expect(rendered).toContain(
-      "CHAT / gpt-5.4-mini · openai-oauth / EFFORT medium",
+      "local-owner  openai-oauth:gpt-5.4-mini  medium",
     );
     expect(rendered).toContain("Done.");
     expect(rendered).toContain("⠉ Working…");
@@ -664,9 +669,11 @@ describe("custom harness TUI", () => {
       .flatMap(({ lines }) => lines)
       .map(stripVTControlCharacters)
       .join("\n");
-    expect(rendered).toContain("COMMAND PALETTE");
+    expect(rendered).toContain("Search commands");
+    expect(rendered).toContain("CORE");
+    expect(rendered).toContain("PLUGIN COMMANDS");
     expect(rendered).toContain("/research");
-    expect(rendered).toContain("non-authoritative until submitted");
+    expect(rendered).toContain("catalog contributions");
     expect(rendered).toContain("INSPECTOR");
     expect(rendered).toContain("filesystem.read");
     expect(rendered).toContain("curiosity.stock.chat");
@@ -769,6 +776,55 @@ describe("custom harness TUI", () => {
     expect(terminalOutput).toContain("\u001b[?1000h\u001b[?1006h");
     expect(terminalOutput).toContain("\u001b[?1002l");
     expect(raw).toBe(false);
+  });
+
+  test("detects the terminal background and never paints over it", async () => {
+    expect(resolveTerminalColorScheme({ COLORFGBG: "15;0" })).toBe("dark");
+    expect(resolveTerminalColorScheme({ COLORFGBG: "0;15" })).toBe("light");
+    expect(
+      resolveTerminalColorScheme({ CURIOSITY_TERMINAL_BACKGROUND: "light" }),
+    ).toBe("light");
+    expect(colorSchemeForRgb(8, 10, 12)).toBe("dark");
+    expect(colorSchemeForRgb(245, 245, 240)).toBe("light");
+
+    const input = new PassThrough() as PassThrough & NodeJS.ReadStream;
+    const output = new PassThrough() as PassThrough & NodeJS.WriteStream;
+    let raw = false;
+    Object.defineProperties(input, {
+      isRaw: { get: () => raw },
+      isTTY: { value: true },
+      setRawMode: {
+        value: (value: boolean) => {
+          raw = value;
+          return input;
+        },
+      },
+    });
+    Object.defineProperty(output, "isTTY", { value: true });
+    let terminalOutput = "";
+    output.on("data", (chunk) => {
+      terminalOutput += chunk.toString();
+    });
+    const detected = detectTerminalColorScheme(input, output, {}, 100);
+    await Bun.sleep(0);
+    expect(terminalOutput).toContain("\u001b]11;?\u0007");
+    input.write("\u001b]11;rgb:ffff/ffff/ffff\u0007");
+    expect(await detected).toBe("light");
+    expect(raw).toBe(false);
+
+    const dark = makeTerminalTheme(true, "dark");
+    const light = makeTerminalTheme(true, "light");
+    const styled = [
+      dark.base,
+      dark.canvas("canvas"),
+      dark.surface("surface"),
+      dark.surfaceText("text"),
+      dark.quietSurface("quiet"),
+      dark.quietSurfaceMuted("muted"),
+    ].join("");
+    expect(styled).not.toMatch(/\u001b\[[\d;]*48(?:;|m)/u);
+    expect(dark.text("text")).not.toBe(light.text("text"));
+    expect(light.colorScheme).toBe("light");
   });
 
   test("drops intermediate terminal frames during an output burst", async () => {
@@ -934,6 +990,29 @@ describe("custom harness TUI", () => {
     expect(rendered).not.toContain("\u001b");
   });
 
+  test("colors Markdown semantics without painting its background", () => {
+    const rendered = renderMarkdown(
+      [
+        "# Heading",
+        "",
+        "## Section",
+        "",
+        "- **strong** and *emphasis* with `code`",
+        "",
+        "> quoted evidence",
+        "",
+        "[source](https://example.com) and ~~removed~~",
+      ].join("\n"),
+      { theme: makeTerminalTheme(true, "dark"), width: 72 },
+    );
+    expect(rendered).toContain("\u001b[38;2;139;213;247m");
+    expect(rendered).toContain("\u001b[38;2;183;166;232m");
+    expect(rendered).toContain("\u001b[38;2;215;184;115m");
+    expect(rendered).toContain("\u001b[38;2;167;207;178m");
+    expect(rendered).toContain("\u001b[38;2;130;199;165m");
+    expect(rendered).not.toMatch(/\u001b\[[\d;]*48(?:;|m)/u);
+  });
+
   test("matches the five OpenCode and Crush acceptance frames", () => {
     const theme = makeTerminalTheme(false);
     const splash = renderTuiFrame(
@@ -954,13 +1033,13 @@ describe("custom harness TUI", () => {
       theme,
     );
     const splashText = splash.lines.join("\n");
-    expect(splashText).toContain("CURIOSITY");
-    expect(splashText).toContain("◇ authority kernel sealed · 0 plugins");
+    expect(splashText).toContain("C U R I O S I T Y");
+    expect(splashText).toContain("──────────── ◇ ────────────");
     expect(splashText).toContain("Ask Curiosity…");
     expect(splashText).toContain(
-      "CHAT / gpt-5.4-mini · openai-oauth / EFFORT high",
+      "local-owner  openai-oauth:gpt-5.4-mini  high",
     );
-    expect(splashText).toContain("ctrl+k palette");
+    expect(splashText).not.toContain("authority kernel sealed");
     expect(splashText).not.toContain("█▀▀ █ █");
     expect(splash.cursor).toBeDefined();
 
@@ -1077,7 +1156,7 @@ describe("custom harness TUI", () => {
     const compactText = compact.lines.join("\n");
     expect(compactText).toContain("first line");
     expect(compactText).toContain("second line");
-    expect(compactText).toContain("CHAT / gpt-5.4-mini / EFFORT high");
+    expect(compactText).toContain("local-owner  gpt-5.4-mini  high");
     expect(compactText).not.toContain("openai-oauth");
     expect(compactText).not.toContain("█▀▀ █ █");
     expect(compact.cursor?.row).toBeGreaterThan(0);

@@ -238,18 +238,22 @@ describe("identity-bound Git reads", () => {
     const generator: TextGenerator = {
       effort: "medium",
       modelId: "test:git-ref-race",
-      stream: async function* () {
-        writeFileSync(path.join(root, "raced.txt"), "raced\n");
-        execFileSync(gitExecutable, ["add", "raced.txt"], { cwd: root });
-        execFileSync(gitExecutable, ["commit", "-q", "-m", "raced"], {
-          cwd: root,
-        });
-        yield {
-          input: { maxOutputBytes: 1_024, schemaVersion: 1 },
-          toolCallId: "git-status-race-call",
-          toolName: "git_status",
-          type: "tool-call",
-        } as never;
+      stream: async function* (request) {
+        if (!request.messages.at(-1)?.content.includes("GIT_HEAD_PRECONDITION_FAILED")) {
+          writeFileSync(path.join(root, "raced.txt"), "raced\n");
+          execFileSync(gitExecutable, ["add", "raced.txt"], { cwd: root });
+          execFileSync(gitExecutable, ["commit", "-q", "-m", "raced"], {
+            cwd: root,
+          });
+          yield {
+            input: { maxOutputBytes: 1_024, schemaVersion: 1 },
+            toolCallId: "git-status-race-call",
+            toolName: "git_status",
+            type: "tool-call",
+          } as never;
+          return;
+        }
+        yield "The repository HEAD changed during the turn, so I stopped rather than acting on stale Git state.";
       },
     };
     const harness = createCuriosityHarness({
@@ -261,8 +265,8 @@ describe("identity-bound Git reads", () => {
       textGenerator: generator,
       workspaceRoot: root,
     });
-    await expect(harness.chat(turn())).rejects.toMatchObject({
-      message: "GIT_HEAD_PRECONDITION_FAILED",
+    await expect(harness.chat(turn())).resolves.toMatchObject({
+      text: "The repository HEAD changed during the turn, so I stopped rather than acting on stale Git state.",
     });
     await harness.dispose();
     const database = new Database(databasePath, { readonly: true, strict: true });
@@ -273,6 +277,13 @@ describe("identity-bound Git reads", () => {
         )
         .get(),
     ).toEqual({ error_code: "GIT_HEAD_PRECONDITION_FAILED", status: "failed" });
+    expect(
+      database
+        .query<{ count: number }, []>(
+          "SELECT count(*) AS count FROM events WHERE event_type = 'turn.recovery.requested' AND json_extract(body_json, '$.errorCode') = 'GIT_HEAD_PRECONDITION_FAILED'",
+        )
+        .get()?.count,
+    ).toBe(1);
     database.close();
   });
 

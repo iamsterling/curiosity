@@ -1,10 +1,10 @@
 import type { TuiFrameState } from "./frame-types.js";
-import { clip, modelParts, padPlain, visibleWidth } from "./frame-text.js";
+import { clip, modelParts, visibleWidth } from "./frame-text.js";
 import { sanitizeTerminalText } from "./terminal-text.js";
 import type { TerminalTheme } from "./theme.js";
 import { TUI_DESIGN_TOKENS } from "./design-system.js";
 
-export const LOGO = ["CURIOSITY"] as const;
+export const LOGO = ["C U R I O S I T Y"] as const;
 
 export interface ComposerView {
   readonly cursorColumn?: number;
@@ -53,68 +53,13 @@ const inputRows = (
   return { cursorColumn, cursorRow, lines };
 };
 
-const metadata = (
-  width: number,
-  state: TuiFrameState,
-  theme: TerminalTheme,
-  compact: boolean,
-): string => {
-  const { model, provider } = modelParts(state.modelId);
-  const safeModel = sanitizeTerminalText(model);
-  const safeProvider = sanitizeTerminalText(provider);
-  const safeEffort = sanitizeTerminalText(state.effort);
-  const status = state.status === "working" ? "ACTIVE" : "READY";
-
-  if (width < 40) {
-    const clippedModel = clip(
-      safeModel,
-      Math.max(4, width - status.length - 5),
-    );
-    const plain = `  ${clippedModel}`;
-    const gap = " ".repeat(
-      Math.max(1, width - visibleWidth(plain) - status.length),
-    );
-    return (
-      theme.surface("  ") +
-      theme.surfaceText(clippedModel) +
-      theme.surface(gap) +
-      (state.status === "working"
-        ? theme.surfaceActivity(status)
-        : theme.surfaceStatus(status))
-    );
-  }
-
-  const providerPart = compact ? "" : ` · ${safeProvider}`;
-  const fixed = `  CHAT / ${providerPart} / EFFORT ${safeEffort} ${status}`;
-  const clippedModel = clip(
-    safeModel,
-    Math.max(4, width - visibleWidth(fixed)),
-  );
-  const plain = `  CHAT / ${clippedModel}${providerPart} / EFFORT ${safeEffort}`;
-  const gap = " ".repeat(
-    Math.max(1, width - visibleWidth(plain) - status.length),
-  );
-  return (
-    theme.surface("  ") +
-    theme.surfaceMuted("CHAT / ") +
-    theme.surfaceText(clippedModel) +
-    theme.surfaceMuted(`${providerPart} / EFFORT `) +
-    theme.surfaceText(safeEffort) +
-    theme.surface(gap) +
-    (state.status === "working"
-      ? theme.surfaceActivity(status)
-      : theme.surfaceStatus(status))
-  );
-};
-
 export const renderComposer = (
   state: TuiFrameState,
   width: number,
   compact: boolean,
   theme: TerminalTheme,
 ): ComposerView => {
-  const innerWidth = Math.max(1, width - 1);
-  const inputWidth = Math.max(1, innerWidth - 4);
+  const inputWidth = Math.max(1, width - 2);
   const input = inputRows(state.input, state.inputCursor, inputWidth);
   const maxRows = compact ? 3 : 6;
   const firstRow = Math.min(
@@ -122,26 +67,21 @@ export const renderComposer = (
     Math.max(0, input.lines.length - maxRows),
   );
   const visibleRows = input.lines.slice(firstRow, firstRow + maxRows);
+  const prompt = state.status === "working" ? theme.activity : theme.focus;
   const body = state.input
-    ? visibleRows.map((line) =>
-        theme.surfaceText(padPlain(`  ${line}`, innerWidth)),
+    ? visibleRows.map(
+        (line, index) =>
+          `${index === 0 ? prompt("›") : " "} ${theme.text(line)}`,
       )
-    : [theme.surfaceMuted(padPlain("  Ask Curiosity…", innerWidth))];
-  const rail = state.status === "working" ? theme.activity : theme.focus;
-  const { glyph } = TUI_DESIGN_TOKENS;
+    : [`${prompt("›")} ${theme.muted("Ask Curiosity…")}`];
   return {
     ...(state.status === "idle"
       ? {
-          cursorColumn: 3 + input.cursorColumn,
-          cursorRow: 1 + input.cursorRow - firstRow,
+          cursorColumn: 2 + input.cursorColumn,
+          cursorRow: input.cursorRow - firstRow,
         }
       : {}),
-    lines: [
-      `${rail(glyph.railStart)}${theme.surface(" ".repeat(innerWidth))}`,
-      ...body.map((line) => `${rail(glyph.rail)}${line}`),
-      `${rail(glyph.rail)}${metadata(innerWidth, state, theme, compact)}`,
-      `${rail(glyph.railEnd)}${theme.surface(" ".repeat(innerWidth))}`,
-    ],
+    lines: body,
   };
 };
 
@@ -169,11 +109,12 @@ export const renderHeader = (
 };
 
 export const renderIdleStatus = (
-  state: TuiFrameState,
+  _state: TuiFrameState,
   theme: TerminalTheme,
 ): string => {
-  const pluginCount = state.catalog?.pluginIds.length ?? 0;
-  return `${theme.secondary(TUI_DESIGN_TOKENS.glyph.authored)} ${theme.muted(`authority kernel sealed · ${pluginCount} plugins`)}`;
+  return `${theme.rule(TUI_DESIGN_TOKENS.glyph.rule.repeat(12))} ${theme.text(
+    TUI_DESIGN_TOKENS.glyph.authored,
+  )} ${theme.rule(TUI_DESIGN_TOKENS.glyph.rule.repeat(12))}`;
 };
 
 export const renderFooter = (
@@ -181,6 +122,13 @@ export const renderFooter = (
   width: number,
   theme: TerminalTheme,
 ): string => {
+  const idle =
+    state.messages.length === 0 &&
+    !state.submittedText &&
+    !state.streamingLayout &&
+    !state.streamingText &&
+    !state.error;
+  if (idle) return "";
   const status = " KERNEL / DURABLE";
   const workspacePrefix = width < 72 ? "" : "WORKSPACE / ";
   const left = `${workspacePrefix}${clip(

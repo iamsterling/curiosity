@@ -13,6 +13,7 @@ import {
 import { resolveMotionPreference } from "./tui/animation.js";
 import { createNodeScreenTerminal } from "./tui/screen-terminal.js";
 import { runTuiSession } from "./tui/session.js";
+import { detectTerminalColorScheme } from "./tui/theme.js";
 import { runBubbleTeaProcess } from "./tui-bubbletea/process.js";
 import { resolveRuntimeResearchAdapter } from "./research/runtime-config.js";
 
@@ -54,12 +55,21 @@ export const runCuriosityTui = async (
       return;
     }
 
+    const color = process.env.NO_COLOR === undefined;
+    const colorScheme = color
+      ? await detectTerminalColorScheme(
+          process.stdin,
+          process.stdout,
+          process.env,
+        )
+      : "dark";
     const terminal = createNodeScreenTerminal(process.stdin, process.stdout);
     try {
       await runTuiSession({
         agentId: resolveTuiAgentId(process.env),
         actorId: config.actorId,
-        color: process.env.NO_COLOR === undefined,
+        color,
+        colorScheme,
         effort: textGenerator.effort,
         harness,
         modelId: textGenerator.modelId,

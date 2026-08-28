@@ -28,6 +28,7 @@ export interface TuiInspectorView {
 
 export interface TuiPaletteItem {
   readonly description: string;
+  readonly kind?: "core" | "plugin";
   readonly name: string;
   readonly status: "active" | "compatibility-deprecated";
 }

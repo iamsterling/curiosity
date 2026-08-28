@@ -33,7 +33,10 @@ import {
   sanitizeConversationText,
   sanitizeTerminalText,
 } from "./terminal-text.js";
-import { makeTerminalTheme } from "./theme.js";
+import {
+  makeTerminalTheme,
+  type TerminalColorScheme,
+} from "./theme.js";
 
 export { sanitizeConversationText, sanitizeTerminalText };
 export type { TuiScreenTerminal };
@@ -47,6 +50,7 @@ export interface TuiSessionOptions {
   readonly agentId?: string;
   readonly actorId: string;
   readonly color?: boolean;
+  readonly colorScheme?: TerminalColorScheme;
   readonly createId?: () => string;
   readonly effort: string;
   readonly harness: TuiHarness;
@@ -66,7 +70,10 @@ export const runTuiSession = async (
   const agentId = options.agentId ?? options.harness.catalog.defaultPrimaryRole;
   if (!options.harness.catalog.agents.some((agent) => agent.id === agentId))
     throw new Error("TUI_AGENT_UNKNOWN");
-  const theme = makeTerminalTheme(options.color ?? false);
+  const theme = makeTerminalTheme(
+    options.color ?? false,
+    options.colorScheme ?? "dark",
+  );
   const capabilityStatus = await options.harness.status();
   const catalog: TuiCatalogView = Object.freeze({
     digest: options.harness.catalog.digest,
@@ -79,8 +86,20 @@ export const runTuiSession = async (
     catalog,
     profile: capabilityStatus.profile,
   });
-  const paletteItems: readonly TuiPaletteItem[] = Object.freeze(
-    [...options.harness.catalog.promptCommands]
+  const paletteItems: readonly TuiPaletteItem[] = Object.freeze([
+    Object.freeze({
+      description: "start a fresh local thread",
+      kind: "core" as const,
+      name: "new",
+      status: "active" as const,
+    }),
+    Object.freeze({
+      description: "leave the current Curiosity session",
+      kind: "core" as const,
+      name: "quit",
+      status: "active" as const,
+    }),
+    ...[...options.harness.catalog.promptCommands]
       .sort(
         (left, right) =>
           Number(left.status !== "active") -
@@ -88,9 +107,9 @@ export const runTuiSession = async (
           left.name.localeCompare(right.name),
       )
       .map(({ description, name, status }) =>
-        Object.freeze({ description, name, status }),
+        Object.freeze({ description, kind: "plugin" as const, name, status }),
       ),
-  );
+  ]);
   let thread = latestThread(await options.harness.projections.threads());
   let messages = thread
     ? await options.harness.projections.messages(thread.threadId)

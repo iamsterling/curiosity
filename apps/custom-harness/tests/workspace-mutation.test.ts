@@ -196,8 +196,15 @@ describe("preconditioned workspace mutation", () => {
     const generator: TextGenerator = {
       effort: "medium",
       modelId: "test:workspace-precondition",
-      stream: async function* () {
+      stream: async function* (request) {
         generations += 1;
+        if (generations > 1) {
+          expect(request.messages.at(-1)?.content).toContain(
+            "WORKSPACE_PRECONDITION_FAILED",
+          );
+          yield "The file changed from the expected revision, so I preserved it and stopped instead of overwriting newer content.";
+          return;
+        }
         yield {
           input: {
             content: "changed\n",
@@ -220,10 +227,10 @@ describe("preconditioned workspace mutation", () => {
       workspaceMutationEnabled: true,
       workspaceRoot: root,
     });
-    await expect(harness.chat(turn("precondition"))).rejects.toMatchObject({
-      message: "WORKSPACE_PRECONDITION_FAILED",
+    await expect(harness.chat(turn("precondition"))).resolves.toMatchObject({
+      text: "The file changed from the expected revision, so I preserved it and stopped instead of overwriting newer content.",
     });
-    expect(generations).toBe(1);
+    expect(generations).toBe(2);
     expect(readFileSync(file, "utf8")).toBe("one one\n");
     await harness.dispose();
 

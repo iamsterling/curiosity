@@ -16,6 +16,11 @@ interface CapturedSource {
   readonly sourceId: string;
 }
 
+export interface ResearchCitationTarget {
+  readonly canonicalUrl: string;
+  readonly sourceId: string;
+}
+
 export interface GeneratedResearchReceipt {
   readonly answerDigest: string;
   readonly assistantMessageId: string;
@@ -36,7 +41,11 @@ export interface GeneratedResearchReceipt {
 }
 
 export type ResearchReceiptResult =
-  | { readonly failure: ResearchReceiptFailure; readonly ok: false }
+  | {
+      readonly citationTargets?: readonly ResearchCitationTarget[];
+      readonly failure: ResearchReceiptFailure;
+      readonly ok: false;
+    }
   | { readonly ok: true; readonly receipt: GeneratedResearchReceipt };
 
 const digest = (value: unknown): string =>
@@ -146,9 +155,23 @@ export const generateResearchReceipt = (input: {
     urls.some((url) => !byUrl.has(url)) ||
     sourceIds.some((sourceId) => !byId.has(sourceId))
   )
-    return { failure: "RESEARCH_CITATION_UNRESOLVED", ok: false };
+    return {
+      citationTargets: captured.map(({ canonicalUrl, sourceId }) => ({
+        canonicalUrl,
+        sourceId,
+      })),
+      failure: "RESEARCH_CITATION_UNRESOLVED",
+      ok: false,
+    };
   if (captured.length > 0 && urls.length === 0 && sourceIds.length === 0)
-    return { failure: "RESEARCH_CITATIONS_REQUIRED", ok: false };
+    return {
+      citationTargets: captured.map(({ canonicalUrl, sourceId }) => ({
+        canonicalUrl,
+        sourceId,
+      })),
+      failure: "RESEARCH_CITATIONS_REQUIRED",
+      ok: false,
+    };
 
   const citations = urls.map((canonicalUrl) => ({
     canonicalUrl,

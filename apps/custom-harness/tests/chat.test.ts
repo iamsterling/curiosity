@@ -151,6 +151,10 @@ describe("plugin-native chat turns", () => {
             } as never;
             return;
           }
+          if (text.includes("WORKSPACE_PATH_NOT_FOUND")) {
+            yield "failing root recovered independently";
+            return;
+          }
           await Bun.sleep(20);
           yield "healthy root completed";
         },
@@ -189,8 +193,8 @@ describe("plugin-native chat turns", () => {
       value: { text: "healthy root completed" },
     });
     expect(failing).toMatchObject({
-      reason: { message: "WORKSPACE_PATH_NOT_FOUND" },
-      status: "rejected",
+      status: "fulfilled",
+      value: { text: "failing root recovered independently" },
     });
     await harness.dispose();
   });
@@ -678,24 +682,44 @@ describe("plugin-native chat turns", () => {
     await harness.dispose();
   });
 
-  test("terminates malformed model tool input without stranding the reaction", async () => {
+  test("repairs malformed model tool input without stranding the reaction", async () => {
     const databasePath = databaseFixture();
     let generations = 0;
     const textGenerator: TextGenerator = {
       effort: "high",
       modelId: "test:malformed-tool",
-      stream: async function* () {
+      stream: async function* (request) {
         generations += 1;
-        yield "Planning a search.";
-        yield {
-          input: {
-            query: "candidate-A",
-            schemaVersion: 1,
-          },
-          toolCallId: "tool-call-invalid-001",
-          toolName: "workspace_search",
-          type: "tool-call",
-        } as never;
+        if (generations === 1) {
+          yield "Planning a search.";
+          yield {
+            input: {
+              query: "candidate-A",
+              schemaVersion: 1,
+            },
+            toolCallId: "tool-call-invalid-001",
+            toolName: "workspace_search",
+            type: "tool-call",
+          } as never;
+          return;
+        }
+        if (generations === 2) {
+          expect(request.messages.at(-1)?.content).toContain(
+            "MODEL_TOOL_INPUT_INVALID",
+          );
+          yield {
+            input: {
+              maxResults: 2,
+              query: "candidate-A",
+              schemaVersion: 1,
+            },
+            toolCallId: "tool-call-corrected-001",
+            toolName: "workspace_search",
+            type: "tool-call",
+          } as never;
+          return;
+        }
+        yield "The corrected search completed; no matching workspace evidence was found.";
       },
     };
     const harness = createCuriosityHarness({
@@ -707,19 +731,19 @@ describe("plugin-native chat turns", () => {
       workspaceRoot: path.dirname(databasePath),
     });
 
-    await expect(harness.chat(turn())).rejects.toMatchObject({
-      _tag: "TextGenerationFailure",
-      message: "MODEL_TOOL_INPUT_INVALID",
-      modelId: "test:malformed-tool",
+    await expect(harness.chat(turn())).resolves.toMatchObject({
+      text: "The corrected search completed; no matching workspace evidence was found.",
     });
-    await expect(harness.chat(turn())).rejects.toMatchObject({
-      _tag: "TextGenerationFailure",
-      message: "MODEL_TOOL_INPUT_INVALID",
-      modelId: "test:malformed-tool",
+    await expect(harness.chat(turn())).resolves.toMatchObject({
+      text: "The corrected search completed; no matching workspace evidence was found.",
     });
-    expect(generations).toBe(1);
+    expect(generations).toBe(3);
     expect(await harness.projections.messages("thread-chat-001")).toEqual([
       expect.objectContaining({ role: "user", text: "Hello Curiosity" }),
+      expect.objectContaining({
+        role: "assistant",
+        text: "The corrected search completed; no matching workspace evidence was found.",
+      }),
     ]);
 
     const database = new Database(databasePath, {
@@ -739,14 +763,21 @@ describe("plugin-native chat turns", () => {
           "SELECT count(*) AS count FROM tool_calls",
         )
         .get()?.count,
-    ).toBe(0);
+    ).toBe(1);
     expect(
       database
         .query<{ count: number }, []>(
-          "SELECT count(*) AS count FROM events WHERE event_type = 'turn.failed' AND json_extract(body_json, '$.errorCode') = 'MODEL_TOOL_INPUT_INVALID'",
+          "SELECT count(*) AS count FROM events WHERE event_type = 'turn.recovery.requested' AND json_extract(body_json, '$.errorCode') = 'MODEL_TOOL_INPUT_INVALID'",
         )
         .get()?.count,
     ).toBe(1);
+    expect(
+      database
+        .query<{ count: number }, []>(
+          "SELECT count(*) AS count FROM events WHERE event_type = 'turn.failed'",
+        )
+        .get()?.count,
+    ).toBe(0);
     database.close();
     await harness.dispose();
   });
@@ -1034,14 +1065,23 @@ describe("plugin-native chat turns", () => {
           } as never;
           return;
         }
+        expect(
+          request.messages.some(({ content }) =>
+            content.includes(
+              "Tool web_fetch (tool-call-failing-fetch-001) failed:",
+            ),
+          ),
+        ).toBe(true);
+        expect(
+          request.messages.some(({ content }) =>
+            content.includes('"errorCode":"FETCH_RESPONSE_TOO_LARGE"'),
+          ),
+        ).toBe(true);
         expect(request.messages.at(-1)?.content).toContain(
-          "Tool web_fetch (tool-call-failing-fetch-001) failed:",
+          "BEGIN TRUSTED KERNEL RECOVERY DIAGNOSTIC",
         );
         expect(request.messages.at(-1)?.content).toContain(
-          '"errorCode":"FETCH_RESPONSE_TOO_LARGE"',
-        );
-        expect(request.messages.at(-1)?.content).toContain(
-          "BEGIN UNTRUSTED TOOL EVIDENCE",
+          "FETCH_RESPONSE_TOO_LARGE",
         );
         yield "CURIOSITY_NO_GO: the fetched source exceeded the governed response limit.";
       },
@@ -1118,25 +1158,49 @@ describe("plugin-native chat turns", () => {
     await harness.dispose();
   });
 
-  test("keeps a non-research tool failure terminal", async () => {
+  test("returns a general tool failure to the active agent for inline recovery", async () => {
     const databasePath = databaseFixture();
     let generations = 0;
     const textGenerator: TextGenerator = {
       effort: "medium",
-      modelId: "test:terminal-tool-failure",
-      stream: async function* () {
+      modelId: "test:inline-tool-recovery",
+      stream: async function* (request) {
         generations += 1;
-        yield {
-          input: {
-            maxLines: 10,
-            path: "missing-evidence.txt",
-            schemaVersion: 1,
-            startLine: 1,
-          },
-          toolCallId: "tool-call-terminal-read-001",
-          toolName: "workspace_read",
-          type: "tool-call",
-        } as never;
+        if (generations === 1) {
+          yield {
+            input: {
+              maxLines: 10,
+              path: "missing-evidence.txt",
+              schemaVersion: 1,
+              startLine: 1,
+            },
+            toolCallId: "tool-call-recoverable-read-001",
+            toolName: "workspace_read",
+            type: "tool-call",
+          } as never;
+          return;
+        }
+        if (generations === 2) {
+          expect(request.messages.at(-1)?.content).toContain(
+            "WORKSPACE_PATH_NOT_FOUND",
+          );
+          expect(request.messages.at(-1)?.content).toContain(
+            "Do not repeat the failed action unchanged",
+          );
+          yield {
+            input: {
+              maxEntries: 10,
+              path: ".",
+              recursive: false,
+              schemaVersion: 1,
+            },
+            toolCallId: "tool-call-recovery-list-001",
+            toolName: "workspace_list",
+            type: "tool-call",
+          } as never;
+          return;
+        }
+        yield "Recovered inline: the requested workspace evidence does not exist.";
       },
     };
     const harness = createCuriosityHarness({
@@ -1148,11 +1212,10 @@ describe("plugin-native chat turns", () => {
       workspaceRoot: path.dirname(databasePath),
     });
 
-    await expect(harness.chat(turn())).rejects.toMatchObject({
-      _tag: "TextGenerationFailure",
-      message: "WORKSPACE_PATH_NOT_FOUND",
+    await expect(harness.chat(turn())).resolves.toMatchObject({
+      text: "Recovered inline: the requested workspace evidence does not exist.",
     });
-    expect(generations).toBe(1);
+    expect(generations).toBe(3);
     const database = new Database(databasePath, {
       readonly: true,
       strict: true,
@@ -1160,10 +1223,24 @@ describe("plugin-native chat turns", () => {
     expect(
       database
         .query<{ count: number }, []>(
-          "SELECT count(*) AS count FROM events WHERE event_type = 'turn.failed' AND json_extract(body_json, '$.errorCode') = 'WORKSPACE_PATH_NOT_FOUND'",
+          "SELECT count(*) AS count FROM events WHERE event_type = 'turn.recovery.requested' AND json_extract(body_json, '$.errorCode') = 'WORKSPACE_PATH_NOT_FOUND'",
         )
         .get()?.count,
     ).toBe(1);
+    expect(
+      database
+        .query<{ count: number }, []>(
+          "SELECT count(*) AS count FROM tool_calls WHERE status IN ('failed','succeeded')",
+        )
+        .get()?.count,
+    ).toBe(2);
+    expect(
+      database
+        .query<{ count: number }, []>(
+          "SELECT count(*) AS count FROM events WHERE event_type = 'turn.failed'",
+        )
+        .get()?.count,
+    ).toBe(0);
     database.close();
     await harness.dispose();
   });
@@ -1330,7 +1407,7 @@ describe("plugin-native chat turns", () => {
     await harness.dispose();
   });
 
-  test("fails a research turn whose citation was not captured", async () => {
+  test("repairs a research answer whose captured evidence was not cited", async () => {
     const databasePath = databaseFixture();
     let generations = 0;
     const researchAdapter: ResearchAdapter = {
@@ -1355,7 +1432,7 @@ describe("plugin-native chat turns", () => {
     const textGenerator: TextGenerator = {
       effort: "high",
       modelId: "test:unresolved-citation",
-      stream: async function* () {
+      stream: async function* (request) {
         generations += 1;
         if (generations === 1) {
           yield {
@@ -1370,7 +1447,20 @@ describe("plugin-native chat turns", () => {
           } as never;
           return;
         }
-        yield "Unsupported citation https://example.net/not-captured";
+        if (generations === 2) {
+          yield "Captured evidence supports the finding, but this draft omitted its citation.";
+          return;
+        }
+        expect(request.tools?.some(({ name }) => name === "web_search")).toBe(
+          true,
+        );
+        expect(request.messages.at(-1)?.content).toContain(
+          "RESEARCH_CITATIONS_REQUIRED",
+        );
+        expect(request.messages.at(-1)?.content).toContain(
+          "https://example.com/captured",
+        );
+        yield "Finding [Captured source](https://example.com/captured).";
       },
     };
     const harness = createCuriosityHarness({
@@ -1407,14 +1497,22 @@ describe("plugin-native chat turns", () => {
       ),
     );
 
-    await expect(harness.chat(turn("researcher"))).rejects.toMatchObject({
-      _tag: "TextGenerationFailure",
-      message: "RESEARCH_CITATION_UNRESOLVED",
-      modelId: "test:unresolved-citation",
+    const deltas: string[] = [];
+    await expect(
+      harness.chat(turn("researcher"), (delta) => deltas.push(delta)),
+    ).resolves.toMatchObject({
+      text: "Finding [Captured source](https://example.com/captured).",
     });
-    expect(generations).toBe(2);
+    expect(deltas).toEqual([
+      "Finding [Captured source](https://example.com/captured).",
+    ]);
+    expect(generations).toBe(3);
     expect(await harness.projections.messages("thread-chat-001")).toEqual([
       expect.objectContaining({ role: "user", text: "Hello Curiosity" }),
+      expect.objectContaining({
+        role: "assistant",
+        text: "Finding [Captured source](https://example.com/captured).",
+      }),
     ]);
     const database = new Database(databasePath, {
       readonly: true,
@@ -1426,7 +1524,126 @@ describe("plugin-native chat turns", () => {
           "SELECT count(*) AS count FROM events WHERE event_type = 'research.receipt.generated'",
         )
         .get()?.count,
+    ).toBe(1);
+    expect(
+      database
+        .query<{ count: number }, []>(
+          "SELECT count(*) AS count FROM events WHERE event_type = 'turn.failed'",
+        )
+        .get()?.count,
     ).toBe(0);
+    database.close();
+    await harness.dispose();
+  });
+
+  test("bounds repeated citation recovery and still fails closed", async () => {
+    const databasePath = databaseFixture();
+    const researchAdapter: ResearchAdapter = {
+      close: () => undefined,
+      receipt: {
+        adapterId: "test-bounded-citation-repair",
+        adapterVersion: "1.0.0",
+        capabilities: ["network.search"],
+        securityProfile: "curiosity-runtime-query-v1",
+      },
+      search: async () => ({
+        queriedAt: "2026-08-26T15:00:00.000Z",
+        results: [
+          {
+            canonicalUrl: "https://example.com/captured",
+            snippet: "Captured evidence.",
+            title: "Captured source",
+          },
+        ],
+      }),
+    };
+    let generations = 0;
+    const textGenerator: TextGenerator = {
+      effort: "high",
+      modelId: "test:bounded-citation-repair",
+      stream: async function* (request) {
+        generations += 1;
+        if (generations === 1) {
+          yield {
+            input: {
+              maxResults: 1,
+              query: "captured evidence",
+              schemaVersion: 1,
+            },
+            toolCallId: "tool-call-bounded-repair-001",
+            toolName: "web_search",
+            type: "tool-call",
+          } as never;
+          return;
+        }
+        if (generations > 2)
+          expect(request.messages.at(-1)?.content).toContain(
+            "RESEARCH_CITATION_UNRESOLVED",
+          );
+        yield "Unsupported citation https://example.net/not-captured";
+      },
+    };
+    const harness = createCuriosityHarness({
+      actorId,
+      authenticationSecret: secret,
+      databasePath,
+      researchAdapter,
+      supervisorPath,
+      textGenerator,
+      workspaceRoot: path.dirname(databasePath),
+    });
+    await harness.submit(
+      signCommand(
+        {
+          actorId,
+          command: {
+            id: "command-bounded-citation-repair",
+            kind: "prompt.command.invoke",
+            payload: {
+              activationId: "activation-bounded-citation-repair",
+              arguments: "Check citations",
+              name: "research",
+              schemaVersion: 1,
+              threadId: "thread-chat-001",
+            },
+            schemaVersion: 1,
+          },
+          issuedAt: new Date().toISOString(),
+          nonce: "nonce-bounded-citation-repair",
+          schemaVersion: 1,
+        },
+        secret,
+      ),
+    );
+
+    const deltas: string[] = [];
+    await expect(
+      harness.chat(turn("researcher"), (delta) => deltas.push(delta)),
+    ).rejects.toMatchObject({
+      _tag: "TextGenerationFailure",
+      message: "RESEARCH_CITATION_UNRESOLVED",
+      modelId: "test:bounded-citation-repair",
+    });
+    expect(deltas).toEqual([]);
+    expect(generations).toBe(4);
+    const database = new Database(databasePath, {
+      readonly: true,
+      strict: true,
+    });
+    expect(
+      database
+        .query<{ count: number }, []>(
+          "SELECT count(*) AS count FROM provider_calls WHERE status = 'succeeded'",
+        )
+        .get()?.count,
+    ).toBe(4);
+    expect(
+      database
+        .query<{ count: number }, []>(
+          "SELECT count(*) AS count FROM events WHERE event_type = 'turn.recovery.requested' AND json_extract(body_json, '$.errorCode') = 'RESEARCH_CITATION_UNRESOLVED'",
+        )
+        .get()?.count,
+    ).toBe(2);
     expect(
       database
         .query<{ count: number }, []>(

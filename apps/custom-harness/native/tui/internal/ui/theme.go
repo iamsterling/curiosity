@@ -37,20 +37,46 @@ type Theme struct {
 }
 
 func DeepSpace() Theme {
+	return AdaptiveTheme(true)
+}
+
+func AdaptiveTheme(darkBackground bool) Theme {
+	textPrimary := TextPrimary
+	textSecondary := TextSecondary
+	textMuted := TextMuted
+	accent := Accent
+	plugin := Plugin
+	success := Success
+	warning := Warning
+	danger := Danger
+	line := Line
+	lineStrong := LineStrong
+	if !darkBackground {
+		textPrimary = "#171A1C"
+		textSecondary = "#3F4B51"
+		textMuted = "#5D686E"
+		accent = "#176B00"
+		plugin = "#6C4BB3"
+		success = "#22734F"
+		warning = "#815E00"
+		danger = "#B42F32"
+		line = "#AEB8BD"
+		lineStrong = "#7D898F"
+	}
 	return Theme{
-		Accent:     lipgloss.NewStyle().Foreground(lipgloss.Color(Accent)),
-		Danger:     lipgloss.NewStyle().Foreground(lipgloss.Color(Danger)),
-		Dim:        lipgloss.NewStyle().Foreground(lipgloss.Color(TextMuted)).Faint(true),
-		Heading:    lipgloss.NewStyle().Foreground(lipgloss.Color(TextPrimary)).Bold(true),
-		Line:       lipgloss.NewStyle().Foreground(lipgloss.Color(Line)),
-		LineStrong: lipgloss.NewStyle().Foreground(lipgloss.Color(LineStrong)),
-		Muted:      lipgloss.NewStyle().Foreground(lipgloss.Color(TextMuted)),
-		Plugin:     lipgloss.NewStyle().Foreground(lipgloss.Color(Plugin)),
-		Quiet:      lipgloss.NewStyle().Background(lipgloss.Color(SurfaceQuiet)),
-		Secondary:  lipgloss.NewStyle().Foreground(lipgloss.Color(TextSecondary)),
-		Success:    lipgloss.NewStyle().Foreground(lipgloss.Color(Success)),
-		Surface:    lipgloss.NewStyle().Background(lipgloss.Color(Surface)),
-		Text:       lipgloss.NewStyle().Foreground(lipgloss.Color(TextPrimary)),
-		Warning:    lipgloss.NewStyle().Foreground(lipgloss.Color(Warning)),
+		Accent:     lipgloss.NewStyle().Foreground(lipgloss.Color(accent)),
+		Danger:     lipgloss.NewStyle().Foreground(lipgloss.Color(danger)),
+		Dim:        lipgloss.NewStyle().Foreground(lipgloss.Color(textMuted)).Faint(true),
+		Heading:    lipgloss.NewStyle().Foreground(lipgloss.Color(textPrimary)).Bold(true),
+		Line:       lipgloss.NewStyle().Foreground(lipgloss.Color(line)),
+		LineStrong: lipgloss.NewStyle().Foreground(lipgloss.Color(lineStrong)),
+		Muted:      lipgloss.NewStyle().Foreground(lipgloss.Color(textMuted)),
+		Plugin:     lipgloss.NewStyle().Foreground(lipgloss.Color(plugin)),
+		Quiet:      lipgloss.NewStyle(),
+		Secondary:  lipgloss.NewStyle().Foreground(lipgloss.Color(textSecondary)),
+		Success:    lipgloss.NewStyle().Foreground(lipgloss.Color(success)),
+		Surface:    lipgloss.NewStyle(),
+		Text:       lipgloss.NewStyle().Foreground(lipgloss.Color(textPrimary)),
+		Warning:    lipgloss.NewStyle().Foreground(lipgloss.Color(warning)),
 	}
 }

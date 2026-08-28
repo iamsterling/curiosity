@@ -3,6 +3,7 @@ package ui
 import (
 	"encoding/json"
 	"fmt"
+	"image/color"
 	"os"
 	"path/filepath"
 	"strings"
@@ -54,28 +55,70 @@ func TestThemeTokensMatchPenFoundation(t *testing.T) {
 	}
 }
 
+func TestThemeAdaptsWithoutPaintingTerminalBackground(t *testing.T) {
+	dark := DeepSpace()
+	light := AdaptiveTheme(false)
+	for _, rendered := range []string{
+		dark.Quiet.Render("quiet"),
+		dark.Surface.Render("surface"),
+		light.Quiet.Render("quiet"),
+		light.Surface.Render("surface"),
+	} {
+		if strings.Contains(rendered, "\x1b[48;") {
+			t.Fatalf("theme painted a terminal background: %q", rendered)
+		}
+	}
+	if dark.Text.Render("text") == light.Text.Render("text") {
+		t.Fatal("light and dark terminal foreground palettes are identical")
+	}
+
+	model := NewModel(fixtureSnapshot(), nil)
+	updated, _ := model.Update(tea.BackgroundColorMsg{Color: color.White})
+	model = updated.(Model)
+	if model.theme.Text.Render("text") != light.Text.Render("text") {
+		t.Fatal("terminal background response did not select the light palette")
+	}
+	if model.View().BackgroundColor != nil {
+		t.Fatal("terminal view configured a background color")
+	}
+	if strings.Contains(model.input.View(), "\x1b[48;") {
+		t.Fatal("composer textarea painted a terminal background")
+	}
+
+	t.Setenv("CURIOSITY_TERMINAL_BACKGROUND", "light")
+	overridden := NewModel(fixtureSnapshot(), nil)
+	if overridden.Init() != nil || overridden.theme.Text.Render("text") != light.Text.Render("text") {
+		t.Fatal("explicit terminal background did not lock the light palette")
+	}
+}
+
 func TestLayoutMetricsMatchPenFoundation(t *testing.T) {
 	bytes, err := os.ReadFile("../../../../tui.pen")
 	if err != nil {
 		t.Fatal(err)
 	}
 	var document struct {
-		Children []penNode `json:"children"`
+		Children  []penNode `json:"children"`
+		Variables map[string]struct {
+			Value json.RawMessage `json:"value"`
+		} `json:"variables"`
 	}
 	if err := json.Unmarshal(bytes, &document); err != nil {
 		t.Fatal(err)
 	}
-	idle := requirePenNode(t, document.Children, "S1 · Idle")
 	session := requirePenNode(t, document.Children, "S2 · Session")
 	inspectorScreen := requirePenNode(t, document.Children, "S4 · Inspector")
-	composer := requirePenNode(t, idle.Children, "Composer Group")
 	transcript := requirePenNode(t, session.Children, "Transcript")
 	inspector := requirePenNode(t, inspectorScreen.Children, "Inspector")
+	var composerColumns float64
+	if err := json.Unmarshal(document.Variables["col-composer-idle"].Value, &composerColumns); err != nil {
+		t.Fatal(err)
+	}
 
 	model := NewModel(fixtureSnapshot(), nil)
 	model.width = 120
-	if model.idleComposerWidth() != scaledCells(number(t, composer.Width), number(t, idle.Width), 120) {
-		t.Fatal("idle composer width is not derived from the pen ratio")
+	if model.idleComposerWidth() != int(composerColumns) {
+		t.Fatal("idle composer width is not derived from the pen token")
 	}
 	if model.inspectorWidth(120) != scaledCells(number(t, inspector.Width), number(t, inspectorScreen.Width), 120) {
 		t.Fatal("inspector width is not derived from the pen ratio")
@@ -315,8 +358,8 @@ func TestPenDerivedTerminalAlignment(t *testing.T) {
 	}
 	composerRow := rowContaining(strings.Join(idle, "\n"), "┌")
 	composerColumn := strings.Index(idle[composerRow], "┌")
-	if composerRow != 22 || composerColumn != 19 || strings.Count(strings.TrimSpace(idle[composerRow]), "─") != 79 {
-		t.Fatalf("idle composer alignment=(row %d, column %d), want pen-derived (22,19)", composerRow, composerColumn)
+	if composerRow != 22 || composerColumn != 22 || strings.Count(strings.TrimSpace(idle[composerRow]), "─") != model.idleComposerWidth()-2 {
+		t.Fatalf("idle composer alignment=(row %d, column %d), want pen-derived (22,22)", composerRow, composerColumn)
 	}
 
 	snapshot := model.snapshot

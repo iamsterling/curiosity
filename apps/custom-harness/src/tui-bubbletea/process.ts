@@ -72,6 +72,12 @@ const childEnvironment = (
 ): NodeJS.ProcessEnv => ({
   CURIOSITY_TUI_NONCE: nonce,
   CURIOSITY_TUI_SOCKET: socketPath,
+  ...(process.env.CURIOSITY_TERMINAL_BACKGROUND
+    ? {
+        CURIOSITY_TERMINAL_BACKGROUND:
+          process.env.CURIOSITY_TERMINAL_BACKGROUND,
+      }
+    : {}),
   ...(process.env.COLORTERM ? { COLORTERM: process.env.COLORTERM } : {}),
   LANG: process.env.LANG ?? "C.UTF-8",
   LC_ALL: process.env.LC_ALL ?? "C.UTF-8",

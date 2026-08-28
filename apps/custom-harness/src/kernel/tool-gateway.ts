@@ -16,6 +16,7 @@ import {
   captureFetchResponse,
   captureSearchResponse,
 } from "../research/custody.js";
+import { mutationFailureMayHaveApplied } from "./action-failure-policy.js";
 
 interface WorkspaceActionInput {
   readonly correlation: Record<string, unknown>;
@@ -63,35 +64,6 @@ const stableToolError = (cause: unknown): string => {
     ? message
     : "TOOL_EXECUTION_FAILED";
 };
-
-const mutationFailureDefinitelyNotApplied = new Set([
-  "WORKSPACE_FILE_NOT_UTF8",
-  "WORKSPACE_MUTATION_DELETE_FAILED",
-  "WORKSPACE_MUTATION_INVALID",
-  "WORKSPACE_MUTATION_RENAME_FAILED",
-  "WORKSPACE_MUTATION_TEMP_CONFLICT",
-  "WORKSPACE_MUTATION_TOO_LARGE",
-  "WORKSPACE_MUTATION_WRITE_FAILED",
-  "WORKSPACE_PATCH_OCCURRENCE_MISMATCH",
-  "WORKSPACE_PATH_INVALID",
-  "WORKSPACE_PATH_UNSAFE",
-  "WORKSPACE_PRECONDITION_FAILED",
-  "WORKSPACE_PRECONDITION_REQUIRED",
-]);
-const gitMutationFailureDefinitelyNotApplied = new Set([
-  "GIT_CLEAN_PRECONDITION_FAILED",
-  "GIT_CLEAN_PRECONDITION_REQUIRED",
-  "GIT_EXECUTABLE_DIGEST_MISMATCH",
-  "GIT_HEAD_PRECONDITION_FAILED",
-  "GIT_OUTPUT_LIMIT_DENIED",
-  "GIT_REF_NAME_DENIED",
-  "GIT_REF_PRECONDITION_FAILED",
-  "GIT_REF_TARGET_INVALID",
-  "GIT_WORKTREE_ABSENT",
-  "GIT_WORKTREE_ALREADY_EXISTS",
-  "GIT_WORKTREE_ID_INVALID",
-  "GIT_WORKTREE_UNAVAILABLE",
-]);
 
 export class ToolGateway {
   readonly #activeProcesses = new Map<string, string>();
@@ -625,11 +597,10 @@ export class ToolGateway {
       const errorCode = this.attempts.isExecutionCancelled(action.executionId)
         ? "ACTION_CANCELLED"
         : result.failure;
-      const deliveryUnknown =
-        (workspaceMutationAction &&
-          !mutationFailureDefinitelyNotApplied.has(errorCode)) ||
-        (gitMutationAction &&
-          !gitMutationFailureDefinitelyNotApplied.has(errorCode));
+      const deliveryUnknown = mutationFailureMayHaveApplied(
+        action.actionType,
+        errorCode,
+      );
       const event = {
         body: {
           actionId: action.actionId,

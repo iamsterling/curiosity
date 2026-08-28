@@ -15,6 +15,14 @@ import { searchToolContributions } from "../plugins/search.js";
 import { processToolContributions } from "../adapters/process.js";
 import { questionTool } from "../plugins/question.js";
 import { generateResearchReceipt } from "../research/receipt.js";
+import { actionFailureCanEnterAgentRecovery } from "../kernel/action-failure-policy.js";
+import {
+  canAttemptChatRecovery,
+  chatRecoveryInstruction,
+  citationTargetInventory,
+  maximumChatRecoveryAttempts,
+  nextChatRecoveryState,
+} from "./chat-recovery.js";
 
 const maximumAssistantContextBytes = 32 * 1_024;
 const maximumToolCallsPerBatch = 8;
@@ -53,6 +61,8 @@ export interface ChatCorrelation {
   readonly assistantMessageId: string;
   readonly finalizationOnly: boolean;
   readonly kind: "curiosity.chat.turn";
+  readonly recoveryAttempts: number;
+  readonly recoveryCodes: readonly string[];
   readonly roleActivationCommand?: string;
   readonly roleActivationEventId?: string;
   readonly threadId: string;
@@ -75,7 +85,6 @@ interface ChatToolCorrelation extends Omit<ChatCorrelation, "kind"> {
   readonly expectedToolCallIds: readonly string[];
   readonly kind: "curiosity.chat.tool";
   readonly providerActionId: string;
-  readonly recoverableResearchFailures: boolean;
   readonly toolCallId: string;
   readonly toolName: string;
   readonly toolVersion: string;
@@ -94,6 +103,8 @@ export const initialChatCorrelation = (input: {
   assistantContext: "",
   finalizationOnly: false,
   kind: "curiosity.chat.turn",
+  recoveryAttempts: 0,
+  recoveryCodes: [],
   toolCallCount: 0,
   toolEvidence: "",
   toolRound: 0,
@@ -120,6 +131,8 @@ export const chatCorrelation = (
   const toolCallCount = candidate.toolCallCount ?? 0;
   const assistantContext = candidate.assistantContext ?? "";
   const finalizationOnly = candidate.finalizationOnly ?? false;
+  const recoveryAttempts = candidate.recoveryAttempts ?? 0;
+  const recoveryCodes = candidate.recoveryCodes ?? [];
   const toolEvidence = candidate.toolEvidence ?? "";
   const toolRound = candidate.toolRound ?? 0;
   const budget = toolBudget(
@@ -129,6 +142,16 @@ export const chatCorrelation = (
     typeof assistantContext !== "string" ||
     Buffer.byteLength(assistantContext) > maximumAssistantContextBytes ||
     typeof finalizationOnly !== "boolean" ||
+    typeof recoveryAttempts !== "number" ||
+    !Number.isSafeInteger(recoveryAttempts) ||
+    recoveryAttempts < 0 ||
+    recoveryAttempts > maximumChatRecoveryAttempts ||
+    !Array.isArray(recoveryCodes) ||
+    recoveryCodes.length !== recoveryAttempts ||
+    recoveryCodes.some(
+      (code) =>
+        typeof code !== "string" || !/^[A-Z][A-Z0-9_:.-]{0,127}$/u.test(code),
+    ) ||
     typeof toolCallCount !== "number" ||
     !Number.isSafeInteger(toolCallCount) ||
     toolCallCount < 0 ||
@@ -148,6 +171,8 @@ export const chatCorrelation = (
     assistantMessageId: candidate.assistantMessageId,
     finalizationOnly,
     kind: "curiosity.chat.turn",
+    recoveryAttempts,
+    recoveryCodes: recoveryCodes as string[],
     ...(typeof candidate.roleActivationCommand === "string" &&
     typeof candidate.roleActivationEventId === "string"
       ? {
@@ -169,8 +194,6 @@ const chatToolCorrelation = (
   const candidate = record(value);
   const parent = chatCorrelation({ ...candidate, kind: "curiosity.chat.turn" });
   const delegationCallIds = candidate?.delegationCallIds ?? [];
-  const recoverableResearchFailures =
-    candidate?.recoverableResearchFailures ?? false;
   if (
     candidate?.kind !== "curiosity.chat.tool" ||
     !parent ||
@@ -186,10 +209,7 @@ const chatToolCorrelation = (
     !Array.isArray(candidate.expectedToolCallIds) ||
     candidate.expectedToolCallIds.length < 1 ||
     candidate.expectedToolCallIds.length > maximumToolCallsPerBatch ||
-    candidate.expectedToolCallIds.some(
-      (id) => typeof id !== "string" || !id,
-    ) ||
-    typeof recoverableResearchFailures !== "boolean"
+    candidate.expectedToolCallIds.some((id) => typeof id !== "string" || !id)
   )
     return undefined;
   return {
@@ -202,7 +222,6 @@ const chatToolCorrelation = (
     expectedToolCallIds: candidate.expectedToolCallIds as string[],
     kind: "curiosity.chat.tool",
     providerActionId: candidate.providerActionId,
-    recoverableResearchFailures,
     toolCallId: candidate.toolCallId,
     toolName: candidate.toolName,
     toolVersion: candidate.toolVersion,
@@ -305,6 +324,94 @@ const budgetFinalization = (
   };
 };
 
+const recoverWithAgent = (
+  correlation: Omit<ChatCorrelation, "kind">,
+  events: readonly StoredEvent[],
+  sequence: number,
+  input: {
+    readonly code: string;
+    readonly details?: string;
+    readonly draft?: string;
+    readonly evidence?: string;
+    readonly events?: ReactionProposal["events"];
+    readonly finalizationOnly?: boolean;
+    readonly modelId?: string;
+    readonly phase: "model-output" | "tool-execution";
+    readonly toolRound?: number;
+  },
+): ReactionProposal => {
+  if (!canAttemptChatRecovery(correlation, input.code))
+    return turnFailed(correlation, input.code, input.modelId);
+  const recovery = nextChatRecoveryState(correlation, input.code);
+  const finalizationOnly =
+    input.finalizationOnly ?? correlation.finalizationOnly;
+  const messages = projectChatMessages(events, correlation.threadId)
+    .filter((message) => message.sequence <= sequence)
+    .map((message) => ({ content: message.text, role: message.role }));
+  if (correlation.assistantContext)
+    messages.push({ content: correlation.assistantContext, role: "assistant" });
+  const evidence = input.evidence ?? correlation.toolEvidence;
+  if (evidence) messages.push({ content: evidence, role: "user" });
+  if (input.draft) messages.push({ content: input.draft, role: "assistant" });
+  messages.push({
+    content: chatRecoveryInstruction({
+      attempt: recovery.recoveryAttempts,
+      code: input.code,
+      ...(input.details ? { details: input.details } : {}),
+      phase: input.phase,
+      toolsAvailable: !finalizationOnly,
+    }),
+    role: "user",
+  });
+  return {
+    actions: [
+      {
+        actionSchemaVersion: 1,
+        actionType: "provider.generate",
+        deadlineClass: "interactive",
+        gateClass: "none-requested",
+        input: {
+          agentId: correlation.agentId,
+          correlation: {
+            ...correlation,
+            ...(input.evidence ? { toolEvidence: input.evidence } : {}),
+            ...(input.toolRound === undefined
+              ? {}
+              : { toolRound: input.toolRound }),
+            finalizationOnly,
+            kind: "curiosity.chat.turn",
+            ...recovery,
+          },
+          messages,
+        },
+        requestedCapabilities: ["provider.generate"],
+        schemaVersion: 1,
+        subject: {
+          executionId: correlation.turnId,
+          resource: `thread:${correlation.threadId}`,
+        },
+      },
+    ],
+    events: [
+      ...(input.events ?? []),
+      {
+        body: {
+          agentId: correlation.agentId,
+          attempt: recovery.recoveryAttempts,
+          errorCode: input.code,
+          maximumAttempts: maximumChatRecoveryAttempts,
+          phase: input.phase,
+          schemaVersion: 1,
+          threadId: correlation.threadId,
+          turnId: correlation.turnId,
+        },
+        streamId: correlation.threadId,
+        type: "turn.recovery.requested",
+      },
+    ],
+  };
+};
+
 export const providerSucceeded = Effect.fn(
   "ChatToolLoop.providerSucceeded",
 )(function* (event: StoredEvent, context: PluginReactionContext) {
@@ -318,13 +425,26 @@ export const providerSucceeded = Effect.fn(
     typeof output?.text !== "string" ||
     typeof output.durationMs !== "number" ||
     typeof output.effort !== "string" ||
-    typeof output.modelId !== "string" ||
-    !toolCalls
+    typeof output.modelId !== "string"
   )
     return yield* new PluginFailure({
       message: "CHAT_PROVIDER_RECEIPT_INVALID",
       pluginId: "curiosity.stock.chat",
     });
+  if (!toolCalls)
+    return recoverWithAgent(
+      correlation,
+      context.events,
+      event.sequence,
+      {
+        code: "CHAT_PROVIDER_TOOL_CALLS_INVALID",
+        details:
+          "The provider returned an invalid tool-call batch. Emit at most eight uniquely identified calls using exact current tool names, versions, and schemas.",
+        draft: output.text,
+        modelId: output.modelId,
+        phase: "model-output",
+      },
+    );
   if (toolCalls.length === 0) {
     const researchReceipt =
       correlation.agentId === "researcher"
@@ -339,6 +459,31 @@ export const providerSucceeded = Effect.fn(
             turnId: correlation.turnId,
           })
         : undefined;
+    if (
+      researchReceipt &&
+      !researchReceipt.ok &&
+      researchReceipt.failure !== "RESEARCH_SOURCE_CUSTODY_INVALID"
+    ) {
+      const targets = researchReceipt.citationTargets ?? [];
+      const inventory = citationTargetInventory(targets);
+      return recoverWithAgent(
+        correlation,
+        context.events,
+        event.sequence,
+        {
+          code: researchReceipt.failure,
+          details: [
+            targets.length > 0
+              ? "Use exact validated URLs or source IDs below, or retrieve a missing source with an available tool before citing it. Remove every unsupported citation."
+              : "No web source was captured. Remove unsupported web claims or retrieve evidence with an available tool before citing it.",
+            ...(inventory ? ["Validated citation targets:", inventory] : []),
+          ].join("\n"),
+          draft: output.text,
+          modelId: output.modelId,
+          phase: "model-output",
+        },
+      );
+    }
     if (researchReceipt && !researchReceipt.ok)
       return turnFailed(correlation, researchReceipt.failure, output.modelId);
     return {
@@ -396,20 +541,36 @@ export const providerSucceeded = Effect.fn(
     };
   }
   if (correlation.finalizationOnly)
-    return turnFailed(
+    return recoverWithAgent(
       correlation,
-      "CHAT_FINALIZATION_TOOL_CALL_FORBIDDEN",
-      output.modelId,
+      context.events,
+      event.sequence,
+      {
+        code: "CHAT_FINALIZATION_TOOL_CALL_FORBIDDEN",
+        details: `The finalization response attempted ${toolCalls.length} tool call(s), but this bounded phase has no tool authority. Produce the final answer from existing evidence.`,
+        draft: output.text,
+        modelId: output.modelId,
+        phase: "model-output",
+      },
     );
   const budget = toolBudget(correlation.agentId);
   const assistantContext = [correlation.assistantContext, output.text]
     .filter(Boolean)
     .join("\n");
   if (Buffer.byteLength(assistantContext) > maximumAssistantContextBytes)
-    return turnFailed(
+    return recoverWithAgent(
       correlation,
-      "CHAT_ASSISTANT_CONTEXT_TOO_LARGE",
-      output.modelId,
+      context.events,
+      event.sequence,
+      {
+        code: "CHAT_ASSISTANT_CONTEXT_TOO_LARGE",
+        details:
+          "The accumulated planning text exceeded the bounded assistant context. Produce a concise final answer from existing evidence without calling another tool.",
+        draft: output.text,
+        finalizationOnly: true,
+        modelId: output.modelId,
+        phase: "model-output",
+      },
     );
   if (
     correlation.toolRound >= budget.maximumToolRounds ||
@@ -429,11 +590,6 @@ export const providerSucceeded = Effect.fn(
       pluginId: "curiosity.stock.chat",
     });
   const expectedToolCallIds = toolCalls.map(({ toolCallId }) => toolCallId);
-  const recoverableResearchFailures =
-    correlation.agentId === "researcher" &&
-    toolCalls.every(({ toolName }) =>
-      recoverableResearchToolNames.has(toolName),
-    );
   const delegationCallIds = toolCalls
     .filter(({ toolName }) => toolName === "agent.delegate")
     .map(({ toolCallId }) => toolCallId);
@@ -443,10 +599,17 @@ export const providerSucceeded = Effect.fn(
   for (const call of toolCalls) {
     const selected = modelTools.find((tool) => tool.name === call.toolName);
     if (!selected || selected.version !== call.toolVersion)
-      return turnFailed(
+      return recoverWithAgent(
         correlation,
-        "CHAT_PROVIDER_TOOL_NOT_VISIBLE",
-        output.modelId,
+        context.events,
+        event.sequence,
+        {
+          code: "CHAT_PROVIDER_TOOL_NOT_VISIBLE",
+          details: `The requested tool snapshot is unavailable: ${call.toolName}@${call.toolVersion}. Select a tool and version from the current tool catalog.`,
+          draft: output.text,
+          modelId: output.modelId,
+          phase: "model-output",
+        },
       );
     const proposed = yield* selected
       .propose(call.input, {
@@ -457,10 +620,17 @@ export const providerSucceeded = Effect.fn(
       })
       .pipe(Effect.result);
     if (proposed._tag === "Failure")
-      return turnFailed(
+      return recoverWithAgent(
         correlation,
-        "MODEL_TOOL_INPUT_INVALID",
-        output.modelId,
+        context.events,
+        event.sequence,
+        {
+          code: "MODEL_TOOL_INPUT_INVALID",
+          details: `The input for ${call.toolName}@${call.toolVersion} did not satisfy its current schema. Inspect the exposed schema and submit corrected arguments rather than repeating the same call.`,
+          draft: output.text,
+          modelId: output.modelId,
+          phase: "model-output",
+        },
       );
     const proposal = proposed.success;
     const proposedInput = record(proposal.input);
@@ -475,7 +645,6 @@ export const providerSucceeded = Effect.fn(
           expectedToolCallIds,
           kind: "curiosity.chat.tool",
           providerActionId,
-          recoverableResearchFailures,
           toolCallCount: correlation.toolCallCount + toolCalls.length,
           toolCallId: call.toolCallId,
           toolName: call.toolName,
@@ -521,22 +690,6 @@ const matchingToolReceipts = (
     const candidateCorrelation = chatToolCorrelation(candidateBody?.correlation);
     return candidateCorrelation?.providerActionId === correlation.providerActionId;
   });
-
-const recoverableResearchToolNames = new Set([
-  "formerhuman_search",
-  "web_fetch",
-  "web_search",
-  "workspace_glob",
-  "workspace_grep",
-  "workspace_list",
-  "workspace_read",
-  "workspace_search",
-]);
-
-const recoverableResearchBatch = (correlation: ChatToolCorrelation): boolean =>
-  correlation.agentId === "researcher" &&
-  correlation.expectedToolCallIds.length > 0 &&
-  correlation.recoverableResearchFailures;
 
 const toolEvidence = (
   correlation: ChatToolCorrelation,
@@ -622,6 +775,69 @@ const continueAfterToolBatch = Effect.fn("ChatToolLoop.continueAfterToolBatch")(
         event.sequence,
         correlation.assistantContext,
       );
+    const groupReady = [...context.events].reverse().find(
+      (candidate) =>
+        candidate.type === "delegation.group-ready" &&
+        record(candidate.body)?.delegationGroupId ===
+          correlation.delegationGroupId,
+    );
+    const resultDigest = record(groupReady?.body)?.resultDigest;
+    const deliveryEvents: ReactionProposal["events"] =
+      correlation.delegationCallIds.length === 0
+        ? []
+        : [
+            {
+              body: {
+                delegationGroupId: correlation.delegationGroupId,
+                parentProviderActionId: correlation.providerActionId,
+                resultDigest:
+                  typeof resultDigest === "string" ? resultDigest : "",
+                schemaVersion: 1,
+              },
+              streamId: correlation.delegationGroupId,
+              type: "delegation.results-delivered",
+            },
+          ];
+    if (failures.length > 0) {
+      const diagnostics = failures.map((failure) => {
+        const body = record(failure.body);
+        return {
+          actionType:
+            typeof body?.actionType === "string" ? body.actionType : "unknown",
+          errorCode:
+            typeof body?.errorCode === "string"
+              ? body.errorCode
+              : "MODEL_TOOL_FAILED",
+          toolName:
+            chatToolCorrelation(body?.correlation)?.toolName ?? "unknown",
+        };
+      });
+      const terminal = diagnostics.find(
+        ({ actionType, errorCode }) =>
+          !actionFailureCanEnterAgentRecovery(actionType, errorCode),
+      );
+      if (terminal) return turnFailed(correlation, terminal.errorCode);
+      const primary = diagnostics[0]!;
+      return recoverWithAgent(
+        correlation,
+        context.events,
+        event.sequence,
+        {
+          code: primary.errorCode,
+          details: [
+            "One or more tool actions failed with known non-ambiguous delivery. Diagnose them before choosing a changed action:",
+            ...diagnostics.map(
+              ({ actionType, errorCode, toolName }) =>
+                `- ${toolName} (${actionType}): ${errorCode}`,
+            ),
+          ].join("\n"),
+          evidence,
+          events: deliveryEvents,
+          phase: "tool-execution",
+          toolRound: correlation.toolRound + 1,
+        },
+      );
+    }
     const messages = projectChatMessages(context.events, correlation.threadId)
       .filter((message) => message.sequence <= event.sequence)
       .map((message) => ({ content: message.text, role: message.role }));
@@ -631,13 +847,6 @@ const continueAfterToolBatch = Effect.fn("ChatToolLoop.continueAfterToolBatch")(
         role: "assistant",
       });
     messages.push({ content: evidence, role: "user" });
-    const groupReady = [...context.events].reverse().find(
-      (candidate) =>
-        candidate.type === "delegation.group-ready" &&
-        record(candidate.body)?.delegationGroupId ===
-          correlation.delegationGroupId,
-    );
-    const resultDigest = record(groupReady?.body)?.resultDigest;
     const continuation: ReactionProposal = {
       actions: [
         {
@@ -651,8 +860,10 @@ const continueAfterToolBatch = Effect.fn("ChatToolLoop.continueAfterToolBatch")(
               agentId: correlation.agentId,
               assistantContext: correlation.assistantContext,
               assistantMessageId: correlation.assistantMessageId,
-              finalizationOnly: false,
+              finalizationOnly: correlation.finalizationOnly,
               kind: "curiosity.chat.turn",
+              recoveryAttempts: correlation.recoveryAttempts,
+              recoveryCodes: correlation.recoveryCodes,
               ...(correlation.roleActivationCommand &&
               correlation.roleActivationEventId
                 ? {
@@ -677,22 +888,7 @@ const continueAfterToolBatch = Effect.fn("ChatToolLoop.continueAfterToolBatch")(
           },
         },
       ],
-      events:
-        correlation.delegationCallIds.length === 0
-          ? []
-          : [
-              {
-                body: {
-                  delegationGroupId: correlation.delegationGroupId,
-                  parentProviderActionId: correlation.providerActionId,
-                  resultDigest:
-                    typeof resultDigest === "string" ? resultDigest : "",
-                  schemaVersion: 1,
-                },
-                streamId: correlation.delegationGroupId,
-                type: "delegation.results-delivered",
-              },
-            ],
+      events: deliveryEvents,
     };
     return continuation;
   },
@@ -703,9 +899,6 @@ export const toolSucceeded = Effect.fn("ChatToolLoop.toolSucceeded")(
     const receipt = record(event.body);
     const correlation = chatToolCorrelation(receipt?.correlation);
     if (!correlation) return emptyChatReaction;
-    const failures = matchingToolReceipts(context, correlation, "action.failed");
-    if (failures.length > 0 && !recoverableResearchBatch(correlation))
-      return emptyChatReaction;
     return yield* continueAfterToolBatch(event, context, correlation);
   },
 );
@@ -724,16 +917,6 @@ export const actionFailed = Effect.fn("ChatToolLoop.actionFailed")(
       );
     const correlation = chatToolCorrelation(receipt?.correlation);
     if (!correlation) return emptyChatReaction;
-    if (recoverableResearchBatch(correlation))
-      return yield* continueAfterToolBatch(event, context, correlation);
-    const failures = matchingToolReceipts(context, correlation, "action.failed");
-    if (event.sequence !== Math.min(...failures.map(({ sequence }) => sequence)))
-      return emptyChatReaction;
-    return turnFailed(
-      correlation,
-      typeof receipt?.errorCode === "string"
-        ? receipt.errorCode
-        : "MODEL_TOOL_FAILED",
-    );
+    return yield* continueAfterToolBatch(event, context, correlation);
   },
 );

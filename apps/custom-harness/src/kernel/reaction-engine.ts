@@ -12,6 +12,7 @@ import { ProviderGateway, type ActionStreamDelta } from "./provider-gateway.js";
 import { ToolGateway } from "./tool-gateway.js";
 import { LocalActionGateway } from "./local-action-gateway.js";
 import { ChildScheduler } from "./child-scheduler.js";
+import { actionFailureCanEnterAgentRecovery } from "./action-failure-policy.js";
 
 const maximumDrainSteps = 1_024;
 
@@ -38,22 +39,14 @@ const isChildProviderAction = (action: StoredAction): boolean =>
   action.actionType === "provider.generate" &&
   actionCorrelation(action)?.kind === "curiosity.child.run";
 
-const recoverableResearchActionTypes = new Set([
-  "fetch.web",
-  "search.web",
-  "workspace.glob",
-  "workspace.list",
-  "workspace.read",
-  "workspace.search",
-]);
-
-const isRecoverableResearchFailure = (action: StoredAction): boolean => {
+const isRecoverableChatFailure = (
+  action: StoredAction,
+  errorCode: string,
+): boolean => {
   const correlation = actionCorrelation(action);
   return (
     correlation?.kind === "curiosity.chat.tool" &&
-    correlation.agentId === "researcher" &&
-    correlation.recoverableResearchFailures === true &&
-    recoverableResearchActionTypes.has(action.actionType)
+    actionFailureCanEnterAgentRecovery(action.actionType, errorCode)
   );
 };
 
@@ -454,7 +447,7 @@ export class ReactionEngine {
             capturesFailure(active.action) &&
             active.action.actionType !== "provider.generate" &&
             actionCorrelation(active.action)?.kind !== "curiosity.child.run" &&
-            !isRecoverableResearchFailure(active.action)
+            !isRecoverableChatFailure(active.action, result.failure.message)
           )
             firstFailure = result.failure;
         } else {
@@ -548,7 +541,7 @@ export class ReactionEngine {
           !firstFailure &&
           capturesFailure(action) &&
           actionCorrelation(action)?.kind !== "curiosity.child.run" &&
-          !isRecoverableResearchFailure(action)
+          !isRecoverableChatFailure(action, result.failure.message)
         )
           firstFailure = result.failure;
         if (
@@ -615,7 +608,7 @@ export class ReactionEngine {
           capturesFailure(active.action) &&
           active.action.actionType !== "provider.generate" &&
           actionCorrelation(active.action)?.kind !== "curiosity.child.run" &&
-          !isRecoverableResearchFailure(active.action)
+          !isRecoverableChatFailure(active.action, result.failure.message)
         )
           firstFailure = result.failure;
         if (!Result.isResult(result))

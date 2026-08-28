@@ -1,12 +1,14 @@
 package ui
 
 import (
+	"os"
 	"sort"
 	"strings"
 	"unicode/utf8"
 
 	"charm.land/bubbles/v2/textarea"
 	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"github.com/iamsterling/curiosity/apps/custom-harness/native/tui/internal/protocol"
 )
 
@@ -27,21 +29,23 @@ type sendResultMsg struct {
 }
 
 type Model struct {
-	height        int
-	input         textarea.Model
-	inspectorOpen bool
-	lastError     string
-	paletteIndex  int
-	paletteOpen   bool
-	paletteQuery  string
-	sender        Sender
-	snapshot      protocol.Snapshot
-	scrollOffset  int
-	theme         Theme
-	width         int
+	height           int
+	input            textarea.Model
+	inspectorOpen    bool
+	lastError        string
+	paletteIndex     int
+	paletteOpen      bool
+	paletteQuery     string
+	backgroundLocked bool
+	sender           Sender
+	snapshot         protocol.Snapshot
+	scrollOffset     int
+	theme            Theme
+	width            int
 }
 
 func NewModel(snapshot protocol.Snapshot, sender Sender) Model {
+	darkBackground, backgroundLocked := terminalBackgroundPreference(os.Getenv("CURIOSITY_TERMINAL_BACKGROUND"))
 	input := textarea.New()
 	input.Placeholder = "describe the work"
 	input.Prompt = "› "
@@ -50,25 +54,37 @@ func NewModel(snapshot protocol.Snapshot, sender Sender) Model {
 	input.DynamicHeight = false
 	input.SetHeight(2)
 	input.SetWidth(70)
-	input.SetStyles(textarea.DefaultDarkStyles())
+	input.SetStyles(transparentTextareaStyles(darkBackground))
 	input.SetVirtualCursor(false)
 	_ = input.Focus()
 	return Model{
-		input:    input,
-		sender:   sender,
-		snapshot: snapshot,
-		theme:    DeepSpace(),
-		width:    80,
-		height:   24,
+		input:            input,
+		sender:           sender,
+		snapshot:         snapshot,
+		theme:            AdaptiveTheme(darkBackground),
+		backgroundLocked: backgroundLocked,
+		width:            80,
+		height:           24,
 	}
 }
 
 func (model Model) Init() tea.Cmd {
-	return nil
+	if model.backgroundLocked {
+		return nil
+	}
+	return tea.RequestBackgroundColor
 }
 
 func (model Model) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 	switch message := message.(type) {
+	case tea.BackgroundColorMsg:
+		if model.backgroundLocked {
+			return model, nil
+		}
+		dark := message.IsDark()
+		model.theme = AdaptiveTheme(dark)
+		model.input.SetStyles(transparentTextareaStyles(dark))
+		return model, nil
 	case tea.WindowSizeMsg:
 		model.width = max(20, message.Width)
 		model.height = max(12, message.Height)
@@ -106,6 +122,26 @@ func (model Model) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 		model.input, command = model.input.Update(message)
 		return model, command
 	}
+}
+
+func terminalBackgroundPreference(value string) (bool, bool) {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "light":
+		return false, true
+	case "dark":
+		return true, true
+	default:
+		return true, false
+	}
+}
+
+func transparentTextareaStyles(darkBackground bool) textarea.Styles {
+	styles := textarea.DefaultStyles(darkBackground)
+	styles.Focused.CursorLine = lipgloss.NewStyle()
+	styles.Focused.Selection = lipgloss.NewStyle().Underline(true)
+	styles.Blurred.CursorLine = lipgloss.NewStyle()
+	styles.Blurred.Selection = lipgloss.NewStyle().Underline(true)
+	return styles
 }
 
 func (model Model) updateKey(message tea.KeyPressMsg) (tea.Model, tea.Cmd) {

@@ -24,8 +24,6 @@ func (model Model) View() tea.View {
 	height := max(12, model.height)
 	view := tea.NewView(model.render(width, height))
 	view.AltScreen = true
-	view.BackgroundColor = lipgloss.Color(Canvas)
-	view.ForegroundColor = lipgloss.Color(TextPrimary)
 	view.MouseMode = tea.MouseModeCellMotion
 	view.WindowTitle = "Curiosity"
 	view.Cursor = model.cursor(width, height)
@@ -243,7 +241,7 @@ func (model Model) idle() bool {
 
 func (model Model) idleComposerWidth() int {
 	available := max(12, model.mainWidth()-6)
-	return min(available, max(36, model.mainWidth()*68/100))
+	return min(available, 76)
 }
 
 func (model Model) sessionComposerWidth() int {

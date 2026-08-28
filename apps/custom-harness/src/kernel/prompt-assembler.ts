@@ -62,6 +62,7 @@ const researchCapabilityNotice = (
   const content = [
     `Research capability boundary: public-web search is ${search}; public-web fetch is ${fetch}.`,
     "Never imply unavailable capabilities were used.",
+    "When web sources were captured, the final answer must cite at least one exact captured canonical URL or source ID; never cite an uncaptured URL. This also applies to partial findings and CURIOSITY_NO_GO responses.",
     "If the required evidence is not reachable, stop with CURIOSITY_NO_GO and list the exact missing capability or source coverage.",
     "After one negative workspace discovery pass establishes that no relevant local corpus exists, do not repeat workspace discovery with synonyms.",
   ].join(" ");

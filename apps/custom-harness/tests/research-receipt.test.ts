@@ -92,11 +92,11 @@ describe("research receipt generation", () => {
   });
 
   test("rejects absent and unresolved citations when sources were captured", () => {
-    expect(generate("Finding without a citation.")).toEqual({
+    expect(generate("Finding without a citation.")).toMatchObject({
       failure: "RESEARCH_CITATIONS_REQUIRED",
       ok: false,
     });
-    expect(generate("Finding https://example.net/not-captured")).toEqual({
+    expect(generate("Finding https://example.net/not-captured")).toMatchObject({
       failure: "RESEARCH_CITATION_UNRESOLVED",
       ok: false,
     });

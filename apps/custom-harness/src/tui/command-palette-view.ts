@@ -1,8 +1,7 @@
 import type { TuiPaletteItem, TuiPaletteView } from "./frame-types.js";
-import { clip, padPlain } from "./frame-text.js";
+import { clip, padPlain, visibleWidth } from "./frame-text.js";
 import { sanitizeTerminalText } from "./terminal-text.js";
 import type { TerminalTheme } from "./theme.js";
-import { TUI_DESIGN_TOKENS } from "./design-system.js";
 
 const normalized = (value: string): string =>
   value.trim().replace(/^\//u, "").toLocaleLowerCase();
@@ -40,78 +39,88 @@ export const renderCommandPalette = (
   maximumHeight: number,
   theme: TerminalTheme,
 ): readonly string[] => {
-  const innerWidth = Math.max(1, width - 1);
+  const innerWidth = Math.max(1, width);
   const matches = filterPaletteItems(palette.items, palette.query);
-  const visibleCount = Math.max(1, Math.floor((maximumHeight - 6) / 2));
+  const visibleCount = Math.max(1, maximumHeight - 7);
   const window = selectedWindow(
     matches.length,
     palette.selectedIndex,
     visibleCount,
   );
   const visible = matches.slice(window.start, window.start + visibleCount);
-  const row = (
-    content: string,
-    style: (value: string) => string = theme.quietSurfaceText,
-    rail: (value: string) => string = theme.rule,
-  ): string =>
-    `${rail(TUI_DESIGN_TOKENS.glyph.rail)}${style(padPlain(content, innerWidth))}`;
   const query = sanitizeTerminalText(palette.query);
+  const queryLabel = `› ${query || "Search commands"}`;
+  const count = String(matches.length);
   const lines = [
-    row(
-      `  ⌁ COMMAND PALETTE${" ".repeat(Math.max(1, innerWidth - 22 - String(matches.length).length))}${matches.length}`,
-      theme.quietSurfaceText,
-      theme.plugin,
-    ),
-    row(
-      `  › ${query || "Search commands"}`,
-      theme.quietSurfaceText,
-      theme.focus,
-    ),
-    row("", theme.quietSurface),
+    `${theme.focus(queryLabel)}${" ".repeat(
+      Math.max(1, innerWidth - visibleWidth(queryLabel) - count.length),
+    )}${theme.muted(count)}`,
+    "",
   ];
 
+  const groupFor = (item: TuiPaletteItem): "core" | "plugin" | "compat" =>
+    item.status === "compatibility-deprecated"
+      ? "compat"
+      : item.kind === "core"
+        ? "core"
+        : "plugin";
+  const groupLabel = (group: ReturnType<typeof groupFor>): string =>
+    group === "core"
+      ? "CORE"
+      : group === "plugin"
+        ? "PLUGIN COMMANDS"
+        : "COMPATIBILITY";
+  const groupMeta = (group: ReturnType<typeof groupFor>): string =>
+    group === "core"
+      ? "local controls"
+      : group === "plugin"
+        ? "catalog contributions"
+        : "deprecated aliases";
+  let previousGroup: ReturnType<typeof groupFor> | undefined;
+
   if (visible.length === 0) {
-    lines.push(row("  No matching commands", theme.quietSurfaceMuted));
+    lines.push(theme.muted("  No matching commands"));
   } else {
     visible.forEach((item, index) => {
       const absoluteIndex = window.start + index;
       const selected = absoluteIndex === window.selected;
-      const status =
-        item.status === "compatibility-deprecated" ? "  COMPAT" : "";
-      const label = clip(
-        `${selected ? "▸" : " "} /${sanitizeTerminalText(item.name)}${status}`,
-        innerWidth - 2,
+      const group = groupFor(item);
+      if (group !== previousGroup) {
+        const label = groupLabel(group);
+        const meta = groupMeta(group);
+        lines.push(
+          `${theme.muted(label)}${" ".repeat(
+            Math.max(1, innerWidth - label.length - meta.length),
+          )}${theme.muted(meta)}`,
+        );
+        previousGroup = group;
+      }
+      const marker = selected ? theme.focus("▌") : " ";
+      const commandWidth = Math.min(20, Math.max(10, Math.floor(width / 4)));
+      const tag =
+        item.status === "compatibility-deprecated"
+          ? "compat"
+          : selected
+            ? "↵ run"
+            : "";
+      const descriptionWidth = Math.max(
+        1,
+        innerWidth - commandWidth - visibleWidth(tag) - 5,
       );
-      const description = clip(
-        `    ${sanitizeTerminalText(item.description)}`,
-        innerWidth - 2,
+      const command = padPlain(
+        clip(`/${sanitizeTerminalText(item.name)}`, commandWidth),
+        commandWidth,
+      );
+      const description = padPlain(
+        clip(sanitizeTerminalText(item.description), descriptionWidth),
+        descriptionWidth,
       );
       lines.push(
-        row(
-          `  ${label}`,
-          selected ? theme.surfaceText : theme.quietSurfaceText,
-          selected ? theme.focus : theme.rule,
-        ),
-        row(
-          `  ${description}`,
-          selected ? theme.surfaceMuted : theme.quietSurfaceMuted,
-          selected ? theme.focus : theme.rule,
-        ),
+        `${marker} ${selected ? theme.text(command) : theme.secondary(command)} ${theme.muted(description)}${tag ? `  ${item.status === "compatibility-deprecated" ? theme.warning(tag) : theme.focus(tag)}` : ""}`,
       );
     });
   }
 
-  lines.push(
-    row("", theme.quietSurface),
-    row(
-      clip("  commands are non-authoritative until submitted", innerWidth),
-      theme.quietSurfaceMuted,
-    ),
-    row(
-      clip("  ↑↓ move   ↵ insert   esc dismiss", innerWidth),
-      theme.quietSurfaceMuted,
-      theme.plugin,
-    ),
-  );
+  lines.push("", theme.muted("↑↓ move   ↵ insert   esc dismiss"));
   return lines.slice(0, maximumHeight);
 };

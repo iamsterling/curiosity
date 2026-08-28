@@ -235,7 +235,7 @@
           "the default OpenAI OAuth research adapter uses the existing OAuth session for hosted public-web discovery and pairs it with credential-free bounded HTTPS fetch; explicit none disables hosted search, non-OAuth providers remain fail-closed, and operator-configured runtime-local or runtime-searxng adapters retain their separate state-root capability and native-profile requirements",
           "the isolated benchmark-owned adapter requires an exact development-only acknowledgement uses only bounded MediaWiki page discovery persists digest-addressed capture and snapshot generations and serves them through the authorized Retrieval v3 query mode; it grants no general crawling production deployment or release authority",
           "network actions are rechecked against the durable researcher role at the final tool sink before adapter dispatch",
-          "search and fetch outputs remain untrusted evidence and commit source custody records verified citations and one replay-stable research receipt; unresolved citations fail the turn without an assistant message",
+          "recoverable model-output and known-delivery tool failures enter one durable bounded active-agent recovery loop with currently granted tools; repeated failures are capped while cancellation authority child-policy and ambiguous-mutation-delivery boundaries remain terminal; search and fetch outputs remain untrusted evidence and completed research commits source custody verified citations and one replay-stable receipt",
           "workspace read search grep list and glob are root-confined symlink-safe and byte result line and entry bounded",
           "generic public fetch is enabled only alongside the default or explicitly selected OpenAI OAuth research adapter or through the separate bounded-http grant; every fetch remains confined by the bounded HTTPS adapter",
           "the bounded HTTPS fetch adapter rejects unsafe schemes URL credentials special-use or mixed DNS answers redirect pivots compressed or unsupported bodies deadline overruns malformed UTF-8 and response overflow while pinning a validated public address for each hop",
@@ -273,6 +273,14 @@
           {
             "kind": "source",
             "ref": "apps/custom-harness/src/kernel/tool-gateway.ts#ToolGateway"
+          },
+          {
+            "kind": "source",
+            "ref": "apps/custom-harness/src/kernel/action-failure-policy.ts#actionFailureCanEnterAgentRecovery"
+          },
+          {
+            "kind": "source",
+            "ref": "apps/custom-harness/src/semantics/chat-recovery.ts#canAttemptChatRecovery"
           },
           {
             "kind": "source",
@@ -495,7 +503,19 @@
           },
           {
             "kind": "test",
-            "ref": "apps/custom-harness/tests/chat.test.ts#fails a research turn whose citation was not captured"
+            "ref": "apps/custom-harness/tests/chat.test.ts#repairs a research answer whose captured evidence was not cited"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/chat.test.ts#returns a general tool failure to the active agent for inline recovery"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/chat.test.ts#repairs malformed model tool input without stranding the reaction"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/action-failure-policy.test.ts#allows mutation recovery only when delivery is known not to have applied"
           },
           {
             "kind": "test",
@@ -1002,7 +1022,7 @@
         {
           "path": "apps/custom-harness/src/tui.ts",
           "mode": "exact",
-          "sha256": "16f32810139e0fe411259a70d57de9e599f5fcabcdab73d0b48bb97bbf1d243c"
+          "sha256": "327148c7bdaea32d39c0d83744e93cdd12fc03628afeda8402d51c5b2238adbe"
         },
         {
           "path": "apps/custom-harness/src/tui/animation.ts",
@@ -1012,7 +1032,7 @@
         {
           "path": "apps/custom-harness/src/tui/composer-view.ts",
           "mode": "exact",
-          "sha256": "6c87b2f5337f71c9230f98e5ce78c704c06cebfcb8686f0ebc79096536570bef"
+          "sha256": "9acbd843452d52436b2fc15c8e54ae6260226175f875188fab8665fce2b43df6"
         },
         {
           "path": "apps/custom-harness/src/tui/config.ts",
@@ -1027,12 +1047,12 @@
         {
           "path": "apps/custom-harness/src/tui/frame-types.ts",
           "mode": "exact",
-          "sha256": "1892d06e65060a7de533205285435198228d7b93b8fef17764f5d792d4c13ad4"
+          "sha256": "14c1d7e2f13bb1b0c00044f5059c1dd904ae62a7aeaf4656b7a0977f882e11eb"
         },
         {
           "path": "apps/custom-harness/src/tui/frame.ts",
           "mode": "exact",
-          "sha256": "7075f7fe66ca9e4da5b4a7fd2d40882d2f4ce4fb4e4ae37f0e1549771d7c9bae"
+          "sha256": "abf7b005fbbc5cd17d21dd3342bdfee89e58986de6e560fdae28520925d98012"
         },
         {
           "path": "apps/custom-harness/src/tui/markdown.ts",
@@ -1052,7 +1072,7 @@
         {
           "path": "apps/custom-harness/src/tui/session.ts",
           "mode": "exact",
-          "sha256": "1e5090bed892f8c0b32a815158b81b2a7ec14c0ae992429e00db7797a489ea59"
+          "sha256": "34fdae46648fc72d14ac667ec4a6e4329dd85c1c5e67fd5e64b2e3fd4f991097"
         },
         {
           "path": "apps/custom-harness/src/tui/terminal-text.ts",
@@ -1062,7 +1082,7 @@
         {
           "path": "apps/custom-harness/src/tui/theme.ts",
           "mode": "exact",
-          "sha256": "3b90ae13bf94dc922721c56b799f4c72761ad62e3fe77b3a67b23a4088db6d1a"
+          "sha256": "8df8a855e40c8573f1b859e8f9fa03b3f80afdb71068d09665489138a12c64e3"
         },
         {
           "path": "apps/custom-harness/src/tui/transcript-view.ts",
@@ -1212,7 +1232,7 @@
         {
           "path": "apps/custom-harness/tests/tui.test.ts",
           "mode": "exact",
-          "sha256": "d94a2b7a9472a3d80329b46c03b033c3f5fe7577e3cbc41704bba4b252880f31"
+          "sha256": "1fa79eb14ada3e347deca1ae6397f65d40850cbc7c0fe21edad4ce5a1830f329"
         },
         {
           "path": "apps/custom-harness/tests/workflow-orchestration.test.ts",
