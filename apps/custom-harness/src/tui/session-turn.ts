@@ -161,6 +161,28 @@ export const signQuestionAnswer = (
     identity.secret,
   );
 
+export const signExecutionCancellation = (
+  identity: TurnIdentity,
+  executionId: string,
+  createId: () => string,
+  issuedAt: () => string,
+): SignedCommandEnvelope =>
+  signCommand(
+    {
+      actorId: identity.actorId,
+      command: {
+        id: createId(),
+        kind: "execution.cancel",
+        payload: { executionId, schemaVersion: 1 },
+        schemaVersion: 1,
+      },
+      issuedAt: issuedAt(),
+      nonce: createId(),
+      schemaVersion: 1,
+    },
+    identity.secret,
+  );
+
 export const fallbackMessages = (
   envelope: SignedCommandEnvelope,
   result: ChatTurnResult,

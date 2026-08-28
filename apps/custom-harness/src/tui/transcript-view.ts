@@ -75,11 +75,9 @@ const renderStreamingAssistant = (
   theme: TerminalTheme,
 ): readonly string[] => {
   const inset = TUI_DESIGN_TOKENS.layout.responseInset;
-  const markdown = renderMarkdown(text, {
-    theme,
-    width: Math.max(24, width - inset),
-  });
-  return markdown.split("\n").map((line) => place(inset, line));
+  return wrapPlain(text, Math.max(24, width - inset)).map((line) =>
+    place(inset, line),
+  );
 };
 
 const renderError = (

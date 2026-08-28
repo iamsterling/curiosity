@@ -30,6 +30,7 @@ import {
 } from "../src/tui/screen-terminal.js";
 import { makeTerminalTheme } from "../src/tui/theme.js";
 import { brailleFrame, resolveMotionPreference } from "../src/tui/animation.js";
+import { createStreamPresentation } from "../src/tui/stream-presentation.js";
 import {
   failureDiagnostic,
   formatChatFailure,
@@ -69,16 +70,21 @@ const testCapabilityStatus = Object.freeze({
 });
 
 describe("custom harness TUI", () => {
-  test("accepts a prompt immediately and streams through a signed chat turn", async () => {
+  test("accepts input and cancellation while a signed chat turn streams", async () => {
     const events: TuiKey[] = [
       { type: "text", value: "Ship the" },
       { type: "newline" },
       { type: "text", value: "TUI" },
       { type: "enter" },
+      { type: "text", value: "/cancel" },
+      { type: "enter" },
       { type: "quit" },
     ];
     const frames: TerminalFrame[] = [];
     const submissions: SignedCommandEnvelope[] = [];
+    const controls: SignedCommandEnvelope[] = [];
+    let providerCompleted = false;
+    let cancellationWasResponsive = false;
     const terminal: TuiScreenTerminal = {
       close: () => undefined,
       drainInput: () => undefined,
@@ -136,6 +142,7 @@ describe("custom harness TUI", () => {
         };
         onTextDelta?.("Done.");
         await Bun.sleep(180);
+        providerCompleted = true;
         return {
           assistantMessageId: payload.assistantMessageId,
           durationMs: 1_250,
@@ -146,14 +153,18 @@ describe("custom harness TUI", () => {
           turnId: payload.turnId,
         };
       },
-      submit: async () => ({
-        actorId: "local-owner",
-        commandId: "prompt-command",
-        disposition: "accepted",
-        eventCount: 1,
-        firstSequence: 1,
-        lastSequence: 1,
-      }),
+      submit: async (input) => {
+        controls.push(input as SignedCommandEnvelope);
+        cancellationWasResponsive = !providerCompleted;
+        return {
+          actorId: "local-owner",
+          commandId: "prompt-command",
+          disposition: "accepted",
+          eventCount: 1,
+          firstSequence: 1,
+          lastSequence: 1,
+        };
+      },
       status: async () => testCapabilityStatus,
     };
     const ids = [
@@ -163,6 +174,8 @@ describe("custom harness TUI", () => {
       "assistant-001",
       "user-001",
       "nonce-001",
+      "cancel-command-001",
+      "cancel-nonce-001",
     ];
     const secret = "development-secret-with-at-least-32-bytes";
 
@@ -194,6 +207,14 @@ describe("custom harness TUI", () => {
     expect(rendered).toContain("● KERNEL / DURABLE");
     expect(rendered).not.toContain("title>");
     expect(submissions).toHaveLength(1);
+    expect(cancellationWasResponsive).toBe(true);
+    expect(controls).toHaveLength(1);
+    expect(controls[0]?.command).toEqual({
+      id: "cancel-command-001",
+      kind: "execution.cancel",
+      payload: { executionId: "turn-001", schemaVersion: 1 },
+      schemaVersion: 1,
+    });
     const submission = submissions[0];
     if (!submission) throw new Error("expected one submission");
     const { signature, ...unsigned } = submission;
@@ -210,6 +231,23 @@ describe("custom harness TUI", () => {
       },
       schemaVersion: 1,
     });
+  });
+
+  test("paces a provider burst into bounded presentation frames", async () => {
+    const frames: string[] = [];
+    const presentation = createStreamPresentation({
+      frameCodePoints: 16,
+      frameIntervalMs: 1,
+      onFrame: (delta) => frames.push(delta),
+    });
+    for (let index = 0; index < 1_000; index += 1) presentation.push("x");
+
+    expect(frames).toHaveLength(0);
+    await presentation.drain();
+
+    expect(frames.join("")).toBe("x".repeat(1_000));
+    expect(frames).toHaveLength(63);
+    expect(frames.every((frame) => Array.from(frame).length <= 16)).toBe(true);
   });
 
   test("activates a slash-command skill before submitting its chat turn", async () => {

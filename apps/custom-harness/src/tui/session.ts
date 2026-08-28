@@ -16,10 +16,15 @@ import {
   formatChatFailure,
   latestThread,
   parsePromptCommand,
+  signExecutionCancellation,
   signPromptCommand,
   signQuestionAnswer,
   signTurn,
 } from "./session-turn.js";
+import {
+  createStreamPresentation,
+  type StreamPresentation,
+} from "./stream-presentation.js";
 import {
   sanitizeConversationText,
   sanitizeTerminalText,
@@ -99,6 +104,9 @@ export const runTuiSession = async (
   let paletteOpen = false;
   let paletteQuery = "";
   let paletteSelectedIndex = 0;
+  let activeExecutionId: string | undefined;
+  let activePresentation: StreamPresentation | undefined;
+  let activeTurn: Promise<void> | undefined;
   const promptHistory = messages
     .filter(({ role }) => role === "user")
     .map(({ text }) => text);
@@ -173,7 +181,7 @@ export const runTuiSession = async (
   draw();
   while (true) {
     const key = await options.terminal.readKey();
-    if (key.type === "quit") return;
+    if (key.type === "quit") break;
     if (key.type === "resize") {
       draw();
       continue;
@@ -195,7 +203,7 @@ export const runTuiSession = async (
       continue;
     }
     if (key.type === "escape") {
-      if (!paletteOpen && !inspectorOpen) return;
+      if (!paletteOpen && !inspectorOpen) break;
       paletteOpen = false;
       inspectorOpen = false;
       draw();
@@ -314,10 +322,37 @@ export const runTuiSession = async (
     }
 
     const text = input.trim();
+    if (text === "/quit") break;
+    if (activeTurn) {
+      const cancellation = /^\/cancel(?:[ \t]+([^\s]+))?$/u.exec(text);
+      if (!cancellation) {
+        error = "TUI_TURN_ALREADY_ACTIVE";
+        draw();
+        continue;
+      }
+      const executionId = cancellation[1] ?? activeExecutionId;
+      if (!executionId || executionId.length > 256) {
+        error = "TUI_CANCEL_ARGUMENT_INVALID";
+        draw();
+        continue;
+      }
+      input = "";
+      inputCursor = 0;
+      resetPromptHistoryNavigation();
+      try {
+        await options.harness.submit(
+          signExecutionCancellation(options, executionId, createId, issuedAt),
+        );
+        error = undefined;
+      } catch (cause) {
+        error = failureDiagnostic(cause);
+      }
+      draw();
+      continue;
+    }
     input = "";
     inputCursor = 0;
     resetPromptHistoryNavigation();
-    if (text === "/quit") return;
     if (text === "/new") {
       thread = undefined;
       messages = [];
@@ -407,52 +442,78 @@ export const runTuiSession = async (
     scrollOffset = 0;
     startAnimation();
     draw();
-    try {
-      if (promptEnvelope) await options.harness.submit(promptEnvelope);
-      const result = await options.harness.chat(envelope, (delta) => {
+    activeExecutionId = (
+      envelope.command.payload as { readonly turnId: string }
+    ).turnId;
+    const presentation = createStreamPresentation({
+      onFrame: (delta) => {
         streamingText = `${streamingText ?? ""}${delta}`;
         draw();
-      });
-      const projected = await options.harness.projections.messages(threadId);
-      messages =
-        projected.length > 0 ? projected : fallbackMessages(envelope, result);
-      thread ??= {
-        openedBy: options.actorId,
-        sequence: Number.MAX_SAFE_INTEGER,
-        threadId,
-        title: text,
-      };
-      submittedText = undefined;
-      streamingText = undefined;
-      status = "idle";
-      stopAnimation();
-      options.terminal.drainInput();
-      draw();
-    } catch (cause) {
-      const projected = await options.harness.projections.messages(threadId);
-      if (projected.length > 0) {
-        messages = projected;
-        submittedText = undefined;
+      },
+    });
+    activePresentation = presentation;
+    let trackedTurn: Promise<void>;
+    trackedTurn = (async () => {
+      try {
+        if (promptEnvelope) await options.harness.submit(promptEnvelope);
+        const result = await options.harness.chat(envelope, (delta) => {
+          presentation.push(delta);
+        });
+        await presentation.drain();
+        const projected = await options.harness.projections.messages(threadId);
+        messages =
+          projected.length > 0 ? projected : fallbackMessages(envelope, result);
         thread ??= {
           openedBy: options.actorId,
           sequence: Number.MAX_SAFE_INTEGER,
           threadId,
           title: text,
         };
+        submittedText = undefined;
+        streamingText = undefined;
+        error = undefined;
+        status = "idle";
+        stopAnimation();
+        draw();
+      } catch (cause) {
+        presentation.stop();
+        const projected = await options.harness.projections.messages(threadId);
+        if (projected.length > 0) {
+          messages = projected;
+          submittedText = undefined;
+          thread ??= {
+            openedBy: options.actorId,
+            sequence: Number.MAX_SAFE_INTEGER,
+            threadId,
+            title: text,
+          };
+        }
+        streamingText = undefined;
+        status = "idle";
+        stopAnimation();
+        const question = (await options.harness.projections.questions()).find(
+          ({ status }) => status === "pending",
+        );
+        error = question
+          ? `${question.prompt} · ${question.options
+              .map(({ id, label }) => `${id}: ${label}`)
+              .join(" · ")}${question.allowFreeText ? " · free text allowed" : ""}`
+          : formatChatFailure(options.modelId, cause);
+        draw();
+      } finally {
+        presentation.stop();
+        if (activePresentation === presentation) activePresentation = undefined;
       }
-      streamingText = undefined;
-      status = "idle";
-      stopAnimation();
-      const question = (await options.harness.projections.questions()).find(
-        ({ status }) => status === "pending",
-      );
-      error = question
-        ? `${question.prompt} · ${question.options
-            .map(({ id, label }) => `${id}: ${label}`)
-            .join(" · ")}${question.allowFreeText ? " · free text allowed" : ""}`
-        : formatChatFailure(options.modelId, cause);
-      options.terminal.drainInput();
-      draw();
-    }
+    })();
+    activeTurn = trackedTurn;
+    const clearTrackedTurn = (): void => {
+      if (activeTurn !== trackedTurn) return;
+      activeExecutionId = undefined;
+      activeTurn = undefined;
+    };
+    void trackedTurn.then(clearTrackedTurn, clearTrackedTurn);
   }
+  await activeTurn;
+  activePresentation?.stop();
+  stopAnimation();
 };
