@@ -232,12 +232,12 @@
           "provider work animation changes one braille cell at a bounded cadence and supports explicit reduced motion",
           "displayed provider effort is forwarded as provider options and persisted with completion metadata",
           "deep-research activation routes to the researcher role limits model-visible tools to qualified workspace and network evidence tools preserves assistant context through a bounded 32-call 16-round continuation and reserves one tool-free finalization call when the budget is exhausted",
-          "the optional Curiosity runtime query adapter grants search only after explicit state root query capability and native profile configuration; a separate explicit bounded-http grant adds credential-free pinned public HTTPS fetch; no adapter leaves search and fetch unavailable",
+          "the default OpenAI OAuth research adapter uses the existing OAuth session for hosted public-web discovery and pairs it with credential-free bounded HTTPS fetch; explicit none disables hosted search, non-OAuth providers remain fail-closed, and operator-configured runtime-local or runtime-searxng adapters retain their separate state-root capability and native-profile requirements",
           "the isolated benchmark-owned adapter requires an exact development-only acknowledgement uses only bounded MediaWiki page discovery persists digest-addressed capture and snapshot generations and serves them through the authorized Retrieval v3 query mode; it grants no general crawling production deployment or release authority",
           "network actions are rechecked against the durable researcher role at the final tool sink before adapter dispatch",
           "search and fetch outputs remain untrusted evidence and commit source custody records verified citations and one replay-stable research receipt; unresolved citations fail the turn without an assistant message",
           "workspace read search grep list and glob are root-confined symlink-safe and byte result line and entry bounded",
-          "generic public fetch has no default adapter and remains unavailable in the shipped configuration",
+          "generic public fetch is enabled only alongside the default or explicitly selected OpenAI OAuth research adapter or through the separate bounded-http grant; every fetch remains confined by the bounded HTTPS adapter",
           "the bounded HTTPS fetch adapter rejects unsafe schemes URL credentials special-use or mixed DNS answers redirect pivots compressed or unsupported bodies deadline overruns malformed UTF-8 and response overflow while pinning a validated public address for each hop",
           "doctor reports research readiness and stable configuration failures without exposing capability bytes or gateway credentials",
           "the compiled non-interactive research command requires an exact research prompt and fresh state then emits prompt answer metrics canonical ledger exports isolated SQLite evidence and a SHA-256 manifest; CURIOSITY_NO_GO remains an unsuccessful coverage result"
@@ -301,6 +301,14 @@
           {
             "kind": "source",
             "ref": "apps/custom-harness/src/research/runtime-query-adapter.ts#createRuntimeQueryResearchAdapter"
+          },
+          {
+            "kind": "source",
+            "ref": "apps/custom-harness/src/providers/ai-sdk.ts#createOpenAiOAuthHostedWebSearch"
+          },
+          {
+            "kind": "source",
+            "ref": "apps/custom-harness/src/research/openai-oauth-search-adapter.ts#createOpenAiOAuthSearchAdapter"
           },
           {
             "kind": "source",
@@ -503,6 +511,18 @@
           },
           {
             "kind": "test",
+            "ref": "apps/custom-harness/tests/runtime-research-adapter.test.ts#uses OAuth hosted search and bounded fetch by default with an explicit opt-out"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/runtime-research-adapter.test.ts#maps OAuth hosted search URLs into bounded untrusted discovery results"
+          },
+          {
+            "kind": "test",
+            "ref": "apps/custom-harness/tests/darwin/binary-distribution.test.ts#reports default OAuth research readiness without exposing configuration values"
+          },
+          {
+            "kind": "test",
             "ref": "apps/custom-harness/tests/benchmark-owned-retrieval.test.ts#acquires through one fixed connector and replays through Retrieval v3"
           },
           {
@@ -669,6 +689,10 @@
           {
             "kind": "decision",
             "ref": "docs/architecture/custom-harness/decisions/ADR-014-benchmark-owned-retrieval.md#Decision"
+          },
+          {
+            "kind": "decision",
+            "ref": "docs/architecture/custom-harness/decisions/ADR-015-default-oauth-hosted-search.md#Decision"
           }
         ]
       },
@@ -873,17 +897,12 @@
         {
           "path": "apps/custom-harness/src/providers/ai-sdk.ts",
           "mode": "exact",
-          "sha256": "9d456e2bb1c72828919187bc28014591a4b805a3f7dc121b6ad059da9d6b782a"
+          "sha256": "d565b7482eba91611b3ee83eb0587351c2e5e4e0acc481be10c4eeedebba2b8f"
         },
         {
           "path": "apps/custom-harness/src/research/adapter.ts",
           "mode": "exact",
-          "sha256": "368233306d594f6a6e91b2f73db37b881e201184f9418e59361badb8cd3b9035"
-        },
-        {
-          "path": "apps/custom-harness/src/research/bounded-http-adapter.ts",
-          "mode": "exact",
-          "sha256": "b32be9820957bb1f63705867b13977694e6d600f76921883a4d724f0b341e00d"
+          "sha256": "2f05355e70ba4321b067694f58a227e0ec4b46cae862351a5904daabd8524cd4"
         },
         {
           "path": "apps/custom-harness/src/research/benchmark-owned-corpus.ts",
@@ -906,14 +925,24 @@
           "sha256": "67eec7700c3e896e36c6ba2938992fa1b02ec3939680a54b498d83ccf68e608e"
         },
         {
+          "path": "apps/custom-harness/src/research/bounded-http-adapter.ts",
+          "mode": "exact",
+          "sha256": "b32be9820957bb1f63705867b13977694e6d600f76921883a4d724f0b341e00d"
+        },
+        {
           "path": "apps/custom-harness/src/research/composite-adapter.ts",
           "mode": "exact",
-          "sha256": "1b6822b47b8b04fe822963c9e1364410a7dbf16c6cec65ce012164b087e908e0"
+          "sha256": "0fec94e7ede88d8faefaad42af322560d825333450637c36db0bd308820ee200"
         },
         {
           "path": "apps/custom-harness/src/research/custody.ts",
           "mode": "exact",
           "sha256": "1d2bd4e282d517dbd814f2072ab51aeac6d86dac23d7b09e5950b4ce4fe7ec6e"
+        },
+        {
+          "path": "apps/custom-harness/src/research/openai-oauth-search-adapter.ts",
+          "mode": "exact",
+          "sha256": "8e2e40fba8518b232b0c179b439e4d724c5114cb0f9f178401b498e7d624d7d1"
         },
         {
           "path": "apps/custom-harness/src/research/receipt.ts",
@@ -923,7 +952,7 @@
         {
           "path": "apps/custom-harness/src/research/runtime-config.ts",
           "mode": "exact",
-          "sha256": "65c2e2e2d3ae8eb348ac13764790ec89cc4307b8e009f2025e4b0e68cc434319"
+          "sha256": "da8e62ff67fa8e1f917820a5483ab5cdb0c935770293f049c97b119de40578be"
         },
         {
           "path": "apps/custom-harness/src/research/runtime-query-adapter.ts",
@@ -1098,7 +1127,7 @@
         {
           "path": "apps/custom-harness/tests/darwin/binary-distribution.test.ts",
           "mode": "exact",
-          "sha256": "3bc4551bce596193e2222df4ae13fd6ede1e479b8cd5dfa1829c69c0a65da526"
+          "sha256": "d940dd5dce8b35dcfe0d1e63a0db673d64946a7e2713d83d0f98d439d9495dc5"
         },
         {
           "path": "apps/custom-harness/tests/git-read.test.ts",
@@ -1168,7 +1197,7 @@
         {
           "path": "apps/custom-harness/tests/runtime-research-adapter.test.ts",
           "mode": "exact",
-          "sha256": "bba3551bb3a56e5d36b143e5558ed6c829c50ad49f4ad2a968ed789bcb810a1f"
+          "sha256": "7175229f294dabcb44216c5b8c94ca96605b4ca585aee3b9b35d901d3bdc232f"
         },
         {
           "path": "apps/custom-harness/tests/schema-migration.test.ts",
@@ -1209,6 +1238,11 @@
           "path": "docs/architecture/custom-harness/decisions/ADR-014-benchmark-owned-retrieval.md",
           "mode": "exact",
           "sha256": "312aae86dea35ec83ee937bf0ff92ea8aed3614a9f19695bdd23d25363ef19ee"
+        },
+        {
+          "path": "docs/architecture/custom-harness/decisions/ADR-015-default-oauth-hosted-search.md",
+          "mode": "exact",
+          "sha256": "2c3cd733daefe88f0a2721593814feb4c342a3656facc7df5ac87059be633f84"
         }
       ]
     },

@@ -106,6 +106,7 @@ closed rather than inheriting these claims.
 | [ADR-012](decisions/ADR-012-bubbletea-presentation-client.md)          | Accepted | Bubble Tea v2 non-authoritative presentation client         |
 | [ADR-013](decisions/ADR-013-typescript-default-presentation.md)        | Accepted | TypeScript default TTY; Bubble Tea explicit experimental    |
 | [ADR-014](decisions/ADR-014-benchmark-owned-retrieval.md)             | Accepted | Isolated benchmark acquisition and owned Retrieval v3       |
+| [ADR-015](decisions/ADR-015-default-oauth-hosted-search.md)           | Accepted | Existing OAuth enables governed hosted search by default    |
 
 ## Package-wide invariants
 

@@ -6,7 +6,9 @@ export interface ResearchAdapterReceipt {
     | "bounded-http-v1"
     | "benchmark-owned-retrieval-v1"
     | "curiosity-runtime-research-v1"
-    | "curiosity-runtime-query-v1";
+    | "curiosity-runtime-query-v1"
+    | "openai-oauth-research-v1"
+    | "openai-oauth-web-search-v1";
 }
 
 export interface ResearchSearchRequest {
@@ -69,6 +71,8 @@ export const validateResearchAdapter = (adapter: ResearchAdapter): void => {
       "benchmark-owned-retrieval-v1",
       "curiosity-runtime-query-v1",
       "curiosity-runtime-research-v1",
+      "openai-oauth-research-v1",
+      "openai-oauth-web-search-v1",
     ].includes(receipt.securityProfile) ||
     capabilities.length < 1 ||
     capabilities.length > 2 ||

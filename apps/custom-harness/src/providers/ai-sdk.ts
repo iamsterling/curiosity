@@ -1,11 +1,12 @@
 import { createAnthropic } from "@ai-sdk/anthropic";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import { createOpenAI } from "@ai-sdk/openai";
+import { createOpenAI, openai } from "@ai-sdk/openai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { createOpenAIOAuth } from "@openai-oauth/ai-sdk";
 import { openaiCredentials } from "@openai-oauth/local";
 import {
   createProviderRegistry,
+  generateText,
   jsonSchema,
   streamText,
   tool,
@@ -15,6 +16,20 @@ import type { TextGenerator } from "../kernel/text-generator.js";
 import type { PromptMessage } from "../kernel/text-generator.js";
 
 type ProviderEnvironment = Readonly<Record<string, string | undefined>>;
+
+export interface HostedWebSearchRequest {
+  readonly abortSignal: AbortSignal;
+  readonly query: string;
+  readonly timeoutMs: number;
+}
+
+export interface HostedWebSearchResponse {
+  readonly urls: readonly string[];
+}
+
+export type HostedWebSearch = (
+  request: HostedWebSearchRequest,
+) => Promise<HostedWebSearchResponse>;
 
 const supportedProviders = new Set([
   "anthropic",
@@ -42,6 +57,21 @@ const errorRecord = (value: unknown): Record<string, unknown> | undefined =>
   value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : undefined;
+
+const hostedSearchUrls = (toolResults: readonly unknown[]): readonly string[] => {
+  const urls = new Set<string>();
+  for (const value of toolResults) {
+    const result = errorRecord(value);
+    const output = errorRecord(result?.output);
+    if (!Array.isArray(output?.sources)) continue;
+    for (const sourceValue of output.sources) {
+      const source = errorRecord(sourceValue);
+      if (source?.type === "url" && typeof source.url === "string")
+        urls.add(source.url);
+    }
+  }
+  return [...urls];
+};
 
 export const aiSdkStreamFailureCode = (
   providerId: string,
@@ -118,6 +148,50 @@ export const resolveAiSdkEffort = (
   )
     return "medium";
   return "default";
+};
+
+export const createOpenAiOAuthHostedWebSearch = (
+  modelId: string,
+): HostedWebSearch => {
+  if (!modelId || Buffer.byteLength(modelId) > 256)
+    throw new Error("OPENAI_OAUTH_SEARCH_MODEL_INVALID");
+  const provider = createOpenAIOAuth(openaiCredentials());
+  const model = provider(modelId);
+  return async ({ abortSignal, query, timeoutMs }) => {
+    try {
+      const result = await generateText({
+        abortSignal,
+        maxOutputTokens: 64,
+        maxRetries: 0,
+        model,
+        prompt: [
+          "Search the public web for the following query.",
+          "Use exactly one search query. Do not answer the query; only perform discovery.",
+          `Query JSON: ${JSON.stringify(query)}`,
+        ].join("\n"),
+        providerOptions: { openai: { reasoningEffort: "low" } },
+        timeout: timeoutMs,
+        toolChoice: { toolName: "web_search", type: "tool" },
+        tools: {
+          web_search: openai.tools.webSearch({
+            externalWebAccess: true,
+            searchContextSize: "low",
+          }),
+        },
+      });
+      return Object.freeze({ urls: hostedSearchUrls(result.toolResults) });
+    } catch (cause) {
+      const name = cause instanceof Error ? cause.name : "";
+      const message = cause instanceof Error ? cause.message : "";
+      const failureCode =
+        abortSignal.aborted ||
+        name.includes("Timeout") ||
+        message.toLowerCase().includes("timed out")
+          ? "AI_SDK_STREAM_ABORTED"
+          : aiSdkStreamFailureCode("openai-oauth", cause);
+      throw new Error(failureCode, { cause });
+    }
+  };
 };
 
 const validateModelId = (

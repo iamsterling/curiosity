@@ -97,12 +97,20 @@ variables. `compatible:` also requires
 OpenAI and OpenAI OAuth adapters so the displayed value always matches an
 option sent to the provider.
 
-### Optional research search and fetch
+### Research search and fetch
 
-The TUI stays fail-closed by default: no research adapter means neither
-`web_search` nor `web_fetch` is model-visible. To use the existing Curiosity
-query runtime, set `CURIOSITY_RESEARCH_ADAPTER` to `runtime-local` or
-`runtime-searxng`, then provide:
+When the selected model uses `openai-oauth`, the TUI uses the same OAuth session
+for OpenAI hosted web discovery by default and pairs it with Curiosity's bounded
+public-HTTPS fetcher. This exposes governed `web_search` and `web_fetch` tools
+only to the researcher role; hosted search URLs and fetched content remain
+untrusted evidence and pass through source custody. Set
+`CURIOSITY_RESEARCH_ADAPTER=none` to disable the default search grant.
+
+Other providers remain fail-closed unless a research adapter is configured.
+`CURIOSITY_RESEARCH_ADAPTER=openai-oauth` explicitly selects the hosted OAuth
+search path even when the answer model uses another provider. To use the
+existing Curiosity query runtime instead, set `CURIOSITY_RESEARCH_ADAPTER` to
+`runtime-local` or `runtime-searxng`, then provide:
 
 - `CURIOSITY_RUNTIME_STATE_ROOT` as an absolute runtime state path;
 - `CURIOSITY_QUERY_CAPABILITY_HEX` as the operator-issued query capability; and
@@ -114,7 +122,8 @@ search only to the researcher role. Search results remain untrusted evidence;
 the kernel records source custody, rejects uncaptured answer citations, and
 shows a research-receipt summary after a completed answer.
 
-Public HTTPS retrieval is a separate least-authority grant. Set
+For non-OAuth research adapters, public HTTPS retrieval is a separate
+least-authority grant. Set
 `CURIOSITY_RESEARCH_FETCH_ADAPTER=bounded-http` to expose `web_fetch` to the
 researcher role. The adapter accepts HTTPS on port 443 only, rejects URL
 credentials and local/special-use destinations, resolves and pins public IPs on

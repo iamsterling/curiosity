@@ -89,9 +89,13 @@ describe("experimental single-binary distribution", () => {
         status: "ready",
       },
       research: {
-        capabilities: [],
-        reason: "RESEARCH_ADAPTER_NOT_CONFIGURED",
-        status: "unavailable",
+        adapter: {
+          adapterId: "curiosity-openai-oauth-research",
+          capabilities: ["network.fetch", "network.search"],
+          securityProfile: "openai-oauth-research-v1",
+        },
+        capabilities: ["network.fetch", "network.search"],
+        status: "ready",
       },
       supervisor: {
         materialized: true,
@@ -119,7 +123,7 @@ describe("experimental single-binary distribution", () => {
     );
   });
 
-  test("reports explicit research readiness without exposing configuration values", () => {
+  test("reports default OAuth research readiness without exposing configuration values", () => {
     const root = temporary();
     const ready = run(binary, ["doctor", "--json"], root, {
       CURIOSITY_RESEARCH_FETCH_ADAPTER: "bounded-http",
@@ -127,11 +131,11 @@ describe("experimental single-binary distribution", () => {
     expect(ready.exitCode).toBe(0);
     expect(JSON.parse(ready.stdout.toString()).research).toMatchObject({
       adapter: {
-        adapterId: "curiosity-bounded-http",
-        capabilities: ["network.fetch"],
-        securityProfile: "bounded-http-v1",
+        adapterId: "curiosity-openai-oauth-research",
+        capabilities: ["network.fetch", "network.search"],
+        securityProfile: "openai-oauth-research-v1",
       },
-      capabilities: ["network.fetch"],
+      capabilities: ["network.fetch", "network.search"],
       status: "ready",
     });
     expect(ready.stdout.toString()).not.toContain("M5_GATEWAY_TOKEN");

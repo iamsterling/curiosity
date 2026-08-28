@@ -8,6 +8,8 @@ export const combineResearchAdapters = (
   if (!fetchAdapter) return searchAdapter;
   if (!searchAdapter.search || !fetchAdapter.fetch)
     throw new Error("RESEARCH_ADAPTER_COMBINATION_INVALID");
+  const openAiOAuth =
+    searchAdapter.receipt.securityProfile === "openai-oauth-web-search-v1";
   let closed = false;
   return Object.freeze({
     close: () => {
@@ -18,10 +20,14 @@ export const combineResearchAdapters = (
     },
     fetch: fetchAdapter.fetch,
     receipt: Object.freeze({
-      adapterId: "curiosity-runtime-research",
+      adapterId: openAiOAuth
+        ? "curiosity-openai-oauth-research"
+        : "curiosity-runtime-research",
       adapterVersion: "1.0.0",
       capabilities: ["network.fetch", "network.search"] as const,
-      securityProfile: "curiosity-runtime-research-v1" as const,
+      securityProfile: openAiOAuth
+        ? ("openai-oauth-research-v1" as const)
+        : ("curiosity-runtime-research-v1" as const),
     }),
     search: searchAdapter.search,
   });

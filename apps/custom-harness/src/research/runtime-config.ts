@@ -1,6 +1,10 @@
 import { randomBytes } from "node:crypto";
 import path from "node:path";
 import { createQueryRuntime } from "@curiosity/runtime/query";
+import {
+  createOpenAiOAuthHostedWebSearch,
+  resolveAiSdkModelId,
+} from "../providers/ai-sdk.js";
 import type {
   ResearchAdapter,
   ResearchAdapterReceipt,
@@ -9,6 +13,7 @@ import { createBenchmarkOwnedResearchAdapter } from "./benchmark-owned-retrieval
 import { createBoundedHttpResearchAdapter } from "./bounded-http-adapter.js";
 import { combineResearchAdapters } from "./composite-adapter.js";
 import { createRuntimeQueryResearchAdapter } from "./runtime-query-adapter.js";
+import { createOpenAiOAuthSearchAdapter } from "./openai-oauth-search-adapter.js";
 
 type Environment = Readonly<Record<string, string | undefined>>;
 
@@ -65,19 +70,35 @@ export const resolveRuntimeResearchAdapter = (
 ): ResearchAdapter | undefined => {
   const selection = environment.CURIOSITY_RESEARCH_ADAPTER?.trim();
   const fetchSelection = environment.CURIOSITY_RESEARCH_FETCH_ADAPTER?.trim();
-  if (!selection && !fetchSelection) return undefined;
+  const providerModelId = resolveAiSdkModelId(environment);
+  const implicitOpenAiOAuth =
+    !selection && providerModelId.startsWith("openai-oauth:");
+  if (!selection && !fetchSelection && !implicitOpenAiOAuth) return undefined;
   if (fetchSelection && fetchSelection !== "bounded-http")
     throw new Error("RESEARCH_FETCH_ADAPTER_UNSUPPORTED");
   if (
     selection !== "benchmark-owned" &&
+    selection !== "none" &&
+    selection !== "openai-oauth" &&
     selection !== "runtime-local" &&
     selection !== "runtime-searxng"
   )
     if (selection) throw new Error("RESEARCH_ADAPTER_UNSUPPORTED");
-  const fetchAdapter = fetchSelection
-    ? createBoundedHttpResearchAdapter()
-    : undefined;
-  if (!selection) return fetchAdapter;
+  const fetchAdapter =
+    fetchSelection || implicitOpenAiOAuth || selection === "openai-oauth"
+      ? createBoundedHttpResearchAdapter()
+      : undefined;
+  if (!selection && !implicitOpenAiOAuth) return fetchAdapter;
+  if (selection === "none") return fetchAdapter;
+  if (selection === "openai-oauth" || implicitOpenAiOAuth) {
+    const selectedModelId = providerModelId.startsWith("openai-oauth:")
+      ? providerModelId.slice("openai-oauth:".length)
+      : "gpt-5.4-mini";
+    const searchAdapter = createOpenAiOAuthSearchAdapter({
+      search: createOpenAiOAuthHostedWebSearch(selectedModelId),
+    });
+    return combineResearchAdapters(searchAdapter, fetchAdapter);
+  }
   if (selection === "benchmark-owned") {
     if (
       environment.CURIOSITY_BENCHMARK_ACQUISITION_ACK?.trim() !==
