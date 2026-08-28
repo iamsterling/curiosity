@@ -629,6 +629,24 @@ export class ActionJournal {
             "INSERT OR IGNORE INTO executions(execution_id,version,generation,status,cancellation_requested,updated_at) VALUES (?,?,?,?,?,?)",
             [action.executionId, 0, 0, "active", 0, input.acceptedAt],
           );
+          const parentExecutionExists = this.database
+            .query<{ present: number }, [string]>(
+              "SELECT 1 AS present FROM executions WHERE execution_id = ?",
+            )
+            .get(source.child_execution_id);
+          if (
+            action.executionId !== source.child_execution_id &&
+            parentExecutionExists
+          ) {
+            this.database.run(
+              "INSERT OR IGNORE INTO execution_ancestry(ancestor_execution_id,descendant_execution_id,depth) SELECT ancestor_execution_id,?,depth + 1 FROM execution_ancestry WHERE descendant_execution_id = ?",
+              [action.executionId, source.child_execution_id],
+            );
+            this.database.run(
+              "INSERT OR IGNORE INTO execution_ancestry(ancestor_execution_id,descendant_execution_id,depth) VALUES (?,?,1)",
+              [source.child_execution_id, action.executionId],
+            );
+          }
           this.database.run(
             "INSERT INTO actions(action_id,source_event_id,reactor_id,plugin_id,action_type,action_schema_version,execution_id,resource,gate_class,deadline_class,input_json,input_digest,requested_capabilities_json,status,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             [

@@ -542,6 +542,8 @@ describe("plugin-native chat turns", () => {
   test("continues exactly once after a six-call research tool batch", async () => {
     const databasePath = databaseFixture();
     const queries: string[] = [];
+    let activeSearches = 0;
+    let maximumActiveSearches = 0;
     const researchAdapter: ResearchAdapter = {
       close: () => undefined,
       receipt: {
@@ -551,18 +553,28 @@ describe("plugin-native chat turns", () => {
         securityProfile: "curiosity-runtime-query-v1",
       },
       search: async ({ query }) => {
+        activeSearches += 1;
+        maximumActiveSearches = Math.max(
+          maximumActiveSearches,
+          activeSearches,
+        );
         queries.push(query);
-        const ordinal = Number(query.split("-").at(-1));
-        return {
-          queriedAt: "2026-08-27T00:00:00.000Z",
-          results: [
-            {
-              canonicalUrl: `https://example.com/source-${ordinal}`,
-              snippet: `Evidence ${ordinal}.`,
-              title: `Source ${ordinal}`,
-            },
-          ],
-        };
+        try {
+          await new Promise((resolve) => setTimeout(resolve, 20));
+          const ordinal = Number(query.split("-").at(-1));
+          return {
+            queriedAt: "2026-08-27T00:00:00.000Z",
+            results: [
+              {
+                canonicalUrl: `https://example.com/source-${ordinal}`,
+                snippet: `Evidence ${ordinal}.`,
+                title: `Source ${ordinal}`,
+              },
+            ],
+          };
+        } finally {
+          activeSearches -= 1;
+        }
       },
     };
     let generations = 0;
@@ -629,10 +641,18 @@ describe("plugin-native chat turns", () => {
     expect(queries.sort()).toEqual(
       Array.from({ length: 6 }, (_, ordinal) => `evidence-${ordinal}`),
     );
+    expect(maximumActiveSearches).toBe(4);
     const database = new Database(databasePath, {
       readonly: true,
       strict: true,
     });
+    expect(
+      database
+        .query<{ count: number }, []>(
+          "SELECT count(*) AS count FROM actions JOIN execution_ancestry ON execution_ancestry.descendant_execution_id = actions.execution_id WHERE actions.action_type = 'search.web' AND execution_ancestry.ancestor_execution_id = 'turn-001' AND execution_ancestry.depth = 1",
+        )
+        .get()?.count,
+    ).toBe(6);
     expect(
       database
         .query<{ count: number }, []>(

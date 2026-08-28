@@ -807,7 +807,7 @@
         {
           "path": "apps/custom-harness/src/kernel/reaction-engine.ts",
           "mode": "exact",
-          "sha256": "d0b1bf085f78c03b24dbe0543a37bb30027dd4e8c381f384ebd8a7211ee93dc8"
+          "sha256": "7ebe82a10264f1f6b5b70dc7dea2b5af17d0a54044cd0b8510bde3774940929a"
         },
         {
           "path": "apps/custom-harness/src/kernel/role-policy.ts",
@@ -897,7 +897,7 @@
         {
           "path": "apps/custom-harness/src/providers/ai-sdk.ts",
           "mode": "exact",
-          "sha256": "d565b7482eba91611b3ee83eb0587351c2e5e4e0acc481be10c4eeedebba2b8f"
+          "sha256": "8db86b09ff5a3ef9769a8cca549b9acea040740d2245a07f96abcbe1a3408707"
         },
         {
           "path": "apps/custom-harness/src/research/adapter.ts",
@@ -967,7 +967,7 @@
         {
           "path": "apps/custom-harness/src/storage/action-journal.ts",
           "mode": "exact",
-          "sha256": "dd61f640977e1a479dc1568ca1011c0d3f52d10cd1ee1b03d7ec147f5c83d669"
+          "sha256": "3e3f51e32a0fe074e96a5e7f1fc36d72e645f4c4740322a40e473a6eae493bf7"
         },
         {
           "path": "apps/custom-harness/src/storage/attempt-journal.ts",
@@ -1107,7 +1107,7 @@
         {
           "path": "apps/custom-harness/tests/chat.test.ts",
           "mode": "exact",
-          "sha256": "2b6c37db0fb97aa3257840ba2565f96f09f78850cd2383905da8bb4b68982e0a"
+          "sha256": "3f67fda5e167096a82c8da433acbb20870793d864c87be4aeca2ade01138ac81"
         },
         {
           "path": "apps/custom-harness/tests/child-delegation.test.ts",
@@ -1212,7 +1212,7 @@
         {
           "path": "apps/custom-harness/tests/tui.test.ts",
           "mode": "exact",
-          "sha256": "1aa42c37162899642df0afdaab61e061b1ae0ca89e77dd4e6c01ffdd1f32997d"
+          "sha256": "d94a2b7a9472a3d80329b46c03b033c3f5fe7577e3cbc41704bba4b252880f31"
         },
         {
           "path": "apps/custom-harness/tests/workflow-orchestration.test.ts",

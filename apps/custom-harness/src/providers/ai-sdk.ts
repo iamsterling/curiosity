@@ -144,8 +144,10 @@ export const resolveAiSdkEffort = (
   if (explicit) return explicit;
   if (
     !configured(environment.CURIOSITY_MODEL) &&
-    (providerId === "openai" || providerId === "openai-oauth")
+    providerId === "openai-oauth"
   )
+    return "low";
+  if (!configured(environment.CURIOSITY_MODEL) && providerId === "openai")
     return "medium";
   return "default";
 };

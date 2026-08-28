@@ -99,7 +99,7 @@ render Markdown once, while completion metadata remains subordinate.
 Provider work uses one restrained, single-cell braille orbit; set
 `CURIOSITY_MOTION=reduce` for a static `⠿` indicator.
 Untrusted projected and streamed text is control-character sanitized before
-rendering. The default is `openai-oauth:gpt-5.4-mini` at `medium` effort, using
+rendering. The default is `openai-oauth:gpt-5.4-mini` at `low` effort, using
 the community OpenAI OAuth adapter and local Codex credentials. For cross-device
 login, enable Codex device-code authorization for the ChatGPT account and run:
 

@@ -79,6 +79,40 @@ const concurrentExternalActionTypes = new Set([
   "workspace.write",
 ]);
 
+const maximumParallelResearchReads = 4;
+const parallelResearchReadTypes = new Set(["fetch.web", "search.web"]);
+
+const parallelResearchCorrelation = (
+  actionType: string,
+  input: unknown,
+): Record<string, unknown> | undefined => {
+  if (
+    !parallelResearchReadTypes.has(actionType) ||
+    !input ||
+    typeof input !== "object" ||
+    Array.isArray(input)
+  )
+    return undefined;
+  const correlation = (input as Record<string, unknown>).correlation;
+  const record =
+    correlation && typeof correlation === "object" && !Array.isArray(correlation)
+      ? (correlation as Record<string, unknown>)
+      : undefined;
+  return record?.kind === "curiosity.chat.tool" &&
+    record.agentId === "researcher" &&
+    typeof record.providerActionId === "string"
+    ? record
+    : undefined;
+};
+
+const parallelResearchBatchKey = (action: StoredAction): string | undefined => {
+  const correlation = parallelResearchCorrelation(
+    action.actionType,
+    action.input,
+  );
+  return correlation?.providerActionId as string | undefined;
+};
+
 const actionRecord = (
   event: StoredEvent,
   reactor: ReturnType<StaticPluginCatalog["reactorsFor"]>[number],
@@ -95,12 +129,18 @@ const actionRecord = (
     type: proposal.actionType,
     version: proposal.actionSchemaVersion,
   });
+  const executionId = parallelResearchCorrelation(
+    proposal.actionType,
+    proposal.input,
+  )
+    ? `research-tool:${actionId}`
+    : proposal.subject.executionId;
   return {
     actionId,
     actionSchemaVersion: proposal.actionSchemaVersion,
     actionType: proposal.actionType,
     deadlineClass: proposal.deadlineClass,
-    executionId: proposal.subject.executionId,
+    executionId,
     gateClass: proposal.gateClass,
     input: proposal.input,
     inputDigest,
@@ -439,6 +479,16 @@ export class ReactionEngine {
       const activeExecutionIds = new Set(
         activeExternal.flatMap(({ executionIds }) => executionIds),
       );
+      const activeResearchBatches = new Map<string, number>();
+      for (const active of activeExternal) {
+        if (!active.action) continue;
+        const key = parallelResearchBatchKey(active.action);
+        if (key)
+          activeResearchBatches.set(
+            key,
+            (activeResearchBatches.get(key) ?? 0) + 1,
+          );
+      }
       const dispatchableActions = this.journal.actions
         .proposedActions()
         .filter((action) => !activeActionIds.has(action.actionId))
@@ -460,9 +510,22 @@ export class ReactionEngine {
         (action) => !concurrentExternalActionTypes.has(action.actionType),
       );
       const selectedExecutionIds = new Set<string>();
+      const selectedResearchBatches = new Map(activeResearchBatches);
       const concurrentActions = concurrentCandidates.filter((action) => {
+        const batchKey = parallelResearchBatchKey(action);
+        if (
+          batchKey &&
+          (selectedResearchBatches.get(batchKey) ?? 0) >=
+            maximumParallelResearchReads
+        )
+          return false;
         if (selectedExecutionIds.has(action.executionId)) return false;
         selectedExecutionIds.add(action.executionId);
+        if (batchKey)
+          selectedResearchBatches.set(
+            batchKey,
+            (selectedResearchBatches.get(batchKey) ?? 0) + 1,
+          );
         return true;
       });
       const childProviderActions = dispatchableActions

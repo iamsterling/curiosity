@@ -72,18 +72,40 @@ export const runResearchTurnWorkload = async (
   const root = await mkdtemp(path.join(tmpdir(), "curiosity-research-efficiency-"));
   const secret = randomBytes(32).toString("hex");
   let generation = 0;
+  let activeSearches = 0;
+  let maximumActiveSearches = 0;
+  const delayedResearchAdapter = {
+    ...researchAdapter,
+    search: async (
+      request: Parameters<NonNullable<typeof researchAdapter.search>>[0],
+    ) => {
+      activeSearches += 1;
+      maximumActiveSearches = Math.max(maximumActiveSearches, activeSearches);
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        return await researchAdapter.search!(request);
+      } finally {
+        activeSearches -= 1;
+      }
+    },
+  };
   const generator: TextGenerator = {
     effort: "high",
     modelId: "benchmark:research",
     stream: async function* () {
       generation += 1;
       if (generation === 1) {
-        yield {
-          input: { maxResults: 2, query: "primary evidence", schemaVersion: 1 },
-          toolCallId: "efficiency-search",
-          toolName: "web_search",
-          type: "tool-call",
-        } as never;
+        for (let ordinal = 0; ordinal < 4; ordinal += 1)
+          yield {
+            input: {
+              maxResults: 2,
+              query: `primary evidence ${ordinal}`,
+              schemaVersion: 1,
+            },
+            toolCallId: `efficiency-search-${ordinal}`,
+            toolName: "web_search",
+            type: "tool-call",
+          } as never;
         return;
       }
       if (generation === 2) {
@@ -106,7 +128,7 @@ export const runResearchTurnWorkload = async (
     actorId: efficiencyActorId,
     authenticationSecret: secret,
     databasePath: path.join(root, "events.sqlite"),
-    researchAdapter,
+    researchAdapter: delayedResearchAdapter,
     supervisorPath,
     textGenerator: generator,
     workspaceRoot: root,
@@ -143,12 +165,14 @@ export const runResearchTurnWorkload = async (
       metrics: {
         duration_ms: performance.now() - started,
         generation_count: generation,
+        maximum_active_searches: maximumActiveSearches,
         source_count: result.researchReceipt?.sourceCount ?? 0,
         tool_call_count: result.researchReceipt?.toolCallCount ?? 0,
       },
       units: {
         duration_ms: "ms",
         generation_count: "count",
+        maximum_active_searches: "count",
         source_count: "count",
         tool_call_count: "count",
       },

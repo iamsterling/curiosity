@@ -882,7 +882,7 @@ describe("custom harness TUI", () => {
       "openai:gpt-5.4-mini",
     );
     expect(resolveAiSdkModelId({})).toBe("openai-oauth:gpt-5.4-mini");
-    expect(resolveAiSdkEffort({}, "openai-oauth:gpt-5.4-mini")).toBe("medium");
+    expect(resolveAiSdkEffort({}, "openai-oauth:gpt-5.4-mini")).toBe("low");
     expect(resolveTuiAgentId({ CURIOSITY_AGENT: "researcher" })).toBe(
       "researcher",
     );
