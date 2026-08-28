@@ -18,6 +18,10 @@
     "./thread-projections/node": {
       "types": "./dist/thread-projections-node.d.ts",
       "import": "./dist/thread-projections-node.js"
+    },
+    "./dashboard/node": {
+      "types": "./dist/dashboard-runtime.d.ts",
+      "import": "./dist/dashboard-runtime.js"
     }
   },
   "scripts": {

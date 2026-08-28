@@ -4,29 +4,14 @@ import type { ChatTurnResult } from "../domain/chat.js";
 import type { ChatMessageProjection } from "../projection/chat-projection.js";
 import type { ThreadProjection } from "../projection/thread-projection.js";
 import { OPENAI_OAUTH_DEVICE_LOGIN_COMMAND } from "./config.js";
-
-export interface TurnIdentity {
-  readonly agentId?: string;
-  readonly actorId: string;
-  readonly secret: string;
-}
-
-export interface PromptCommandInput {
-  readonly arguments: string;
-  readonly name: string;
-}
-
-export const parsePromptCommand = (
-  text: string,
-): PromptCommandInput | undefined => {
-  const match = /^\/([a-z][a-z0-9-]{0,63})(?:[ \t]+([\s\S]*))?$/u.exec(text);
-  const name = match?.[1];
-  if (!name) return undefined;
-  return Object.freeze({
-    arguments: (match[2] ?? "").trim(),
-    name,
-  });
-};
+import type { TurnIdentity } from "../kernel/turn-envelope.js";
+export {
+  parsePromptCommand,
+  signPromptCommand,
+  signTurn,
+  type PromptCommandInput,
+  type TurnIdentity,
+} from "../kernel/turn-envelope.js";
 export const latestThread = (
   threads: readonly ThreadProjection[],
 ): ThreadProjection | undefined =>
@@ -64,78 +49,12 @@ export const failureDiagnostic = (error: unknown): string => {
     : tag;
 };
 
-export const formatChatFailure = (
-  modelId: string,
-  error: unknown,
-): string => {
+export const formatChatFailure = (modelId: string, error: unknown): string => {
   const diagnostic = failureDiagnostic(error);
   return modelId.startsWith("openai-oauth:") &&
     failureMessage(error) === "OPENAI_OAUTH_AUTHENTICATION_REQUIRED"
     ? `${diagnostic} · Run \`${OPENAI_OAUTH_DEVICE_LOGIN_COMMAND}\`, then retry.`
     : diagnostic;
-};
-
-export const signTurn = (
-  identity: TurnIdentity,
-  threadId: string,
-  text: string,
-  createId: () => string,
-  issuedAt: () => string,
-): SignedCommandEnvelope => {
-  const turnId = createId();
-  return signCommand(
-    {
-      actorId: identity.actorId,
-      command: {
-        id: createId(),
-        kind: "chat.turn",
-        payload: {
-          ...(identity.agentId ? { agentId: identity.agentId } : {}),
-          assistantMessageId: createId(),
-          text,
-          threadId,
-          turnId,
-          userMessageId: createId(),
-        },
-        schemaVersion: 1,
-      },
-      issuedAt: issuedAt(),
-      nonce: createId(),
-      schemaVersion: 1,
-    },
-    identity.secret,
-  );
-};
-
-export const signPromptCommand = (
-  identity: TurnIdentity,
-  threadId: string,
-  prompt: PromptCommandInput,
-  createId: () => string,
-  issuedAt: () => string,
-): SignedCommandEnvelope => {
-  const activationId = createId();
-  return signCommand(
-    {
-      actorId: identity.actorId,
-      command: {
-        id: createId(),
-        kind: "prompt.command.invoke",
-        payload: {
-          activationId,
-          arguments: prompt.arguments,
-          name: prompt.name,
-          schemaVersion: 1,
-          threadId,
-        },
-        schemaVersion: 1,
-      },
-      issuedAt: issuedAt(),
-      nonce: createId(),
-      schemaVersion: 1,
-    },
-    identity.secret,
-  );
 };
 
 export const signQuestionAnswer = (

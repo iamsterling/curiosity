@@ -1,13 +1,17 @@
 # Curiosity web
 
-This Next.js workspace renders the independent harness thread projection. It is
-a read-only surface: there are no command routes, server actions, or imports of
-the harness command API.
+This is Curiosity's single Next.js dashboard. Ask, Research, and Build submit
+through narrow same-origin routes into the governed harness; Craft composes the
+pinned Crafty editor, renderer, and document store into the same app shell.
+
+The server must run on Bun because the sealed harness journal uses Bun's SQLite
+driver. The package's `dev` and `start` scripts enforce that runtime with
+`bun --bun`.
 
 ## Run
 
-Build the harness package, point the web process at an existing absolute SQLite
-database path, then start the development server:
+Build the harness package, optionally point the web process at an absolute
+SQLite database path, then start the development server:
 
 ```sh
 bun run --cwd apps/custom-harness build
@@ -15,8 +19,9 @@ CURIOSITY_DATABASE_PATH=/absolute/path/to/curiosity.sqlite \
   bun run --cwd apps/web dev
 ```
 
-If `CURIOSITY_DATABASE_PATH` is missing or unreadable, the page renders a
-fail-closed unavailable state and no synthetic threads.
+Without `CURIOSITY_DATABASE_PATH`, the governed dashboard uses
+`~/.curiosity/events.sqlite`. Craft documents default to `~/.crafty` and can be
+redirected with `CRAFTY_DATA_DIR`.
 
 ## Verify
 
@@ -24,6 +29,5 @@ fail-closed unavailable state and no synthetic threads.
 bunx turbo run verify --filter=web
 ```
 
-The web tests verify the Node read-only SQLite adapter against a non-writable
-database file and reject app API routes, server actions, or command-authority
-imports.
+The web tests verify read-only projection behavior, the narrow same-origin chat
+envelope, and the single-app Craft composition boundary.

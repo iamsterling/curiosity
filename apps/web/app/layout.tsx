@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Suspense } from "react";
+import { DashboardRail } from "./dashboard-rail";
 import "./globals.css";
+import "./editor.css";
+import { Providers } from "./providers";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -12,8 +16,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Curiosity Threads",
-  description: "Read-only thread projections from the Curiosity harness.",
+  title: "Curiosity",
+  description: "One workspace for asking, researching, building, and crafting.",
 };
 
 export default function RootLayout({
@@ -22,9 +26,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {children}
+        <Providers>
+          <Suspense fallback={null}>
+            <DashboardRail />
+          </Suspense>
+          {children}
+        </Providers>
       </body>
     </html>
   );

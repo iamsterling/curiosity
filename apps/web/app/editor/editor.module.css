@@ -1,0 +1,250 @@
+.shell {
+  width: min(1180px, calc(100% - 136px));
+  min-height: 100svh;
+  margin-left: max(104px, calc((100vw - 1180px + 76px) / 2));
+  padding: 52px 0 36px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 36px;
+  margin-bottom: 52px;
+}
+
+.header p,
+.ruleHeader h2 {
+  margin-bottom: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-geist-mono);
+  font-size: 10px;
+  font-weight: 650;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.header h1 {
+  margin-bottom: 17px;
+  font-size: clamp(42px, 6vw, 66px);
+  font-weight: 520;
+  letter-spacing: -0.055em;
+  line-height: 0.94;
+}
+
+.header > div > span {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.createForm {
+  display: grid;
+  min-width: 330px;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.createForm label {
+  grid-column: 1 / -1;
+  color: var(--text-muted);
+  font-family: var(--font-geist-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.createForm input {
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  outline: 0;
+  color: var(--text-primary);
+  background: var(--surface);
+}
+
+.createForm input:focus {
+  border-color: var(--focus);
+}
+
+.createForm button {
+  padding: 0 16px;
+  border: 1px solid var(--focus);
+  border-radius: 5px;
+  color: var(--primary-foreground);
+  background: var(--focus);
+  cursor: pointer;
+}
+
+.createForm button:disabled {
+  border-color: var(--line);
+  color: var(--text-muted);
+  background: var(--surface-quiet);
+  cursor: default;
+}
+
+.ruleHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  border-bottom: 1px solid var(--line);
+}
+
+.ruleHeader h2 {
+  margin: 0;
+}
+
+.ruleHeader::after {
+  height: 1px;
+  flex: 1;
+  background: var(--line);
+  content: "";
+}
+
+.ruleHeader span {
+  color: var(--text-muted);
+  font-family: var(--font-geist-mono);
+  font-size: 10px;
+}
+
+.fileList {
+  list-style: none;
+}
+
+.fileList li {
+  border-bottom: 1px solid var(--line);
+}
+
+.fileList a {
+  display: grid;
+  min-height: 82px;
+  grid-template-columns: 3px minmax(160px, 1fr) auto auto;
+  align-items: center;
+  gap: 18px;
+  padding: 0 15px 0 0;
+  transition: background 160ms ease;
+}
+
+.fileList a:hover {
+  background: var(--surface-quiet);
+}
+
+.fileMark {
+  width: 1px;
+  height: 34px;
+  background: var(--line);
+}
+
+.fileList a:hover .fileMark {
+  width: 2px;
+  background: var(--focus);
+}
+
+.fileList h3 {
+  margin-bottom: 5px;
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 560;
+}
+
+.fileList p,
+.fileList dt,
+.provenance {
+  color: var(--text-muted);
+  font-family: var(--font-geist-mono);
+  font-size: 9px;
+}
+
+.fileList dl {
+  display: flex;
+  gap: 24px;
+}
+
+.fileList dl > div {
+  min-width: 50px;
+}
+
+.fileList dt {
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.fileList dd {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.fileList svg {
+  color: var(--text-muted);
+}
+
+.empty {
+  display: grid;
+  min-height: 320px;
+  place-content: center;
+  justify-items: center;
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+}
+
+.empty > svg {
+  margin-bottom: 18px;
+  color: var(--line);
+}
+
+.empty h2 {
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 580;
+}
+
+.empty p {
+  margin-bottom: 18px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.empty a {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--focus);
+  font-size: 12px;
+}
+
+.provenance {
+  margin-top: 18px;
+  text-align: right;
+}
+
+@media (max-width: 850px) {
+  .shell {
+    width: calc(100% - 108px);
+    margin-left: 92px;
+  }
+
+  .header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .createForm {
+    min-width: 0;
+  }
+
+  .fileList dl {
+    display: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .shell {
+    width: calc(100% - 28px);
+    margin: 0 auto;
+    padding: 34px 0 88px;
+  }
+
+  .fileList a {
+    grid-template-columns: 3px minmax(0, 1fr) auto;
+  }
+}
