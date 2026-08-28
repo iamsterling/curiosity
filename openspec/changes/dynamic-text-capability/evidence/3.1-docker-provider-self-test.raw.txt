@@ -1,0 +1,103 @@
+{
+  "diagnostic": "DOCKER_PROVIDER_SELF_TEST_OK",
+  "noFontBytesLoaded": true,
+  "lock": {
+    "version": 1,
+    "runtimeImageId": "sha256:16e22a550f3863206a3f701448c45f7912c6896a62de43add43bb9c86130c3e2",
+    "pythonSourceImageId": "sha256:655d35e6c06b6a1ac5ada097eec6b69df545d4bbc5f3135874cf351f20c4a03b",
+    "capsuleImageId": "sha256:9bb9c1934b6a9e10f097f40bd9ad3d8458654ad35f57346f579f8c30c85d86cf",
+    "tag": "crafty-font-harness-capsule:local"
+  },
+  "results": [
+    {
+      "mode": "attest",
+      "containerId": "7e5dd100412f30de566c8c105c0ca4ece9b95bb70259947ffed39b5937f7298a",
+      "imageId": "sha256:9bb9c1934b6a9e10f097f40bd9ad3d8458654ad35f57346f579f8c30c85d86cf",
+      "removalReason": "normal-exit",
+      "stdout": "{\"diagnostic\":\"CAPSULE_ATTESTED\",\"result\":{\"diagnostic\":\"HARNESS_OK\",\"exitCode\":0,\"signal\":null,\"outputBytes\":0,\"output\":\"\",\"peakRssBytes\":0,\"processGroupCleaned\":true,\"knownHelpersCleaned\":true,\"escapedCleanupGuaranteed\":null},\"noFontBytesLoaded\":true,\"boundary\":{\"cgroup\":\"0::/\",\"controllers\":[\"cpuset\",\"cpu\",\"io\",\"memory\",\"hugetlb\",\"pids\",\"rdma\"],\"cgroupMount\":\"284 283 0:41 / /sys/fs/cgroup ro,nosuid,nodev,noexec,relatime - cgroup2 cgroup rw\",\"status\":[\"Uid:\\t65532\\t65532\\t65532\\t65532\",\"Gid:\\t65532\\t65532\\t65532\\t65532\",\"CapInh:\\t0000000000000000\",\"CapPrm:\\t0000000000000000\",\"CapEff:\\t0000000000000000\",\"CapBnd:\\t0000000000000000\",\"CapAmb:\\t0000000000000000\",\"NoNewPrivs:\\t1\"],\"cpuMax\":\"50000 100000\",\"memoryMax\":\"268435456\",\"memorySwapMax\":\"0\",\"pidsMax\":\"32\",\"environmentNames\":[\"CRAFTY_FONT_HARNESS_BOUNDARY_ATTESTATION\",\"HOME\",\"HOSTNAME\",\"LANG\",\"PATH\",\"TMPDIR\"],\"namespaces\":{\"cgroup\":\"cgroup:[4026532586]\",\"ipc\":\"ipc:[4026532571]\",\"mnt\":\"mnt:[4026532569]\",\"net\":\"net:[4026532587]\",\"pid\":\"pid:[4026532585]\",\"user\":\"user:[4026531837]\",\"uts\":\"uts:[4026532570]\"},\"attestation\":{\"uid\":0,\"mode\":\"444\"}}}",
+      "isolation": {
+        "user": "65532:65532",
+        "networkMode": "none",
+        "readonlyRootfs": true,
+        "cgroupnsMode": "private",
+        "capDrop": [
+          "ALL"
+        ],
+        "securityOpt": [
+          "no-new-privileges:true"
+        ],
+        "init": true,
+        "pidsLimit": 32,
+        "memory": 268435456,
+        "memorySwap": 268435456,
+        "nanoCpus": 500000000,
+        "tmpfs": {
+          "/tmp": "rw,noexec,nosuid,nodev,size=16m,mode=1777"
+        },
+        "binds": null,
+        "devices": [],
+        "mounts": []
+      }
+    },
+    {
+      "mode": "controller-loss",
+      "containerId": "a90cc6ddde5b903778729b71f916a7866a507702b3cf407874e190859130377c",
+      "imageId": "sha256:9bb9c1934b6a9e10f097f40bd9ad3d8458654ad35f57346f579f8c30c85d86cf",
+      "removalReason": "normal-exit",
+      "stdout": "{\"diagnostic\":\"CAPSULE_CONTROLLER_EXIT\",\"descendantPid\":19,\"noFontBytesLoaded\":true}",
+      "isolation": {
+        "user": "65532:65532",
+        "networkMode": "none",
+        "readonlyRootfs": true,
+        "cgroupnsMode": "private",
+        "capDrop": [
+          "ALL"
+        ],
+        "securityOpt": [
+          "no-new-privileges:true"
+        ],
+        "init": true,
+        "pidsLimit": 32,
+        "memory": 268435456,
+        "memorySwap": 268435456,
+        "nanoCpus": 500000000,
+        "tmpfs": {
+          "/tmp": "rw,noexec,nosuid,nodev,size=16m,mode=1777"
+        },
+        "binds": null,
+        "devices": [],
+        "mounts": []
+      }
+    },
+    {
+      "mode": "controls",
+      "containerId": "7df8388e3da5dd9136d16f616846d8f1d5dd6a34a7192b49c8257526b4d5612a",
+      "imageId": "sha256:9bb9c1934b6a9e10f097f40bd9ad3d8458654ad35f57346f579f8c30c85d86cf",
+      "removalReason": "normal-exit",
+      "stdout": "{\"diagnostic\":\"CAPSULE_CONTROLS_OK\",\"noFontBytesLoaded\":true,\"uploadDiagnostic\":\"HARNESS_UPLOAD_BYTES_EXCEEDED\",\"gpuDiagnostic\":\"HARNESS_GPU_BUFFER_BYTES_EXCEEDED\",\"cancellation\":\"HARNESS_CONTROLLER_CANCELLED\",\"escape\":\"HARNESS_PROCESS_GROUP_ESCAPE_DETECTED\"}",
+      "isolation": {
+        "user": "65532:65532",
+        "networkMode": "none",
+        "readonlyRootfs": true,
+        "cgroupnsMode": "private",
+        "capDrop": [
+          "ALL"
+        ],
+        "securityOpt": [
+          "no-new-privileges:true"
+        ],
+        "init": true,
+        "pidsLimit": 32,
+        "memory": 268435456,
+        "memorySwap": 268435456,
+        "nanoCpus": 500000000,
+        "tmpfs": {
+          "/tmp": "rw,noexec,nosuid,nodev,size=16m,mode=1777"
+        },
+        "binds": null,
+        "devices": [],
+        "mounts": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+$ bun openspec/changes/dynamic-text-capability/evidence-contract/contract.test.mjs
+dynamic-text evidence contract: PASS canonical-sha256=ec8bba71480dae7985ad37f3caa6a13e64b119bd57f5951773771f4960d02db6 invalid=40 linear-records=2048
+$ openspec validate dynamic-text-capability --strict
+Change 'dynamic-text-capability' is valid
+$ git diff --check

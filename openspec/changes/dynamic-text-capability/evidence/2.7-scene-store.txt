@@ -1,0 +1,13 @@
+$ bun --filter @crafty/scene-store test
+@crafty/scene-store test: 
+@crafty/scene-store test:  RUN  v3.2.7 /Volumes/dev/crafty/packages/scene-store
+@crafty/scene-store test: 
+@crafty/scene-store test:  ✓ src/loss-list-roundtrip.test.ts (8 tests) 205ms
+@crafty/scene-store test:  ✓ src/index.test.ts (93 tests) 2053ms
+@crafty/scene-store test: 
+@crafty/scene-store test:  Test Files  2 passed (2)
+@crafty/scene-store test:       Tests  101 passed (101)
+@crafty/scene-store test:    Start at  18:59:02
+@crafty/scene-store test:    Duration  2.96s (transform 415ms, setup 0ms, collect 906ms, tests 2.26s, environment 0ms, prepare 203ms)
+@crafty/scene-store test: 
+@crafty/scene-store test: Exited with code 0

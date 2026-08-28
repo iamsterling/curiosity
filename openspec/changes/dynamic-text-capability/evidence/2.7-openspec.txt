@@ -1,0 +1,2 @@
+$ bunx openspec validate dynamic-text-capability --strict
+Change 'dynamic-text-capability' is valid

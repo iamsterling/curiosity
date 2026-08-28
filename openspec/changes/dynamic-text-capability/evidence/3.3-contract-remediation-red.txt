@@ -1,0 +1,17 @@
+ 7 | 
+ 8 | const directory = path.dirname(fileURLToPath(import.meta.url));
+ 9 | const readJson = async (...parts) => JSON.parse(await readFile(path.join(directory, ...parts), "utf8"));
+10 | 
+11 | const valid = await readJson("fixtures", "valid-complete.json");
+12 | assert.throws(
+            ^
+AssertionError: Missing expected exception: geometry metadata is mandatory
+ generatedMessage: false,
+     actual: undefined,
+   expected: [Function],
+   operator: "throws",
+       code: "ERR_ASSERTION"
+
+      at /Volumes/dev/crafty/openspec/changes/dynamic-text-capability/evidence-contract/contract.test.mjs:12:8
+
+Bun v1.3.14 (macOS arm64)

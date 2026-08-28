@@ -1,0 +1,3 @@
+$ bun scripts/format-check.mjs
+
+exit_code=0

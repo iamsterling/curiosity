@@ -1,0 +1,14 @@
+# The Dokploy build clones the repo clean, so most of these are belt and
+# braces — they also keep local `docker build` from shipping local state.
+.git
+node_modules
+**/node_modules
+dist
+**/dist
+**/.next
+**/.turbo
+packages/scene-renderer/pkg
+packages/scene-renderer/rust/target
+apps/web/*/certificates
+apps/web/base/public
+*.tsbuildinfo

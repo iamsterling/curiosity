@@ -1,0 +1,15 @@
+Mon Aug 17 05:43:42 UTC 2026
+client=29.6.2 server=29.6.2
+{"version":1,"runtimeImageId":"sha256:16e22a550f3863206a3f701448c45f7912c6896a62de43add43bb9c86130c3e2","pythonSourceImageId":"sha256:655d35e6c06b6a1ac5ada097eec6b69df545d4bbc5f3135874cf351f20c4a03b","capsuleImageId":"sha256:1e5c21e21a3c055ed9170a1e89718c9db8939520eaf801b81e4cca69d68fbfc5","tag":"crafty-font-harness-capsule:local"}
+{
+  "version": 1,
+  "runtimeImageId": "sha256:16e22a550f3863206a3f701448c45f7912c6896a62de43add43bb9c86130c3e2",
+  "pythonSourceImageId": "sha256:655d35e6c06b6a1ac5ada097eec6b69df545d4bbc5f3135874cf351f20c4a03b",
+  "capsuleImageId": "sha256:1e5c21e21a3c055ed9170a1e89718c9db8939520eaf801b81e4cca69d68fbfc5",
+  "tag": "crafty-font-harness-capsule:local"
+}
+0bdca7ae957cca55db095886a547fc589f019c51e9d8d6be52fdfd912b9e1a52  scripts/font-security-harness.mjs
+ba92dc88cfd03b85caf19d129b0cce2caeb82d6011c651d4dd9d316bf906786f  scripts/font-harness-docker-provider.mjs
+0c40e238775b738bf5633b07bbee3fadf1f17e41a76ac1e9d953758e4c545289  scripts/font-harness-capsule/Dockerfile
+bbf6a9408703e7caa2141feb0b7a36e28f067fb4d91e4a20cb76686a1bbc1f2d  scripts/font-harness-capsule/capsule-control.mjs
+dbfa94c25349031c93d0942a1ee304f347cccaa06fede22e7d1d4d4fec819cbd  scripts/font-harness-capsule/attestation.json

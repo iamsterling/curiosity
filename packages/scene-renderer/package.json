@@ -1,0 +1,25 @@
+{
+  "name": "@crafty/scene-renderer",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/index.js"
+    },
+    "./wasm": {
+      "types": "./src/wasm/index.ts",
+      "import": "./dist/wasm/index.js"
+    }
+  },
+  "scripts": {
+    "build": "bun run build:wasm && tsc -p tsconfig.json",
+    "build:wasm": "bun ../../scripts/build-scene-renderer-wasm.mjs",
+    "test": "bun ../../scripts/test-scene-renderer-wasm.mjs && vitest run",
+    "typecheck": "bun run build:wasm && tsc -p tsconfig.json --noEmit && tsc -p tsconfig.wasm.json --noEmit"
+  },
+  "dependencies": {
+    "@crafty/scene-model": "0.0.0"
+  }
+}

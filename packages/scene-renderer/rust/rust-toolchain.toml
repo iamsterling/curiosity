@@ -1,0 +1,14 @@
+# Pins the toolchain that builds the renderer module, so a clean checkout
+# produces the same artifact without relying on whatever rustup default a
+# developer machine happens to have.
+#
+# `targets` means `rustup` installs wasm32-unknown-unknown automatically —
+# a fresh clone does not need a separate `rustup target add` step.
+#
+# Upgrade procedure: docs/architecture/renderer-build.md. wasm-bindgen the
+# crate (Cargo.toml) and wasm-bindgen the CLI must move together.
+[toolchain]
+channel = "1.97.1"
+components = ["rustfmt", "clippy"]
+targets = ["wasm32-unknown-unknown"]
+profile = "minimal"

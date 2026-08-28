@@ -1,0 +1,4 @@
+$ bun run test:font-security-harness
+$ bun scripts/font-security-harness.test.mjs
+{"diagnostic":"HARNESS_SELF_TEST_OK","noFontBytesLoaded":true,"admission":{"uploadDiagnostic":"HARNESS_UPLOAD_BYTES_EXCEEDED","gpuDiagnostic":"HARNESS_GPU_BUFFER_BYTES_EXCEEDED"},"result":{"diagnostic":"HARNESS_CPU_TIME_EXCEEDED","exitCode":null,"signal":"SIGXCPU","outputBytes":0,"output":"","peakRssBytes":23134208,"descendantsCleaned":true}}
+exit=0

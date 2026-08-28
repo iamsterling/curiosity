@@ -1,0 +1,20 @@
+{
+  "budget-field.json": "EVIDENCE_BUDGET_FIELD_FORBIDDEN",
+  "missing-outputs.json": "EVIDENCE_SCHEMA_REQUIRED",
+  "null-value.json": "EVIDENCE_NULL_FORBIDDEN",
+  "unknown-version.json": "EVIDENCE_SCHEMA_VERSION_UNSUPPORTED",
+  "geometry-missing.json": "EVIDENCE_GEOMETRY_METADATA_REQUIRED",
+  "geometry-unknown.json": "EVIDENCE_GEOMETRY_METADATA_UNKNOWN",
+  "geometry-incompatible.json": "EVIDENCE_GEOMETRY_METADATA_INCOMPATIBLE",
+  "graph-duplicate-id.json": "EVIDENCE_GRAPH_DUPLICATE_ID",
+  "graph-range-missing.json": "EVIDENCE_GRAPH_RANGE_MISSING",
+  "graph-line-cluster-missing.json": "EVIDENCE_GRAPH_LINE_CLUSTER_MISSING",
+  "graph-line-membership.json": "EVIDENCE_GRAPH_LINE_CLUSTER_MEMBERSHIP",
+  "graph-cluster-glyph-missing.json": "EVIDENCE_GRAPH_CLUSTER_GLYPH_MISSING",
+  "graph-cluster-membership.json": "EVIDENCE_GRAPH_CLUSTER_GLYPH_MEMBERSHIP",
+  "graph-glyph-cluster-missing.json": "EVIDENCE_GRAPH_GLYPH_CLUSTER_MISSING",
+  "graph-glyph-font-missing.json": "EVIDENCE_GRAPH_GLYPH_FONT_MISSING",
+  "unicode-lone-surrogate.json": "EVIDENCE_UNICODE_NON_SCALAR",
+  "duplicate-provenance-artifact-id.json": "EVIDENCE_PROVENANCE_ARTIFACT_DUPLICATE_ID",
+  "duplicate-realization-artifact-id.json": "EVIDENCE_REALIZATION_ARTIFACT_DUPLICATE_ID"
+}

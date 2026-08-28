@@ -1,0 +1,1 @@
+{"diagnostic":"HARNESS_MUTANT_WRITTEN","outputPath":"scripts/font-security-harness.mutant.mjs","controlsRemoved":["fixture-admission","controller-cancellation"]}

@@ -1,0 +1,14 @@
+$ cargo metadata --no-deps --format-version 1 (dependency-kind audit)
+production-dependencies=console_error_panic_hook,js-sys,serde,serde_json,taffy,ttf-parser,vello,vello_encoding,wasm-bindgen,wasm-bindgen-futures,web-sys,wgpu
+dev-dependencies=sha2,vello_cpu
+$ cargo build --release
+    Finished `release` profile [optimized] target(s) in 0.12s
+$ cargo test --test evidence_contract_canonical
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running tests/evidence_contract_canonical.rs (target/debug/deps/evidence_contract_canonical-f584b1527d05f4fd)
+
+running 1 test
+test evidence_contract_vector_matches_committed_js_bytes_and_sha256 ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

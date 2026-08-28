@@ -1,0 +1,28 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Crafty layout browser reference generator</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  .case { position: absolute; left: 0; top: 0; display: flex; padding: 10px; gap: 8px; align-items: flex-start; height: 60px; }
+  .fixed { flex: 0 0 20px; width: 20px; height: 12px; }
+  .fill { flex: 1 1 0; height: 16px; min-width: 12px; max-width: 80px; }
+  .absolute { position: absolute; left: 5px; top: 5px; width: 15px; height: 10px; }
+</style>
+<div id="mount"></div><pre id="result"></pre>
+<script>
+  const widths = [100, 160, 240];
+  const output = { environment: { engine: navigator.userAgent, devicePixelRatio }, cases: [] };
+  const mount = document.querySelector("#mount");
+  const box = (element, root) => {
+    const value = element.getBoundingClientRect();
+    const origin = root.getBoundingClientRect();
+    return { x: value.x - origin.x, y: value.y - origin.y, width: value.width, height: value.height };
+  };
+  for (const width of widths) {
+    mount.innerHTML = `<div class="case" style="width:${width}px"><div data-id="fixed" class="fixed"></div><div data-id="fill" class="fill"></div><div data-id="absolute" class="absolute"></div></div>`;
+    const root = mount.firstElementChild;
+    output.cases.push({ width, boxes: { root: box(root, root), fixed: box(root.querySelector('[data-id=fixed]'), root), fill: box(root.querySelector('[data-id=fill]'), root), absolute: box(root.querySelector('[data-id=absolute]'), root) } });
+  }
+  document.querySelector("#result").textContent = JSON.stringify(output);
+</script>

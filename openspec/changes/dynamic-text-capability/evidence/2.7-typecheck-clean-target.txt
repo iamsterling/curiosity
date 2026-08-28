@@ -1,0 +1,116 @@
+$ bun run typecheck (renderer target cleared after /app artifact contamination)
+$ turbo run typecheck
+• turbo 2.10.9
+
+   • Packages in scope: @crafty/admin, @crafty/base, @crafty/cms, @crafty/crafty, @crafty/editor, @crafty/editor-web, @crafty/marketing, @crafty/pen-import, @crafty/scene-api, @crafty/scene-model, @crafty/scene-renderer, @crafty/scene-store, @crafty/scene-sync
+   • Running typecheck in 13 packages
+   • Remote caching disabled
+
+@crafty/base:typecheck: cache miss, executing 695749365a2e822b
+@crafty/marketing:typecheck: cache miss, executing d21b04ccc7cb314a
+@crafty/scene-model:typecheck: cache miss, executing bc6308d868ef737e
+@crafty/cms:typecheck: cache miss, executing 15904e7ea5041500
+@crafty/cms:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/scene-model:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/base:typecheck: $ next typegen && tsc -p tsconfig.json --noEmit
+@crafty/marketing:typecheck: $ next typegen && tsc -p tsconfig.json --noEmit
+@crafty/base:typecheck: Generating route types...
+@crafty/marketing:typecheck: Generating route types...
+@crafty/marketing:typecheck: ✓ Types generated successfully
+@crafty/base:typecheck: ✓ Types generated successfully
+@crafty/scene-renderer:typecheck: cache miss, executing 693affd6ea6a178b
+@crafty/scene-renderer:typecheck: $ bun run build:wasm && tsc -p tsconfig.json --noEmit && tsc -p tsconfig.wasm.json --noEmit
+@crafty/scene-renderer:typecheck: $ bun ../../scripts/build-scene-renderer-wasm.mjs
+@crafty/scene-renderer:typecheck:    Compiling unicode-ident v1.0.24
+@crafty/scene-renderer:typecheck:    Compiling proc-macro2 v1.0.107
+@crafty/scene-renderer:typecheck:    Compiling quote v1.0.47
+@crafty/scene-renderer:typecheck:    Compiling autocfg v1.5.1
+@crafty/scene-renderer:typecheck:    Compiling wasm-bindgen-shared v0.2.126
+@crafty/scene-renderer:typecheck:    Compiling cfg-if v1.0.4
+@crafty/scene-renderer:typecheck:    Compiling rustversion v1.0.23
+@crafty/scene-renderer:typecheck:    Compiling cfg_aliases v0.2.2
+@crafty/scene-renderer:typecheck:    Compiling bumpalo v3.20.3
+@crafty/scene-renderer:typecheck:    Compiling smallvec v1.15.2
+@crafty/scene-renderer:typecheck:    Compiling thiserror v2.0.19
+@crafty/scene-renderer:typecheck:    Compiling libm v0.2.16
+@crafty/scene-renderer:typecheck:    Compiling arrayvec v0.7.8
+@crafty/scene-renderer:typecheck:    Compiling futures-core v0.3.33
+@crafty/scene-renderer:typecheck:    Compiling zerocopy v0.8.56
+@crafty/scene-renderer:typecheck:    Compiling once_cell v1.21.4
+@crafty/scene-renderer:typecheck:    Compiling futures-task v0.3.33
+@crafty/scene-renderer:typecheck:    Compiling pin-project-lite v0.2.17
+@crafty/scene-renderer:typecheck:    Compiling num-traits v0.2.19
+@crafty/scene-renderer:typecheck:    Compiling slab v0.4.12
+@crafty/scene-renderer:typecheck:    Compiling futures-util v0.3.33
+@crafty/scene-renderer:typecheck:    Compiling naga v29.0.4
+@crafty/scene-renderer:typecheck:    Compiling equivalent v1.0.2
+@crafty/scene-renderer:typecheck:    Compiling bit-vec v0.9.1
+@crafty/scene-renderer:typecheck:    Compiling parking_lot_core v0.9.12
+@crafty/scene-renderer:typecheck:    Compiling unicode-width v0.2.2
+@crafty/scene-renderer:typecheck:    Compiling foldhash v0.2.0
+@crafty/scene-renderer:typecheck:    Compiling hashbrown v0.17.1
+@crafty/scene-renderer:typecheck:    Compiling codespan-reporting v0.13.1
+@crafty/scene-renderer:typecheck:    Compiling hashbrown v0.16.1
+@crafty/scene-renderer:typecheck:    Compiling wasm-bindgen v0.2.126
+@crafty/scene-renderer:typecheck:    Compiling bit-set v0.9.1
+@crafty/scene-renderer:typecheck:    Compiling polycool v0.4.0
+@crafty/scene-renderer:typecheck:    Compiling syn v3.0.3
+@crafty/scene-renderer:typecheck:    Compiling syn v2.0.119
+@crafty/scene-renderer:typecheck:    Compiling indexmap v2.14.0
+@crafty/scene-renderer:typecheck:    Compiling rustc-hash v1.1.0
+@crafty/scene-renderer:typecheck:    Compiling log v0.4.33
+@crafty/scene-renderer:typecheck:    Compiling scopeguard v1.2.0
+@crafty/scene-renderer:typecheck:    Compiling simd-adler32 v0.3.10
+@crafty/scene-renderer:typecheck:    Compiling crc32fast v1.5.0
+@crafty/scene-renderer:typecheck:    Compiling bitflags v2.13.1
+@crafty/scene-renderer:typecheck:    Compiling hexf-parse v0.2.1
+@crafty/scene-renderer:typecheck:    Compiling euclid v0.22.14
+@crafty/scene-renderer:typecheck:    Compiling lock_api v0.4.14
+@crafty/scene-renderer:typecheck:    Compiling kurbo v0.13.1
+@crafty/scene-renderer:typecheck:    Compiling adler2 v2.0.1
+@crafty/scene-renderer:typecheck:    Compiling svg_fmt v0.4.5
+@crafty/scene-renderer:typecheck:    Compiling serde_core v1.0.229
+@crafty/scene-renderer:typecheck:    Compiling linebender_resource_handle v0.1.1
+@crafty/scene-renderer:typecheck:    Compiling version_check v0.9.5
+@crafty/scene-renderer:typecheck:    Compiling color v0.3.3
+@crafty/scene-renderer:typecheck:    Compiling parking_lot v0.12.5
+@crafty/scene-renderer:typecheck:    Compiling miniz_oxide v0.8.9
+@crafty/scene-renderer:typecheck:    Compiling wgpu v29.0.4
+@crafty/scene-renderer:typecheck:    Compiling slotmap v1.1.1
+@crafty/scene-renderer:typecheck:    Compiling guillotiere v0.7.0
+@crafty/scene-renderer:typecheck:    Compiling zmij v1.0.23
+@crafty/scene-renderer:typecheck:    Compiling raw-window-handle v0.6.2
+@crafty/scene-renderer:typecheck:    Compiling litrs v1.0.0
+@crafty/scene-renderer:typecheck:    Compiling peniko v0.6.1
+@crafty/scene-renderer:typecheck:    Compiling document-features v0.2.12
+@crafty/scene-renderer:typecheck:    Compiling flate2 v1.1.9
+@crafty/scene-renderer:typecheck:    Compiling fdeflate v0.3.7
+@crafty/scene-renderer:typecheck:    Compiling serde v1.0.229
+@crafty/scene-renderer:typecheck:    Compiling serde_json v1.0.151
+@crafty/scene-renderer:typecheck:    Compiling bytemuck_derive v1.12.0
+@crafty/scene-renderer:typecheck:    Compiling thiserror-impl v2.0.19
+@crafty/scene-renderer:typecheck:    Compiling static_assertions v1.1.0
+@crafty/scene-renderer:typecheck:    Compiling profiling v1.0.18
+@crafty/scene-renderer:typecheck:    Compiling png v0.18.1
+@crafty/scene-renderer:typecheck:    Compiling serde_derive v1.0.229
+@crafty/scene-renderer:typecheck:    Compiling futures-intrusive v0.5.0
+@crafty/scene-renderer:typecheck: error[E0463]: can't find crate for `lock_api`
+@crafty/scene-renderer:typecheck:   --> /Users/sterling/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/futures-intrusive-0.5.0/src/channel/oneshot.rs:14:5
+@crafty/scene-renderer:typecheck:    |
+@crafty/scene-renderer:typecheck: 14 | use lock_api::{Mutex, RawMutex};
+@crafty/scene-renderer:typecheck:    |     ^^^^^^^^ can't find crate
+@crafty/scene-renderer:typecheck: 
+@crafty/scene-renderer:typecheck: For more information about this error, try `rustc --explain E0463`.
+@crafty/scene-renderer:typecheck: error: could not compile `futures-intrusive` (lib) due to 1 previous error
+@crafty/scene-renderer:typecheck: warning: build failed, waiting for other jobs to finish...
+@crafty/scene-renderer:typecheck: error: script "build:wasm" exited with code 101
+@crafty/scene-renderer:typecheck: error: script "typecheck" exited with code 101
+@crafty/scene-renderer#typecheck:  ERROR  command (/Volumes/dev/crafty/packages/scene-renderer) /Users/sterling/.nvm/versions/node/v24.18.0/bin/bun run typecheck exited (101)
+
+ Tasks:    4 successful, 5 total
+Cached:    0 cached, 5 total
+  Time:    8.66s 
+Failed:    @crafty/scene-renderer#typecheck
+
+ ERROR  run failed: command  exited (101)
+error: script "typecheck" exited with code 101

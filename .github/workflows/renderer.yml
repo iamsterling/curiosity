@@ -1,0 +1,128 @@
+name: "CI: renderer (Rust / WASM)"
+
+# Path-filtered: the Rust toolchain and wasm build are the slowest thing in the
+# repo and most changes do not touch the renderer. Concurrency-cancelled so a
+# force-push does not leave a stale run burning a runner.
+on:
+  pull_request:
+    paths:
+      - "packages/scene-renderer/**"
+      - "scripts/build-scene-renderer-wasm.mjs"
+      - ".github/workflows/renderer.yml"
+  push:
+    branches: [main]
+    paths:
+      - "packages/scene-renderer/**"
+      - "scripts/build-scene-renderer-wasm.mjs"
+      - ".github/workflows/renderer.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  renderer:
+    name: "Renderer"
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      # rust-toolchain.toml pins the channel and installs the wasm32 target,
+      # so there is deliberately no version named here — one source of truth.
+      - name: Show pinned toolchain
+        working-directory: packages/scene-renderer/rust
+        run: |
+          rustc --version
+          cargo --version
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: packages/scene-renderer/rust
+
+      # Cheapest gates first: seconds, and they catch the cheapest class of
+      # failure before anything expensive starts.
+      - name: Format
+        working-directory: packages/scene-renderer/rust
+        run: cargo fmt --check
+
+      - name: Lint
+        working-directory: packages/scene-renderer/rust
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Encoder tests
+        working-directory: packages/scene-renderer/rust
+        run: cargo test
+
+      # The CLI version must match the wasm-bindgen crate version exactly or
+      # binding generation fails. Reading it from Cargo.lock keeps the two in
+      # lockstep without a second place to bump.
+      - name: Install native and WASM build tools
+        run: sudo apt-get update && sudo apt-get install --yes build-essential binaryen
+
+      - name: Install wasm-bindgen-cli at the locked version
+        working-directory: packages/scene-renderer/rust
+        run: |
+          VERSION=$(cargo metadata --format-version 1 \
+            | python3 -c "import json,sys;print(next(p['version'] for p in json.load(sys.stdin)['packages'] if p['name']=='wasm-bindgen'))")
+          echo "Locked wasm-bindgen: $VERSION"
+          if ! wasm-bindgen --version 2>/dev/null | grep -Fq "wasm-bindgen $VERSION"; then
+            cargo install wasm-bindgen-cli --version "$VERSION" --locked --force
+          fi
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - run: bun install --frozen-lockfile
+
+      - name: Build the renderer module
+        env:
+          WASM_OPT_REQUIRED: "1"
+        run: bun run --filter @crafty/scene-renderer build:wasm
+
+      - name: Artifact exists and is a real wasm binary
+        run: |
+          WASM=packages/scene-renderer/pkg/crafty_renderer_wasm_bg.wasm
+          test -f "$WASM"
+          test -f packages/scene-renderer/pkg/crafty_renderer_wasm.js
+          # \0asm magic number — catches a truncated or HTML-error-page artifact
+          test "$(head -c4 "$WASM" | od -An -tx1 | tr -d ' \n')" = "0061736d"
+
+      # Size is a release-visible property. This is a regression tripwire, not
+      # a performance target: it fires on an unexplained jump, and the ceiling
+      # moves deliberately with a recorded reason.
+      # Baseline at time of writing: 1,637,283 raw / 484,923 gzip — the
+      # section-5 module (vello renderer + present pipeline reachable, measured
+      # on 2026-08-07, see benchmarks/vello-wgpu-dependency-cost.md). The
+      # ceiling carries ~4% headroom so an identical rebuild does not trip it;
+      # the 210,000/88,000 ceiling died with the section-4 dependency landing
+      # (the old TypeGPU-host-only module is retired with section 6).
+      - name: Artifact size regression
+        run: |
+          WASM=packages/scene-renderer/pkg/crafty_renderer_wasm_bg.wasm
+          RAW=$(stat -c%s "$WASM")
+          GZIP=$(gzip -9 -c "$WASM" | wc -c)
+          CEILING_RAW=1700000
+          CEILING_GZIP=510000
+          echo "raw=$RAW (ceiling $CEILING_RAW)  gzip=$GZIP (ceiling $CEILING_GZIP)"
+          if [ "$RAW" -gt "$CEILING_RAW" ] || [ "$GZIP" -gt "$CEILING_GZIP" ]; then
+            echo "::error::Renderer artifact exceeded its size ceiling. If this growth is intended, raise the ceiling in this workflow and record why in docs/architecture/renderer-build.md."
+            exit 1
+          fi
+
+      - name: Type check
+        run: bun run typecheck
+
+      - name: JS/TS tests
+        run: bun run test
+
+      # Proves the artifact the alpha actually ships still builds end to end,
+      # including the Next standalone output the binary serves.
+      - name: Production web build
+        run: bun run build:browser

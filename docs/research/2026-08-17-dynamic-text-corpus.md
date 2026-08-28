@@ -1,0 +1,129 @@
+# Dynamic-text evidence corpus
+
+**Date:** 2026-08-17
+**Decision served:** whether task 3.2 can commit a small, redistributable, byte-pinned font/text corpus that is sufficient to reject a Unicode-incomplete browser/WASM candidate without selecting that candidate or a realization path.
+**Status:** **proposed corpus design; not yet committable.** No candidate parser, shaper, renderer, or downloaded font was executed in this study. The missing publisher SHA-256 values named below are an explicit acquisition gate, not values inferred from Git blob IDs.
+
+## Executive summary
+
+1. **Confirmed fact:** the repository has one suitable reusable fixture: `packages/scene-renderer/rust/fonts/Inter-Regular.ttf`, 411,640 bytes, SHA-256 `40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82`, with the adjacent SIL OFL 1.1 text. It covers the existing bounded Latin-outline foothold only; architecture documentation explicitly says it supplies neither shaping, fallback, variation, bidi, nor line breaking. [ADR 0020](../architecture/adrs/0020-text-rendering-and-culling.md), [typography status](../architecture/typography.md), [vendored license](../../packages/scene-renderer/rust/fonts/Inter-LICENSE.txt). **Verdict: adopted as a reuse fixture, not as the corpus’s sole font.**
+2. **Confirmed fact:** the mandatory semantic cases require at least distinct Arabic, Hebrew, Indic, CJK, and emoji coverage in addition to Latin. Unicode specifies bidi reordering separately from shaping, mandatory and prohibited line breaks separately from fitting, and emoji sequences as indivisible editing units. [UAX #9](https://www.unicode.org/reports/tr9/), [UAX #14](https://www.unicode.org/reports/tr14/), [UAX #29](https://www.unicode.org/reports/tr29/), [UTS #51](https://www.unicode.org/reports/tr51/). **Verdict: reject a Latin-only candidate as task-3.2 evidence.**
+3. **Confirmed fact:** SIL OFL 1.1 permits embedding, bundling, redistribution and modification provided the license/copyright travel with the font, modified fonts do not use Reserved Font Names without permission, and font software remains under OFL. [official OFL 1.1](https://openfontlicense.org/open-font-license-official-text/). The proposed sources are OFL projects; no GPL/AGPL/MPL/custom-licensed binary is proposed. **Verdict: license family accepted subject to file-by-file license inclusion at acquisition.**
+4. **Confirmed fact / blocker:** official release metadata provides a source SHA-256 only for Noto Sans Arabic’s *release archive* (`1301…54f1`), not for the individual files selected from it; the official Noto Hebrew, Devanagari, CJK and Roboto Flex release assets inspected expose no SHA-256 at all. [Arabic release API](https://api.github.com/repos/notofonts/arabic/releases/tags/NotoSansArabic-v2.013), [Hebrew release API](https://api.github.com/repos/notofonts/hebrew/releases/latest), [Devanagari release API](https://api.github.com/repos/notofonts/devanagari/releases/latest), [CJK release API](https://api.github.com/repos/notofonts/noto-cjk/releases/tags/Sans2.004), [Roboto Flex release API](https://api.github.com/repos/googlefonts/roboto-flex/releases/latest). **Verdict: deferred—do not claim a pinned corpus or check task 3.2 until an approved fetch-and-hash acquisition records every selected file’s SHA-256 and byte size.**
+
+This report therefore defines the smallest *selection* and exact verification contract, but deliberately does not counterfeit missing hashes or sizes. It is a blocker to the binary “exact hashes/total size” criterion under the task’s no-download constraint.
+
+## Frame, plan, and stop rule
+
+| Sub-question | Depth | Result |
+|---|---:|---|
+| What behavior must the corpus distinguish? | 3 | Mandatory case matrix below, based on task 3.2 and Unicode primary sources. |
+| Which repository assets can be reused? | 2 | Only licensed Inter Regular is relevant; no other checked in-project font covers missing scripts. |
+| Which upstream projects supply minimum legal coverage? | 3 | OFL Noto/Roboto family candidates, exact releases/commits/archives identified. |
+| Can every selected binary be SHA-256-pinned now without downloading it? | 2 | No; only Inter and one Arabic archive have a SHA-256 in hand. Blocker recorded. |
+| What may be optional? | 2 | Color/bitmap realization only, with a named unsupported diagnostic; logical emoji behavior stays mandatory. |
+
+Method: source/release/API metadata and normative specifications were read; vendor claims were not treated as benchmark evidence. No source was copied and no font was parsed. Sufficient evidence means every required behavioral branch has an input and implementation-neutral expected relationship, every font source is a primary upstream source, and every unverified identity is explicitly named.
+
+## Mandatory text-case matrix
+
+All strings are UTF-8 shown literally and with escape-sensitive components called out. “Range” means logical text position; the unit is intentionally **not** selected here. No expected glyph ID, advance, pixel value, or line width is asserted—those are engine/font/device-dependent outputs to record in task 3.3.
+
+| ID | Status | Input / metadata | Required relationship (not an engine oracle) | Font intent / rationale |
+|---|---|---|---|---|
+| `latin-features` | Mandatory | `office AVATAR To` ; language `en`; default direction; features default then `liga=0` and `kern=0` where the candidate exposes feature controls | Default result maps the whole logical string; turning an available discretionary/default feature setting on/off may change positioned-glyph/run geometry but must not change logical text or split a scalar into independently guessed glyphs. Record whether the pinned face advertises the requested feature; unsupported feature is not a substitute for scalar-by-scalar layout. | Reused Inter; probes ligature/kerning boundary without hard-coding its glyph IDs. |
+| `latin-combining-nfc-nfd` | Mandatory | `é` and `e\u0301`; then `q\u0307\u0323` | Both inputs preserve authored bytes. Canonically equivalent forms must have equivalent cluster/caret boundaries and visual attachment relationships; no caret/line break falls between base and combining sequence. Normalization policy must be reported, never silently applied. [UAX #15](https://www.unicode.org/reports/tr15/), [UAX #29](https://www.unicode.org/reports/tr29/). | Inter exercises normal Latin mark positioning; exact equality of glyph IDs/bytes is not required. |
+| `emoji-zwj-variation` | Mandatory logical behavior; color/bitmap realization optional | `👩🏽‍💻` (`1F469 1F3FD 200D 1F4BB`), `☕︎` (`2615 FE0E`), `☕️` (`2615 FE0F`), `🇺🇳` | Each valid sequence is one extended grapheme cluster for editing: no caret/delete/mandatory line break inside it. Preserve selectors and ZWJ in logical output. If selected realizer cannot draw its color/bitmap class, report `TEXT_GLYPH_CLASS_UNSUPPORTED:COLOR_OR_BITMAP` and present neither substituted partial sequence nor a false success. [UTS #51 ED-8..ED-17/C2](https://www.unicode.org/reports/tr51/), [UAX #29 GB11–GB13](https://www.unicode.org/reports/tr29/). | Noto Color Emoji is a **secondary optional-realization fixture**, not permission to omit sequence analysis. |
+| `arabic-mixed-bidi` | Mandatory | `abc (العَرَبِيَّة ١٢٣) \u2067RTL\u2069` with declared paragraph directions LTR and RTL | Logical ranges remain in input order; visual order, line membership, and dual caret affinity are recorded. Arabic marks attach to their logical bases after bidi reordering. Explicit isolate controls affect display but are retained as logical text. [UAX #9 §§2–3](https://www.unicode.org/reports/tr9/). | Noto Sans Arabic; forces GSUB/GPOS, marks, Arabic-Indic digits and bidi—not presentation-form substitution. |
+| `hebrew-mixed-bidi` | Mandatory | `abc (שָׁלוֹם 123) \u2066LTR\u2069` under both paragraph directions | Same logical/visual separation as Arabic; paired punctuation and digits must participate in resolved bidi order; Hebrew points stay with their base. [UAX #9](https://www.unicode.org/reports/tr9/). | Noto Sans Hebrew; independent RTL-script coverage prevents treating Arabic as all bidi. |
+| `indic-conjunct` | Mandatory | `क्‍षि` (`0915 094D 200D 0937 093F`) and `क्षि` | Neither sequence is scalar-by-scalar positioned; vowel/virama/conjunct relations are resolved as a shaped run. Extended grapheme and recorded cluster boundaries must never put a caret inside the required conjoining sequence without a declared profile. [UAX #29 GB9c and Indic discussion](https://www.unicode.org/reports/tr29/), [UAX #14](https://www.unicode.org/reports/tr14/). | Noto Sans Devanagari; representative Indic shaping, not a claim for every Indic script. |
+| `cjk-breaks` | Mandatory | `漢字かな交じり文、ABC。` at wide and narrow inline constraints | CJK text resolves with legal opportunities between ideographs subject to punctuation rules; no break before closing punctuation; the narrow result reflows only through permitted opportunities. Actual optimal break choice is not asserted because UAX #14 leaves fitting/choice to higher-level layout. [UAX #14 §§1, 3.1, 4](https://www.unicode.org/reports/tr14/). | Noto Sans CJK SC (one region-specific face) is sufficient for representative CJK, not pan-CJK fidelity. |
+| `whitespace-break-control` | Mandatory | `A B\u00A0C\u2060D\u200BE\tF\r\nG\u2028H` at narrow constraint | CRLF is one mandatory break; LF and LS force breaks; ZWSP supplies an opportunity; NBSP and WJ prohibit their adjacent breaks; TAB remains represented, not dropped. The exact line-fitting algorithm is recorded, not assumed. [UAX #14 classes BK/CR/LF/WJ/ZW/GL/SP](https://www.unicode.org/reports/tr14/). | Uses Inter; behavior comes from Unicode data, not a special font. |
+| `missing-glyph` | Mandatory | One assigned scalar intentionally absent from each primary face (to be selected only after coverage inspection), plus an ordered fallback list with and without a covering fallback | Missing primary coverage follows declared fallback and records per-range resolved face identity. With no covering face, emit `TEXT_GLYPH_MISSING` and preserve logical text/last valid result; never silently skip as the current foothold does. [dynamic-text spec](../../openspec/changes/dynamic-text-capability/specs/resolution/dynamic-text-layout/spec.md). | Must not use an unassigned scalar as the only case; its behavior is version-sensitive. Exact scalar remains acquisition-time metadata. |
+| `variations` | Mandatory | Latin string `Hamburgefons` in pinned variable font at each face default, min, max, and one interior coordinate for every exposed axis | Inputs include font byte identity and explicit axis tag/value. Values are clamped to the face range or diagnosed; changing coordinates may change geometry but not logical ranges. A variable face must contain `fvar`; exact axis set/ranges are recorded only after byte inspection. [OpenType `fvar`](https://learn.microsoft.com/en-us/typography/opentype/spec/fvar). | Roboto Flex isolates variable-font handling from script fonts. |
+
+### Metadata required on every fixture record
+
+Record: UTF-8 bytes; Unicode/emoji data version; normalization policy (`preserve`, `NFC`, or explicitly named profile); declared language, paragraph direction and writing mode; inline constraint; feature and variation map; ordered face identities; expected permitted/prohibited break positions; logical ranges; expected extended-grapheme boundaries; and whether the color/bitmap exclusion applies. The Unicode standards permit normalization and segmentation profiles, but require them to be explicit. [UAX #15](https://www.unicode.org/reports/tr15/), [UAX #29 conformance](https://www.unicode.org/reports/tr29/).
+
+## Minimal proposed font selection
+
+“Archive bytes” are only the source download size, **not** the eventual corpus size. “File bytes/SHA-256” must be captured from extracted files before any parser is run. No archive is to be committed as a substitute for the selected font binary and its license text.
+
+| Role | Exact upstream pin and proposed extracted file | License / redistribution | Identity and size evidence | Coverage / table expectation | Verdict |
+|---|---|---|---|---|---|
+| Latin + marks + legacy compatibility | Existing `packages/scene-renderer/rust/fonts/Inter-Regular.ttf`; repository baseline `238968a8ca9459dc24496d3cf0e364aca6e9ae62` | SIL OFL 1.1 in adjacent file; preserve notice/license when redistributed. | **Confirmed:** 411,640 B; SHA-256 `40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82`. | Latin static face; no variation assertion. | **Adopted/reused.** |
+| Arabic | Noto Sans Arabic `NotoSansArabic-v2.013`, commit `1b2b7e5c6ce3ab4d50681c854892325530084c35`; select the release’s variable TTF only after its exact archive path is enumerated during acquisition. [release](https://github.com/notofonts/arabic/releases/tag/NotoSansArabic-v2.013) | OFL 1.1 (Noto license source). [Noto license](https://github.com/notofonts/noto-fonts/blob/main/LICENSE) | **Confirmed archive:** 18,777,381 B; SHA-256 `1301aceaea84c501cf2e6dcfb3182e2328c8eae5725817fcb239672bda7154f1`. **Unknown:** individual file name, bytes, SHA-256 until extract/hash. | Arabic/Latin-facing family; inspect `cmap`, GSUB/GPOS, GDEF, `fvar` rather than assuming tables. | **Deferred acquisition gate.** |
+| Hebrew | Noto Sans Hebrew `NotoSansHebrew-v3.001`, commit `036f3206f67caac235cf8546a7751d3440771a7e`. [release](https://github.com/notofonts/hebrew/releases/tag/NotoSansHebrew-v3.001) | OFL 1.1. | **Confirmed archive:** 3,734,185 B. **Unknown:** publisher and extracted-file SHA-256/size. | Hebrew + points; inspect coverage/layout tables after acquisition. | **Deferred acquisition gate.** |
+| Indic | Noto Sans Devanagari `NotoSansDevanagari-v2.006`, commit `bb8d2566a1708ef2dcc6396ee2eb261a18967f76`. [release](https://github.com/notofonts/devanagari/releases/tag/NotoSansDevanagari-v2.006) | OFL 1.1. | **Confirmed archive:** 19,729,713 B. **Unknown:** publisher and extracted-file SHA-256/size. | Devanagari conjunct/mark fixture; inspect `cmap`, GSUB/GPOS/GDEF. | **Deferred acquisition gate.** |
+| Representative CJK | Noto Sans CJK `Sans2.004`; select one SC static OTF from official `08_NotoSansCJKsc.zip`, not the full pan-CJK collection. [release API](https://api.github.com/repos/notofonts/noto-cjk/releases/tags/Sans2.004) | OFL 1.1. | **Confirmed source archive:** 94,523,633 B. **Unknown:** archive SHA-256 and extracted face SHA-256/size. | CJK ideographs/punctuation; CFF/CFF2 versus TrueType parser support is an explicit later candidate constraint. | **Deferred acquisition gate.** |
+| Variable axes | Roboto Flex release `3.200`; select its production variable TTF after archive enumeration. [release](https://github.com/googlefonts/roboto-flex/releases/tag/3.200), [OFL](https://github.com/googlefonts/roboto-flex/blob/main/OFL.txt) | OFL 1.1. Modified/subset font needs OFL notice and Reserved Font Name review. | **Confirmed source archive:** 6,281,098 B. **Unknown:** archive and extracted-face SHA-256/size. | `fvar` required for the mandatory case; exact registered/custom axis list must be recorded from the acquired bytes. | **Deferred acquisition gate.** |
+| Emoji color/bitmap | Noto Emoji `v2.048`, signed commit `b3e3051a088047d19fd4d49b1c3ac42fb8c3aaf8`; candidate `fonts/NotoColorEmoji.ttf`. [release](https://github.com/googlefonts/noto-emoji/releases/tag/v2.048), [commit](https://github.com/googlefonts/noto-emoji/commit/b3e3051a088047d19fd4d49b1c3ac42fb8c3aaf8) | OFL 1.1 (repository license must be captured with exact selected file). | **Unknown:** byte size/SHA-256; Git blob SHA is not SHA-256 and must not be substituted. | Color/bitmap emoji class; exact tables must be inspected after acquisition. | **Optional realization fixture; logical sequence behavior mandatory.** |
+
+### Minimum file set and size verdict
+
+The selected set is **six additional font files plus the reusable Inter file and their license texts**: Inter Regular; one Noto Arabic face; one Noto Hebrew face; one Noto Devanagari face; one Noto Sans CJK SC face; one Roboto Flex variable face; and optional Noto Color Emoji. This is minimal by required script/class, not a fallback policy. **Exact total extracted bytes: unknown and deliberately not estimated.** The five non-emoji source archives total 143,046,010 B, but that is neither the committed file total nor a useful runtime-size claim. The acquisition manifest is the sole source of the total.
+
+## Color/bitmap capability exclusion
+
+The sole allowed exclusion is `TEXT_GLYPH_CLASS_UNSUPPORTED:COLOR_OR_BITMAP` for realization of a supported logical emoji range that requires color/bitmap glyph handling. It does **not** excuse emoji segmentation, ZWJ/VS preservation, bidi, line-break, fallback identity, or a successful-but-wrong partial rendering. UTS #51 defines emoji sequences as single grapheme clusters and requires a conformance claim to name capabilities/unsupported sets; the present system claims neither color-emoji support nor UTS #51 conformance yet. [UTS #51](https://www.unicode.org/reports/tr51/). **Verdict: defer color/bitmap realization; retain it as a named diagnostic-only exclusion.**
+
+## Missing-glyph and fallback strategy
+
+**Proposed, high-confidence inference from the existing OpenSpec contract:** fixture execution supplies an explicit ordered face list made exclusively from corpus identities. For each logical range: use the first face that covers it; record that face’s byte identity; otherwise emit `TEXT_GLYPH_MISSING`, preserve authored text and the prior valid resolved/presented result, and do not silently omit the scalar or fall through to a platform/system font. This directly operationalizes the required explicit fallback/diagnostic behavior. [dynamic-text layout spec](../../openspec/changes/dynamic-text-capability/specs/resolution/dynamic-text-layout/spec.md), [CSS Font Loading (binary data, worker font sources)](https://www.w3.org/TR/css-font-loading/). **Verdict: adapted; exact diagnostic vocabulary requires task 3.3/4.1 approval.**
+
+## Browser/Rust constraints
+
+* **Confirmed fact:** CSS Font Loading permits `FontFace` construction from binary data in Window and Worker; a Worker’s initial font source is empty. This does not prove any candidate’s WASM font registration or rendering behavior. [CSS Font Loading](https://www.w3.org/TR/css-font-loading/). **Verdict: do not rely on installed/system fonts.**
+* **Confirmed fact:** OpenType variation requires an `fvar` table; axis values have face-defined min/default/max and out-of-range values are clamped by the spec. [OpenType `fvar`](https://learn.microsoft.com/en-us/typography/opentype/spec/fvar). **Verdict: variation fixture is mandatory but its axes are font-pinned outputs, not a preselected UI contract.**
+* **Confirmed fact:** the Noto CJK release warns that Windows 10/11 has a CFF2-variable-font corruption issue and recommends TTF on those systems. The proposed CJK fixture avoids treating variable CFF2 as portable evidence; actual browser/Rust parser support is still unknown until task 3.4/3.5. [Noto CJK release](https://github.com/notofonts/noto-cjk/releases/tag/Sans2.004). **Verdict: select a static SC face, then qualify it.**
+* **Confirmed fact:** current ecosystem research identifies color/bitmap support as representation- and version-dependent, and explicitly defers browser qualification; it selects no engine. [ecosystem study](2026-08-16-rust-webgpu-text-ecosystem.md). **Verdict: no engine or realizer selected.**
+
+## Acquisition, provenance, and reproduction (future approved step)
+
+This is a **reproduction recipe, not a command executed in this study**. It must run only after task 3.1’s containment/security approval permits the benign corpus acquisition/inspection workflow and before any candidate parser is invoked.
+
+1. Download only the exact release URLs in the table into a new outside-repository staging directory; save response URL, HTTP metadata, release tag, commit and archive byte count.
+2. Verify the Arabic archive SHA-256 against the upstream API value; for sources without upstream SHA-256, record that absence as provenance, then calculate the local archive hash. Do not represent a Git SHA-1/blob ID as SHA-256.
+3. Enumerate archive paths without font parsing; select the documented single face; extract only it and its upstream `OFL.txt`/copyright material.
+4. Calculate `shasum -a 256` and `wc -c` for every extracted font and license. Write a canonical manifest containing source URL, tag/commit, archive and extracted hashes/sizes, path, and license-text hash. The manifest fixes the total corpus size.
+5. Independently review the manifest against the extraction list, license text and the matrix. Reject missing hash, unknown license, wrong path, unexpected extra binary, missing license notice, or a changed upstream asset.
+6. Only then commit the binaries, licenses, manifest and text fixtures; only a separately approved candidate/harness step may parse them.
+
+Subsetting/modification is **not** part of this corpus. If it becomes necessary, treat it as a modified OFL font: retain OFL/copyright, review Reserved Font Names, preserve the modified font under OFL, and create fresh byte identities. [OFL 1.1 conditions](https://openfontlicense.org/open-font-license-official-text/).
+
+## Gaps, unknowns, and compliance review
+
+| Item | Status / consequence |
+|---|---|
+| Individual upstream file paths, SHA-256 and extracted sizes for five mandatory new faces and optional emoji | **Unknown; blocking.** The present contract forbids downloading binaries, and checked release metadata omits those hashes. Do not mark 3.2 complete. |
+| Exact total size | **Unknown; blocking.** It follows only from the verified extracted manifest. |
+| Selected faces’ actual coverage and OpenType tables | **Unknown; required later inspection.** File/family names are not proof of `cmap`, GSUB/GPOS/GDEF, color tables, or `fvar`. |
+| Browser/WASM parser, shaper, color/bitmap and CFF support | **Unknown; deliberately deferred to candidate tasks 3.4/3.5.** |
+| Unicode data version used by a candidate | **Unknown.** Fixture records must pin it; do not mix latest Unicode 17 data with a candidate’s undisclosed older data and call a mismatch a font failure. |
+| OFL Reserved Font Names in future subset/format conversion | **Compliance review required.** No subsetting/modification is authorized by this report. |
+| Emoji binary license/file provenance | **Compliance review required at acquisition.** The candidate source is official and pinned, but byte hash/license copy are absent here. |
+
+## Recommendations
+
+1. **Deferred — high confidence:** use the case matrix and the seven-file selection as task-3.2 acceptance design, but leave task 3.2 unchecked until a security-approved acquisition produces the required per-file SHA-256, sizes, paths, licenses and total. Rationale: inventing identity would defeat the corpus’s purpose.
+2. **Adopted — confirmed fact:** retain existing pinned Inter Regular for Latin/combining/whitespace and its current contour fixture; do not duplicate it.
+3. **Adapted — high confidence:** make color/bitmap an explicitly optional realization class only under `TEXT_GLYPH_CLASS_UNSUPPORTED:COLOR_OR_BITMAP`; keep emoji ZWJ/variation segmentation mandatory.
+4. **Rejected — confirmed fact:** system fonts, generic CSS families, archive-only identity, unpinned Google Fonts CSS, and a Latin-only corpus. None supplies deterministic byte identity for all required cases.
+
+## Audit trail and sufficiency check
+
+**Sources checked:** repository task/design/spec/ADR/typography and vendored Inter license; official Unicode UAX #9/#14/#15/#29 and UTS #51; official OFL; W3C CSS Font Loading; Microsoft OpenType `fvar`; official GitHub releases/APIs for the proposed families; the accepted Crafty ecosystem study. Primary specifications and official upstream release metadata were preferred. GitHub release size/digest metadata is treated as publisher metadata, not as a performance claim.
+
+**Curiosity pass result:** release asset hashing was the only thread whose value exceeded its cost. It established a material contradiction: the task demands exact file hashes, while most checked upstream releases do not publish them and the task forbids this research pass from downloading binaries to calculate them. No further browsing can turn absent source hashes into verified values.
+
+**Stop check:** all required behavioral sub-questions are covered; single-source claims (individual upstream release content) are labelled and URL-cited; no engine or parser was selected/executed; unknowns are named. Further verification **is required only for the acquisition manifest and candidate execution**, which are outside this task delta. Saturation reached for desk research. **Blocker: exact binary identity/total size cannot be completed without the explicitly forbidden download-and-hash step.**
+
+## Promising leads not pursued
+
+| Thread | Why off-frame | Value / cost | Authorization plan |
+|---|---|---|---|
+| Acquire and hash exact font files | Forbidden by this task; becomes corpus commit work. | High / medium | Run the staged acquisition recipe, commit manifest/licenses only after review. |
+| Inspect font tables/coverage | Would parse candidate font bytes, explicitly forbidden. | High / medium | Use the approved harness after task 3.1 and record table/coverage metadata. |
+| Execute Parley/cosmic/browser corpus | Candidate execution is task 3.4/3.5. | High / high | Run both against this identical matrix after containment approval. |
+| Broaden to Thai, Korean, vertical writing, COLRv1 and bitmap formats | Valuable but beyond task 3.2’s representative mandatory list. | Medium / high | Add a separately approved expansion after one candidate passes the base corpus. |

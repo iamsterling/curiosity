@@ -1,0 +1,135 @@
+{
+  "version": "2.14",
+  "children": [
+    {
+      "type": "frame",
+      "id": "lI3YO",
+      "x": 0,
+      "y": 0,
+      "name": "Profile Card",
+      "clip": true,
+      "width": 360,
+      "fill": "$card-bg",
+      "cornerRadius": 12,
+      "stroke": "$card-border",
+      "strokeWidth": 1,
+      "gap": 16,
+      "padding": [
+        20,
+        24
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "BsX56",
+          "name": "Avatar",
+          "width": 56,
+          "height": 56,
+          "fill": "$avatar-bg",
+          "cornerRadius": 28,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "BEK0O",
+              "name": "Initials",
+              "fill": "$accent",
+              "content": "AK",
+              "fontFamily": "Inter",
+              "fontSize": 20,
+              "fontWeight": "600"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "ZmcMW",
+          "name": "Info",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 6,
+          "children": [
+            {
+              "type": "text",
+              "id": "pqAwi",
+              "name": "Name",
+              "fill": "$text-primary",
+              "content": "Alex Kim",
+              "fontFamily": "Inter",
+              "fontSize": 16,
+              "fontWeight": "600"
+            },
+            {
+              "type": "frame",
+              "id": "EGvNH",
+              "name": "Role Badge",
+              "fill": "$accent-light",
+              "cornerRadius": 10,
+              "padding": [
+                2,
+                10
+              ],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "ZrULM",
+                  "name": "Role",
+                  "fill": "$accent",
+                  "content": "Product Designer",
+                  "fontFamily": "Inter",
+                  "fontSize": 12,
+                  "fontWeight": "500"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "ggdyF",
+              "name": "Bio",
+              "fill": "$text-secondary",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Crafting intuitive interfaces with a focus on accessibility and user delight.",
+              "lineHeight": 1.45,
+              "fontFamily": "Inter",
+              "fontSize": 13,
+              "fontWeight": "normal"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "card-bg": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "card-border": {
+      "type": "color",
+      "value": "#E5E7EB"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#111827"
+    },
+    "text-secondary": {
+      "type": "color",
+      "value": "#6B7280"
+    },
+    "accent": {
+      "type": "color",
+      "value": "#4F46E5"
+    },
+    "accent-light": {
+      "type": "color",
+      "value": "#EEF2FF"
+    },
+    "avatar-bg": {
+      "type": "color",
+      "value": "#C7D2FE"
+    }
+  },
+  "fileToken": "338860ee-468c-4d8f-98c0-87784112ca1a"
+}

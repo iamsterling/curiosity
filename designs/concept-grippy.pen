@@ -1,0 +1,816 @@
+{
+  "version": "2.14",
+  "children": [
+    {
+      "type": "frame",
+      "id": "UpgbS",
+      "x": 0,
+      "y": 0,
+      "name": "Logo Exploration",
+      "clip": true,
+      "width": 1600,
+      "height": 1100,
+      "fill": "$ink",
+      "layout": "none",
+      "children": [
+        {
+          "type": "text",
+          "id": "SwFox",
+          "x": 80,
+          "y": 52,
+          "name": "Sheet Title",
+          "fill": "$muted",
+          "content": "CRAFTY — LOGO EXPLORATION",
+          "fontFamily": "JetBrains Mono",
+          "fontSize": 11,
+          "fontWeight": "500",
+          "letterSpacing": 0.22
+        },
+        {
+          "type": "rectangle",
+          "id": "GYO1Q",
+          "x": 80,
+          "y": 80,
+          "name": "Title Divider",
+          "fill": "$hairline",
+          "width": 1440,
+          "height": 1
+        },
+        {
+          "type": "text",
+          "id": "VVu64",
+          "x": 80,
+          "y": 120,
+          "name": "Label 01",
+          "fill": "$muted",
+          "content": "01  MARK",
+          "fontFamily": "JetBrains Mono",
+          "fontSize": 10,
+          "letterSpacing": 0.22
+        },
+        {
+          "type": "text",
+          "id": "QYIF1",
+          "x": 860,
+          "y": 120,
+          "name": "Label 02",
+          "fill": "$muted",
+          "content": "02  LOCKUP",
+          "fontFamily": "JetBrains Mono",
+          "fontSize": 10,
+          "letterSpacing": 0.22
+        },
+        {
+          "type": "text",
+          "id": "LRF9k",
+          "x": 80,
+          "y": 640,
+          "name": "Label 03",
+          "fill": "$muted",
+          "content": "03  APP ICON",
+          "fontFamily": "JetBrains Mono",
+          "fontSize": 10,
+          "letterSpacing": 0.22
+        },
+        {
+          "type": "text",
+          "id": "x51VrK",
+          "x": 860,
+          "y": 640,
+          "name": "Label 04",
+          "fill": "$muted",
+          "content": "04  MINIMUM SIZE",
+          "fontFamily": "JetBrains Mono",
+          "fontSize": 10,
+          "letterSpacing": 0.22
+        },
+        {
+          "type": "frame",
+          "id": "yv8ku",
+          "x": 200,
+          "y": 230,
+          "name": "Mark Large",
+          "width": 320,
+          "height": 320,
+          "layout": "none",
+          "children": [
+            {
+              "type": "rectangle",
+              "id": "BJDiG",
+              "x": 20,
+              "y": 20,
+              "name": "Bounding Box",
+              "width": 280,
+              "height": 280,
+              "stroke": "$hairline",
+              "strokeWidth": 2
+            },
+            {
+              "type": "ellipse",
+              "id": "Zdc0T",
+              "x": 11,
+              "y": 11,
+              "name": "Corner TL",
+              "fill": "$amber",
+              "width": 18,
+              "height": 18,
+              "stroke": "$text",
+              "strokeWidth": 1.5
+            },
+            {
+              "type": "ellipse",
+              "id": "zvHIa",
+              "x": 291,
+              "y": 11,
+              "name": "Corner TR",
+              "fill": "$amber",
+              "width": 18,
+              "height": 18,
+              "stroke": "$text",
+              "strokeWidth": 1.5
+            },
+            {
+              "type": "ellipse",
+              "id": "scnFx",
+              "x": 11,
+              "y": 291,
+              "name": "Corner BL",
+              "fill": "$amber",
+              "width": 18,
+              "height": 18,
+              "stroke": "$text",
+              "strokeWidth": 1.5
+            },
+            {
+              "type": "ellipse",
+              "id": "PyGAF",
+              "x": 291,
+              "y": 291,
+              "name": "Corner BR",
+              "fill": "$amber",
+              "width": 18,
+              "height": 18,
+              "stroke": "$text",
+              "strokeWidth": 1.5
+            },
+            {
+              "type": "ellipse",
+              "id": "EPI2w",
+              "x": 154,
+              "y": 14,
+              "name": "Edge T",
+              "fill": "$text",
+              "width": 12,
+              "height": 12,
+              "stroke": "$ink",
+              "strokeWidth": 1.5
+            },
+            {
+              "type": "ellipse",
+              "id": "Utp0d",
+              "x": 294,
+              "y": 154,
+              "name": "Edge R",
+              "fill": "$text",
+              "width": 12,
+              "height": 12,
+              "stroke": "$ink",
+              "strokeWidth": 1.5
+            },
+            {
+              "type": "ellipse",
+              "id": "H0q23",
+              "x": 154,
+              "y": 294,
+              "name": "Edge B",
+              "fill": "$text",
+              "width": 12,
+              "height": 12,
+              "stroke": "$ink",
+              "strokeWidth": 1.5
+            },
+            {
+              "type": "ellipse",
+              "id": "nZ2Tq",
+              "x": 14,
+              "y": 154,
+              "name": "Edge L",
+              "fill": "$text",
+              "width": 12,
+              "height": 12,
+              "stroke": "$ink",
+              "strokeWidth": 1.5
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "wcVDt",
+          "x": 250,
+          "y": 570,
+          "name": "Mark Caption",
+          "fill": "$muted",
+          "content": "BOUNDING-BOX MARK  ·  SELECTION HANDLES",
+          "fontFamily": "JetBrains Mono",
+          "fontSize": 10,
+          "letterSpacing": 0.22
+        },
+        {
+          "type": "rectangle",
+          "id": "vIze9",
+          "x": 820,
+          "y": 100,
+          "name": "Vertical Divider",
+          "fill": "$hairline",
+          "width": 1,
+          "height": 960
+        },
+        {
+          "type": "rectangle",
+          "id": "h2qNMX",
+          "x": 80,
+          "y": 620,
+          "name": "Horizontal Divider",
+          "fill": "$hairline",
+          "width": 1440,
+          "height": 1
+        },
+        {
+          "type": "frame",
+          "id": "IMH2B",
+          "x": 940,
+          "y": 330,
+          "name": "Lockup",
+          "gap": 20,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "g4SJ4C",
+              "name": "Lockup Mark",
+              "width": 46,
+              "height": 46,
+              "layout": "none",
+              "children": [
+                {
+                  "type": "rectangle",
+                  "id": "H65xf",
+                  "x": 5,
+                  "y": 5,
+                  "name": "LM Box",
+                  "width": 36,
+                  "height": 36,
+                  "stroke": "$hairline",
+                  "strokeWidth": 1.5
+                },
+                {
+                  "type": "ellipse",
+                  "id": "CFkC4",
+                  "x": 1.5,
+                  "y": 1.5,
+                  "name": "LM C",
+                  "fill": "$amber",
+                  "width": 7,
+                  "height": 7
+                },
+                {
+                  "type": "ellipse",
+                  "id": "jJFHu",
+                  "x": 37.5,
+                  "y": 1.5,
+                  "name": "LM C",
+                  "fill": "$amber",
+                  "width": 7,
+                  "height": 7
+                },
+                {
+                  "type": "ellipse",
+                  "id": "woqw5",
+                  "x": 1.5,
+                  "y": 37.5,
+                  "name": "LM C",
+                  "fill": "$amber",
+                  "width": 7,
+                  "height": 7
+                },
+                {
+                  "type": "ellipse",
+                  "id": "fG1Iu",
+                  "x": 37.5,
+                  "y": 37.5,
+                  "name": "LM C",
+                  "fill": "$amber",
+                  "width": 7,
+                  "height": 7
+                },
+                {
+                  "type": "ellipse",
+                  "id": "y3bD0S",
+                  "x": 21,
+                  "y": 3,
+                  "name": "LM E",
+                  "fill": "$text",
+                  "width": 4,
+                  "height": 4
+                },
+                {
+                  "type": "ellipse",
+                  "id": "tcuMl",
+                  "x": 39,
+                  "y": 21,
+                  "name": "LM E",
+                  "fill": "$text",
+                  "width": 4,
+                  "height": 4
+                },
+                {
+                  "type": "ellipse",
+                  "id": "g9pBNr",
+                  "x": 21,
+                  "y": 39,
+                  "name": "LM E",
+                  "fill": "$text",
+                  "width": 4,
+                  "height": 4
+                },
+                {
+                  "type": "ellipse",
+                  "id": "F7Qy1z",
+                  "x": 3,
+                  "y": 21,
+                  "name": "LM E",
+                  "fill": "$text",
+                  "width": 4,
+                  "height": 4
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "K2YLzX",
+              "name": "Wordmark",
+              "fill": "$text",
+              "content": "Crafty",
+              "fontFamily": "Inter",
+              "fontSize": 38,
+              "fontWeight": "600",
+              "letterSpacing": -0.02
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "r2sIpX",
+          "x": 940,
+          "y": 395,
+          "name": "Lockup Ann",
+          "fill": "$muted",
+          "content": "INTER 600  ·  −0.02EM TRACKING",
+          "fontFamily": "JetBrains Mono",
+          "fontSize": 9,
+          "letterSpacing": 0.22
+        },
+        {
+          "type": "frame",
+          "id": "PfViQ",
+          "x": 260,
+          "y": 730,
+          "name": "App Icon",
+          "clip": true,
+          "width": 128,
+          "height": 128,
+          "fill": "$panel",
+          "cornerRadius": 28,
+          "layout": "none",
+          "children": [
+            {
+              "type": "rectangle",
+              "id": "n93us",
+              "x": 30,
+              "y": 30,
+              "name": "IM Box",
+              "width": 68,
+              "height": 68,
+              "stroke": "$hairline",
+              "strokeWidth": 1.5
+            },
+            {
+              "type": "ellipse",
+              "id": "U8Ssm",
+              "x": 25,
+              "y": 25,
+              "name": "IM C",
+              "fill": "$amber",
+              "width": 10,
+              "height": 10,
+              "stroke": "$text",
+              "strokeWidth": 1
+            },
+            {
+              "type": "ellipse",
+              "id": "w7T3w",
+              "x": 93,
+              "y": 25,
+              "name": "IM C",
+              "fill": "$amber",
+              "width": 10,
+              "height": 10,
+              "stroke": "$text",
+              "strokeWidth": 1
+            },
+            {
+              "type": "ellipse",
+              "id": "h1Ad9V",
+              "x": 25,
+              "y": 93,
+              "name": "IM C",
+              "fill": "$amber",
+              "width": 10,
+              "height": 10,
+              "stroke": "$text",
+              "strokeWidth": 1
+            },
+            {
+              "type": "ellipse",
+              "id": "f4hrTv",
+              "x": 93,
+              "y": 93,
+              "name": "IM C",
+              "fill": "$amber",
+              "width": 10,
+              "height": 10,
+              "stroke": "$text",
+              "strokeWidth": 1
+            },
+            {
+              "type": "ellipse",
+              "id": "zcCB5",
+              "x": 61,
+              "y": 27,
+              "name": "IM E",
+              "fill": "$text",
+              "width": 6,
+              "height": 6,
+              "stroke": "$ink",
+              "strokeWidth": 1
+            },
+            {
+              "type": "ellipse",
+              "id": "HO4aX",
+              "x": 95,
+              "y": 61,
+              "name": "IM E",
+              "fill": "$text",
+              "width": 6,
+              "height": 6,
+              "stroke": "$ink",
+              "strokeWidth": 1
+            },
+            {
+              "type": "ellipse",
+              "id": "o1LrOW",
+              "x": 61,
+              "y": 95,
+              "name": "IM E",
+              "fill": "$text",
+              "width": 6,
+              "height": 6,
+              "stroke": "$ink",
+              "strokeWidth": 1
+            },
+            {
+              "type": "ellipse",
+              "id": "UIOxn",
+              "x": 27,
+              "y": 61,
+              "name": "IM E",
+              "fill": "$text",
+              "width": 6,
+              "height": 6,
+              "stroke": "$ink",
+              "strokeWidth": 1
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "I47t4g",
+          "x": 260,
+          "y": 874,
+          "name": "Icon Ann",
+          "fill": "$muted",
+          "content": "128 × 128  ·  28PX CORNER RADIUS",
+          "fontFamily": "JetBrains Mono",
+          "fontSize": 9,
+          "letterSpacing": 0.22
+        },
+        {
+          "type": "frame",
+          "id": "cD2Lw",
+          "x": 920,
+          "y": 740,
+          "name": "Mark 24",
+          "width": 24,
+          "height": 24,
+          "layout": "none",
+          "children": [
+            {
+              "type": "rectangle",
+              "id": "t5pSa",
+              "x": 3,
+              "y": 3,
+              "name": "B24",
+              "width": 18,
+              "height": 18,
+              "stroke": "$hairline",
+              "strokeWidth": 1
+            },
+            {
+              "type": "ellipse",
+              "id": "h03b4F",
+              "x": 0,
+              "y": 0,
+              "name": "D24",
+              "fill": "$amber",
+              "width": 6,
+              "height": 6
+            },
+            {
+              "type": "ellipse",
+              "id": "mwpuy",
+              "x": 18,
+              "y": 0,
+              "name": "D24",
+              "fill": "$amber",
+              "width": 6,
+              "height": 6
+            },
+            {
+              "type": "ellipse",
+              "id": "lZQmB",
+              "x": 0,
+              "y": 18,
+              "name": "D24",
+              "fill": "$amber",
+              "width": 6,
+              "height": 6
+            },
+            {
+              "type": "ellipse",
+              "id": "KIKU1",
+              "x": 18,
+              "y": 18,
+              "name": "D24",
+              "fill": "$amber",
+              "width": 6,
+              "height": 6
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "Kj3ES",
+          "x": 954,
+          "y": 748,
+          "name": "Ann 24",
+          "fill": "$muted",
+          "content": "24PX",
+          "fontFamily": "JetBrains Mono",
+          "fontSize": 9,
+          "letterSpacing": 0.22
+        },
+        {
+          "type": "frame",
+          "id": "VUAFh",
+          "x": 1040,
+          "y": 744,
+          "name": "Mark 16",
+          "width": 16,
+          "height": 16,
+          "layout": "none",
+          "children": [
+            {
+              "type": "ellipse",
+              "id": "O4LjvD",
+              "x": 0,
+              "y": 0,
+              "name": "D16",
+              "fill": "$amber",
+              "width": 4,
+              "height": 4
+            },
+            {
+              "type": "ellipse",
+              "id": "hm9mM",
+              "x": 12,
+              "y": 0,
+              "name": "D16",
+              "fill": "$amber",
+              "width": 4,
+              "height": 4
+            },
+            {
+              "type": "ellipse",
+              "id": "psxyG",
+              "x": 0,
+              "y": 12,
+              "name": "D16",
+              "fill": "$amber",
+              "width": 4,
+              "height": 4
+            },
+            {
+              "type": "ellipse",
+              "id": "h8ac3",
+              "x": 12,
+              "y": 12,
+              "name": "D16",
+              "fill": "$amber",
+              "width": 4,
+              "height": 4
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "ryfFj",
+          "x": 1066,
+          "y": 748,
+          "name": "Ann 16",
+          "fill": "$muted",
+          "content": "16PX",
+          "fontFamily": "JetBrains Mono",
+          "fontSize": 9,
+          "letterSpacing": 0.22
+        },
+        {
+          "type": "frame",
+          "id": "EfHf7",
+          "x": 900,
+          "y": 820,
+          "name": "On Light",
+          "fill": "#efede4",
+          "cornerRadius": 6,
+          "gap": 32,
+          "padding": [
+            16,
+            24
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "AdDvc",
+              "name": "Mark 24 Light",
+              "width": 24,
+              "height": 24,
+              "layout": "none",
+              "children": [
+                {
+                  "type": "rectangle",
+                  "id": "iPMig",
+                  "x": 3,
+                  "y": 3,
+                  "name": "B24L",
+                  "width": 18,
+                  "height": 18,
+                  "stroke": "$ink",
+                  "strokeWidth": 1
+                },
+                {
+                  "type": "ellipse",
+                  "id": "OS0uE",
+                  "x": 0,
+                  "y": 0,
+                  "name": "D24L",
+                  "fill": "$amber",
+                  "width": 6,
+                  "height": 6
+                },
+                {
+                  "type": "ellipse",
+                  "id": "IfoG6",
+                  "x": 18,
+                  "y": 0,
+                  "name": "D24L",
+                  "fill": "$amber",
+                  "width": 6,
+                  "height": 6
+                },
+                {
+                  "type": "ellipse",
+                  "id": "OitOI",
+                  "x": 0,
+                  "y": 18,
+                  "name": "D24L",
+                  "fill": "$amber",
+                  "width": 6,
+                  "height": 6
+                },
+                {
+                  "type": "ellipse",
+                  "id": "ZeFJL",
+                  "x": 18,
+                  "y": 18,
+                  "name": "D24L",
+                  "fill": "$amber",
+                  "width": 6,
+                  "height": 6
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "HBdv5",
+              "name": "Mark 16 Light",
+              "width": 16,
+              "height": 16,
+              "layout": "none",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "DghII",
+                  "x": 0,
+                  "y": 0,
+                  "name": "D16L",
+                  "fill": "$amber",
+                  "width": 4,
+                  "height": 4
+                },
+                {
+                  "type": "ellipse",
+                  "id": "Nb6YI",
+                  "x": 12,
+                  "y": 0,
+                  "name": "D16L",
+                  "fill": "$amber",
+                  "width": 4,
+                  "height": 4
+                },
+                {
+                  "type": "ellipse",
+                  "id": "tYqrV",
+                  "x": 0,
+                  "y": 12,
+                  "name": "D16L",
+                  "fill": "$amber",
+                  "width": 4,
+                  "height": 4
+                },
+                {
+                  "type": "ellipse",
+                  "id": "Ms6fG",
+                  "x": 12,
+                  "y": 12,
+                  "name": "D16L",
+                  "fill": "$amber",
+                  "width": 4,
+                  "height": 4
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "rgqwo",
+          "x": 900,
+          "y": 876,
+          "name": "Ann Light",
+          "fill": "$muted",
+          "content": "ON LIGHT BACKGROUND",
+          "fontFamily": "JetBrains Mono",
+          "fontSize": 9,
+          "letterSpacing": 0.22
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "amber": {
+      "type": "color",
+      "value": "#d9a441"
+    },
+    "ink": {
+      "type": "color",
+      "value": "#0c0b09"
+    },
+    "panel": {
+      "type": "color",
+      "value": "#16150f"
+    },
+    "hairline": {
+      "type": "color",
+      "value": "#2b2921"
+    },
+    "text": {
+      "type": "color",
+      "value": "#efede4"
+    },
+    "muted": {
+      "type": "color",
+      "value": "#9a9589"
+    }
+  },
+  "fileToken": "8f4bd47f-5a8e-4960-92e2-061bacb5c92d"
+}

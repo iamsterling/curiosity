@@ -1,0 +1,74 @@
+schema: spec-driven
+
+context: |
+  Crafty is a professional interface-design environment: an infinite canvas with
+  files, pages, frames, reusable components, design systems, and a custom
+  Rust/WASM/WebGPU renderer. It is built to be operated by agents as well as by
+  humans. It is in the category of Figma, Sketch, Penpot and Framer, and is a
+  clone of none of them.
+
+  The organising idea: Crafty is a structured visual-authoring system with a
+  renderer — not a canvas with features attached.
+
+  AGENTS.md is the engineering constitution and takes precedence over anything
+  written here. docs/architecture/ holds the subsystem documents;
+  docs/architecture/current-state.md is ground truth for what actually exists.
+  Source is stronger evidence than documentation — when the two disagree, the
+  code is right and the doc gets fixed in the same change.
+
+  Stack: Bun workspaces + Turbo. TypeScript throughout, Rust for the render
+  encoder and WebGPU canvas owner (packages/scene-renderer/rust), Next.js
+  standalone server (apps/crafty-web). There is no WebGL fallback.
+
+  One lineage lives in the repo: the canvas, which is the product. The
+  block-compiler lineage was retired in one deliberate change (ADR 0016:
+  docs/architecture/adrs/0016-block-compiler-lineage-retirement.md).
+
+  Load-bearing invariants that constrain almost every proposal
+  (full list: docs/architecture/invariants.md):
+  - The authored document is canonical — not React state, not renderer state,
+    not the GPU.
+  - All document mutation goes through validated, invertible commands.
+  - Pointer-down never mutates durable state. A drag is one transaction and one
+    history entry.
+  - Rendering never mutates authored state. Renderer failure preserves the
+    document and the last valid packet.
+  - The renderer receives no product semantics — no components, tokens,
+    variants, history or triggers.
+  - GPU structures are cache keys, not identity.
+  - Ephemeral editor state is never serialized.
+  - Unknown schema versions are rejected, never coerced.
+  - Agents obey the same document invariants as humans, through the same
+    commands.
+
+  Working principles:
+  - No hidden mutation. Read and inspect paths are non-mutating unless named as
+    mutation. Generated edits are visible and traceable.
+  - Evidence over assertion. A success claim needs structured render or test
+    evidence, or an explicit diagnostic saying it is unsupported. Every package
+    exposes a deterministic verification command.
+  - Do not invent a numeric budget you have not measured, and do not optimise
+    something you have not measured. A budget needs a committed fixture, a
+    recorded environment, and a distribution — see docs/architecture/performance.md.
+  - Diagnostics carry stable codes, not formatted prose, and are returned rather
+    than printed.
+  - Reasoning depth scales with blast radius.
+
+  Every architecture claim is labelled Current / Transitional / Target /
+  Proposed / Deferred / Unknown. Never describe a planned subsystem as though it
+  exists — carry the same discipline into proposals and specs.
+
+rules:
+  proposal:
+    - State honestly whether each item is a confirmed defect, a suspected one, or
+      an improvement. Cite the file and line for anything claimed about the code.
+    - List what is explicitly out of scope, so it is not smuggled in later.
+  specs:
+    - Specs describe observable behaviour. Keep internal names, library choices
+      and implementation steps out of them.
+  design:
+    - Record alternatives considered and why they lost, not only the decision.
+    - When a decision follows prior art, name the source and say whether it is
+      being followed, diverged from, or deferred.
+    - Defer anything that would need a measurement to justify, and record the
+      trigger that would un-defer it.

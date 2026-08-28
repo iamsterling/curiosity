@@ -1,0 +1,3 @@
+$ bun scripts/lint.mjs
+
+exit_code=0

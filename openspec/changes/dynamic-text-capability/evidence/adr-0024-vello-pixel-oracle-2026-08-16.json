@@ -1,0 +1,2199 @@
+{
+  "status": "passed",
+  "exact": true,
+  "visible": true,
+  "adapter": {
+    "name": "",
+    "vendor": 0,
+    "device": 0,
+    "deviceType": "Other",
+    "driver": "",
+    "driverInfo": "",
+    "backend": "BrowserWebGpu"
+  },
+  "diagnostics": [],
+  "fixture": {
+    "canvas": {
+      "colorSpace": "srgb",
+      "cssHeight": 1440,
+      "cssWidth": 1024,
+      "deviceHeight": 1440,
+      "deviceWidth": 1024,
+      "dpr": 1
+    },
+    "regions": [
+      {
+        "glyph": "O",
+        "glyph_id": 321,
+        "matrix": [
+          1,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "production": [
+          0,
+          0,
+          256,
+          160
+        ],
+        "reference": [
+          0,
+          0,
+          256,
+          160
+        ],
+        "size": 16,
+        "transform": "identity"
+      },
+      {
+        "glyph": "O",
+        "glyph_id": 321,
+        "matrix": [
+          1,
+          0,
+          0,
+          1,
+          0.375,
+          0.625
+        ],
+        "production": [
+          256,
+          0,
+          256,
+          160
+        ],
+        "reference": [
+          256,
+          0,
+          256,
+          160
+        ],
+        "size": 16,
+        "transform": "fractional"
+      },
+      {
+        "glyph": "O",
+        "glyph_id": 321,
+        "matrix": [
+          1.25,
+          0.2,
+          -0.15,
+          0.75,
+          17.25,
+          9.5
+        ],
+        "production": [
+          512,
+          0,
+          256,
+          160
+        ],
+        "reference": [
+          512,
+          0,
+          256,
+          160
+        ],
+        "size": 16,
+        "transform": "affine"
+      },
+      {
+        "glyph": "O",
+        "glyph_id": 321,
+        "matrix": [
+          -1,
+          0,
+          0,
+          1,
+          128,
+          0
+        ],
+        "production": [
+          768,
+          0,
+          256,
+          160
+        ],
+        "reference": [
+          768,
+          0,
+          256,
+          160
+        ],
+        "size": 16,
+        "transform": "reflection"
+      },
+      {
+        "glyph": "O",
+        "glyph_id": 321,
+        "matrix": [
+          1,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "production": [
+          0,
+          160,
+          256,
+          160
+        ],
+        "reference": [
+          0,
+          160,
+          256,
+          160
+        ],
+        "size": 32,
+        "transform": "identity"
+      },
+      {
+        "glyph": "O",
+        "glyph_id": 321,
+        "matrix": [
+          1,
+          0,
+          0,
+          1,
+          0.375,
+          0.625
+        ],
+        "production": [
+          256,
+          160,
+          256,
+          160
+        ],
+        "reference": [
+          256,
+          160,
+          256,
+          160
+        ],
+        "size": 32,
+        "transform": "fractional"
+      },
+      {
+        "glyph": "O",
+        "glyph_id": 321,
+        "matrix": [
+          1.25,
+          0.2,
+          -0.15,
+          0.75,
+          17.25,
+          9.5
+        ],
+        "production": [
+          512,
+          160,
+          256,
+          160
+        ],
+        "reference": [
+          512,
+          160,
+          256,
+          160
+        ],
+        "size": 32,
+        "transform": "affine"
+      },
+      {
+        "glyph": "O",
+        "glyph_id": 321,
+        "matrix": [
+          -1,
+          0,
+          0,
+          1,
+          128,
+          0
+        ],
+        "production": [
+          768,
+          160,
+          256,
+          160
+        ],
+        "reference": [
+          768,
+          160,
+          256,
+          160
+        ],
+        "size": 32,
+        "transform": "reflection"
+      },
+      {
+        "glyph": "O",
+        "glyph_id": 321,
+        "matrix": [
+          1,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "production": [
+          0,
+          320,
+          256,
+          160
+        ],
+        "reference": [
+          0,
+          320,
+          256,
+          160
+        ],
+        "size": 64,
+        "transform": "identity"
+      },
+      {
+        "glyph": "O",
+        "glyph_id": 321,
+        "matrix": [
+          1,
+          0,
+          0,
+          1,
+          0.375,
+          0.625
+        ],
+        "production": [
+          256,
+          320,
+          256,
+          160
+        ],
+        "reference": [
+          256,
+          320,
+          256,
+          160
+        ],
+        "size": 64,
+        "transform": "fractional"
+      },
+      {
+        "glyph": "O",
+        "glyph_id": 321,
+        "matrix": [
+          1.25,
+          0.2,
+          -0.15,
+          0.75,
+          17.25,
+          9.5
+        ],
+        "production": [
+          512,
+          320,
+          256,
+          160
+        ],
+        "reference": [
+          512,
+          320,
+          256,
+          160
+        ],
+        "size": 64,
+        "transform": "affine"
+      },
+      {
+        "glyph": "O",
+        "glyph_id": 321,
+        "matrix": [
+          -1,
+          0,
+          0,
+          1,
+          128,
+          0
+        ],
+        "production": [
+          768,
+          320,
+          256,
+          160
+        ],
+        "reference": [
+          768,
+          320,
+          256,
+          160
+        ],
+        "size": 64,
+        "transform": "reflection"
+      },
+      {
+        "glyph": "B",
+        "glyph_id": 65,
+        "matrix": [
+          1,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "production": [
+          0,
+          480,
+          256,
+          160
+        ],
+        "reference": [
+          0,
+          480,
+          256,
+          160
+        ],
+        "size": 16,
+        "transform": "identity"
+      },
+      {
+        "glyph": "B",
+        "glyph_id": 65,
+        "matrix": [
+          1,
+          0,
+          0,
+          1,
+          0.375,
+          0.625
+        ],
+        "production": [
+          256,
+          480,
+          256,
+          160
+        ],
+        "reference": [
+          256,
+          480,
+          256,
+          160
+        ],
+        "size": 16,
+        "transform": "fractional"
+      },
+      {
+        "glyph": "B",
+        "glyph_id": 65,
+        "matrix": [
+          1.25,
+          0.2,
+          -0.15,
+          0.75,
+          17.25,
+          9.5
+        ],
+        "production": [
+          512,
+          480,
+          256,
+          160
+        ],
+        "reference": [
+          512,
+          480,
+          256,
+          160
+        ],
+        "size": 16,
+        "transform": "affine"
+      },
+      {
+        "glyph": "B",
+        "glyph_id": 65,
+        "matrix": [
+          -1,
+          0,
+          0,
+          1,
+          128,
+          0
+        ],
+        "production": [
+          768,
+          480,
+          256,
+          160
+        ],
+        "reference": [
+          768,
+          480,
+          256,
+          160
+        ],
+        "size": 16,
+        "transform": "reflection"
+      },
+      {
+        "glyph": "B",
+        "glyph_id": 65,
+        "matrix": [
+          1,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "production": [
+          0,
+          640,
+          256,
+          160
+        ],
+        "reference": [
+          0,
+          640,
+          256,
+          160
+        ],
+        "size": 32,
+        "transform": "identity"
+      },
+      {
+        "glyph": "B",
+        "glyph_id": 65,
+        "matrix": [
+          1,
+          0,
+          0,
+          1,
+          0.375,
+          0.625
+        ],
+        "production": [
+          256,
+          640,
+          256,
+          160
+        ],
+        "reference": [
+          256,
+          640,
+          256,
+          160
+        ],
+        "size": 32,
+        "transform": "fractional"
+      },
+      {
+        "glyph": "B",
+        "glyph_id": 65,
+        "matrix": [
+          1.25,
+          0.2,
+          -0.15,
+          0.75,
+          17.25,
+          9.5
+        ],
+        "production": [
+          512,
+          640,
+          256,
+          160
+        ],
+        "reference": [
+          512,
+          640,
+          256,
+          160
+        ],
+        "size": 32,
+        "transform": "affine"
+      },
+      {
+        "glyph": "B",
+        "glyph_id": 65,
+        "matrix": [
+          -1,
+          0,
+          0,
+          1,
+          128,
+          0
+        ],
+        "production": [
+          768,
+          640,
+          256,
+          160
+        ],
+        "reference": [
+          768,
+          640,
+          256,
+          160
+        ],
+        "size": 32,
+        "transform": "reflection"
+      },
+      {
+        "glyph": "B",
+        "glyph_id": 65,
+        "matrix": [
+          1,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "production": [
+          0,
+          800,
+          256,
+          160
+        ],
+        "reference": [
+          0,
+          800,
+          256,
+          160
+        ],
+        "size": 64,
+        "transform": "identity"
+      },
+      {
+        "glyph": "B",
+        "glyph_id": 65,
+        "matrix": [
+          1,
+          0,
+          0,
+          1,
+          0.375,
+          0.625
+        ],
+        "production": [
+          256,
+          800,
+          256,
+          160
+        ],
+        "reference": [
+          256,
+          800,
+          256,
+          160
+        ],
+        "size": 64,
+        "transform": "fractional"
+      },
+      {
+        "glyph": "B",
+        "glyph_id": 65,
+        "matrix": [
+          1.25,
+          0.2,
+          -0.15,
+          0.75,
+          17.25,
+          9.5
+        ],
+        "production": [
+          512,
+          800,
+          256,
+          160
+        ],
+        "reference": [
+          512,
+          800,
+          256,
+          160
+        ],
+        "size": 64,
+        "transform": "affine"
+      },
+      {
+        "glyph": "B",
+        "glyph_id": 65,
+        "matrix": [
+          -1,
+          0,
+          0,
+          1,
+          128,
+          0
+        ],
+        "production": [
+          768,
+          800,
+          256,
+          160
+        ],
+        "reference": [
+          768,
+          800,
+          256,
+          160
+        ],
+        "size": 64,
+        "transform": "reflection"
+      },
+      {
+        "glyph": "8",
+        "glyph_id": 1351,
+        "matrix": [
+          1,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "production": [
+          0,
+          960,
+          256,
+          160
+        ],
+        "reference": [
+          0,
+          960,
+          256,
+          160
+        ],
+        "size": 16,
+        "transform": "identity"
+      },
+      {
+        "glyph": "8",
+        "glyph_id": 1351,
+        "matrix": [
+          1,
+          0,
+          0,
+          1,
+          0.375,
+          0.625
+        ],
+        "production": [
+          256,
+          960,
+          256,
+          160
+        ],
+        "reference": [
+          256,
+          960,
+          256,
+          160
+        ],
+        "size": 16,
+        "transform": "fractional"
+      },
+      {
+        "glyph": "8",
+        "glyph_id": 1351,
+        "matrix": [
+          1.25,
+          0.2,
+          -0.15,
+          0.75,
+          17.25,
+          9.5
+        ],
+        "production": [
+          512,
+          960,
+          256,
+          160
+        ],
+        "reference": [
+          512,
+          960,
+          256,
+          160
+        ],
+        "size": 16,
+        "transform": "affine"
+      },
+      {
+        "glyph": "8",
+        "glyph_id": 1351,
+        "matrix": [
+          -1,
+          0,
+          0,
+          1,
+          128,
+          0
+        ],
+        "production": [
+          768,
+          960,
+          256,
+          160
+        ],
+        "reference": [
+          768,
+          960,
+          256,
+          160
+        ],
+        "size": 16,
+        "transform": "reflection"
+      },
+      {
+        "glyph": "8",
+        "glyph_id": 1351,
+        "matrix": [
+          1,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "production": [
+          0,
+          1120,
+          256,
+          160
+        ],
+        "reference": [
+          0,
+          1120,
+          256,
+          160
+        ],
+        "size": 32,
+        "transform": "identity"
+      },
+      {
+        "glyph": "8",
+        "glyph_id": 1351,
+        "matrix": [
+          1,
+          0,
+          0,
+          1,
+          0.375,
+          0.625
+        ],
+        "production": [
+          256,
+          1120,
+          256,
+          160
+        ],
+        "reference": [
+          256,
+          1120,
+          256,
+          160
+        ],
+        "size": 32,
+        "transform": "fractional"
+      },
+      {
+        "glyph": "8",
+        "glyph_id": 1351,
+        "matrix": [
+          1.25,
+          0.2,
+          -0.15,
+          0.75,
+          17.25,
+          9.5
+        ],
+        "production": [
+          512,
+          1120,
+          256,
+          160
+        ],
+        "reference": [
+          512,
+          1120,
+          256,
+          160
+        ],
+        "size": 32,
+        "transform": "affine"
+      },
+      {
+        "glyph": "8",
+        "glyph_id": 1351,
+        "matrix": [
+          -1,
+          0,
+          0,
+          1,
+          128,
+          0
+        ],
+        "production": [
+          768,
+          1120,
+          256,
+          160
+        ],
+        "reference": [
+          768,
+          1120,
+          256,
+          160
+        ],
+        "size": 32,
+        "transform": "reflection"
+      },
+      {
+        "glyph": "8",
+        "glyph_id": 1351,
+        "matrix": [
+          1,
+          0,
+          0,
+          1,
+          0,
+          0
+        ],
+        "production": [
+          0,
+          1280,
+          256,
+          160
+        ],
+        "reference": [
+          0,
+          1280,
+          256,
+          160
+        ],
+        "size": 64,
+        "transform": "identity"
+      },
+      {
+        "glyph": "8",
+        "glyph_id": 1351,
+        "matrix": [
+          1,
+          0,
+          0,
+          1,
+          0.375,
+          0.625
+        ],
+        "production": [
+          256,
+          1280,
+          256,
+          160
+        ],
+        "reference": [
+          256,
+          1280,
+          256,
+          160
+        ],
+        "size": 64,
+        "transform": "fractional"
+      },
+      {
+        "glyph": "8",
+        "glyph_id": 1351,
+        "matrix": [
+          1.25,
+          0.2,
+          -0.15,
+          0.75,
+          17.25,
+          9.5
+        ],
+        "production": [
+          512,
+          1280,
+          256,
+          160
+        ],
+        "reference": [
+          512,
+          1280,
+          256,
+          160
+        ],
+        "size": 64,
+        "transform": "affine"
+      },
+      {
+        "glyph": "8",
+        "glyph_id": 1351,
+        "matrix": [
+          -1,
+          0,
+          0,
+          1,
+          128,
+          0
+        ],
+        "production": [
+          768,
+          1280,
+          256,
+          160
+        ],
+        "reference": [
+          768,
+          1280,
+          256,
+          160
+        ],
+        "size": 64,
+        "transform": "reflection"
+      }
+    ]
+  },
+  "matrix": [
+    {
+      "glyph": "O",
+      "glyph_id": 321,
+      "matrix": [
+        1,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "production": [
+        0,
+        0,
+        256,
+        160
+      ],
+      "reference": [
+        0,
+        0,
+        256,
+        160
+      ],
+      "size": 16,
+      "transform": "identity",
+      "productionHash": "485f51a15293cc2ac02fc39c5f69e02e395bc61cc2ef830f980aab8ca45dd3aa",
+      "referenceHash": "485f51a15293cc2ac02fc39c5f69e02e395bc61cc2ef830f980aab8ca45dd3aa",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "O",
+      "glyph_id": 321,
+      "matrix": [
+        1,
+        0,
+        0,
+        1,
+        0.375,
+        0.625
+      ],
+      "production": [
+        256,
+        0,
+        256,
+        160
+      ],
+      "reference": [
+        256,
+        0,
+        256,
+        160
+      ],
+      "size": 16,
+      "transform": "fractional",
+      "productionHash": "f9dcb56eaaa6a7dc41780255dade21cc7033fc6e323aef02f7e4578fd7e94edb",
+      "referenceHash": "f9dcb56eaaa6a7dc41780255dade21cc7033fc6e323aef02f7e4578fd7e94edb",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "O",
+      "glyph_id": 321,
+      "matrix": [
+        1.25,
+        0.2,
+        -0.15,
+        0.75,
+        17.25,
+        9.5
+      ],
+      "production": [
+        512,
+        0,
+        256,
+        160
+      ],
+      "reference": [
+        512,
+        0,
+        256,
+        160
+      ],
+      "size": 16,
+      "transform": "affine",
+      "productionHash": "1ae1a32824bd290fbe060c2c1d959abee31f7afaef579d65b03346b3f3b8a3be",
+      "referenceHash": "1ae1a32824bd290fbe060c2c1d959abee31f7afaef579d65b03346b3f3b8a3be",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "O",
+      "glyph_id": 321,
+      "matrix": [
+        -1,
+        0,
+        0,
+        1,
+        128,
+        0
+      ],
+      "production": [
+        768,
+        0,
+        256,
+        160
+      ],
+      "reference": [
+        768,
+        0,
+        256,
+        160
+      ],
+      "size": 16,
+      "transform": "reflection",
+      "productionHash": "bebc8711e6c6e7939d7f60caf068dc13eb4f0e6e3bc8cac3d81cab79200601b8",
+      "referenceHash": "bebc8711e6c6e7939d7f60caf068dc13eb4f0e6e3bc8cac3d81cab79200601b8",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "O",
+      "glyph_id": 321,
+      "matrix": [
+        1,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "production": [
+        0,
+        160,
+        256,
+        160
+      ],
+      "reference": [
+        0,
+        160,
+        256,
+        160
+      ],
+      "size": 32,
+      "transform": "identity",
+      "productionHash": "ae85ddd097fa35738e4b5adb01342a34705eac2cb47acfbdf87562cf789dba02",
+      "referenceHash": "ae85ddd097fa35738e4b5adb01342a34705eac2cb47acfbdf87562cf789dba02",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "O",
+      "glyph_id": 321,
+      "matrix": [
+        1,
+        0,
+        0,
+        1,
+        0.375,
+        0.625
+      ],
+      "production": [
+        256,
+        160,
+        256,
+        160
+      ],
+      "reference": [
+        256,
+        160,
+        256,
+        160
+      ],
+      "size": 32,
+      "transform": "fractional",
+      "productionHash": "4022838996cce5332be39eefe1cedbfdc09543ea2ee7e731334a2c35e7e232e6",
+      "referenceHash": "4022838996cce5332be39eefe1cedbfdc09543ea2ee7e731334a2c35e7e232e6",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "O",
+      "glyph_id": 321,
+      "matrix": [
+        1.25,
+        0.2,
+        -0.15,
+        0.75,
+        17.25,
+        9.5
+      ],
+      "production": [
+        512,
+        160,
+        256,
+        160
+      ],
+      "reference": [
+        512,
+        160,
+        256,
+        160
+      ],
+      "size": 32,
+      "transform": "affine",
+      "productionHash": "4dcec907d863bf5922e4429c7ca58553182f8fb2a0490f504ad3ab30324adc25",
+      "referenceHash": "4dcec907d863bf5922e4429c7ca58553182f8fb2a0490f504ad3ab30324adc25",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "O",
+      "glyph_id": 321,
+      "matrix": [
+        -1,
+        0,
+        0,
+        1,
+        128,
+        0
+      ],
+      "production": [
+        768,
+        160,
+        256,
+        160
+      ],
+      "reference": [
+        768,
+        160,
+        256,
+        160
+      ],
+      "size": 32,
+      "transform": "reflection",
+      "productionHash": "dd699a2410d039e5e268a0a3c6383b55e68f444a2d54aa63dfcd11a9a5063607",
+      "referenceHash": "dd699a2410d039e5e268a0a3c6383b55e68f444a2d54aa63dfcd11a9a5063607",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "O",
+      "glyph_id": 321,
+      "matrix": [
+        1,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "production": [
+        0,
+        320,
+        256,
+        160
+      ],
+      "reference": [
+        0,
+        320,
+        256,
+        160
+      ],
+      "size": 64,
+      "transform": "identity",
+      "productionHash": "d21c1eb80acac6bcf6cd4d173be011588d099a6cc828783274e52f7700c6df4f",
+      "referenceHash": "d21c1eb80acac6bcf6cd4d173be011588d099a6cc828783274e52f7700c6df4f",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "O",
+      "glyph_id": 321,
+      "matrix": [
+        1,
+        0,
+        0,
+        1,
+        0.375,
+        0.625
+      ],
+      "production": [
+        256,
+        320,
+        256,
+        160
+      ],
+      "reference": [
+        256,
+        320,
+        256,
+        160
+      ],
+      "size": 64,
+      "transform": "fractional",
+      "productionHash": "7a111de0ab6d8aad455bd14b7f4ac4e64348c12d56352c603c3008db845145f3",
+      "referenceHash": "7a111de0ab6d8aad455bd14b7f4ac4e64348c12d56352c603c3008db845145f3",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "O",
+      "glyph_id": 321,
+      "matrix": [
+        1.25,
+        0.2,
+        -0.15,
+        0.75,
+        17.25,
+        9.5
+      ],
+      "production": [
+        512,
+        320,
+        256,
+        160
+      ],
+      "reference": [
+        512,
+        320,
+        256,
+        160
+      ],
+      "size": 64,
+      "transform": "affine",
+      "productionHash": "e1deed4517f7553de19a0f01676fb31936b08cc2a498e5404927acf797c39d17",
+      "referenceHash": "e1deed4517f7553de19a0f01676fb31936b08cc2a498e5404927acf797c39d17",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "O",
+      "glyph_id": 321,
+      "matrix": [
+        -1,
+        0,
+        0,
+        1,
+        128,
+        0
+      ],
+      "production": [
+        768,
+        320,
+        256,
+        160
+      ],
+      "reference": [
+        768,
+        320,
+        256,
+        160
+      ],
+      "size": 64,
+      "transform": "reflection",
+      "productionHash": "351b0951d9491dded66fa186bd4c37df9f4e5643ca5ba6ef32216ad4613efc25",
+      "referenceHash": "351b0951d9491dded66fa186bd4c37df9f4e5643ca5ba6ef32216ad4613efc25",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "B",
+      "glyph_id": 65,
+      "matrix": [
+        1,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "production": [
+        0,
+        480,
+        256,
+        160
+      ],
+      "reference": [
+        0,
+        480,
+        256,
+        160
+      ],
+      "size": 16,
+      "transform": "identity",
+      "productionHash": "0733cae3c1ed2672e0b612f0af10b8ac7a8900cfe00c4f5a10b658e003b391cb",
+      "referenceHash": "0733cae3c1ed2672e0b612f0af10b8ac7a8900cfe00c4f5a10b658e003b391cb",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "B",
+      "glyph_id": 65,
+      "matrix": [
+        1,
+        0,
+        0,
+        1,
+        0.375,
+        0.625
+      ],
+      "production": [
+        256,
+        480,
+        256,
+        160
+      ],
+      "reference": [
+        256,
+        480,
+        256,
+        160
+      ],
+      "size": 16,
+      "transform": "fractional",
+      "productionHash": "f293d0892cc7335b7377085c45d2ce30c1298301f5708d7661d86594e3d4efda",
+      "referenceHash": "f293d0892cc7335b7377085c45d2ce30c1298301f5708d7661d86594e3d4efda",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "B",
+      "glyph_id": 65,
+      "matrix": [
+        1.25,
+        0.2,
+        -0.15,
+        0.75,
+        17.25,
+        9.5
+      ],
+      "production": [
+        512,
+        480,
+        256,
+        160
+      ],
+      "reference": [
+        512,
+        480,
+        256,
+        160
+      ],
+      "size": 16,
+      "transform": "affine",
+      "productionHash": "56d589fed75668008e1fe83524dc1482da3bdca0c26feb45fc9fe27cf6db16e6",
+      "referenceHash": "56d589fed75668008e1fe83524dc1482da3bdca0c26feb45fc9fe27cf6db16e6",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "B",
+      "glyph_id": 65,
+      "matrix": [
+        -1,
+        0,
+        0,
+        1,
+        128,
+        0
+      ],
+      "production": [
+        768,
+        480,
+        256,
+        160
+      ],
+      "reference": [
+        768,
+        480,
+        256,
+        160
+      ],
+      "size": 16,
+      "transform": "reflection",
+      "productionHash": "584b90af407bf80f976325f7b337dad365b39f6ea96c18d291decee4340e7990",
+      "referenceHash": "584b90af407bf80f976325f7b337dad365b39f6ea96c18d291decee4340e7990",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "B",
+      "glyph_id": 65,
+      "matrix": [
+        1,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "production": [
+        0,
+        640,
+        256,
+        160
+      ],
+      "reference": [
+        0,
+        640,
+        256,
+        160
+      ],
+      "size": 32,
+      "transform": "identity",
+      "productionHash": "825d0cc3e83ad56c760e214543b2ae2c0d97c3715bcba26877139a9ae1bca5e0",
+      "referenceHash": "825d0cc3e83ad56c760e214543b2ae2c0d97c3715bcba26877139a9ae1bca5e0",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "B",
+      "glyph_id": 65,
+      "matrix": [
+        1,
+        0,
+        0,
+        1,
+        0.375,
+        0.625
+      ],
+      "production": [
+        256,
+        640,
+        256,
+        160
+      ],
+      "reference": [
+        256,
+        640,
+        256,
+        160
+      ],
+      "size": 32,
+      "transform": "fractional",
+      "productionHash": "11cc555b71babab93d98dae963aaa01ca29a7e45cb31578619284c5963a96f26",
+      "referenceHash": "11cc555b71babab93d98dae963aaa01ca29a7e45cb31578619284c5963a96f26",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "B",
+      "glyph_id": 65,
+      "matrix": [
+        1.25,
+        0.2,
+        -0.15,
+        0.75,
+        17.25,
+        9.5
+      ],
+      "production": [
+        512,
+        640,
+        256,
+        160
+      ],
+      "reference": [
+        512,
+        640,
+        256,
+        160
+      ],
+      "size": 32,
+      "transform": "affine",
+      "productionHash": "7ab097625fa4becdfc8af3a99156d276befe21119248493f3b056ccaa1ed461a",
+      "referenceHash": "7ab097625fa4becdfc8af3a99156d276befe21119248493f3b056ccaa1ed461a",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "B",
+      "glyph_id": 65,
+      "matrix": [
+        -1,
+        0,
+        0,
+        1,
+        128,
+        0
+      ],
+      "production": [
+        768,
+        640,
+        256,
+        160
+      ],
+      "reference": [
+        768,
+        640,
+        256,
+        160
+      ],
+      "size": 32,
+      "transform": "reflection",
+      "productionHash": "51b93ef22965de4aadc063116668f5e8a762ce11f687a6031d8a37c8f96bb72f",
+      "referenceHash": "51b93ef22965de4aadc063116668f5e8a762ce11f687a6031d8a37c8f96bb72f",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "B",
+      "glyph_id": 65,
+      "matrix": [
+        1,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "production": [
+        0,
+        800,
+        256,
+        160
+      ],
+      "reference": [
+        0,
+        800,
+        256,
+        160
+      ],
+      "size": 64,
+      "transform": "identity",
+      "productionHash": "964fe58ae059c113f2bbc321393a8f1e0895f23f1d4083cfc29e749f37b0f2c5",
+      "referenceHash": "964fe58ae059c113f2bbc321393a8f1e0895f23f1d4083cfc29e749f37b0f2c5",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "B",
+      "glyph_id": 65,
+      "matrix": [
+        1,
+        0,
+        0,
+        1,
+        0.375,
+        0.625
+      ],
+      "production": [
+        256,
+        800,
+        256,
+        160
+      ],
+      "reference": [
+        256,
+        800,
+        256,
+        160
+      ],
+      "size": 64,
+      "transform": "fractional",
+      "productionHash": "1ce6428480be1abdd2c6299d636c1c913708842deee31790ee548bd004b0239d",
+      "referenceHash": "1ce6428480be1abdd2c6299d636c1c913708842deee31790ee548bd004b0239d",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "B",
+      "glyph_id": 65,
+      "matrix": [
+        1.25,
+        0.2,
+        -0.15,
+        0.75,
+        17.25,
+        9.5
+      ],
+      "production": [
+        512,
+        800,
+        256,
+        160
+      ],
+      "reference": [
+        512,
+        800,
+        256,
+        160
+      ],
+      "size": 64,
+      "transform": "affine",
+      "productionHash": "89dd22f08082c34c70f48c9dac2c1934edfa520a071c8d4b62471f9c5f415015",
+      "referenceHash": "89dd22f08082c34c70f48c9dac2c1934edfa520a071c8d4b62471f9c5f415015",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "B",
+      "glyph_id": 65,
+      "matrix": [
+        -1,
+        0,
+        0,
+        1,
+        128,
+        0
+      ],
+      "production": [
+        768,
+        800,
+        256,
+        160
+      ],
+      "reference": [
+        768,
+        800,
+        256,
+        160
+      ],
+      "size": 64,
+      "transform": "reflection",
+      "productionHash": "cffa4212d4c94623f31774fdfa192f2444b484c31ac661ae266cfb97782650bf",
+      "referenceHash": "cffa4212d4c94623f31774fdfa192f2444b484c31ac661ae266cfb97782650bf",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "8",
+      "glyph_id": 1351,
+      "matrix": [
+        1,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "production": [
+        0,
+        960,
+        256,
+        160
+      ],
+      "reference": [
+        0,
+        960,
+        256,
+        160
+      ],
+      "size": 16,
+      "transform": "identity",
+      "productionHash": "9eba3bb3e83d0788a7c00b103e35d45353bb62020606cab29a1c234d4a647bae",
+      "referenceHash": "9eba3bb3e83d0788a7c00b103e35d45353bb62020606cab29a1c234d4a647bae",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "8",
+      "glyph_id": 1351,
+      "matrix": [
+        1,
+        0,
+        0,
+        1,
+        0.375,
+        0.625
+      ],
+      "production": [
+        256,
+        960,
+        256,
+        160
+      ],
+      "reference": [
+        256,
+        960,
+        256,
+        160
+      ],
+      "size": 16,
+      "transform": "fractional",
+      "productionHash": "f7c8e1db941ef2dd1b17bb5ce36191d38ad2cb132ecd704d1a05727d450dbf5c",
+      "referenceHash": "f7c8e1db941ef2dd1b17bb5ce36191d38ad2cb132ecd704d1a05727d450dbf5c",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "8",
+      "glyph_id": 1351,
+      "matrix": [
+        1.25,
+        0.2,
+        -0.15,
+        0.75,
+        17.25,
+        9.5
+      ],
+      "production": [
+        512,
+        960,
+        256,
+        160
+      ],
+      "reference": [
+        512,
+        960,
+        256,
+        160
+      ],
+      "size": 16,
+      "transform": "affine",
+      "productionHash": "1f001fbdf88c68ee8b95b2454b4ab3b988f33215a302351e552eea3f82b791b1",
+      "referenceHash": "1f001fbdf88c68ee8b95b2454b4ab3b988f33215a302351e552eea3f82b791b1",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "8",
+      "glyph_id": 1351,
+      "matrix": [
+        -1,
+        0,
+        0,
+        1,
+        128,
+        0
+      ],
+      "production": [
+        768,
+        960,
+        256,
+        160
+      ],
+      "reference": [
+        768,
+        960,
+        256,
+        160
+      ],
+      "size": 16,
+      "transform": "reflection",
+      "productionHash": "718b3825c76177ab6d1bbadbc243168a5f04076f26e36008a624cab1bfd8df56",
+      "referenceHash": "718b3825c76177ab6d1bbadbc243168a5f04076f26e36008a624cab1bfd8df56",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "8",
+      "glyph_id": 1351,
+      "matrix": [
+        1,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "production": [
+        0,
+        1120,
+        256,
+        160
+      ],
+      "reference": [
+        0,
+        1120,
+        256,
+        160
+      ],
+      "size": 32,
+      "transform": "identity",
+      "productionHash": "df5bdd77ebfb5518e26d957f0340d5dafb926c0c9d1285c51512e093aaa5ff8c",
+      "referenceHash": "df5bdd77ebfb5518e26d957f0340d5dafb926c0c9d1285c51512e093aaa5ff8c",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "8",
+      "glyph_id": 1351,
+      "matrix": [
+        1,
+        0,
+        0,
+        1,
+        0.375,
+        0.625
+      ],
+      "production": [
+        256,
+        1120,
+        256,
+        160
+      ],
+      "reference": [
+        256,
+        1120,
+        256,
+        160
+      ],
+      "size": 32,
+      "transform": "fractional",
+      "productionHash": "82ecd2fa5a6ec34ccd11330d3f7b3c99295b4aad9f1b9f362887e050086368da",
+      "referenceHash": "82ecd2fa5a6ec34ccd11330d3f7b3c99295b4aad9f1b9f362887e050086368da",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "8",
+      "glyph_id": 1351,
+      "matrix": [
+        1.25,
+        0.2,
+        -0.15,
+        0.75,
+        17.25,
+        9.5
+      ],
+      "production": [
+        512,
+        1120,
+        256,
+        160
+      ],
+      "reference": [
+        512,
+        1120,
+        256,
+        160
+      ],
+      "size": 32,
+      "transform": "affine",
+      "productionHash": "2a6b4641efe09f1f833025401c9467ca31c36c38606e980d43eb4ba69e67e83f",
+      "referenceHash": "2a6b4641efe09f1f833025401c9467ca31c36c38606e980d43eb4ba69e67e83f",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "8",
+      "glyph_id": 1351,
+      "matrix": [
+        -1,
+        0,
+        0,
+        1,
+        128,
+        0
+      ],
+      "production": [
+        768,
+        1120,
+        256,
+        160
+      ],
+      "reference": [
+        768,
+        1120,
+        256,
+        160
+      ],
+      "size": 32,
+      "transform": "reflection",
+      "productionHash": "8bea340ec00fc502a791d3ec9706b91f7d7b3aa517abc29b6add2cd1db1c68ec",
+      "referenceHash": "8bea340ec00fc502a791d3ec9706b91f7d7b3aa517abc29b6add2cd1db1c68ec",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "8",
+      "glyph_id": 1351,
+      "matrix": [
+        1,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "production": [
+        0,
+        1280,
+        256,
+        160
+      ],
+      "reference": [
+        0,
+        1280,
+        256,
+        160
+      ],
+      "size": 64,
+      "transform": "identity",
+      "productionHash": "5175ac325734fc81e7f699ffdd56ea9c7fe525c183539980b150c72ff3758e88",
+      "referenceHash": "5175ac325734fc81e7f699ffdd56ea9c7fe525c183539980b150c72ff3758e88",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "8",
+      "glyph_id": 1351,
+      "matrix": [
+        1,
+        0,
+        0,
+        1,
+        0.375,
+        0.625
+      ],
+      "production": [
+        256,
+        1280,
+        256,
+        160
+      ],
+      "reference": [
+        256,
+        1280,
+        256,
+        160
+      ],
+      "size": 64,
+      "transform": "fractional",
+      "productionHash": "b2fe0510c52beb4fb0d70a6d697c2962bb5e6749c65cad9af026a0f865c0907f",
+      "referenceHash": "b2fe0510c52beb4fb0d70a6d697c2962bb5e6749c65cad9af026a0f865c0907f",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "8",
+      "glyph_id": 1351,
+      "matrix": [
+        1.25,
+        0.2,
+        -0.15,
+        0.75,
+        17.25,
+        9.5
+      ],
+      "production": [
+        512,
+        1280,
+        256,
+        160
+      ],
+      "reference": [
+        512,
+        1280,
+        256,
+        160
+      ],
+      "size": 64,
+      "transform": "affine",
+      "productionHash": "51759e976724429746f2d931f6d41e2cfc04ee407e4d83191b54ab897351f7e1",
+      "referenceHash": "51759e976724429746f2d931f6d41e2cfc04ee407e4d83191b54ab897351f7e1",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    },
+    {
+      "glyph": "8",
+      "glyph_id": 1351,
+      "matrix": [
+        -1,
+        0,
+        0,
+        1,
+        128,
+        0
+      ],
+      "production": [
+        768,
+        1280,
+        256,
+        160
+      ],
+      "reference": [
+        768,
+        1280,
+        256,
+        160
+      ],
+      "size": 64,
+      "transform": "reflection",
+      "productionHash": "80f72cfa60da641a9ab56ecabdaa760787679745cecc5faacb964849fe284e24",
+      "referenceHash": "80f72cfa60da641a9ab56ecabdaa760787679745cecc5faacb964849fe284e24",
+      "differingBytes": 0,
+      "maximumDelta": 0,
+      "nonUniform": true,
+      "firstDiffs": []
+    }
+  ],
+  "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.0.0 Safari/537.36",
+  "pairedCompositorPngHash": "7c7ccf0755abb192f8ed5a424570075cc2330f313e6d23b56890e8e04951255e",
+  "productionCompositorPngHash": "4ae1b2eaaace2b1691f3d92999106c42e901389586cf8c491fa9d799190fe4d5",
+  "referenceCompositorPngHash": "4ae1b2eaaace2b1691f3d92999106c42e901389586cf8c491fa9d799190fe4d5",
+  "software": false,
+  "identityPresent": true,
+  "environment": {
+    "repositoryCommit": "238968a8ca9459dc24496d3cf0e364aca6e9ae62",
+    "repositoryDirty": "M apps/web/editor/package.json\n M docs/architecture/adrs/README.md\n M docs/architecture/current-state.md\n M docs/architecture/document-model.md\n M docs/architecture/research-ledger.md\n M docs/architecture/typography.md\n M package.json\n M packages/editor/src/kernel/animation-resolution.ts\n M packages/editor/src/kernel/clipboard.ts\n M packages/editor/src/kernel/commands.ts\n M packages/editor/src/kernel/component-resolution.ts\n M packages/editor/src/kernel/document-serialization.test.ts\n M packages/editor/src/kernel/document.test.ts\n M packages/editor/src/kernel/document.ts\n M packages/editor/src/kernel/kernel.ts\n M packages/editor/src/kernel/layout.test.ts\n M packages/editor/src/kernel/scene-adapter.ts\n M packages/editor/src/kernel/semantic-surfaces.test.ts\n M packages/editor/src/kernel/snap.test.ts\n M packages/editor/src/ui/editor/canvas-stage.tsx\n M packages/pen-import/src/index.test.ts\n M packages/scene-renderer/rust/Cargo.toml\n M packages/scene-renderer/rust/src/lib.rs\n M packages/scene-renderer/rust/src/text.rs\n M packages/scene-renderer/rust/src/wgpu_present.rs\n M packages/scene-store/src/fixtures/loss-list-document.ts\n M packages/scene-store/src/index.test.ts\n M packages/scene-store/src/loss-list-roundtrip.test.ts\n M scripts/vello-browser-spike.mjs\n?? docs/architecture/adrs/0023-canonical-dynamic-text-content.md\n?? docs/architecture/adrs/0024-correct-embedded-inter-contours.md\n?? docs/research/2026-08-15-affinity-designer-text-system.md\n?? docs/research/2026-08-15-canva-text-system.md\n?? docs/research/2026-08-15-competitive-text-systems-synthesis.md\n?? docs/research/2026-08-15-figma-text-system.md\n?? docs/research/2026-08-15-framer-text-system.md\n?? docs/research/2026-08-15-illustrator-text-system.md\n?? docs/research/2026-08-15-penpot-text-system.md\n?? docs/research/2026-08-15-sketch-text-system.md\n?? docs/research/2026-08-16-crafty-text-substrate-analysis.md\n?? docs/research/2026-08-16-rust-webgpu-text-ecosystem.md\n?? docs/research/2026-08-16-text-architecture-translation.md\n?? openspec/changes/dynamic-text-capability/\n?? packages/editor/src/kernel/dynamic-text-schema.test.ts\n?? packages/editor/src/kernel/schema-v5-acceptance.test.ts\n?? packages/scene-renderer/rust/src/text_pixel_oracle.rs\n?? scripts/vello-text-pixel-oracle.mjs",
+    "fontPath": "/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/crafty-browser-reconstructed/packages/scene-renderer/rust/fonts/Inter-Regular.ttf",
+    "fontHash": "40d692fce188e4471e2b3cba937be967878f631ad3ebbbdcd587687c7ebe0c82",
+    "wasmHash": "e805c6a2b158195a844644398aeea83b54b4f251abecc9c19f9bbd2f9e5106e8",
+    "rustTarget": "wasm32-unknown-unknown",
+    "rustProfile": "release+pixel-oracle",
+    "vello": "0.9.0",
+    "wgpu": "29.0.4",
+    "ttfParser": "0.24.1",
+    "browserHarness": "Google Chrome 151.0.7922.138",
+    "browserArgs": "--enable-unsafe-webgpu,--disable-software-rasterizer",
+    "referenceShift": 0,
+    "moduleAdapter": {
+      "name": "",
+      "vendor": 0,
+      "device": 0,
+      "deviceType": "Other",
+      "driver": "",
+      "driverInfo": "",
+      "backend": "BrowserWebGpu"
+    },
+    "chromiumGpuDevices": [
+      {
+        "vendorId": 4203,
+        "deviceId": 0,
+        "vendorString": "Google Inc. (Apple)",
+        "deviceString": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Version 27.0 (Build 26A5368g))",
+        "driverVendor": "Apple",
+        "driverVersion": "27.0"
+      }
+    ],
+    "chromiumAuxAttributes": {
+      "amdSwitchable": false,
+      "canSupportThreadedTextureMailbox": false,
+      "directRenderingVersion": "",
+      "displayType": "ANGLE_METAL",
+      "glExtensions": "GL_AMD_performance_monitor GL_ANGLE_base_vertex_base_instance_shader_builtin GL_ANGLE_blob_cache GL_ANGLE_client_arrays GL_ANGLE_clip_cull_distance GL_ANGLE_compressed_texture_etc GL_ANGLE_depth_texture GL_ANGLE_framebuffer_blit GL_ANGLE_framebuffer_multisample GL_ANGLE_get_serialized_context_string GL_ANGLE_get_tex_level_parameter GL_ANGLE_instanced_arrays GL_ANGLE_memory_size GL_ANGLE_pack_reverse_row_order GL_ANGLE_polygon_mode GL_ANGLE_program_binary_readiness_query GL_ANGLE_program_cache_control GL_ANGLE_provoking_vertex GL_ANGLE_renderability_validation GL_ANGLE_request_extension GL_ANGLE_rgbx_internal_format GL_ANGLE_robust_client_memory GL_ANGLE_shader_pixel_local_storage GL_ANGLE_shader_pixel_local_storage_coherent GL_ANGLE_stencil_texturing GL_ANGLE_texture_compression_dxt3 GL_ANGLE_texture_compression_dxt5 GL_ANGLE_texture_multisample GL_ANGLE_translated_shader_source GL_APPLE_clip_distance GL_ARM_rgba8 GL_CHROMIUM_bind_generates_resource GL_CHROMIUM_bind_uniform_location GL_CHROMIUM_copy_texture GL_CHROMIUM_lose_context GL_EXT_base_instance GL_EXT_blend_func_extended GL_EXT_blend_minmax GL_EXT_clip_control GL_EXT_color_buffer_float GL_EXT_color_buffer_half_float GL_EXT_compressed_ETC1_RGB8_sub_texture GL_EXT_conservative_depth GL_EXT_debug_label GL_EXT_debug_marker GL_EXT_depth_clamp GL_EXT_discard_framebuffer GL_EXT_disjoint_timer_query GL_EXT_draw_buffers GL_EXT_draw_buffers_indexed GL_EXT_draw_elements_base_vertex GL_EXT_float_blend GL_EXT_frag_depth GL_EXT_instanced_arrays GL_EXT_map_buffer_range GL_EXT_multisampled_render_to_texture GL_EXT_occlusion_query_boolean GL_EXT_polygon_offset_clamp GL_EXT_pvrtc_sRGB GL_EXT_read_format_bgra GL_EXT_render_snorm GL_EXT_robustness GL_EXT_sRGB GL_EXT_shader_texture_lod GL_EXT_texture_compression_bptc GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_rgtc GL_EXT_texture_compression_s3tc_srgb GL_EXT_texture_filter_anisotropic GL_EXT_texture_format_BGRA8888 GL_EXT_texture_mirror_clamp_to_edge GL_EXT_texture_norm16 GL_EXT_texture_rg GL_EXT_texture_sRGB_R8 GL_EXT_texture_sRGB_RG8 GL_EXT_texture_shadow_lod GL_EXT_texture_storage GL_IMG_texture_compression_pvrtc GL_KHR_debug GL_KHR_parallel_shader_compile GL_KHR_robustness GL_KHR_texture_compression_astc_hdr GL_KHR_texture_compression_astc_ldr GL_KHR_texture_compression_astc_sliced_3d GL_MESA_framebuffer_flip_y GL_NV_fence GL_NV_framebuffer_blit GL_NV_pixel_buffer_object GL_NV_shader_noperspective_interpolation GL_OES_EGL_image GL_OES_EGL_sync GL_OES_compressed_EAC_R11_signed_texture GL_OES_compressed_EAC_R11_unsigned_texture GL_OES_compressed_EAC_RG11_signed_texture GL_OES_compressed_EAC_RG11_unsigned_texture GL_OES_compressed_ETC1_RGB8_texture GL_OES_compressed_ETC2_RGB8_texture GL_OES_compressed_ETC2_RGBA8_texture GL_OES_compressed_ETC2_punchthroughA_RGBA8_texture GL_OES_compressed_ETC2_punchthroughA_sRGB8_alpha_texture GL_OES_compressed_ETC2_sRGB8_alpha8_texture GL_OES_compressed_ETC2_sRGB8_texture GL_OES_depth24 GL_OES_depth32 GL_OES_depth_texture GL_OES_draw_buffers_indexed GL_OES_draw_elements_base_vertex GL_OES_element_index_uint GL_OES_fbo_render_mipmap GL_OES_get_program_binary GL_OES_mapbuffer GL_OES_packed_depth_stencil GL_OES_required_internalformat GL_OES_rgb8_rgba8 GL_OES_sample_variables GL_OES_shader_multisample_interpolation GL_OES_standard_derivatives GL_OES_surfaceless_context GL_OES_texture_3D GL_OES_texture_float GL_OES_texture_float_linear GL_OES_texture_half_float GL_OES_texture_half_float_linear GL_OES_texture_npot GL_OES_texture_stencil8 GL_OES_vertex_array_object GL_QCOM_render_shared_exponent ",
+      "glImplementationParts": "(gl=egl-angle,angle=metal)",
+      "glRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5, Version 27.0 (Build 26A5368g))",
+      "glResetNotificationStrategy": 33362,
+      "glVendor": "Google Inc. (Apple)",
+      "glVersion": "OpenGL ES 3.0 (ANGLE 2.1.28232 git hash: a17d5224d83f)",
+      "glWsExtensions": "",
+      "glWsVendor": "",
+      "glWsVersion": "",
+      "inProcessGpu": false,
+      "initializationTime": 0.069723,
+      "isAsan": false,
+      "isClangCoverage": false,
+      "jpegDecodeAcceleratorSupported": false,
+      "maxMsaaSamples": "8",
+      "optimus": false,
+      "passthroughCmdDecoder": true,
+      "pixelShaderVersion": "3.00",
+      "processCrashCount": 0,
+      "sandboxed": true,
+      "skiaBackendType": "GraphiteDawnMetal",
+      "subpixelFontRendering": true,
+      "targetCpuBits": 64,
+      "vertexShaderVersion": "3.00",
+      "visibilityCallbackCallCount": 0
+    },
+    "os": "ProductName:\t\tmacOS; ProductVersion:\t\t27.0; BuildVersion:\t\t26A5368g",
+    "architecture": "arm64",
+    "hardware": "Graphics/Displays:\n\n    Apple M5:\n\n      Chipset Model: Apple M5\n      Type: GPU\n      Bus: Built-In\n      Total Number of Cores: 10\n      Vendor: Apple (0x106b)\n      Metal Support: Metal 4\n      Displays:\n        Color LCD:\n          Display Type: Built-in Liquid Retina XDR Display\n          Resolution: 3024 x 1964 Retina\n          Main Display: Yes\n          Mirror: Off\n          Online: Yes\n          Automatically Adjust Brightness: Yes\n          Connection Type: Internal",
+    "temporaryArtifact": "/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/crafty-vello-text-oracle-lIQIm7"
+  },
+  "sourceSnapshot": {
+    "archive": "adr-0024-source-snapshot.tar.gz",
+    "sha256": "45a390398105668919ce3416837d0402918157ebbe4ed219d8522dd5e5376e16",
+    "manifest": "adr-0024-source-snapshot-manifest.json",
+    "manifestSha256": "c06c793dba7c0379a0f669bd5f00695d0ff28d5c756c5a334839853d5d73e501",
+    "reconstructedRunExitCode": 0
+  }
+}

@@ -1,0 +1,38 @@
+node_modules/
+dist/
+.turbo/
+packages/*/dist/
+packages/*/.turbo/
+packages/*/node_modules/
+packages/*/.tmp-compile-output/
+packages/*/.tmp-preview-output/
+packages/*/.tmp-*/
+*.tsbuildinfo
+
+# Local harness state and generated workflow records
+.aidlc/
+.opencode/
+aidlc/
+
+# Application build output and generated workspace previews
+apps/cli/dist/
+apps/crafty-web/dist/
+apps/crafty-web/.next/
+apps/crafty-web/next-env.d.ts
+apps/crafty-web/certificates/
+apps/base/next-env.d.ts
+apps/web/*/next-env.d.ts
+apps/web/*/.next/
+apps/web/*/certificates/
+apps/web/*/node_modules/
+apps/web/*/dist/
+apps/web/marketing/out/
+test-workspaces/**/.crafty/
+packages/scene-renderer/pkg/
+packages/scene-renderer/rust/target/
+apps/web/base/public/
+
+# Next.js 16 `next dev` agent files — regenerated into every app dir on boot
+# (and into the bind mount when the compose dev container runs).
+**/AGENTS.md
+**/CLAUDE.md

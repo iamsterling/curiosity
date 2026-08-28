@@ -1,0 +1,25 @@
+{
+  "name": "@crafty/base",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": ".next/server/app/page.js",
+  "scripts": {
+    "dev": "next dev --hostname 0.0.0.0 --port 4173 --experimental-https --experimental-https-key ../editor/certificates/crafty-dev-key.pem --experimental-https-cert ../editor/certificates/crafty-dev-cert.pem --experimental-https-ca ../editor/certificates/crafty-dev-ca.pem ${CRAFTY_WEBPACK:+--webpack}",
+    "build": "next build",
+    "start": "next start --hostname 0.0.0.0 --port 4173",
+    "typecheck": "next typegen && tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "next": "16.3.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.24",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "typescript": "^5.8.3"
+  }
+}

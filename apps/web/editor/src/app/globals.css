@@ -1,0 +1,149 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* The theme is system-driven: next-themes (attribute="class") toggles the
+   `dark` class on <html>, and every dark: utility and the .dark tokens key
+   off that class — never off a data attribute the provider does not set.
+   The full token set exists in both modes, so the whole UI is dynamic:
+   no hardcoded light palette anywhere. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --radius: 0.625rem;
+  /* Crafty palette, light: warm paper with the brass accent. */
+  --background: oklch(0.975 0.003 80);
+  --foreground: oklch(0.22 0.008 75);
+  --card: oklch(1 0.001 80);
+  --card-foreground: oklch(0.22 0.008 75);
+  --popover: oklch(1 0.001 80);
+  --popover-foreground: oklch(0.22 0.008 75);
+  --primary: oklch(0.62 0.11 85);
+  --primary-foreground: oklch(0.99 0.005 85);
+  --secondary: oklch(0.94 0.005 80);
+  --secondary-foreground: oklch(0.3 0.01 75);
+  --muted: oklch(0.94 0.005 80);
+  --muted-foreground: oklch(0.5 0.01 75);
+  --accent: oklch(0.93 0.02 85);
+  --accent-foreground: oklch(0.35 0.05 85);
+  --destructive: oklch(0.58 0.19 25);
+  --destructive-foreground: oklch(0.99 0.005 80);
+  --border: oklch(0.88 0.006 80);
+  --input: oklch(0.88 0.006 80);
+  --ring: oklch(0.62 0.11 85);
+  --chart-1: oklch(0.62 0.11 85);
+  --chart-2: oklch(0.6 0.1 155);
+  --chart-3: oklch(0.55 0.09 220);
+  --chart-4: oklch(0.65 0.12 40);
+  --chart-5: oklch(0.62 0.1 300);
+  --sidebar: oklch(0.96 0.003 80);
+  --sidebar-foreground: oklch(0.22 0.008 75);
+  --sidebar-primary: oklch(0.62 0.11 85);
+  --sidebar-primary-foreground: oklch(0.99 0.005 85);
+  --sidebar-accent: oklch(0.92 0.008 80);
+  --sidebar-accent-foreground: oklch(0.3 0.01 75);
+  --sidebar-border: oklch(0.88 0.006 80);
+  --sidebar-ring: oklch(0.62 0.11 85);
+}
+
+.dark {
+  /* Crafty palette, dark: brass accent on near-black. */
+  --background: oklch(0.11 0.002 75);
+  --foreground: oklch(0.92 0.004 80);
+  --card: oklch(0.13 0.003 75);
+  --card-foreground: oklch(0.92 0.004 80);
+  --popover: oklch(0.13 0.003 75);
+  --popover-foreground: oklch(0.92 0.004 80);
+  --primary: oklch(0.76 0.09 85);
+  --primary-foreground: oklch(0.16 0.02 75);
+  --secondary: oklch(0.18 0.004 75);
+  --secondary-foreground: oklch(0.9 0.005 80);
+  --muted: oklch(0.17 0.004 75);
+  --muted-foreground: oklch(0.62 0.008 75);
+  --accent: oklch(0.2 0.02 85);
+  --accent-foreground: oklch(0.93 0.03 85);
+  --destructive: oklch(0.6 0.16 22);
+  --destructive-foreground: oklch(0.98 0.005 80);
+  --border: oklch(0.22 0.004 75);
+  --input: oklch(0.22 0.004 75);
+  --ring: oklch(0.76 0.09 85);
+  --chart-1: oklch(0.76 0.09 85);
+  --chart-2: oklch(0.7 0.1 155);
+  --chart-3: oklch(0.65 0.09 220);
+  --chart-4: oklch(0.75 0.12 40);
+  --chart-5: oklch(0.72 0.1 300);
+  --sidebar: oklch(0.12 0.003 75);
+  --sidebar-foreground: oklch(0.92 0.004 80);
+  --sidebar-primary: oklch(0.76 0.09 85);
+  --sidebar-primary-foreground: oklch(0.16 0.02 75);
+  --sidebar-accent: oklch(0.19 0.006 75);
+  --sidebar-accent-foreground: oklch(0.93 0.02 85);
+  --sidebar-border: oklch(0.22 0.004 75);
+  --sidebar-ring: oklch(0.76 0.09 85);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+}
+
+:root {
+  --window-top-inset: env(safe-area-inset-top, 0px);
+  --window-leading-inset: env(safe-area-inset-left, 0px);
+}
+
+@media (display-mode: window-controls-overlay) {
+  :root {
+    --window-top-inset: env(titlebar-area-height, 0px);
+  }
+}
+
+/* Chrome glass gating: the floating chrome wears the module's GPU glass once
+   a WebGPU frame has rendered (the canvas stage toggles `glass-active` on
+   <html>). Under GPU glass the DOM pills go fully transparent — no
+   background, no border, no CSS blur or shadow — the module draws the pill,
+   its bezel, springs and soft shadow, and the DOM keeps content and
+   interaction. Without the class (SSR, WebGPU unavailable, device loss) the
+   plain theme styling above is the appearance: the degradation doctrine. */
+.glass-active [data-chrome-glass] {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}

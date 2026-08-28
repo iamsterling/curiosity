@@ -1,0 +1,144 @@
+$ turbo run build
+• turbo 2.10.9
+
+   • Packages in scope: @crafty/admin, @crafty/base, @crafty/cms, @crafty/crafty, @crafty/editor, @crafty/editor-web, @crafty/marketing, @crafty/pen-import, @crafty/scene-api, @crafty/scene-model, @crafty/scene-renderer, @crafty/scene-store, @crafty/scene-sync
+   • Running build in 13 packages
+   • Remote caching disabled
+
+@crafty/marketing:build: cache hit, replaying logs ce24ff98da316b73
+@crafty/base:build: cache hit, replaying logs 83814296539b7380
+@crafty/scene-model:build: cache hit, replaying logs 8d351a8e8e79ed84
+@crafty/base:build: $ next build
+@crafty/base:build: ▲ Next.js 16.3.0 (Turbopack)
+@crafty/base:build: ✓ Running next.config.mjs took 7ms
+@crafty/base:build: 
+@crafty/base:build:   Creating an optimized production build ...
+@crafty/base:build: ✓ Compiled successfully in 154ms
+@crafty/base:build:   Running TypeScript ...
+@crafty/base:build:   Finished TypeScript in 1162ms ...
+@crafty/base:build:   Collecting page data using 5 workers ...
+@crafty/base:build:   Generating static pages using 5 workers (0/2) ...
+@crafty/base:build: ✓ Generating static pages using 5 workers (2/2) in 254ms
+@crafty/base:build:   Finalizing page optimization ...
+@crafty/base:build: 
+@crafty/base:build: Route (app)
+@crafty/base:build: ┌ ○ /_not-found
+@crafty/base:build: ├ ƒ /[[...marketing]]
+@crafty/marketing:build: $ next build
+@crafty/marketing:build: ▲ Next.js 16.3.0 (Turbopack)
+@crafty/marketing:build: ✓ Running next.config.mjs took 6ms
+@crafty/marketing:build: 
+@crafty/marketing:build:   Creating an optimized production build ...
+@crafty/marketing:build: ✓ Compiled successfully in 150ms
+@crafty/base:build: └ ƒ /api/health
+@crafty/base:build: 
+@crafty/base:build: 
+@crafty/base:build: ○  (Static)   prerendered as static content
+@crafty/base:build: ƒ  (Dynamic)  server-rendered on demand
+@crafty/base:build: 
+@crafty/cms:build: cache hit, replaying logs 680f8af28ff2d919
+@crafty/marketing:build:   Running TypeScript ...
+@crafty/scene-model:build: $ tsc -p tsconfig.json
+@crafty/marketing:build:   Finished TypeScript in 1972ms ...
+@crafty/marketing:build:   Collecting page data using 5 workers ...
+@crafty/marketing:build:   Generating static pages using 5 workers (0/4) ...
+@crafty/marketing:build:   Generating static pages using 5 workers (1/4) 
+@crafty/marketing:build:   Generating static pages using 5 workers (2/4) 
+@crafty/marketing:build:   Generating static pages using 5 workers (3/4) 
+@crafty/marketing:build: ✓ Generating static pages using 5 workers (4/4) in 265ms
+@crafty/marketing:build:   Finalizing page optimization ...
+@crafty/marketing:build: 
+@crafty/marketing:build: Route (app)
+@crafty/marketing:build: ┌ ○ /
+@crafty/marketing:build: ├ ○ /_not-found
+@crafty/marketing:build: └ ○ /docs
+@crafty/marketing:build: 
+@crafty/marketing:build: 
+@crafty/marketing:build: ○  (Static)  prerendered as static content
+@crafty/marketing:build: 
+@crafty/cms:build: $ tsc -p tsconfig.json
+@crafty/scene-renderer:build: cache hit, replaying logs 51d4860601454632
+@crafty/scene-renderer:build: $ bun run build:wasm && tsc -p tsconfig.json
+@crafty/scene-renderer:build: $ bun ../../scripts/build-scene-renderer-wasm.mjs
+@crafty/scene-renderer:build:     Finished `release` profile [optimized] target(s) in 0.06s
+@crafty/scene-renderer:build: [wasm-opt] unavailable; skipped (set WASM_OPT_REQUIRED=1 in CI)
+@crafty/scene-renderer:build: [wbg-closure-guard] patched: /Volumes/dev/crafty/packages/scene-renderer/pkg/crafty_renderer_wasm.js
+@crafty/scene-api:build: cache hit, replaying logs c1ffb74e3c7c7535
+@crafty/scene-api:build: $ tsc -p tsconfig.json
+@crafty/editor:build: cache hit, replaying logs 8f2fc8548640589b
+@crafty/editor:build: $ tsc -p tsconfig.json
+@crafty/scene-sync:build: cache hit, replaying logs 1670ac5c11f62800
+@crafty/scene-sync:build: $ tsc -p tsconfig.json
+@crafty/pen-import:build: cache hit, replaying logs 9dc10ef81d2bb63e
+@crafty/pen-import:build: $ tsc -p tsconfig.json
+@crafty/scene-store:build: cache hit, replaying logs 0b545017fbb7f98f
+@crafty/scene-store:build: $ tsc -p tsconfig.json
+@crafty/admin:build: cache hit, replaying logs ca50c19ef639303f
+@crafty/editor-web:build: cache hit, replaying logs eb5056dd32e8d9a8
+@crafty/editor-web:build: $ next build
+@crafty/editor-web:build: ▲ Next.js 16.3.0 (Turbopack)
+@crafty/editor-web:build: ✓ Running next.config.mjs took 13ms
+@crafty/editor-web:build: - Experiments (use with caution):
+@crafty/editor-web:build:   ⨯ reactDebugChannel
+@crafty/editor-web:build: 
+@crafty/editor-web:build:   Creating an optimized production build ...
+@crafty/editor-web:build: ✓ Compiled successfully in 893ms
+@crafty/editor-web:build:   Running TypeScript ...
+@crafty/editor-web:build:   Finished TypeScript in 3.5s ...
+@crafty/editor-web:build:   Collecting page data using 9 workers ...
+@crafty/editor-web:build:   Generating static pages using 9 workers (0/7) ...
+@crafty/editor-web:build:   Generating static pages using 9 workers (1/7) 
+@crafty/editor-web:build:   Generating static pages using 9 workers (3/7) 
+@crafty/editor-web:build:   Generating static pages using 9 workers (5/7) 
+@crafty/editor-web:build: ✓ Generating static pages using 9 workers (7/7) in 171ms
+@crafty/editor-web:build:   Finalizing page optimization ...
+@crafty/editor-web:build: 
+@crafty/editor-web:build: Route (app)
+@crafty/editor-web:build: ┌ ○ /_not-found
+@crafty/editor-web:build: ├ ƒ /api/files/[slug]/document
+@crafty/editor-web:build: ├ ƒ /api/files/[slug]/import
+@crafty/editor-web:build: ├ ƒ /api/files/[slug]/snapshot
+@crafty/editor-web:build: ├ ƒ /editor
+@crafty/editor-web:build: ├ ƒ /editor/[slug]
+@crafty/editor-web:build: ├ ○ /editor/apple-touch-icon.png
+@crafty/editor-web:build: ├ ○ /editor/icon-192.png
+@crafty/editor-web:build: ├ ○ /editor/icon-512.png
+@crafty/editor-web:build: ├ ○ /editor/icon.svg
+@crafty/editor-web:build: └ ○ /editor/manifest.webmanifest
+@crafty/editor-web:build: 
+@crafty/editor-web:build: 
+@crafty/editor-web:build: ○  (Static)   prerendered as static content
+@crafty/editor-web:build: ƒ  (Dynamic)  server-rendered on demand
+@crafty/editor-web:build: 
+@crafty/admin:build: $ next build
+@crafty/admin:build: ▲ Next.js 16.3.0 (Turbopack)
+@crafty/admin:build: ✓ Running next.config.mjs took 10ms
+@crafty/admin:build: - Experiments (use with caution):
+@crafty/admin:build:   ⨯ reactDebugChannel
+@crafty/admin:build: 
+@crafty/admin:build:   Creating an optimized production build ...
+@crafty/admin:build: ✓ Compiled successfully in 360ms
+@crafty/admin:build:   Running TypeScript ...
+@crafty/admin:build:   Finished TypeScript in 2.2s ...
+@crafty/admin:build:   Collecting page data using 4 workers ...
+@crafty/admin:build:   Generating static pages using 4 workers (0/2) ...
+@crafty/admin:build: ✓ Generating static pages using 4 workers (2/2) in 225ms
+@crafty/admin:build:   Finalizing page optimization ...
+@crafty/admin:build: 
+@crafty/admin:build: Route (app)
+@crafty/admin:build: ┌ ƒ /
+@crafty/admin:build: └ ○ /_not-found
+@crafty/admin:build: 
+@crafty/admin:build: 
+@crafty/admin:build: ○  (Static)   prerendered as static content
+@crafty/admin:build: ƒ  (Dynamic)  server-rendered on demand
+@crafty/admin:build: 
+@crafty/crafty:build: cache hit, replaying logs 952268441a73d6d2
+@crafty/crafty:build: $ tsc -p tsconfig.json
+
+ Tasks:    13 successful, 13 total
+Cached:    13 cached, 13 total
+  Time:    21ms >>> FULL TURBO
+
+
+exit_code=0

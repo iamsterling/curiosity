@@ -1,0 +1,13 @@
+$ bun --filter @crafty/editor test schema-v5-acceptance.test.ts dynamic-text-schema.test.ts
+@crafty/editor test: 
+@crafty/editor test:  RUN  v3.2.7 /Volumes/dev/crafty/packages/editor
+@crafty/editor test: 
+@crafty/editor test:  ✓ src/kernel/schema-v5-acceptance.test.ts (7 tests) 6ms
+@crafty/editor test:  ✓ src/kernel/dynamic-text-schema.test.ts (13 tests) 39ms
+@crafty/editor test: 
+@crafty/editor test:  Test Files  2 passed (2)
+@crafty/editor test:       Tests  20 passed (20)
+@crafty/editor test:    Start at  18:59:02
+@crafty/editor test:    Duration  954ms (transform 467ms, setup 0ms, collect 947ms, tests 45ms, environment 0ms, prepare 191ms)
+@crafty/editor test: 
+@crafty/editor test: Exited with code 0

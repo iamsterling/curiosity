@@ -1,0 +1,11 @@
+{
+  "contractVersion": 1,
+  "recordId": "invalid.budget",
+  "input": {},
+  "candidate": {},
+  "outputs": {},
+  "environment": {},
+  "provenance": {},
+  "observations": [],
+  "performanceBudgetMs": 16
+}

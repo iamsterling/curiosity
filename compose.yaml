@@ -1,0 +1,197 @@
+# Local Crafty (development): the full multi-zone platform as one compose
+# project. Compose is dev-only — production deploys to Dokploy
+# (deploy/README.md) — so every service here runs the DEV servers, with the
+# repo bind-mounted for hot reload.
+#
+# Each zone container builds the Dockerfile's `dev` target (toolchain +
+# full dependency install; the same toolchain the bundle uses) and runs its
+# zone's `next dev` server on its dev port. The base's rewrites target the
+# compose service names, so the three containers proxy to each other over
+# the compose network exactly like the deployed topology — but with live
+# source.
+#
+# Hot reload works because of three pieces working together:
+#  1. the repo is bind-mounted (source edits appear inside the containers),
+#  2. each zone's next.config.mjs sets watchOptions.pollIntervalMs — the
+#     Turbopack polling knob (verified in Next 16.3's hot-reloader) — since
+#     file-system events do not cross the Docker Desktop mount boundary,
+#  3. the editor container runs `turbo watch` alongside its dev server, so
+#     the shared workspace packages (@crafty/editor, scene-model, …) are
+#     rebuilt when their source changes and the zone hot-reloads the fresh
+#     dist.
+#
+# node_modules and .next are deliberately NOT bind-mounted: the anonymous
+# volumes keep the image's linux install and each container's own dev cache
+# (the host's macOS install would shadow the linux native binaries Next and
+# the renderer load).
+#
+#   docker compose up --build     # first build installs the Rust toolchain (~10-20 min)
+#   open https://127.0.0.1:4173   # base (HTTPS); editor :4175, admin :4176
+#
+# Data persists in the crafty-data volume, exactly like /data on Dokploy.
+
+services:
+  crafty-base:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    environment:
+      CRAFTY_DATA_DIR: /data
+      # Containers run the webpack dev server with watchpack polling
+      # (Turbopack's rust watcher cannot see bind-mount changes through
+      # Docker Desktop; watchpack's WATCHPACK_POLLING polls reliably).
+      CRAFTY_WEBPACK: "1"
+      WATCHPACK_POLLING: "true"
+      CRAFTY_DEV_HOSTNAME: 0.0.0.0
+      # Dev rewrites over the compose network — the same contract the
+      # deployed platform uses, service names instead of domains.
+      ZONE_EDITOR_URL: http://crafty-editor:4175
+      ZONE_ADMIN_URL: http://crafty-admin:4176
+    command:
+      - sh
+      - -c
+      - |
+        bun scripts/generate-dev-certificate.mjs &&
+        bun run build --filter @crafty/scene-model --filter @crafty/scene-renderer --filter @crafty/editor --filter @crafty/pen-import --filter @crafty/scene-store &&
+        exec bun run --filter @crafty/base dev
+    ports:
+      - "4173:4173" # base (HTTPS)
+    volumes:
+      - crafty-data:/data
+      - ./apps:/app/apps
+      - ./packages:/app/packages
+      - ./scripts:/app/scripts
+      - ./package.json:/app/package.json
+      - ./bun.lock:/app/bun.lock
+      - ./turbo.json:/app/turbo.json
+      - ./tsconfig.base.json:/app/tsconfig.base.json
+      - ./tsconfig.json:/app/tsconfig.json
+      - /app/apps/web/base/node_modules
+      - /app/apps/web/base/.next
+      - /app/packages/editor/node_modules
+      - /app/packages/pen-import/node_modules
+      - /app/packages/scene-model/node_modules
+      - /app/packages/scene-renderer/node_modules
+      - /app/packages/scene-store/node_modules
+    depends_on:
+      crafty-editor:
+        condition: service_started
+      crafty-admin:
+        condition: service_started
+    restart: unless-stopped
+
+  crafty-editor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    environment:
+      CRAFTY_DATA_DIR: /data
+      # Containers run the webpack dev server with watchpack polling
+      # (Turbopack's rust watcher cannot see bind-mount changes through
+      # Docker Desktop; watchpack's WATCHPACK_POLLING polls reliably).
+      CRAFTY_WEBPACK: "1"
+      WATCHPACK_POLLING: "true"
+      CRAFTY_DEV_HOSTNAME: 0.0.0.0
+    command:
+      - sh
+      - -c
+      - |
+        bun run build --filter @crafty/scene-model --filter @crafty/scene-renderer --filter @crafty/editor --filter @crafty/pen-import --filter @crafty/scene-store &&
+        bun run --filter @crafty/scene-renderer build:wasm &&
+        { bun x turbo watch build --filter @crafty/scene-model --filter @crafty/scene-renderer --filter @crafty/editor --filter @crafty/pen-import --filter @crafty/scene-store &
+          bun x turbo watch build:wasm --filter @crafty/scene-renderer &
+          exec bun run --filter @crafty/editor-web dev
+        }
+    ports:
+      - "4175:4175" # editor zone
+    volumes:
+      - crafty-data:/data
+      - ./apps:/app/apps
+      - ./packages:/app/packages
+      - ./scripts:/app/scripts
+      - ./package.json:/app/package.json
+      - ./bun.lock:/app/bun.lock
+      - ./turbo.json:/app/turbo.json
+      - ./tsconfig.base.json:/app/tsconfig.base.json
+      - ./tsconfig.json:/app/tsconfig.json
+      - /app/apps/web/editor/node_modules
+      - /app/apps/web/editor/.next
+      - /app/packages/editor/node_modules
+      - /app/packages/pen-import/node_modules
+      - /app/packages/scene-model/node_modules
+      - /app/packages/scene-renderer/node_modules
+      - /app/packages/scene-store/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  crafty-admin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    environment:
+      CRAFTY_DATA_DIR: /data
+      # Containers run the webpack dev server with watchpack polling
+      # (Turbopack's rust watcher cannot see bind-mount changes through
+      # Docker Desktop; watchpack's WATCHPACK_POLLING polls reliably).
+      CRAFTY_WEBPACK: "1"
+      WATCHPACK_POLLING: "true"
+      CRAFTY_DEV_HOSTNAME: 0.0.0.0
+    command:
+      - sh
+      - -c
+      - |
+        bun run build --filter @crafty/scene-model --filter @crafty/scene-renderer --filter @crafty/editor --filter @crafty/pen-import --filter @crafty/scene-store &&
+        exec bun run --filter @crafty/admin dev
+    ports:
+      - "4176:4176" # admin zone
+    volumes:
+      - crafty-data:/data
+      - ./apps:/app/apps
+      - ./packages:/app/packages
+      - ./scripts:/app/scripts
+      - ./package.json:/app/package.json
+      - ./bun.lock:/app/bun.lock
+      - ./turbo.json:/app/turbo.json
+      - ./tsconfig.base.json:/app/tsconfig.base.json
+      - ./tsconfig.json:/app/tsconfig.json
+      - /app/apps/web/admin/node_modules
+      - /app/apps/web/admin/.next
+      - /app/packages/editor/node_modules
+      - /app/packages/pen-import/node_modules
+      - /app/packages/scene-model/node_modules
+      - /app/packages/scene-renderer/node_modules
+      - /app/packages/scene-store/node_modules
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:18-alpine
+    container_name: postgres_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: crafty
+      POSTGRES_PASSWORD: crafty
+      POSTGRES_DB: crafty
+    ports:
+      - "${CRAFTY_POSTGRES_PORT:-5432}:5432"
+    volumes:
+      # Postgres 18+ images changed the data-directory layout: the mount goes
+      # on /var/lib/postgresql and the cluster lives in a major-version
+      # subdirectory (e.g. /var/lib/postgresql/18/docker). Mounting the old
+      # /var/lib/postgresql/data path makes the entrypoint refuse to start —
+      # it sees the directory as an unused mount it will not silently ignore.
+      # See https://github.com/docker-library/postgres/pull/1259.
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crafty -d crafty"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  crafty-data:
+  postgres_data:

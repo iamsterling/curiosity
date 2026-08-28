@@ -1,0 +1,51 @@
+$ CARGO_BUILD_JOBS=1 bun run typecheck
+$ turbo run typecheck
+• turbo 2.10.9
+
+   • Packages in scope: @crafty/admin, @crafty/base, @crafty/cms, @crafty/crafty, @crafty/editor, @crafty/editor-web, @crafty/marketing, @crafty/pen-import, @crafty/scene-api, @crafty/scene-model, @crafty/scene-renderer, @crafty/scene-store, @crafty/scene-sync
+   • Running typecheck in 13 packages
+   • Remote caching disabled
+
+@crafty/marketing:typecheck: cache hit, replaying logs d21b04ccc7cb314a
+@crafty/base:typecheck: cache hit, replaying logs 695749365a2e822b
+@crafty/scene-model:typecheck: cache hit, replaying logs bc6308d868ef737e
+@crafty/cms:typecheck: cache hit, replaying logs 15904e7ea5041500
+@crafty/base:typecheck: $ next typegen && tsc -p tsconfig.json --noEmit
+@crafty/base:typecheck: Generating route types...
+@crafty/base:typecheck: ✓ Types generated successfully
+@crafty/marketing:typecheck: $ next typegen && tsc -p tsconfig.json --noEmit
+@crafty/marketing:typecheck: Generating route types...
+@crafty/marketing:typecheck: ✓ Types generated successfully
+@crafty/cms:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/scene-model:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/scene-renderer:typecheck: cache miss, executing 80c54480e94b5e57
+@crafty/scene-renderer:typecheck: $ bun run build:wasm && tsc -p tsconfig.json --noEmit && tsc -p tsconfig.wasm.json --noEmit
+@crafty/scene-renderer:typecheck: $ bun ../../scripts/build-scene-renderer-wasm.mjs
+@crafty/scene-renderer:typecheck:     Finished `release` profile [optimized] target(s) in 0.20s
+@crafty/scene-renderer:typecheck: [wasm-opt] unavailable; skipped (set WASM_OPT_REQUIRED=1 in CI)
+@crafty/scene-renderer:typecheck: [wbg-closure-guard] patched: /Volumes/dev/crafty/packages/scene-renderer/pkg/crafty_renderer_wasm.js
+@crafty/editor:typecheck: cache miss, executing 760174feed280682
+@crafty/scene-api:typecheck: cache miss, executing c999c4962cca7c71
+@crafty/editor:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/scene-api:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/scene-sync:typecheck: cache miss, executing 86988522711c3191
+@crafty/pen-import:typecheck: cache miss, executing ee17db722ae7cdd4
+@crafty/scene-sync:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/pen-import:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/scene-store:typecheck: cache miss, executing 27e5d68b3e448718
+@crafty/scene-store:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/admin:typecheck: cache miss, executing bf1b66d3c6939009
+@crafty/editor-web:typecheck: cache miss, executing 766d6ee47eaa2166
+@crafty/crafty:typecheck: cache miss, executing 6409ada579fe358e
+@crafty/admin:typecheck: $ next typegen && tsc -p tsconfig.json --noEmit
+@crafty/crafty:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/editor-web:typecheck: $ next typegen && tsc -p tsconfig.json --noEmit
+@crafty/admin:typecheck: Generating route types...
+@crafty/editor-web:typecheck: Generating route types...
+@crafty/admin:typecheck: ✓ Types generated successfully
+@crafty/editor-web:typecheck: ✓ Types generated successfully
+
+ Tasks:    13 successful, 13 total
+Cached:    4 cached, 13 total
+  Time:    8.663s 
+

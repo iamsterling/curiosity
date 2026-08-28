@@ -1,0 +1,109 @@
+$ bun --filter @crafty/scene-renderer test
+@crafty/scene-renderer test:    Compiling crafty-renderer-wasm v0.0.0 (/Volumes/dev/crafty/packages/scene-renderer/rust)
+@crafty/scene-renderer test:     Finished `test` profile [unoptimized + debuginfo] target(s) in 2.37s
+@crafty/scene-renderer test:      Running unittests src/lib.rs (packages/scene-renderer/rust/target/debug/deps/crafty_renderer_wasm-ba0353169e29c519)
+@crafty/scene-renderer test: 
+@crafty/scene-renderer test: running 65 tests
+@crafty/scene-renderer test: test tests::chrome_surface_params_degrade_to_flat_past_the_cap ... ok
+@crafty/scene-renderer test: test tests::chrome_surface_params_pack_the_screen_fields ... ok
+@crafty/scene-renderer test: test tests::chrome_only_packets_take_the_split_path ... ok
+@crafty/scene-renderer test: test tests::authored_surface_params_default_the_inert_fields ... ok
+@crafty/scene-renderer test: test tests::device_size_matches_the_retired_hosts_canvas_sizing ... ok
+@crafty/scene-renderer test: test tests::glass_quad_usage_supports_corner_uploads ... ok
+@crafty/scene-renderer test: test tests::find_path_locates_nested_layers ... ok
+@crafty/scene-renderer test: test tests::chrome_surfaces_round_trip_serde ... ok
+@crafty/scene-renderer test: test layout::tests::resolves_a_row_deterministically ... ok
+@crafty/scene-renderer test: test tests::glass_surfaces_round_trip_serde_with_flat_defaulting_to_false ... ok
+@crafty/scene-renderer test: test tests::glass_split_encodings_partition_paths_between_scene_and_overlays ... ok
+@crafty/scene-renderer test: test layout::tests::matches_the_recorded_chrome_reference_at_three_widths ... ok
+@crafty/scene-renderer test: test tests::glass_surfaces_sort_by_z_index_then_order_never_array_order ... ok
+@crafty/scene-renderer test: test layout::tests::covers_vertical_wrap_alignment_hug_and_nesting ... ok
+@crafty/scene-renderer test: test tests::offscreen_usage_supports_the_glass_pyramid_copy_source ... ok
+@crafty/scene-renderer test: test tests::render_error_is_structured ... ok
+@crafty/scene-renderer test: test tests::overlay_blit_uses_vello_output_alpha_convention ... ok
+@crafty/scene-renderer test: test tests::render_packet_surfaces_encode_errors_before_device_errors ... ok
+@crafty/scene-renderer test: test tests::submit_orders_explicit_draw_calls ... ok
+@crafty/scene-renderer test: test tests::moving_a_parent_moves_its_children_exactly_once ... ok
+@crafty/scene-renderer test: test tests::render_packet_without_device_returns_structured_error_and_stays_usable ... ok
+@crafty/scene-renderer test: test tests::invisible_ancestor_names_every_cached_descendant_for_removal ... ok
+@crafty/scene-renderer test: test tests::split_packets_encode_scene_and_overlay_separately ... ok
+@crafty/scene-renderer test: test tests::batch_encode_of_the_final_scene_matches_full_encode_output ... ok
+@crafty/scene-renderer test: test tests::transforms_world_geometry_before_submission ... ok
+@crafty/scene-renderer test: test tests::delta_with_unknown_node_ids_falls_back_to_full_reencode ... ok
+@crafty/scene-renderer test: test text::tests::synthetic_callback_oracle_covers_segment_and_degenerate_classes ... ok
+@crafty/scene-renderer test: test text::tests::embedded_hole_glyphs_preserve_one_closed_subpath_per_source_contour ... ok
+@crafty/scene-renderer test: test text::tests::source_callback_oracle_reconstructs_every_embedded_hole_glyph_segment_once ... ok
+@crafty/scene-renderer test: test text::tests::synthetic_callback_oracle_rejects_one_segment_and_malformed_close_classes ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::contract_violations_are_rejected ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::culls_layers_outside_the_viewport_but_never_the_selection ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::empty_text_and_missing_glyphs_draw_nothing_but_never_fail ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::encoding_is_deterministic_across_runs ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::fill_rules_reach_the_style_stream ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::encode_frame_entry_is_deterministic ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::closed_subpaths_encode_the_wrap_segment_with_its_handles ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::command_transforms_compose_under_the_viewport_root ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::culled_parents_still_recurse_into_in_viewport_children ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::grid_draws_over_the_authored_packet_and_guides_on_top ... ok
+@crafty/scene-renderer test: test tests::visibility_removal_is_named_in_the_batch_without_a_draw_call ... ok
+@crafty/scene-renderer test: test text::tests::transformed_bezier_winding_preserves_nonzero_outer_hole_relationships ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::non_finite_overlay_positions_are_rejected ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::non_finite_path_coordinates_and_handles_are_rejected ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::invalid_viewports_are_rejected ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::lod_grid_renders_at_every_zoom_no_pixel_grid ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::mirrored_handles_derive_handle_in_from_handle_out ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::mixed_rects_and_paths_encode_in_z_index_order ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::non_finite_rect_bounds_are_rejected ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::non_finite_stroke_width_is_rejected ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::overlay_lines_cull_offscreen ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::non_finite_transforms_are_rejected_at_the_boundary ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::text_command_without_payload_is_a_contract_violation ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::stroke_descriptors_encode_a_stroke_style_and_zero_width_draws_nothing ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::overlay_lines_at_low_zoom_render_at_the_right_scale ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::unsorted_input_is_drawn_in_z_index_order ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::overlay_lines_at_low_zoom_snap_to_device_pixels ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::points_sort_by_order_key_within_a_subpath ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::scene_rects_encode_under_the_kernel_composition ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::text_commands_tessellate_glyphs_into_path_data ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::viewport_pan_and_zoom_are_applied_as_the_root_transform ... ok
+@crafty/scene-renderer test: test vello_encoder::tests::viewport_pixel_ratio_scales_the_root_transform ... ok
+@crafty/scene-renderer test: test tests::malformed_or_empty_delta_triggers_full_reencode ... ok
+@crafty/scene-renderer test: test tests::batch_sequences_merge_to_the_same_commands_as_full_references ... ok
+@crafty/scene-renderer test: test tests::shipped_wgsl_shaders_parse_and_validate ... ok
+@crafty/scene-renderer test: 
+@crafty/scene-renderer test: test result: ok. 65 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+@crafty/scene-renderer test: 
+@crafty/scene-renderer test:      Running tests/vello-prototype.rs (packages/scene-renderer/rust/target/debug/deps/vello_prototype-29626b7b70d9833e)
+@crafty/scene-renderer test: 
+@crafty/scene-renderer test: running 4 tests
+@crafty/scene-renderer test: test record_generation_harness ... ignored
+@crafty/scene-renderer test: test self_overlapping_bezier_differs_between_fill_rules ... ok
+@crafty/scene-renderer test: test representative_fixture_renders_byte_identically_across_runs ... ok
+@crafty/scene-renderer test: test ten_thousand_rect_fixture_renders_a_non_trivial_image ... ok
+@crafty/scene-renderer test: 
+@crafty/scene-renderer test: test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.31s
+@crafty/scene-renderer test: 
+@crafty/scene-renderer test:    Doc-tests crafty_renderer_wasm
+@crafty/scene-renderer test: 
+@crafty/scene-renderer test: running 0 tests
+@crafty/scene-renderer test: 
+@crafty/scene-renderer test: test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+@crafty/scene-renderer test: 
+@crafty/scene-renderer test: 
+@crafty/scene-renderer test:  RUN  v3.2.7 /Volumes/dev/crafty/packages/scene-renderer
+@crafty/scene-renderer test: 
+@crafty/scene-renderer test:  ✓ src/wasm/wbg-closure-guard.test.ts (2 tests) 2ms
+@crafty/scene-renderer test:  ✓ src/failure-policy.test.ts (21 tests) 4ms
+@crafty/scene-renderer test:  ✓ src/draw-protocol.test.ts (15 tests) 6ms
+@crafty/scene-renderer test:  ✓ src/wasm/webgpu-renderer.test.ts (6 tests) 3ms
+@crafty/scene-renderer test:  ✓ src/wasm/revision-lifecycle.test.ts (5 tests) 15ms
+@crafty/scene-renderer test:  ✓ src/wasm-bridge.test.ts (8 tests) 21ms
+@crafty/scene-renderer test:  ✓ src/index.test.ts (15 tests) 22ms
+@crafty/scene-renderer test:  ✓ src/wasm/webgpu-renderer-host.test.ts (16 tests) 6ms
+@crafty/scene-renderer test:  ✓ src/wasm/grid-overlay.test.ts (14 tests) 99ms
+@crafty/scene-renderer test: 
+@crafty/scene-renderer test:  Test Files  9 passed (9)
+@crafty/scene-renderer test:       Tests  102 passed (102)
+@crafty/scene-renderer test:    Start at  18:59:06
+@crafty/scene-renderer test:    Duration  525ms (transform 438ms, setup 0ms, collect 1.17s, tests 179ms, environment 1ms, prepare 580ms)
+@crafty/scene-renderer test: 
+@crafty/scene-renderer test: Exited with code 0
