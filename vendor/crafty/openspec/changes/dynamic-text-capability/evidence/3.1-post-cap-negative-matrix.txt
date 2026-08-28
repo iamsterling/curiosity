@@ -1,0 +1,95 @@
+{
+  "diagnostic": "LIVE_ISOLATION_NEGATIVE_MATRIX_OK",
+  "noFontBytesLoaded": true,
+  "lock": {
+    "version": 1,
+    "runtimeImageId": "sha256:16e22a550f3863206a3f701448c45f7912c6896a62de43add43bb9c86130c3e2",
+    "pythonSourceImageId": "sha256:655d35e6c06b6a1ac5ada097eec6b69df545d4bbc5f3135874cf351f20c4a03b",
+    "capsuleImageId": "sha256:1e5c21e21a3c055ed9170a1e89718c9db8939520eaf801b81e4cca69d68fbfc5",
+    "tag": "crafty-font-harness-capsule:local"
+  },
+  "results": [
+    {
+      "name": "bridge-network",
+      "diagnostic": "HARNESS_ADVERSARIAL_LIVE_ISOLATION_MISMATCH",
+      "failures": [
+        "filesystem-mounts",
+        "network-interfaces",
+        "network-routes"
+      ],
+      "containerId": "ad43ccde166a6cabd8c8394edff36bf41bfa2bbd12e656b255dfca04bcb4e610",
+      "cleanup": {
+        "containerId": "ad43ccde166a6cabd8c8394edff36bf41bfa2bbd12e656b255dfca04bcb4e610",
+        "removalReason": "normal-exit",
+        "attempted": true,
+        "commandSucceeded": true,
+        "absent": true
+      }
+    },
+    {
+      "name": "writable-root",
+      "diagnostic": "HARNESS_ADVERSARIAL_LIVE_ISOLATION_MISMATCH",
+      "failures": [
+        "filesystem-mounts",
+        "network-interfaces"
+      ],
+      "containerId": "290747e94cd7d042ff240a0aeaa3358404e4d82768e25b2b146ca3f9e33b8aae",
+      "cleanup": {
+        "containerId": "290747e94cd7d042ff240a0aeaa3358404e4d82768e25b2b146ca3f9e33b8aae",
+        "removalReason": "normal-exit",
+        "attempted": true,
+        "commandSucceeded": true,
+        "absent": true
+      }
+    },
+    {
+      "name": "extra-tmpfs",
+      "diagnostic": "HARNESS_ADVERSARIAL_LIVE_ISOLATION_MISMATCH",
+      "failures": [
+        "filesystem-mounts",
+        "network-interfaces"
+      ],
+      "containerId": "a03a0f90c0b86a756660b35c938b505ff11f9bb31c269479d39c06622566f87a",
+      "cleanup": {
+        "containerId": "a03a0f90c0b86a756660b35c938b505ff11f9bb31c269479d39c06622566f87a",
+        "removalReason": "normal-exit",
+        "attempted": true,
+        "commandSucceeded": true,
+        "absent": true
+      }
+    },
+    {
+      "name": "extra-bind",
+      "diagnostic": "HARNESS_ADVERSARIAL_LIVE_ISOLATION_MISMATCH",
+      "failures": [
+        "filesystem-mounts",
+        "network-interfaces"
+      ],
+      "containerId": "54aa71e7fab744086115bc55dc935b6d84d72b24811b4009bc8e3e2053fd4d05",
+      "cleanup": {
+        "containerId": "54aa71e7fab744086115bc55dc935b6d84d72b24811b4009bc8e3e2053fd4d05",
+        "removalReason": "normal-exit",
+        "attempted": true,
+        "commandSucceeded": true,
+        "absent": true
+      }
+    },
+    {
+      "name": "extra-device",
+      "diagnostic": "HARNESS_ADVERSARIAL_LIVE_ISOLATION_MISMATCH",
+      "failures": [
+        "filesystem-mounts",
+        "network-interfaces",
+        "device-inventory"
+      ],
+      "containerId": "ea5d7f461edb9be555a3c0b73fc7599c2f6cb9ea4de4458d3df73c415bbc7531",
+      "cleanup": {
+        "containerId": "ea5d7f461edb9be555a3c0b73fc7599c2f6cb9ea4de4458d3df73c415bbc7531",
+        "removalReason": "normal-exit",
+        "attempted": true,
+        "commandSucceeded": true,
+        "absent": true
+      }
+    }
+  ]
+}

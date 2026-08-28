@@ -1,0 +1,464 @@
+$ turbo run test
+• turbo 2.10.9
+
+   • Packages in scope: @crafty/admin, @crafty/base, @crafty/cms, @crafty/crafty, @crafty/editor, @crafty/editor-web, @crafty/marketing, @crafty/pen-import, @crafty/scene-api, @crafty/scene-model, @crafty/scene-renderer, @crafty/scene-store, @crafty/scene-sync
+   • Running test in 13 packages
+   • Remote caching disabled
+
+@crafty/marketing:build: cache hit, replaying logs ce24ff98da316b73
+@crafty/marketing:build: $ next build
+@crafty/marketing:build: ▲ Next.js 16.3.0 (Turbopack)
+@crafty/marketing:build: ✓ Running next.config.mjs took 6ms
+@crafty/marketing:build: 
+@crafty/marketing:build:   Creating an optimized production build ...
+@crafty/marketing:build: ✓ Compiled successfully in 150ms
+@crafty/marketing:build:   Running TypeScript ...
+@crafty/marketing:build:   Finished TypeScript in 1972ms ...
+@crafty/marketing:build:   Collecting page data using 5 workers ...
+@crafty/marketing:build:   Generating static pages using 5 workers (0/4) ...
+@crafty/marketing:build:   Generating static pages using 5 workers (1/4) 
+@crafty/marketing:build:   Generating static pages using 5 workers (2/4) 
+@crafty/marketing:build:   Generating static pages using 5 workers (3/4) 
+@crafty/marketing:build: ✓ Generating static pages using 5 workers (4/4) in 265ms
+@crafty/marketing:build:   Finalizing page optimization ...
+@crafty/marketing:build: 
+@crafty/marketing:build: Route (app)
+@crafty/marketing:build: ┌ ○ /
+@crafty/marketing:build: ├ ○ /_not-found
+@crafty/marketing:build: └ ○ /docs
+@crafty/marketing:build: 
+@crafty/marketing:build: 
+@crafty/marketing:build: ○  (Static)  prerendered as static content
+@crafty/marketing:build: 
+@crafty/base:build: cache hit, replaying logs 83814296539b7380
+@crafty/scene-model:build: cache hit, replaying logs 8d351a8e8e79ed84
+@crafty/base:build: $ next build
+@crafty/base:build: ▲ Next.js 16.3.0 (Turbopack)
+@crafty/base:build: ✓ Running next.config.mjs took 7ms
+@crafty/base:build: 
+@crafty/base:build:   Creating an optimized production build ...
+@crafty/base:build: ✓ Compiled successfully in 154ms
+@crafty/base:build:   Running TypeScript ...
+@crafty/base:build:   Finished TypeScript in 1162ms ...
+@crafty/base:build:   Collecting page data using 5 workers ...
+@crafty/base:build:   Generating static pages using 5 workers (0/2) ...
+@crafty/base:build: ✓ Generating static pages using 5 workers (2/2) in 254ms
+@crafty/base:build:   Finalizing page optimization ...
+@crafty/base:build: 
+@crafty/base:build: Route (app)
+@crafty/base:build: ┌ ○ /_not-found
+@crafty/base:build: ├ ƒ /[[...marketing]]
+@crafty/base:build: └ ƒ /api/health
+@crafty/base:build: 
+@crafty/base:build: 
+@crafty/base:build: ○  (Static)   prerendered as static content
+@crafty/base:build: ƒ  (Dynamic)  server-rendered on demand
+@crafty/base:build: 
+@crafty/scene-model:build: $ tsc -p tsconfig.json
+@crafty/marketing:test: cache hit, replaying logs a416fe5611cf04a7
+@crafty/base:test: cache hit, replaying logs 530491d14a733bbc
+@crafty/scene-model:test: cache hit, replaying logs 34789126d54cfaf6
+@crafty/marketing:test: $ vitest run --passWithNoTests
+@crafty/marketing:test: 
+@crafty/marketing:test:  RUN  v3.2.7 /Volumes/dev/crafty/apps/web/marketing
+@crafty/marketing:test: 
+@crafty/marketing:test: No test files found, exiting with code 0
+@crafty/marketing:test: 
+@crafty/marketing:test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)
+@crafty/marketing:test: exclude:  **/node_modules/**, **/dist/**, **/cypress/**, **/.{idea,git,cache,output,temp}/**, **/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*
+@crafty/marketing:test: 
+@crafty/base:test: $ vitest run --passWithNoTests
+@crafty/base:test: 
+@crafty/base:test:  RUN  v3.2.7 /Volumes/dev/crafty/apps/web/base
+@crafty/base:test: 
+@crafty/base:test: No test files found, exiting with code 0
+@crafty/base:test: 
+@crafty/base:test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)
+@crafty/base:test: exclude:  **/node_modules/**, **/dist/**, **/cypress/**, **/.{idea,git,cache,output,temp}/**, **/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*
+@crafty/base:test: 
+@crafty/scene-model:test: $ vitest run
+@crafty/scene-model:test: 
+@crafty/scene-model:test:  RUN  v3.2.7 /Volumes/dev/crafty/packages/scene-model
+@crafty/scene-model:test: 
+@crafty/scene-model:test:  ✓ src/index.test.ts (7 tests) 6ms
+@crafty/scene-model:test: 
+@crafty/scene-model:test:  Test Files  1 passed (1)
+@crafty/scene-model:test:       Tests  7 passed (7)
+@crafty/scene-model:test:    Start at  15:32:39
+@crafty/scene-model:test:    Duration  490ms (transform 108ms, setup 0ms, collect 123ms, tests 6ms, environment 0ms, prepare 92ms)
+@crafty/scene-model:test: 
+@crafty/cms:build: cache hit, replaying logs 680f8af28ff2d919
+@crafty/cms:build: $ tsc -p tsconfig.json
+@crafty/scene-renderer:build: cache hit, replaying logs 51d4860601454632
+@crafty/scene-renderer:build: $ bun run build:wasm && tsc -p tsconfig.json
+@crafty/scene-renderer:build: $ bun ../../scripts/build-scene-renderer-wasm.mjs
+@crafty/scene-renderer:build:     Finished `release` profile [optimized] target(s) in 0.06s
+@crafty/scene-renderer:build: [wasm-opt] unavailable; skipped (set WASM_OPT_REQUIRED=1 in CI)
+@crafty/scene-renderer:build: [wbg-closure-guard] patched: /Volumes/dev/crafty/packages/scene-renderer/pkg/crafty_renderer_wasm.js
+@crafty/cms:test: cache hit, replaying logs 54588e3e0ffd7701
+@crafty/cms:test: $ vitest run
+@crafty/cms:test: 
+@crafty/cms:test:  RUN  v3.2.7 /Volumes/dev/crafty/packages/cms
+@crafty/cms:test: 
+@crafty/cms:test:  ✓ src/kernel/boundaries.test.ts (2 tests) 3ms
+@crafty/cms:test:  ✓ src/services/services.test.ts (3 tests) 2ms
+@crafty/cms:test:  ✓ src/kernel/kernel.test.ts (20 tests) 23ms
+@crafty/cms:test: 
+@crafty/cms:test:  Test Files  3 passed (3)
+@crafty/cms:test:       Tests  25 passed (25)
+@crafty/cms:test:    Start at  15:32:40
+@crafty/cms:test:    Duration  581ms (transform 184ms, setup 0ms, collect 491ms, tests 28ms, environment 0ms, prepare 225ms)
+@crafty/cms:test: 
+@crafty/scene-renderer:test: cache hit, replaying logs 138078db40662e22
+@crafty/scene-renderer:test: $ bun ../../scripts/test-scene-renderer-wasm.mjs && vitest run
+@crafty/scene-renderer:test:    Compiling crafty-renderer-wasm v0.0.0 (/Volumes/dev/crafty/packages/scene-renderer/rust)
+@crafty/scene-renderer:test:     Finished `test` profile [unoptimized + debuginfo] target(s) in 1.80s
+@crafty/scene-renderer:test:      Running unittests src/lib.rs (packages/scene-renderer/rust/target/debug/deps/crafty_renderer_wasm-ba0353169e29c519)
+@crafty/scene-renderer:test: 
+@crafty/scene-renderer:test: running 65 tests
+@crafty/scene-renderer:test: test tests::chrome_only_packets_take_the_split_path ... ok
+@crafty/scene-renderer:test: test tests::chrome_surface_params_degrade_to_flat_past_the_cap ... ok
+@crafty/scene-renderer:test: test tests::chrome_surface_params_pack_the_screen_fields ... ok
+@crafty/scene-renderer:test: test tests::device_size_matches_the_retired_hosts_canvas_sizing ... ok
+@crafty/scene-renderer:test: test tests::glass_quad_usage_supports_corner_uploads ... ok
+@crafty/scene-renderer:test: test tests::authored_surface_params_default_the_inert_fields ... ok
+@crafty/scene-renderer:test: test tests::find_path_locates_nested_layers ... ok
+@crafty/scene-renderer:test: test tests::chrome_surfaces_round_trip_serde ... ok
+@crafty/scene-renderer:test: test tests::glass_surfaces_round_trip_serde_with_flat_defaulting_to_false ... ok
+@crafty/scene-renderer:test: test tests::glass_split_encodings_partition_paths_between_scene_and_overlays ... ok
+@crafty/scene-renderer:test: test tests::glass_surfaces_sort_by_z_index_then_order_never_array_order ... ok
+@crafty/scene-renderer:test: test layout::tests::resolves_a_row_deterministically ... ok
+@crafty/scene-renderer:test: test tests::overlay_blit_uses_vello_output_alpha_convention ... ok
+@crafty/scene-renderer:test: test tests::render_error_is_structured ... ok
+@crafty/scene-renderer:test: test layout::tests::matches_the_recorded_chrome_reference_at_three_widths ... ok
+@crafty/scene-renderer:test: test layout::tests::covers_vertical_wrap_alignment_hug_and_nesting ... ok
+@crafty/scene-renderer:test: test tests::offscreen_usage_supports_the_glass_pyramid_copy_source ... ok
+@crafty/scene-renderer:test: test tests::render_packet_surfaces_encode_errors_before_device_errors ... ok
+@crafty/scene-renderer:test: test tests::render_packet_without_device_returns_structured_error_and_stays_usable ... ok
+@crafty/scene-renderer:test: test tests::submit_orders_explicit_draw_calls ... ok
+@crafty/scene-renderer:test: test tests::moving_a_parent_moves_its_children_exactly_once ... ok
+@crafty/scene-renderer:test: test tests::transforms_world_geometry_before_submission ... ok
+@crafty/scene-renderer:test: test tests::split_packets_encode_scene_and_overlay_separately ... ok
+@crafty/scene-renderer:test: test text::tests::synthetic_callback_oracle_covers_segment_and_degenerate_classes ... ok
+@crafty/scene-renderer:test: test text::tests::synthetic_callback_oracle_rejects_one_segment_and_malformed_close_classes ... ok
+@crafty/scene-renderer:test: test tests::invisible_ancestor_names_every_cached_descendant_for_removal ... ok
+@crafty/scene-renderer:test: test tests::batch_encode_of_the_final_scene_matches_full_encode_output ... ok
+@crafty/scene-renderer:test: test tests::visibility_removal_is_named_in_the_batch_without_a_draw_call ... ok
+@crafty/scene-renderer:test: test text::tests::embedded_hole_glyphs_preserve_one_closed_subpath_per_source_contour ... ok
+@crafty/scene-renderer:test: test text::tests::source_callback_oracle_reconstructs_every_embedded_hole_glyph_segment_once ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::closed_subpaths_encode_the_wrap_segment_with_its_handles ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::command_transforms_compose_under_the_viewport_root ... ok
+@crafty/scene-renderer:test: test tests::delta_with_unknown_node_ids_falls_back_to_full_reencode ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::contract_violations_are_rejected ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::culls_layers_outside_the_viewport_but_never_the_selection ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::culled_parents_still_recurse_into_in_viewport_children ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::empty_text_and_missing_glyphs_draw_nothing_but_never_fail ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::grid_draws_over_the_authored_packet_and_guides_on_top ... ok
+@crafty/scene-renderer:test: test text::tests::transformed_bezier_winding_preserves_nonzero_outer_hole_relationships ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::invalid_viewports_are_rejected ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::fill_rules_reach_the_style_stream ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::encode_frame_entry_is_deterministic ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::mirrored_handles_derive_handle_in_from_handle_out ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::non_finite_rect_bounds_are_rejected ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::non_finite_overlay_positions_are_rejected ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::lod_grid_renders_at_every_zoom_no_pixel_grid ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::encoding_is_deterministic_across_runs ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::mixed_rects_and_paths_encode_in_z_index_order ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::non_finite_path_coordinates_and_handles_are_rejected ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::overlay_lines_at_low_zoom_render_at_the_right_scale ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::non_finite_stroke_width_is_rejected ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::overlay_lines_cull_offscreen ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::text_command_without_payload_is_a_contract_violation ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::stroke_descriptors_encode_a_stroke_style_and_zero_width_draws_nothing ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::unsorted_input_is_drawn_in_z_index_order ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::non_finite_transforms_are_rejected_at_the_boundary ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::overlay_lines_at_low_zoom_snap_to_device_pixels ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::points_sort_by_order_key_within_a_subpath ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::scene_rects_encode_under_the_kernel_composition ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::viewport_pan_and_zoom_are_applied_as_the_root_transform ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::viewport_pixel_ratio_scales_the_root_transform ... ok
+@crafty/scene-renderer:test: test vello_encoder::tests::text_commands_tessellate_glyphs_into_path_data ... ok
+@crafty/scene-renderer:test: test tests::malformed_or_empty_delta_triggers_full_reencode ... ok
+@crafty/scene-renderer:test: test tests::batch_sequences_merge_to_the_same_commands_as_full_references ... ok
+@crafty/scene-renderer:test: test tests::shipped_wgsl_shaders_parse_and_validate ... ok
+@crafty/scene-renderer:test: 
+@crafty/scene-renderer:test: test result: ok. 65 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+@crafty/scene-renderer:test: 
+@crafty/scene-renderer:test:      Running tests/vello-prototype.rs (packages/scene-renderer/rust/target/debug/deps/vello_prototype-29626b7b70d9833e)
+@crafty/scene-renderer:test: 
+@crafty/scene-renderer:test: running 4 tests
+@crafty/scene-renderer:test: test record_generation_harness ... ignored
+@crafty/scene-renderer:test: test self_overlapping_bezier_differs_between_fill_rules ... ok
+@crafty/scene-renderer:test: test representative_fixture_renders_byte_identically_across_runs ... ok
+@crafty/scene-renderer:test: test ten_thousand_rect_fixture_renders_a_non_trivial_image ... ok
+@crafty/scene-renderer:test: 
+@crafty/scene-renderer:test: test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.29s
+@crafty/scene-renderer:test: 
+@crafty/scene-renderer:test:    Doc-tests crafty_renderer_wasm
+@crafty/scene-renderer:test: 
+@crafty/scene-renderer:test: running 0 tests
+@crafty/scene-renderer:test: 
+@crafty/scene-renderer:test: test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+@crafty/scene-renderer:test: 
+@crafty/scene-renderer:test: 
+@crafty/scene-renderer:test:  RUN  v3.2.7 /Volumes/dev/crafty/packages/scene-renderer
+@crafty/scene-renderer:test: 
+@crafty/scene-renderer:test:  ✓ src/wasm/wbg-closure-guard.test.ts (2 tests) 1ms
+@crafty/scene-renderer:test:  ✓ src/failure-policy.test.ts (21 tests) 4ms
+@crafty/scene-renderer:test:  ✓ src/draw-protocol.test.ts (15 tests) 10ms
+@crafty/scene-renderer:test:  ✓ src/wasm/webgpu-renderer.test.ts (6 tests) 5ms
+@crafty/scene-renderer:test:  ✓ src/wasm/webgpu-renderer-host.test.ts (16 tests) 6ms
+@crafty/scene-renderer:test:  ✓ src/wasm-bridge.test.ts (8 tests) 7ms
+@crafty/scene-renderer:test:  ✓ src/index.test.ts (15 tests) 8ms
+@crafty/scene-renderer:test:  ✓ src/wasm/grid-overlay.test.ts (14 tests) 37ms
+@crafty/scene-api:build: cache hit, replaying logs c1ffb74e3c7c7535
+@crafty/scene-renderer:test:  ✓ src/wasm/revision-lifecycle.test.ts (5 tests) 23ms
+@crafty/scene-renderer:test: 
+@crafty/scene-renderer:test:  Test Files  9 passed (9)
+@crafty/scene-renderer:test:       Tests  102 passed (102)
+@crafty/scene-renderer:test:    Start at  20:23:04
+@crafty/scene-renderer:test:    Duration  477ms (transform 503ms, setup 0ms, collect 1.18s, tests 103ms, environment 1ms, prepare 536ms)
+@crafty/scene-renderer:test: 
+@crafty/scene-api:build: $ tsc -p tsconfig.json
+@crafty/scene-api:test: cache hit, replaying logs 754bf0ff329c7aad
+@crafty/scene-api:test: $ vitest run
+@crafty/scene-api:test: 
+@crafty/scene-api:test:  RUN  v3.2.7 /Volumes/dev/crafty/packages/scene-api
+@crafty/scene-api:test: 
+@crafty/scene-api:test:  ✓ src/react/index.test.ts (1 test) 2ms
+@crafty/scene-api:test:  ✓ src/resolver.test.ts (4 tests) 4ms
+@crafty/scene-api:test: 
+@crafty/scene-api:test:  Test Files  2 passed (2)
+@crafty/scene-api:test:       Tests  5 passed (5)
+@crafty/scene-api:test:    Start at  20:23:02
+@crafty/scene-api:test:    Duration  556ms (transform 165ms, setup 0ms, collect 280ms, tests 6ms, environment 0ms, prepare 132ms)
+@crafty/scene-api:test: 
+@crafty/editor:build: cache hit, replaying logs 8f2fc8548640589b
+@crafty/editor:build: $ tsc -p tsconfig.json
+@crafty/editor:test: cache hit, replaying logs de6f5aeb4c39f3cc
+@crafty/scene-sync:build: cache hit, replaying logs 1670ac5c11f62800
+@crafty/pen-import:build: cache hit, replaying logs 9dc10ef81d2bb63e
+@crafty/editor:test: $ vitest run
+@crafty/editor:test: 
+@crafty/editor:test:  RUN  v3.2.7 /Volumes/dev/crafty/packages/editor
+@crafty/editor:test: 
+@crafty/editor:test:  ✓ src/kernel/agent-activity.test.ts (11 tests) 9ms
+@crafty/editor:test:  ✓ src/kernel/glass-fills.test.ts (12 tests) 19ms
+@crafty/editor:test:  ✓ src/kernel/path-selection.test.ts (11 tests) 45ms
+@crafty/editor:test:  ✓ src/kernel/path-compound.test.ts (21 tests) 53ms
+@crafty/editor:test:  ✓ src/kernel/path-boolean.test.ts (34 tests) 100ms
+@crafty/editor:test:  ✓ src/kernel/index.test.ts (23 tests) 154ms
+@crafty/editor:test:  ✓ src/kernel/creation-style.test.ts (2 tests) 10ms
+@crafty/editor:test:  ✓ src/ui/editor/save-with-retry.test.ts (4 tests) 7ms
+@crafty/editor:test:  ✓ src/kernel/dynamic-text-schema.test.ts (13 tests) 50ms
+@crafty/editor:test:  ✓ src/kernel/interaction.test.ts (65 tests) 33ms
+@crafty/editor:test:  ✓ src/ui/editor/autosave.test.ts (5 tests) 18ms
+@crafty/editor:test:  ✓ src/kernel/clipboard.test.ts (21 tests) 56ms
+@crafty/editor:test:  ✓ src/kernel/document.test.ts (34 tests) 121ms
+@crafty/editor:test:  ✓ src/kernel/projection-source-map.test.ts (4 tests) 19ms
+@crafty/editor:test:  ✓ src/ui/editor/overlay.test.ts (15 tests) 16ms
+@crafty/editor:test:  ✓ src/kernel/pages.test.ts (15 tests) 70ms
+@crafty/editor:test:  ✓ src/kernel/snap.test.ts (25 tests) 58ms
+@crafty/editor:test:  ✓ src/kernel/path-commands.test.ts (12 tests) 49ms
+@crafty/editor:test:  ✓ src/kernel/coordinates.test.ts (9 tests) 24ms
+@crafty/editor:test:  ✓ src/ui/editor/persistence.test.ts (5 tests) 6ms
+@crafty/editor:test:  ✓ src/ui/editor/chrome-glass.test.ts (10 tests) 5ms
+@crafty/editor:test:  ✓ src/kernel/document-serialization.test.ts (6 tests) 15ms
+@crafty/editor:test:  ✓ src/kernel/hierarchy.test.ts (12 tests) 40ms
+@crafty/editor:test:  ✓ src/ui/editor/render-revision.test.ts (7 tests) 18ms
+@crafty/editor:test:  ✓ src/ui/editor/structure-projection.test.ts (7 tests) 6ms
+@crafty/editor:test:  ✓ src/kernel/component-resolution.test.ts (5 tests) 9ms
+@crafty/editor:test:  ✓ src/kernel/kernel-stream.test.ts (5 tests) 5ms
+@crafty/editor:test:  ✓ src/kernel/semantic-surfaces.test.ts (7 tests) 52ms
+@crafty/editor:test:  ✓ src/ui/editor/harness.test.ts (207 tests) 1028ms
+@crafty/editor:test:  ✓ src/ui/editor/creation-style-tools.test.ts (7 tests) 2ms
+@crafty/editor:test:  ✓ src/kernel/layout.test.ts (5 tests) 8ms
+@crafty/editor:test:  ✓ src/ui/editor/selection-action-placement.test.ts (12 tests) 5ms
+@crafty/editor:test:  ✓ src/kernel/vector-point-types.test.ts (16 tests) 39ms
+@crafty/editor:test:  ✓ src/kernel/schema-v5-acceptance.test.ts (7 tests) 16ms
+@crafty/editor:test:  ✓ src/ui/editor/tool-shortcuts.test.ts (5 tests) 2ms
+@crafty/editor:test:  ✓ src/ui/editor/theme-accent.test.ts (3 tests) 4ms
+@crafty/editor:test:  ✓ src/ui/editor/editing-overlays.test.ts (9 tests) 5ms
+@crafty/editor:test:  ✓ src/ui/editor/grid-host-render-loop.test.ts (16 tests) 6ms
+@crafty/editor:test:  ✓ src/kernel/measure-distances.test.ts (3 tests) 22ms
+@crafty/editor:test:  ✓ src/kernel/animation-resolution.test.ts (4 tests) 6ms
+@crafty/editor:test:  ✓ src/ui/editor/agent-activity-overlay.test.ts (2 tests) 3ms
+@crafty/editor:test:  ✓ src/ui/editor/canvas-render-context-lifecycle.test.ts (8 tests) 3ms
+@crafty/editor:test:  ✓ src/ui/editor/workspace.test.ts (1 test) 1ms
+@crafty/editor:test:  ✓ src/kernel/grid.test.ts (26 tests) 2113ms
+@crafty/editor:test:    ✓ fixed pixel grid > uses one authored grid scale at every zoom  1988ms
+@crafty/editor:test: 
+@crafty/editor:test:  Test Files  44 passed (44)
+@crafty/editor:test:       Tests  731 passed (731)
+@crafty/editor:test:    Start at  20:23:06
+@crafty/editor:test:    Duration  2.69s (transform 1.61s, setup 0ms, collect 6.42s, tests 4.33s, environment 37ms, prepare 3.77s)
+@crafty/editor:test: 
+@crafty/scene-sync:build: $ tsc -p tsconfig.json
+@crafty/pen-import:build: $ tsc -p tsconfig.json
+@crafty/scene-sync:test: cache hit, replaying logs 91f2f98074facd54
+@crafty/pen-import:test: cache hit, replaying logs 468d57be27fb0d50
+@crafty/scene-sync:test: $ vitest run
+@crafty/scene-sync:test: 
+@crafty/scene-sync:test:  RUN  v3.2.7 /Volumes/dev/crafty/packages/scene-sync
+@crafty/scene-sync:test: 
+@crafty/scene-sync:test:  ✓ src/index.test.ts (5 tests) 7ms
+@crafty/scene-sync:test: 
+@crafty/scene-sync:test:  Test Files  1 passed (1)
+@crafty/scene-sync:test:       Tests  5 passed (5)
+@crafty/scene-sync:test:    Start at  20:23:09
+@crafty/pen-import:test: $ vitest run
+@crafty/pen-import:test: 
+@crafty/pen-import:test:  RUN  v3.2.7 /Volumes/dev/crafty/packages/pen-import
+@crafty/pen-import:test: 
+@crafty/pen-import:test:  ✓ src/index.test.ts (13 tests) 11ms
+@crafty/pen-import:test: 
+@crafty/pen-import:test:  Test Files  1 passed (1)
+@crafty/pen-import:test:       Tests  13 passed (13)
+@crafty/pen-import:test:    Start at  20:23:09
+@crafty/pen-import:test:    Duration  592ms (transform 185ms, setup 0ms, collect 242ms, tests 11ms, environment 0ms, prepare 57ms)
+@crafty/pen-import:test: 
+@crafty/scene-sync:test:    Duration  595ms (transform 179ms, setup 0ms, collect 248ms, tests 7ms, environment 0ms, prepare 74ms)
+@crafty/scene-sync:test: 
+@crafty/scene-store:build: cache hit, replaying logs 0b545017fbb7f98f
+@crafty/scene-store:build: $ tsc -p tsconfig.json
+@crafty/scene-store:test: cache hit, replaying logs 1e013b8ba0e4033d
+@crafty/admin:build: cache hit, replaying logs ca50c19ef639303f
+@crafty/editor-web:build: cache hit, replaying logs eb5056dd32e8d9a8
+@crafty/scene-store:test: $ vitest run
+@crafty/scene-store:test: 
+@crafty/scene-store:test:  RUN  v3.2.7 /Volumes/dev/crafty/packages/scene-store
+@crafty/scene-store:test: 
+@crafty/scene-store:test:  ✓ src/loss-list-roundtrip.test.ts (8 tests) 248ms
+@crafty/scene-store:test:  ✓ src/index.test.ts (93 tests) 2280ms
+@crafty/scene-store:test: 
+@crafty/scene-store:test:  Test Files  2 passed (2)
+@crafty/scene-store:test:       Tests  101 passed (101)
+@crafty/scene-store:test:    Start at  20:23:10
+@crafty/scene-store:test:    Duration  2.98s (transform 325ms, setup 0ms, collect 693ms, tests 2.53s, environment 0ms, prepare 138ms)
+@crafty/scene-store:test: 
+@crafty/admin:build: $ next build
+@crafty/admin:build: ▲ Next.js 16.3.0 (Turbopack)
+@crafty/admin:build: ✓ Running next.config.mjs took 10ms
+@crafty/admin:build: - Experiments (use with caution):
+@crafty/admin:build:   ⨯ reactDebugChannel
+@crafty/admin:build: 
+@crafty/admin:build:   Creating an optimized production build ...
+@crafty/admin:build: ✓ Compiled successfully in 360ms
+@crafty/admin:build:   Running TypeScript ...
+@crafty/admin:build:   Finished TypeScript in 2.2s ...
+@crafty/admin:build:   Collecting page data using 4 workers ...
+@crafty/admin:build:   Generating static pages using 4 workers (0/2) ...
+@crafty/admin:build: ✓ Generating static pages using 4 workers (2/2) in 225ms
+@crafty/admin:build:   Finalizing page optimization ...
+@crafty/admin:build: 
+@crafty/admin:build: Route (app)
+@crafty/admin:build: ┌ ƒ /
+@crafty/admin:build: └ ○ /_not-found
+@crafty/admin:build: 
+@crafty/admin:build: 
+@crafty/admin:build: ○  (Static)   prerendered as static content
+@crafty/admin:build: ƒ  (Dynamic)  server-rendered on demand
+@crafty/admin:build: 
+@crafty/editor-web:build: $ next build
+@crafty/editor-web:build: ▲ Next.js 16.3.0 (Turbopack)
+@crafty/editor-web:build: ✓ Running next.config.mjs took 13ms
+@crafty/editor-web:build: - Experiments (use with caution):
+@crafty/editor-web:build:   ⨯ reactDebugChannel
+@crafty/editor-web:build: 
+@crafty/editor-web:build:   Creating an optimized production build ...
+@crafty/editor-web:build: ✓ Compiled successfully in 893ms
+@crafty/editor-web:build:   Running TypeScript ...
+@crafty/editor-web:build:   Finished TypeScript in 3.5s ...
+@crafty/editor-web:build:   Collecting page data using 9 workers ...
+@crafty/editor-web:build:   Generating static pages using 9 workers (0/7) ...
+@crafty/editor-web:build:   Generating static pages using 9 workers (1/7) 
+@crafty/editor-web:build:   Generating static pages using 9 workers (3/7) 
+@crafty/editor-web:build:   Generating static pages using 9 workers (5/7) 
+@crafty/editor-web:build: ✓ Generating static pages using 9 workers (7/7) in 171ms
+@crafty/editor-web:build:   Finalizing page optimization ...
+@crafty/editor-web:build: 
+@crafty/editor-web:build: Route (app)
+@crafty/editor-web:build: ┌ ○ /_not-found
+@crafty/editor-web:build: ├ ƒ /api/files/[slug]/document
+@crafty/editor-web:build: ├ ƒ /api/files/[slug]/import
+@crafty/editor-web:build: ├ ƒ /api/files/[slug]/snapshot
+@crafty/editor-web:build: ├ ƒ /editor
+@crafty/editor-web:build: ├ ƒ /editor/[slug]
+@crafty/editor-web:build: ├ ○ /editor/apple-touch-icon.png
+@crafty/editor-web:build: ├ ○ /editor/icon-192.png
+@crafty/editor-web:build: ├ ○ /editor/icon-512.png
+@crafty/editor-web:build: ├ ○ /editor/icon.svg
+@crafty/editor-web:build: └ ○ /editor/manifest.webmanifest
+@crafty/editor-web:build: 
+@crafty/editor-web:build: 
+@crafty/editor-web:build: ○  (Static)   prerendered as static content
+@crafty/editor-web:build: ƒ  (Dynamic)  server-rendered on demand
+@crafty/editor-web:build: 
+@crafty/crafty:build: cache hit, replaying logs 952268441a73d6d2
+@crafty/crafty:build: $ tsc -p tsconfig.json
+@crafty/editor-web:test: cache hit, replaying logs 53de94787de30dba
+@crafty/admin:test: cache hit, replaying logs 54e521db944d2d42
+@crafty/editor-web:test: $ vitest run --passWithNoTests
+@crafty/editor-web:test: 
+@crafty/editor-web:test:  RUN  v3.2.7 /Volumes/dev/crafty/apps/web/editor
+@crafty/editor-web:test: 
+@crafty/editor-web:test:  ✓ benchmarks/renderer-wasm.test.ts (1 test) 1ms
+@crafty/editor-web:test:  ✓ src/app/editor/manifest.webmanifest/route.test.ts (1 test) 2ms
+@crafty/editor-web:test:  ✓ benchmarks/editor-layout-rsc-boundary.test.ts (11 tests) 24ms
+@crafty/editor-web:test: stdout | benchmarks/protocol-v2-batch.test.ts > protocol v2 changed-node batch (real WASM encoder) > keeps the 1,000-node changed batch faster than the full re-encode
+@crafty/editor-web:test: protocol-v2-batch: full re-encode 1.040 ms, batch 0.311 ms, median speedup 3.35x on 1000 nodes with 100 changed (21 samples, 5 warmup passes)
+@crafty/editor-web:test: 
+@crafty/editor-web:test:  ✓ benchmarks/protocol-v2-batch.test.ts (3 tests) 143ms
+@crafty/editor-web:test:  ✓ benchmarks/encode-parity.test.ts (10 tests | 1 skipped) 111ms
+@crafty/editor-web:test:  ✓ benchmarks/pen-drag-regression.test.ts (1 test) 13ms
+@crafty/editor-web:test:  ✓ src/app/api/files/[slug]/document/route.test.ts (2 tests) 50ms
+@crafty/editor-web:test:  ✓ benchmarks/selection-actions-mounted.test.tsx (5 tests) 29ms
+@crafty/editor-web:test: 
+@crafty/editor-web:test:  Test Files  8 passed (8)
+@crafty/editor-web:test:       Tests  33 passed | 1 skipped (34)
+@crafty/editor-web:test:    Start at  20:23:28
+@crafty/editor-web:test:    Duration  839ms (transform 847ms, setup 0ms, collect 2.11s, tests 374ms, environment 1ms, prepare 432ms)
+@crafty/editor-web:test: 
+@crafty/admin:test: $ vitest run --passWithNoTests
+@crafty/admin:test: 
+@crafty/admin:test:  RUN  v3.2.7 /Volumes/dev/crafty/apps/web/admin
+@crafty/admin:test: 
+@crafty/admin:test: No test files found, exiting with code 0
+@crafty/admin:test: 
+@crafty/admin:test: include: **/*.{test,spec}.?(c|m)[jt]s?(x)
+@crafty/admin:test: exclude:  **/node_modules/**, **/dist/**, **/cypress/**, **/.{idea,git,cache,output,temp}/**, **/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build,eslint,prettier}.config.*
+@crafty/admin:test: 
+@crafty/crafty:test: cache hit, replaying logs b80a49e6415f3323
+@crafty/crafty:test: $ vitest run
+@crafty/crafty:test: 
+@crafty/crafty:test:  RUN  v3.2.7 /Volumes/dev/crafty/apps/cli
+@crafty/crafty:test: 
+@crafty/crafty:test:  ✓ src/faces.test.ts (8 tests) 3ms
+@crafty/crafty:test: /private/tmp/crafty-cli-save-A8yt2Q/alpha.ui
+@crafty/crafty:test: /tmp/crafty-cli-save-O8tm7j/out/alpha.ui
+@crafty/crafty:test: /tmp/crafty-cli-save-qcpYtu/out/alpha.ui
+@crafty/crafty:test: Usage: crafty save <slug> [dir.ui]
+@crafty/crafty:test: Usage: crafty save <slug> [dir.ui]
+@crafty/crafty:test: No stored file ghost was found at /tmp/crafty-cli-save-J217UP/files/ghost.ui
+@crafty/crafty:test: /tmp/crafty-cli-load-2SHQhv/out/alpha.ui
+@crafty/crafty:test: beta
+@crafty/crafty:test: beta
+@crafty/crafty:test: Usage: crafty load <slug> [dir.ui]
+@crafty/crafty:test: Usage: crafty load <slug> [dir.ui]
+@crafty/crafty:test: No .ui package found at /tmp/crafty-cli-load-hKSqgk/missing.ui
+@crafty/crafty:test: Refusing to load /tmp/crafty-cli-load-N5YaJB/garbage.ui: UI_PARSE_FAILED:manifest.ui is not valid JSON
+@crafty/crafty:test: Refusing to load /tmp/crafty-cli-load-wiP2q2/bad.ui: [DOCUMENT_INVALID] Document payload is missing a numeric schema version. (/)
+@crafty/crafty:test: Refusing to load /tmp/crafty-cli-load-n3Oi5Y/bare.ui: UI_ENTRY_MISSING:document
+@crafty/crafty:test: beta
+@crafty/crafty:test:  ✓ src/package-faces.test.ts (13 tests) 168ms
+@crafty/crafty:test: 
+@crafty/crafty:test:  Test Files  2 passed (2)
+@crafty/crafty:test:       Tests  21 passed (21)
+@crafty/crafty:test:    Start at  20:23:12
+@crafty/crafty:test:    Duration  925ms (transform 273ms, setup 0ms, collect 427ms, tests 171ms, environment 0ms, prepare 231ms)
+@crafty/crafty:test: 
+
+ Tasks:    26 successful, 26 total
+Cached:    26 cached, 26 total
+  Time:    23ms >>> FULL TURBO
+

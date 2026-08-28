@@ -1,0 +1,56 @@
+name: scene-renderer
+
+on:
+  push:
+    paths:
+      - "packages/scene-renderer/**"
+      - "packages/scene-model/**"
+      - "scripts/build-scene-renderer-wasm.mjs"
+      - "scripts/test-scene-renderer-wasm.mjs"
+      - "bun.lock"
+      - ".github/workflows/scene-renderer.yml"
+  pull_request:
+    paths:
+      - "packages/scene-renderer/**"
+      - "packages/scene-model/**"
+      - "scripts/build-scene-renderer-wasm.mjs"
+      - "scripts/test-scene-renderer-wasm.mjs"
+      - "bun.lock"
+      - ".github/workflows/scene-renderer.yml"
+
+concurrency:
+  group: scene-renderer-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: [self-hosted, linux, x64]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: 1.97.1
+          target: wasm32-unknown-unknown
+          components: rustfmt, clippy
+      - run: bun install --frozen-lockfile
+      - name: Install native and WASM build tools
+        run: sudo apt-get update && sudo apt-get install --yes build-essential binaryen
+      - name: Install wasm-bindgen-cli at the locked version
+        run: |
+          VERSION=$(cargo metadata --format-version 1 --manifest-path packages/scene-renderer/rust/Cargo.toml \
+            | python3 -c "import json,sys;print(next(p['version'] for p in json.load(sys.stdin)['packages'] if p['name']=='wasm-bindgen'))")
+          if ! wasm-bindgen --version 2>/dev/null | grep -Fq "wasm-bindgen $VERSION"; then
+            cargo install wasm-bindgen-cli --version "$VERSION" --locked --force
+          fi
+      - run: cargo fmt --check --manifest-path packages/scene-renderer/rust/Cargo.toml
+      - run: cargo clippy --manifest-path packages/scene-renderer/rust/Cargo.toml --all-targets -- -D warnings
+      - run: cargo test --manifest-path packages/scene-renderer/rust/Cargo.toml
+      - run: wasm-bindgen --version
+      - run: bun run --cwd packages/scene-renderer build:wasm
+        env:
+          WASM_OPT_REQUIRED: "1"
+      - run: bun run --cwd packages/scene-renderer typecheck
+      - run: bun run --cwd packages/scene-renderer test

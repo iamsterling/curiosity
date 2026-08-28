@@ -1,0 +1,144 @@
+=== timeout ===
+{
+  "diagnostic": "WATCHDOG_ABNORMAL_CLEANUP_OK",
+  "noFontBytesLoaded": true,
+  "lock": {
+    "version": 1,
+    "runtimeImageId": "sha256:16e22a550f3863206a3f701448c45f7912c6896a62de43add43bb9c86130c3e2",
+    "pythonSourceImageId": "sha256:655d35e6c06b6a1ac5ada097eec6b69df545d4bbc5f3135874cf351f20c4a03b",
+    "capsuleImageId": "sha256:1e5c21e21a3c055ed9170a1e89718c9db8939520eaf801b81e4cca69d68fbfc5",
+    "tag": "crafty-font-harness-capsule:local"
+  },
+  "result": {
+    "scenario": "timeout",
+    "diagnostic": "WATCHDOG_TIMEOUT",
+    "cleanup": {
+      "containerId": "c5d96667b50adc5d61f7f158ae3256e1c213b06066a774799e3c89fde7ccbe48",
+      "removalReason": "timeout",
+      "attempted": true,
+      "commandSucceeded": true,
+      "absent": true
+    }
+  }
+}
+=== SIGINT ===
+{
+  "diagnostic": "WATCHDOG_ABNORMAL_CLEANUP_OK",
+  "noFontBytesLoaded": true,
+  "lock": {
+    "version": 1,
+    "runtimeImageId": "sha256:16e22a550f3863206a3f701448c45f7912c6896a62de43add43bb9c86130c3e2",
+    "pythonSourceImageId": "sha256:655d35e6c06b6a1ac5ada097eec6b69df545d4bbc5f3135874cf351f20c4a03b",
+    "capsuleImageId": "sha256:1e5c21e21a3c055ed9170a1e89718c9db8939520eaf801b81e4cca69d68fbfc5",
+    "tag": "crafty-font-harness-capsule:local"
+  },
+  "result": {
+    "scenario": "SIGINT",
+    "diagnostic": "WATCHDOG_INTERRUPTED:SIGINT",
+    "cleanup": {
+      "containerId": "0aae1f8a58426fb7093b372c1b6efce07b8e69b4387babd7b206d50eb0c84c0c",
+      "removalReason": "signal:SIGINT",
+      "attempted": true,
+      "commandSucceeded": true,
+      "absent": true
+    }
+  }
+}
+=== SIGTERM ===
+{
+  "diagnostic": "WATCHDOG_ABNORMAL_CLEANUP_OK",
+  "noFontBytesLoaded": true,
+  "lock": {
+    "version": 1,
+    "runtimeImageId": "sha256:16e22a550f3863206a3f701448c45f7912c6896a62de43add43bb9c86130c3e2",
+    "pythonSourceImageId": "sha256:655d35e6c06b6a1ac5ada097eec6b69df545d4bbc5f3135874cf351f20c4a03b",
+    "capsuleImageId": "sha256:1e5c21e21a3c055ed9170a1e89718c9db8939520eaf801b81e4cca69d68fbfc5",
+    "tag": "crafty-font-harness-capsule:local"
+  },
+  "result": {
+    "scenario": "SIGTERM",
+    "diagnostic": "WATCHDOG_INTERRUPTED:SIGTERM",
+    "cleanup": {
+      "containerId": "f448efda53af86ef0dd3ca81c10173b0ced1241a15dc88320837f18eed63d9c5",
+      "removalReason": "signal:SIGTERM",
+      "attempted": true,
+      "commandSucceeded": true,
+      "absent": true
+    }
+  }
+}
+=== error ===
+{
+  "diagnostic": "WATCHDOG_ABNORMAL_CLEANUP_OK",
+  "noFontBytesLoaded": true,
+  "lock": {
+    "version": 1,
+    "runtimeImageId": "sha256:16e22a550f3863206a3f701448c45f7912c6896a62de43add43bb9c86130c3e2",
+    "pythonSourceImageId": "sha256:655d35e6c06b6a1ac5ada097eec6b69df545d4bbc5f3135874cf351f20c4a03b",
+    "capsuleImageId": "sha256:1e5c21e21a3c055ed9170a1e89718c9db8939520eaf801b81e4cca69d68fbfc5",
+    "tag": "crafty-font-harness-capsule:local"
+  },
+  "result": {
+    "scenario": "error",
+    "diagnostic": "WATCHDOG_CONTAINER_NONZERO:64:CAPSULE_MODE_REJECTED",
+    "cleanup": {
+      "containerId": "f1eeead4d847a1d4ac30f2ed148defa2233c34044449d8eb9f69dafbf6c39ada",
+      "removalReason": "normal-exit",
+      "attempted": true,
+      "commandSucceeded": true,
+      "absent": true
+    }
+  }
+}
+=== controller-loss ===
+{
+  "diagnostic": "DOCKER_PROVIDER_SELF_TEST_OK",
+  "noFontBytesLoaded": true,
+  "lock": {
+    "version": 1,
+    "runtimeImageId": "sha256:16e22a550f3863206a3f701448c45f7912c6896a62de43add43bb9c86130c3e2",
+    "pythonSourceImageId": "sha256:655d35e6c06b6a1ac5ada097eec6b69df545d4bbc5f3135874cf351f20c4a03b",
+    "capsuleImageId": "sha256:1e5c21e21a3c055ed9170a1e89718c9db8939520eaf801b81e4cca69d68fbfc5",
+    "tag": "crafty-font-harness-capsule:local"
+  },
+  "results": [
+    {
+      "mode": "controller-loss",
+      "containerId": "f374f29895cdbfa2cf1acb933aa8eafa4e69fbc080ec90138e50e78b25f17a85",
+      "imageId": "sha256:1e5c21e21a3c055ed9170a1e89718c9db8939520eaf801b81e4cca69d68fbfc5",
+      "removalReason": "normal-exit",
+      "stdout": "{\"diagnostic\":\"CAPSULE_CONTROLLER_EXIT\",\"descendantPid\":19,\"noFontBytesLoaded\":true}",
+      "cleanup": {
+        "containerId": "f374f29895cdbfa2cf1acb933aa8eafa4e69fbc080ec90138e50e78b25f17a85",
+        "removalReason": "normal-exit",
+        "attempted": true,
+        "commandSucceeded": true,
+        "absent": true
+      },
+      "isolation": {
+        "user": "65532:65532",
+        "networkMode": "none",
+        "readonlyRootfs": true,
+        "cgroupnsMode": "private",
+        "capDrop": [
+          "ALL"
+        ],
+        "securityOpt": [
+          "no-new-privileges:true"
+        ],
+        "init": true,
+        "pidsLimit": 32,
+        "memory": 268435456,
+        "memorySwap": 268435456,
+        "nanoCpus": 500000000,
+        "tmpfs": {
+          "/tmp": "rw,noexec,nosuid,nodev,size=16m,mode=1777"
+        },
+        "binds": null,
+        "devices": [],
+        "mounts": []
+      }
+    }
+  ]
+}
+=== residual containers ===

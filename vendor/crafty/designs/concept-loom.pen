@@ -1,0 +1,880 @@
+{
+  "version": "2.14",
+  "children": [
+    {
+      "type": "frame",
+      "id": "IDCWv",
+      "x": 0,
+      "y": 0,
+      "name": "Logo Exploration",
+      "clip": true,
+      "width": 1440,
+      "height": 1024,
+      "fill": "$ink",
+      "layout": "vertical",
+      "gap": 40,
+      "padding": 80,
+      "children": [
+        {
+          "type": "frame",
+          "id": "PE83W",
+          "name": "Header",
+          "width": "fill_container",
+          "gap": 12,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "mpU07",
+              "name": "Brand Label",
+              "fill": "$muted",
+              "content": "CRAFTY",
+              "fontFamily": "JetBrains Mono",
+              "fontSize": 11,
+              "fontWeight": "500",
+              "letterSpacing": 3
+            },
+            {
+              "type": "rectangle",
+              "cornerRadius": 1.5,
+              "id": "WyQEH",
+              "name": "Sep Dot",
+              "fill": "$muted",
+              "width": 3,
+              "height": 3
+            },
+            {
+              "type": "text",
+              "id": "qgee6",
+              "name": "Sheet Title",
+              "fill": "$hairline",
+              "content": "LOGO EXPLORATION",
+              "fontFamily": "JetBrains Mono",
+              "fontSize": 11,
+              "fontWeight": "normal",
+              "letterSpacing": 3
+            }
+          ]
+        },
+        {
+          "type": "rectangle",
+          "id": "hzx7w",
+          "name": "Divider",
+          "fill": "$hairline",
+          "width": "fill_container",
+          "height": 1
+        },
+        {
+          "type": "frame",
+          "id": "HoQ7X",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "gap": 80,
+          "children": [
+            {
+              "type": "frame",
+              "id": "Ls6cc",
+              "name": "Mark Section",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 24,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "I4HSaA",
+                  "name": "Section Label 01",
+                  "fill": "$muted",
+                  "content": "01  ICON MARK",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 11,
+                  "fontWeight": "normal",
+                  "letterSpacing": 2.4
+                },
+                {
+                  "type": "frame",
+                  "id": "WX35j",
+                  "name": "Mark Large",
+                  "width": 240,
+                  "height": 240,
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "id": "FdP3O",
+                      "x": 0,
+                      "y": 0,
+                      "name": "Weft 0",
+                      "fill": "$weft",
+                      "width": 240,
+                      "height": 60
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "l7vaN",
+                      "x": 0,
+                      "y": 90,
+                      "name": "Weft 1",
+                      "fill": "$weft",
+                      "width": 240,
+                      "height": 60
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "pPgGt",
+                      "x": 0,
+                      "y": 180,
+                      "name": "Weft 2",
+                      "fill": "$weft",
+                      "width": 240,
+                      "height": 60
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "XI1LU",
+                      "x": 0,
+                      "y": 0,
+                      "name": "Warp 0",
+                      "fill": "$warp",
+                      "width": 60,
+                      "height": 240
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "cgkgG",
+                      "x": 90,
+                      "y": 0,
+                      "name": "Warp 1",
+                      "fill": "$warp",
+                      "width": 60,
+                      "height": 240
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "p6TRe",
+                      "x": 180,
+                      "y": 0,
+                      "name": "Warp 2",
+                      "fill": "$warp",
+                      "width": 60,
+                      "height": 240
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "xFD1n",
+                      "x": 0,
+                      "y": 0,
+                      "name": "Dye 00",
+                      "fill": "$accent",
+                      "width": 60,
+                      "height": 60
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "s7R5pH",
+                      "x": 180,
+                      "y": 0,
+                      "name": "Dye 02",
+                      "fill": "$accent",
+                      "width": 60,
+                      "height": 60
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "YHtCm",
+                      "x": 90,
+                      "y": 90,
+                      "name": "Dye 11",
+                      "fill": "$accent",
+                      "width": 60,
+                      "height": 60
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "OXJkl",
+                      "x": 0,
+                      "y": 180,
+                      "name": "Dye 20",
+                      "fill": "$accent",
+                      "width": 60,
+                      "height": 60
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "r6Hgp8",
+                      "x": 180,
+                      "y": 180,
+                      "name": "Dye 22",
+                      "fill": "$accent",
+                      "width": 60,
+                      "height": 60
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Az3kP",
+              "name": "Details Panel",
+              "width": 400,
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 48,
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "W3UAfF",
+                  "name": "Lockup Section",
+                  "layout": "vertical",
+                  "gap": 20,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "HqmXz",
+                      "name": "Section Label 02",
+                      "fill": "$muted",
+                      "content": "02  HORIZONTAL LOCKUP",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 11,
+                      "fontWeight": "normal",
+                      "letterSpacing": 2.4
+                    },
+                    {
+                      "type": "frame",
+                      "id": "j7G1Z5",
+                      "name": "Lockup Row",
+                      "gap": 16,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "miplb",
+                          "name": "Lockup Mark",
+                          "width": 40,
+                          "height": 40,
+                          "layout": "none",
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "id": "Y4d3U",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Weft 0",
+                              "fill": "$weft",
+                              "width": 40,
+                              "height": 10
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "mRfdC",
+                              "x": 0,
+                              "y": 15,
+                              "name": "Weft 1",
+                              "fill": "$weft",
+                              "width": 40,
+                              "height": 10
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "PW7Sg",
+                              "x": 0,
+                              "y": 30,
+                              "name": "Weft 2",
+                              "fill": "$weft",
+                              "width": 40,
+                              "height": 10
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "wjcLH",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Warp 0",
+                              "fill": "$warp",
+                              "width": 10,
+                              "height": 40
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "u9txa1",
+                              "x": 15,
+                              "y": 0,
+                              "name": "Warp 1",
+                              "fill": "$warp",
+                              "width": 10,
+                              "height": 40
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "JPFNp",
+                              "x": 30,
+                              "y": 0,
+                              "name": "Warp 2",
+                              "fill": "$warp",
+                              "width": 10,
+                              "height": 40
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "zyoNm",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Dye 00",
+                              "fill": "$accent",
+                              "width": 10,
+                              "height": 10
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "uK1UB",
+                              "x": 30,
+                              "y": 0,
+                              "name": "Dye 02",
+                              "fill": "$accent",
+                              "width": 10,
+                              "height": 10
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "AXdEz",
+                              "x": 15,
+                              "y": 15,
+                              "name": "Dye 11",
+                              "fill": "$accent",
+                              "width": 10,
+                              "height": 10
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "VRieK",
+                              "x": 0,
+                              "y": 30,
+                              "name": "Dye 20",
+                              "fill": "$accent",
+                              "width": 10,
+                              "height": 10
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "EFiri",
+                              "x": 30,
+                              "y": 30,
+                              "name": "Dye 22",
+                              "fill": "$accent",
+                              "width": 10,
+                              "height": 10
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "K48v2",
+                          "name": "Wordmark",
+                          "fill": "$text-primary",
+                          "content": "CRAFTY",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 32,
+                          "fontWeight": "600",
+                          "letterSpacing": 7
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "c0Z8s",
+                  "name": "Icon Section",
+                  "layout": "vertical",
+                  "gap": 20,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ddXUZ",
+                      "name": "Section Label 03",
+                      "fill": "$muted",
+                      "content": "03  APP ICON",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 11,
+                      "fontWeight": "normal",
+                      "letterSpacing": 2.4
+                    },
+                    {
+                      "type": "frame",
+                      "id": "IBQDl",
+                      "name": "App Icon",
+                      "width": 128,
+                      "height": 128,
+                      "fill": "$panel",
+                      "cornerRadius": 28,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "R7Lvv",
+                          "x": 16,
+                          "y": 16,
+                          "name": "Icon Mark Host",
+                          "width": 96,
+                          "height": 96,
+                          "layout": "none",
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "id": "fMvBy",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Weft 0",
+                              "fill": "$weft",
+                              "width": 96,
+                              "height": 24
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "Upq8I",
+                              "x": 0,
+                              "y": 36,
+                              "name": "Weft 1",
+                              "fill": "$weft",
+                              "width": 96,
+                              "height": 24
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "PdKCv",
+                              "x": 0,
+                              "y": 72,
+                              "name": "Weft 2",
+                              "fill": "$weft",
+                              "width": 96,
+                              "height": 24
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "Q0QlH",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Warp 0",
+                              "fill": "$warp",
+                              "width": 24,
+                              "height": 96
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "oVfi0",
+                              "x": 36,
+                              "y": 0,
+                              "name": "Warp 1",
+                              "fill": "$warp",
+                              "width": 24,
+                              "height": 96
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "q8Q7B",
+                              "x": 72,
+                              "y": 0,
+                              "name": "Warp 2",
+                              "fill": "$warp",
+                              "width": 24,
+                              "height": 96
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "uj8Kx",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Dye 00",
+                              "fill": "$accent",
+                              "width": 24,
+                              "height": 24
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "gXqRS",
+                              "x": 72,
+                              "y": 0,
+                              "name": "Dye 02",
+                              "fill": "$accent",
+                              "width": 24,
+                              "height": 24
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "roeEA",
+                              "x": 36,
+                              "y": 36,
+                              "name": "Dye 11",
+                              "fill": "$accent",
+                              "width": 24,
+                              "height": 24
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "zKthl",
+                              "x": 0,
+                              "y": 72,
+                              "name": "Dye 20",
+                              "fill": "$accent",
+                              "width": 24,
+                              "height": 24
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "c5TC3",
+                              "x": 72,
+                              "y": 72,
+                              "name": "Dye 22",
+                              "fill": "$accent",
+                              "width": 24,
+                              "height": 24
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "PUryh",
+                  "name": "Size Section",
+                  "layout": "vertical",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "NJjaE",
+                      "name": "Section Label 04",
+                      "fill": "$muted",
+                      "content": "04  MINIMUM SIZE",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 11,
+                      "fontWeight": "normal",
+                      "letterSpacing": 2.4
+                    },
+                    {
+                      "type": "frame",
+                      "id": "n5EL4P",
+                      "name": "Size Row",
+                      "gap": 16,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "PbQAV",
+                          "name": "24px Host",
+                          "width": 24,
+                          "height": 24,
+                          "layout": "none",
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "id": "uHwnY",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Weft 0",
+                              "fill": "$weft",
+                              "width": 24,
+                              "height": 6
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "DMsm9",
+                              "x": 0,
+                              "y": 9,
+                              "name": "Weft 1",
+                              "fill": "$weft",
+                              "width": 24,
+                              "height": 6
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "HPVBP",
+                              "x": 0,
+                              "y": 18,
+                              "name": "Weft 2",
+                              "fill": "$weft",
+                              "width": 24,
+                              "height": 6
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "DI8w2",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Warp 0",
+                              "fill": "$warp",
+                              "width": 6,
+                              "height": 24
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "y247f",
+                              "x": 9,
+                              "y": 0,
+                              "name": "Warp 1",
+                              "fill": "$warp",
+                              "width": 6,
+                              "height": 24
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "nZMwa",
+                              "x": 18,
+                              "y": 0,
+                              "name": "Warp 2",
+                              "fill": "$warp",
+                              "width": 6,
+                              "height": 24
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "YI7Y2",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Dye 00",
+                              "fill": "$accent",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "U7bmvt",
+                              "x": 18,
+                              "y": 0,
+                              "name": "Dye 02",
+                              "fill": "$accent",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "stma0",
+                              "x": 9,
+                              "y": 9,
+                              "name": "Dye 11",
+                              "fill": "$accent",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "nfXHU",
+                              "x": 0,
+                              "y": 18,
+                              "name": "Dye 20",
+                              "fill": "$accent",
+                              "width": 6,
+                              "height": 6
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "jSMR5",
+                              "x": 18,
+                              "y": 18,
+                              "name": "Dye 22",
+                              "fill": "$accent",
+                              "width": 6,
+                              "height": 6
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "UWE0K",
+                          "name": "Label 24px",
+                          "fill": "$muted",
+                          "content": "24PX",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 10,
+                          "fontWeight": "normal",
+                          "letterSpacing": 2
+                        },
+                        {
+                          "type": "frame",
+                          "id": "MphPp",
+                          "name": "16px Host",
+                          "width": 16,
+                          "height": 16,
+                          "layout": "none",
+                          "children": [
+                            {
+                              "type": "rectangle",
+                              "id": "m11A90",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Weft 0",
+                              "fill": "$weft",
+                              "width": 16,
+                              "height": 4
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "LFxUm",
+                              "x": 0,
+                              "y": 6,
+                              "name": "Weft 1",
+                              "fill": "$weft",
+                              "width": 16,
+                              "height": 4
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "mfgO4",
+                              "x": 0,
+                              "y": 12,
+                              "name": "Weft 2",
+                              "fill": "$weft",
+                              "width": 16,
+                              "height": 4
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "bDtis",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Warp 0",
+                              "fill": "$warp",
+                              "width": 4,
+                              "height": 16
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "bL3yC",
+                              "x": 6,
+                              "y": 0,
+                              "name": "Warp 1",
+                              "fill": "$warp",
+                              "width": 4,
+                              "height": 16
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "lwYRy",
+                              "x": 12,
+                              "y": 0,
+                              "name": "Warp 2",
+                              "fill": "$warp",
+                              "width": 4,
+                              "height": 16
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "cgcOb",
+                              "x": 0,
+                              "y": 0,
+                              "name": "Dye 00",
+                              "fill": "$accent",
+                              "width": 4,
+                              "height": 4
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "YmhDT",
+                              "x": 12,
+                              "y": 0,
+                              "name": "Dye 02",
+                              "fill": "$accent",
+                              "width": 4,
+                              "height": 4
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "FUEIy",
+                              "x": 6,
+                              "y": 6,
+                              "name": "Dye 11",
+                              "fill": "$accent",
+                              "width": 4,
+                              "height": 4
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "j5GxPx",
+                              "x": 0,
+                              "y": 12,
+                              "name": "Dye 20",
+                              "fill": "$accent",
+                              "width": 4,
+                              "height": 4
+                            },
+                            {
+                              "type": "rectangle",
+                              "id": "upTMI",
+                              "x": 12,
+                              "y": 12,
+                              "name": "Dye 22",
+                              "fill": "$accent",
+                              "width": 4,
+                              "height": 4
+                            }
+                          ]
+                        },
+                        {
+                          "type": "text",
+                          "id": "PleGY",
+                          "name": "Label 16px",
+                          "fill": "$muted",
+                          "content": "16PX",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 10,
+                          "fontWeight": "normal",
+                          "letterSpacing": 2
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "accent": {
+      "type": "color",
+      "value": "#d9a441"
+    },
+    "ink": {
+      "type": "color",
+      "value": "#0c0b09"
+    },
+    "panel": {
+      "type": "color",
+      "value": "#16150f"
+    },
+    "hairline": {
+      "type": "color",
+      "value": "#2b2921"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#efede4"
+    },
+    "muted": {
+      "type": "color",
+      "value": "#9a9589"
+    },
+    "thread": {
+      "type": "color",
+      "value": "#4a473d"
+    },
+    "weft": {
+      "type": "color",
+      "value": "#38352d"
+    },
+    "warp": {
+      "type": "color",
+      "value": "#58544a"
+    }
+  },
+  "fileToken": "f11754bd-1310-4bbb-acb3-0586cd9781ab"
+}

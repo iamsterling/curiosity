@@ -1,0 +1,88 @@
+$ CARGO_TARGET_DIR=/tmp/crafty-2-7-cargo-target bun run typecheck (Turbo cache cleared after concurrent Cargo corruption)
+$ turbo run typecheck
+• turbo 2.10.9
+
+   • Packages in scope: @crafty/admin, @crafty/base, @crafty/cms, @crafty/crafty, @crafty/editor, @crafty/editor-web, @crafty/marketing, @crafty/pen-import, @crafty/scene-api, @crafty/scene-model, @crafty/scene-renderer, @crafty/scene-store, @crafty/scene-sync
+   • Running typecheck in 13 packages
+   • Remote caching disabled
+
+@crafty/base:typecheck: cache miss, executing 695749365a2e822b
+@crafty/cms:typecheck: cache miss, executing 15904e7ea5041500
+@crafty/scene-model:typecheck: cache miss, executing bc6308d868ef737e
+@crafty/marketing:typecheck: cache miss, executing d21b04ccc7cb314a
+@crafty/cms:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/base:typecheck: $ next typegen && tsc -p tsconfig.json --noEmit
+@crafty/marketing:typecheck: $ next typegen && tsc -p tsconfig.json --noEmit
+@crafty/scene-model:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/marketing:typecheck: Generating route types...
+@crafty/base:typecheck: Generating route types...
+@crafty/marketing:typecheck: ✓ Types generated successfully
+@crafty/base:typecheck: ✓ Types generated successfully
+@crafty/scene-renderer:typecheck: cache miss, executing 693affd6ea6a178b
+@crafty/scene-renderer:typecheck: $ bun run build:wasm && tsc -p tsconfig.json --noEmit && tsc -p tsconfig.wasm.json --noEmit
+@crafty/scene-renderer:typecheck: $ bun ../../scripts/build-scene-renderer-wasm.mjs
+@crafty/scene-renderer:typecheck: error[E0463]: can't find crate for `wasm_bindgen`
+@crafty/scene-renderer:typecheck:  --> src/lib.rs:8:5
+@crafty/scene-renderer:typecheck:   |
+@crafty/scene-renderer:typecheck: 8 | use wasm_bindgen::prelude::*;
+@crafty/scene-renderer:typecheck:   |     ^^^^^^^^^^^^ can't find crate
+@crafty/scene-renderer:typecheck: 
+@crafty/scene-renderer:typecheck: error[E0463]: can't find crate for `vello`
+@crafty/scene-renderer:typecheck:  --> src/vello_encoder.rs:7:5
+@crafty/scene-renderer:typecheck:   |
+@crafty/scene-renderer:typecheck: 7 | use vello::peniko::kurbo::{Affine, Rect, RoundedRect, Stroke};
+@crafty/scene-renderer:typecheck:   |     ^^^^^ can't find crate
+@crafty/scene-renderer:typecheck: 
+@crafty/scene-renderer:typecheck: error[E0463]: can't find crate for `vello_encoding`
+@crafty/scene-renderer:typecheck:  --> src/vello_encoder.rs:9:5
+@crafty/scene-renderer:typecheck:   |
+@crafty/scene-renderer:typecheck: 9 | use vello_encoding::{Encoding, Transform as VelloTransform};
+@crafty/scene-renderer:typecheck:   |     ^^^^^^^^^^^^^^ can't find crate
+@crafty/scene-renderer:typecheck: 
+@crafty/scene-renderer:typecheck: error: extern location for ttf_parser does not exist: /app/packages/scene-renderer/rust/target/wasm32-unknown-unknown/release/deps/libttf_parser-6d54095689686527.rlib
+@crafty/scene-renderer:typecheck:   --> src/text.rs:15:5
+@crafty/scene-renderer:typecheck:    |
+@crafty/scene-renderer:typecheck: 15 | use ttf_parser::{Face, GlyphId, OutlineBuilder};
+@crafty/scene-renderer:typecheck:    |     ^^^^^^^^^^
+@crafty/scene-renderer:typecheck: 
+@crafty/scene-renderer:typecheck: error[E0463]: can't find crate for `web_sys`
+@crafty/scene-renderer:typecheck:  --> src/wgpu_present.rs:9:5
+@crafty/scene-renderer:typecheck:   |
+@crafty/scene-renderer:typecheck: 9 | use web_sys::HtmlCanvasElement;
+@crafty/scene-renderer:typecheck:   |     ^^^^^^^ can't find crate
+@crafty/scene-renderer:typecheck: 
+@crafty/scene-renderer:typecheck: error[E0463]: can't find crate for `wgpu`
+@crafty/scene-renderer:typecheck:   --> src/wgpu_present.rs:10:5
+@crafty/scene-renderer:typecheck:    |
+@crafty/scene-renderer:typecheck: 10 | use wgpu::{
+@crafty/scene-renderer:typecheck:    |     ^^^^ can't find crate
+@crafty/scene-renderer:typecheck: 
+@crafty/scene-renderer:typecheck: For more information about this error, try `rustc --explain E0463`.
+@crafty/scene-renderer:typecheck:     Finished `release` profile [optimized] target(s) in 0.24s
+@crafty/scene-renderer:typecheck: [wasm-opt] unavailable; skipped (set WASM_OPT_REQUIRED=1 in CI)
+@crafty/scene-renderer:typecheck: [wbg-closure-guard] patched: /Volumes/dev/crafty/packages/scene-renderer/pkg/crafty_renderer_wasm.js
+@crafty/scene-api:typecheck: cache miss, executing e94fc52e5b67fa83
+@crafty/editor:typecheck: cache miss, executing c77d5376a9627d4a
+@crafty/editor:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/scene-api:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/scene-sync:typecheck: cache miss, executing 63c7325ef9acf6e4
+@crafty/pen-import:typecheck: cache miss, executing d2eb4c4b62bf7586
+@crafty/scene-sync:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/pen-import:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/scene-store:typecheck: cache miss, executing b5fce91c38bad01a
+@crafty/scene-store:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/editor-web:typecheck: cache miss, executing e7f7288cecc9d9c5
+@crafty/crafty:typecheck: cache miss, executing b17b7b80d0425198
+@crafty/admin:typecheck: cache miss, executing b725afa26cdd8cf9
+@crafty/admin:typecheck: $ next typegen && tsc -p tsconfig.json --noEmit
+@crafty/editor-web:typecheck: $ next typegen && tsc -p tsconfig.json --noEmit
+@crafty/crafty:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/admin:typecheck: Generating route types...
+@crafty/editor-web:typecheck: Generating route types...
+@crafty/admin:typecheck: ✓ Types generated successfully
+@crafty/editor-web:typecheck: ✓ Types generated successfully
+
+ Tasks:    13 successful, 13 total
+Cached:    0 cached, 13 total
+  Time:    8.809s 
+

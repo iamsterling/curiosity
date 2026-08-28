@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-labelledby="t">
+  <title id="t">Crafty</title>
+  <rect x="12" y="12" width="40" height="40" rx="8" fill="currentColor"/>
+  <g fill="#0c0b09">
+    <circle cx="12" cy="12" r="5"/><circle cx="52" cy="12" r="5"/>
+    <circle cx="12" cy="52" r="5"/><circle cx="52" cy="52" r="5"/>
+  </g>
+</svg>

@@ -1,0 +1,36 @@
+{
+  "name": "crafty",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "bun@1.3.14",
+  "workspaces": [
+    "apps/*",
+    "apps/web/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bun scripts/dev-next.mjs",
+    "dev:browser": "bun scripts/dev-next.mjs",
+    "dev:ipad": "bun scripts/dev-next.mjs",
+    "build:browser": "bun run build --filter @crafty/scene-model --filter @crafty/scene-renderer --filter @crafty/editor --filter @crafty/pen-import --filter @crafty/editor-web --filter @crafty/crafty",
+    "bundle": "bun scripts/build-crafty-binary.mjs",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:font-security-harness": "bun scripts/font-security-harness.test.mjs && node --test scripts/font-security-harness-controls.test.mjs",
+    "lint": "bun scripts/lint.mjs",
+    "format:check": "bun scripts/format-check.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.24",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "turbo": "^2.5.3",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.4"
+  },
+  "dependencies": {
+    "class-variance-authority": "^0.7.1",
+    "lucide-react": "^1.30.0"
+  }
+}

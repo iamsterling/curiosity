@@ -1,0 +1,62 @@
+✔ docker rm --force failure is fatal even when inspect reports absence (0.439084ms)
+✔ successful removal still fails unless absence is verified (0.085792ms)
+✔ successful removal and verified absence return explicit cleanup proof (0.322875ms)
+✔ cgroup v2 admission requires the live mount to be read-only (0.296875ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 84.694166
+{
+  "diagnostic": "DOCKER_PROVIDER_SELF_TEST_OK",
+  "noFontBytesLoaded": true,
+  "lock": {
+    "version": 1,
+    "runtimeImageId": "sha256:16e22a550f3863206a3f701448c45f7912c6896a62de43add43bb9c86130c3e2",
+    "pythonSourceImageId": "sha256:655d35e6c06b6a1ac5ada097eec6b69df545d4bbc5f3135874cf351f20c4a03b",
+    "capsuleImageId": "sha256:1e5c21e21a3c055ed9170a1e89718c9db8939520eaf801b81e4cca69d68fbfc5",
+    "tag": "crafty-font-harness-capsule:local"
+  },
+  "results": [
+    {
+      "mode": "controls",
+      "containerId": "02132b417173442bce4a70b4679db7094b4fbfd3874ac4d3b1c1d88c227ec681",
+      "imageId": "sha256:1e5c21e21a3c055ed9170a1e89718c9db8939520eaf801b81e4cca69d68fbfc5",
+      "removalReason": "normal-exit",
+      "stdout": "{\"diagnostic\":\"CAPSULE_CONTROLS_OK\",\"noFontBytesLoaded\":true,\"uploadDiagnostic\":\"HARNESS_UPLOAD_BYTES_EXCEEDED\",\"gpuDiagnostic\":\"HARNESS_GPU_BUFFER_BYTES_EXCEEDED\",\"cancellation\":\"HARNESS_CONTROLLER_CANCELLED\",\"escape\":\"HARNESS_PROCESS_GROUP_ESCAPE_DETECTED\"}",
+      "cleanup": {
+        "containerId": "02132b417173442bce4a70b4679db7094b4fbfd3874ac4d3b1c1d88c227ec681",
+        "removalReason": "normal-exit",
+        "attempted": true,
+        "commandSucceeded": true,
+        "absent": true
+      },
+      "isolation": {
+        "user": "65532:65532",
+        "networkMode": "none",
+        "readonlyRootfs": true,
+        "cgroupnsMode": "private",
+        "capDrop": [
+          "ALL"
+        ],
+        "securityOpt": [
+          "no-new-privileges:true"
+        ],
+        "init": true,
+        "pidsLimit": 32,
+        "memory": 268435456,
+        "memorySwap": 268435456,
+        "nanoCpus": 500000000,
+        "tmpfs": {
+          "/tmp": "rw,noexec,nosuid,nodev,size=16m,mode=1777"
+        },
+        "binds": null,
+        "devices": [],
+        "mounts": []
+      }
+    }
+  ]
+}

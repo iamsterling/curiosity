@@ -1,0 +1,24 @@
+$ bun openspec/changes/dynamic-text-capability/evidence/generate-canonical-bytes.mjs --check
+migration-v4-before.json bytes=2527 sha256=6c631df19c6e45861b0ce969400186215bb48a464c9ef84e20b158696d5bce4b
+migration-v5-after.json bytes=2537 sha256=7ff6d5578a078cb49818befacd0182c9a275bbaf001fd3506e2df867f2d5a6ee
+foundation-v4-before.json bytes=2186 sha256=b8d1ed6d2b73631f137dd5c92a0510bd0e36d528fe89726df605c98dab372a6a
+foundation-v5-after.json bytes=2186 sha256=ff0d9420991ff5069fbe02d92e18e87047b6b509f43bc5cab58637f6765e4424
+loss-list-v4-before.json bytes=9162 sha256=3df0884940a2f8fd384c7dd322d4bccb8b267ca8302aaadb735797e05c8e88f3
+loss-list-v5-after.json bytes=9162 sha256=49a5497d6b81752ebed9474f9fe1a8219ccd87f80649d726f070fcb5ae732cb0
+$ python3 openspec/changes/dynamic-text-capability/evidence/canonical-byte-diff.py
+PAIR v4 acceptance migration
+BEFORE migration-v4-before.json bytes=2527 sha256=6c631df19c6e45861b0ce969400186215bb48a464c9ef84e20b158696d5bce4b
+AFTER  migration-v5-after.json bytes=2537 sha256=7ff6d5578a078cb49818befacd0182c9a275bbaf001fd3506e2df867f2d5a6ee
+EDIT insert before[1471:1471]= after[1471:1481]=657874223a22222c2274
+EDIT replace before[2404:2405]=34 after[2414:2415]=35
+
+PAIR foundation document fixture
+BEFORE foundation-v4-before.json bytes=2186 sha256=b8d1ed6d2b73631f137dd5c92a0510bd0e36d528fe89726df605c98dab372a6a
+AFTER  foundation-v5-after.json bytes=2186 sha256=ff0d9420991ff5069fbe02d92e18e87047b6b509f43bc5cab58637f6765e4424
+EDIT replace before[2063:2064]=34 after[2063:2064]=35
+
+PAIR loss-list document fixture
+BEFORE loss-list-v4-before.json bytes=9162 sha256=3df0884940a2f8fd384c7dd322d4bccb8b267ca8302aaadb735797e05c8e88f3
+AFTER  loss-list-v5-after.json bytes=9162 sha256=49a5497d6b81752ebed9474f9fe1a8219ccd87f80649d726f070fcb5ae732cb0
+EDIT replace before[8727:8728]=34 after[8727:8728]=35
+

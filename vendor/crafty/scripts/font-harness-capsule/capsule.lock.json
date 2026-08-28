@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "runtimeImageId": "sha256:16e22a550f3863206a3f701448c45f7912c6896a62de43add43bb9c86130c3e2",
+  "pythonSourceImageId": "sha256:655d35e6c06b6a1ac5ada097eec6b69df545d4bbc5f3135874cf351f20c4a03b",
+  "capsuleImageId": "sha256:1e5c21e21a3c055ed9170a1e89718c9db8939520eaf801b81e4cca69d68fbfc5",
+  "tag": "crafty-font-harness-capsule:local"
+}

@@ -1,0 +1,343 @@
+{
+  "version": "2.14",
+  "children": [
+    {
+      "type": "frame",
+      "id": "D09Nl",
+      "x": 0,
+      "y": 0,
+      "name": "Crafty Logo",
+      "clip": true,
+      "width": 800,
+      "height": 600,
+      "fill": "#FFFFFF",
+      "layout": "vertical",
+      "gap": 60,
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "E7QNt2",
+          "name": "Logo Mark",
+          "gap": 24,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "iiyhp",
+              "name": "Icon",
+              "width": 64,
+              "height": 64,
+              "layout": "none",
+              "children": [
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 16,
+                  "id": "CMFvk",
+                  "x": 0,
+                  "y": 0,
+                  "name": "Icon BG",
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 225,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#7C3AED",
+                        "position": 0
+                      },
+                      {
+                        "color": "#A855F7",
+                        "position": 0.6
+                      },
+                      {
+                        "color": "#D946EF",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "width": 64,
+                  "height": 64
+                },
+                {
+                  "type": "path",
+                  "id": "PW5Ph",
+                  "x": 16,
+                  "y": 13,
+                  "name": "C Mark",
+                  "geometry": "M32 7c-4-4.5-9-7-15-7-9.4 0-17 8.5-17 19 0 10.5 7.6 19 17 19 6 0 11-2.5 15-7l-7-6c-2 3-5 5-8 5-4.5 0-9-4.5-9-11 0-6.5 4.5-11 9-11 3 0 6 2 8 5z",
+                  "viewBox": [
+                    0,
+                    0,
+                    32,
+                    38
+                  ],
+                  "fill": "#FFFFFF",
+                  "width": 32,
+                  "height": 38
+                },
+                {
+                  "type": "ellipse",
+                  "id": "Q61ds",
+                  "x": 46,
+                  "y": 10,
+                  "name": "Bezier Dot",
+                  "fill": "#FFFFFF",
+                  "width": 7,
+                  "height": 7
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "qXgp4",
+              "name": "Crafty Wordmark",
+              "fill": "#1A1A2E",
+              "content": "Crafty",
+              "fontFamily": "DM Sans",
+              "fontSize": 56,
+              "fontWeight": "700"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "k5izkt",
+          "name": "Tagline",
+          "fill": "#6B7280",
+          "content": "Design without limits",
+          "fontFamily": "DM Sans",
+          "fontSize": 18
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "E0WAPE",
+      "x": 880,
+      "y": 0,
+      "name": "Logo Dark",
+      "clip": true,
+      "width": 800,
+      "height": 600,
+      "fill": "#0F0D1A",
+      "layout": "vertical",
+      "gap": 60,
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "WAHs0",
+          "name": "Logo Mark Dark",
+          "gap": 24,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "o1PxxA",
+              "name": "Icon Dark",
+              "width": 64,
+              "height": 64,
+              "layout": "none",
+              "children": [
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 16,
+                  "id": "s3m3C",
+                  "x": 0,
+                  "y": 0,
+                  "name": "Icon BG Dark",
+                  "fill": {
+                    "type": "gradient",
+                    "gradientType": "linear",
+                    "enabled": true,
+                    "rotation": 225,
+                    "size": {
+                      "height": 1
+                    },
+                    "colors": [
+                      {
+                        "color": "#7C3AED",
+                        "position": 0
+                      },
+                      {
+                        "color": "#A855F7",
+                        "position": 0.6
+                      },
+                      {
+                        "color": "#D946EF",
+                        "position": 1
+                      }
+                    ]
+                  },
+                  "width": 64,
+                  "height": 64
+                },
+                {
+                  "type": "path",
+                  "id": "B50wQO",
+                  "x": 16,
+                  "y": 13,
+                  "name": "C Mark Dark",
+                  "geometry": "M32 7c-4-4.5-9-7-15-7-9.4 0-17 8.5-17 19 0 10.5 7.6 19 17 19 6 0 11-2.5 15-7l-7-6c-2 3-5 5-8 5-4.5 0-9-4.5-9-11 0-6.5 4.5-11 9-11 3 0 6 2 8 5z",
+                  "viewBox": [
+                    0,
+                    0,
+                    32,
+                    38
+                  ],
+                  "fill": "#FFFFFF",
+                  "width": 32,
+                  "height": 38
+                },
+                {
+                  "type": "ellipse",
+                  "id": "SB9zE",
+                  "x": 46,
+                  "y": 10,
+                  "name": "Bezier Dot Dark",
+                  "fill": "#FFFFFF",
+                  "width": 7,
+                  "height": 7
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "dtZs3",
+              "name": "Crafty Wordmark Dark",
+              "fill": "#FFFFFF",
+              "content": "Crafty",
+              "fontFamily": "DM Sans",
+              "fontSize": 56,
+              "fontWeight": "700"
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "hUOJh",
+          "name": "Tagline Dark",
+          "fill": "#6B7280",
+          "content": "Design without limits",
+          "fontFamily": "DM Sans",
+          "fontSize": 18
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "UB0aQ",
+      "x": 1760,
+      "y": 0,
+      "name": "App Icon",
+      "clip": true,
+      "width": 800,
+      "height": 600,
+      "fill": "#F5F3FF",
+      "layout": "vertical",
+      "gap": 40,
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "Mmw5C",
+          "name": "Icon Large",
+          "width": 192,
+          "height": 192,
+          "layout": "none",
+          "children": [
+            {
+              "type": "rectangle",
+              "cornerRadius": 44,
+              "id": "aRpRA",
+              "x": 0,
+              "y": 0,
+              "name": "Icon BG Large",
+              "fill": {
+                "type": "gradient",
+                "gradientType": "linear",
+                "enabled": true,
+                "rotation": 225,
+                "size": {
+                  "height": 1
+                },
+                "colors": [
+                  {
+                    "color": "#7C3AED",
+                    "position": 0
+                  },
+                  {
+                    "color": "#A855F7",
+                    "position": 0.6
+                  },
+                  {
+                    "color": "#D946EF",
+                    "position": 1
+                  }
+                ]
+              },
+              "width": 192,
+              "height": 192,
+              "effect": {
+                "type": "shadow",
+                "shadowType": "outer",
+                "color": "#7C3AED30",
+                "offset": {
+                  "x": 0,
+                  "y": 8
+                },
+                "blur": 32
+              }
+            },
+            {
+              "type": "path",
+              "id": "hDAHE",
+              "x": 48,
+              "y": 39,
+              "name": "C Mark Large",
+              "geometry": "M32 7c-4-4.5-9-7-15-7-9.4 0-17 8.5-17 19 0 10.5 7.6 19 17 19 6 0 11-2.5 15-7l-7-6c-2 3-5 5-8 5-4.5 0-9-4.5-9-11 0-6.5 4.5-11 9-11 3 0 6 2 8 5z",
+              "viewBox": [
+                0,
+                0,
+                32,
+                38
+              ],
+              "fill": "#FFFFFF",
+              "width": 96,
+              "height": 114
+            },
+            {
+              "type": "ellipse",
+              "id": "xgGKj",
+              "x": 138,
+              "y": 32,
+              "name": "Bezier Dot Large",
+              "fill": "#FFFFFF",
+              "width": 18,
+              "height": 18
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "Cd19U",
+          "name": "Icon Label",
+          "fill": "#6B7280",
+          "content": "App Icon — 192×192",
+          "fontFamily": "DM Sans",
+          "fontSize": 16,
+          "fontWeight": "500"
+        }
+      ]
+    }
+  ],
+  "fileToken": "08e62925-2a26-44e1-b132-c5e78fab8fed"
+}

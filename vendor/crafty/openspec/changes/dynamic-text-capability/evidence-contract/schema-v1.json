@@ -1,0 +1,892 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://crafty.invalid/openspec/dynamic-text-evidence/v1",
+  "title": "Dynamic text candidate evidence v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contractVersion",
+    "recordId",
+    "input",
+    "candidate",
+    "outputs",
+    "environment",
+    "provenance",
+    "observations"
+  ],
+  "properties": {
+    "contractVersion": {
+      "const": 1
+    },
+    "recordId": {
+      "$ref": "#/$defs/id"
+    },
+    "input": {
+      "$ref": "#/$defs/input"
+    },
+    "candidate": {
+      "$ref": "#/$defs/candidate"
+    },
+    "outputs": {
+      "$ref": "#/$defs/outputs"
+    },
+    "environment": {
+      "$ref": "#/$defs/environment"
+    },
+    "provenance": {
+      "$ref": "#/$defs/provenance"
+    },
+    "observations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/observation"
+      }
+    },
+    "realization": {
+      "$ref": "#/$defs/realization"
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/+-]*$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "uint": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "f64": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "f64"
+      ],
+      "properties": {
+        "f64": {
+          "type": "string",
+          "pattern": "^0x[0-9a-f]{16}$"
+        }
+      }
+    },
+    "rangeUnit": {
+      "enum": [
+        "utf8-byte",
+        "utf16-code-unit",
+        "unicode-code-point",
+        "candidate-defined"
+      ]
+    },
+    "offsetTuple": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "utf8Byte",
+        "utf16CodeUnit",
+        "codePoint"
+      ],
+      "properties": {
+        "utf8Byte": {
+          "$ref": "#/$defs/uint"
+        },
+        "utf16CodeUnit": {
+          "$ref": "#/$defs/uint"
+        },
+        "codePoint": {
+          "$ref": "#/$defs/uint"
+        }
+      }
+    },
+    "derivation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "method",
+        "artifactSha256"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "method": {
+          "type": "string",
+          "minLength": 1
+        },
+        "artifactSha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "boundaryEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceOffset",
+        "utf8Byte",
+        "utf16CodeUnit",
+        "codePoint"
+      ],
+      "properties": {
+        "sourceOffset": {
+          "$ref": "#/$defs/uint"
+        },
+        "utf8Byte": {
+          "$ref": "#/$defs/uint"
+        },
+        "utf16CodeUnit": {
+          "$ref": "#/$defs/uint"
+        },
+        "codePoint": {
+          "$ref": "#/$defs/uint"
+        }
+      }
+    },
+    "boundaryMap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceUnit",
+        "derivation",
+        "entries"
+      ],
+      "properties": {
+        "sourceUnit": {
+          "enum": [
+            "utf8-byte",
+            "utf16-code-unit",
+            "unicode-code-point"
+          ]
+        },
+        "derivation": {
+          "$ref": "#/$defs/derivation"
+        },
+        "entries": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/boundaryEntry"
+          }
+        }
+      }
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "corpusFixtureId",
+        "configSha256",
+        "logicalText",
+        "logicalTextSha256",
+        "boundaryMaps"
+      ],
+      "properties": {
+        "corpusFixtureId": {
+          "$ref": "#/$defs/id"
+        },
+        "configSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "logicalText": {
+          "type": "string"
+        },
+        "logicalTextSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "boundaryMaps": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "utf8",
+            "utf16",
+            "codePoint"
+          ],
+          "properties": {
+            "utf8": {
+              "$ref": "#/$defs/boundaryMap"
+            },
+            "utf16": {
+              "$ref": "#/$defs/boundaryMap"
+            },
+            "codePoint": {
+              "$ref": "#/$defs/boundaryMap"
+            }
+          }
+        }
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "version",
+        "adapterSha256",
+        "nativeRangeUnit"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "adapterSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "nativeRangeUnit": {
+          "$ref": "#/$defs/rangeUnit"
+        },
+        "nativeRangeUnitLabel": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "nativeRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "role",
+        "unit",
+        "start",
+        "end",
+        "conversionStatus"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1
+        },
+        "unit": {
+          "$ref": "#/$defs/rangeUnit"
+        },
+        "start": {
+          "$ref": "#/$defs/uint"
+        },
+        "end": {
+          "$ref": "#/$defs/uint"
+        },
+        "conversionStatus": {
+          "enum": [
+            "exact",
+            "lossy",
+            "unmappable"
+          ]
+        },
+        "convertedStart": {
+          "$ref": "#/$defs/offsetTuple"
+        },
+        "convertedEnd": {
+          "$ref": "#/$defs/offsetTuple"
+        },
+        "lossCode": {
+          "$ref": "#/$defs/id"
+        }
+      }
+    },
+    "affinity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "edge",
+        "label"
+      ],
+      "properties": {
+        "edge": {
+          "enum": [
+            "start",
+            "end",
+            "interior"
+          ]
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "cluster": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "rangeId",
+        "bidiLevel",
+        "affinities",
+        "glyphIds"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "rangeId": {
+          "$ref": "#/$defs/id"
+        },
+        "bidiLevel": {
+          "$ref": "#/$defs/uint"
+        },
+        "affinities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/affinity"
+          }
+        },
+        "glyphIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          }
+        }
+      }
+    },
+    "line": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "index",
+        "rangeId",
+        "clusterIds",
+        "originX",
+        "originY",
+        "inlineExtent",
+        "blockExtent"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "index": {
+          "$ref": "#/$defs/uint"
+        },
+        "rangeId": {
+          "$ref": "#/$defs/id"
+        },
+        "clusterIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          }
+        },
+        "originX": {
+          "$ref": "#/$defs/f64"
+        },
+        "originY": {
+          "$ref": "#/$defs/f64"
+        },
+        "inlineExtent": {
+          "$ref": "#/$defs/f64"
+        },
+        "blockExtent": {
+          "$ref": "#/$defs/f64"
+        }
+      }
+    },
+    "glyph": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "candidateGlyphId",
+        "rangeId",
+        "clusterId",
+        "fontId",
+        "x",
+        "y",
+        "advanceX",
+        "advanceY",
+        "flags"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "candidateGlyphId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rangeId": {
+          "$ref": "#/$defs/id"
+        },
+        "clusterId": {
+          "$ref": "#/$defs/id"
+        },
+        "fontId": {
+          "$ref": "#/$defs/id"
+        },
+        "x": {
+          "$ref": "#/$defs/f64"
+        },
+        "y": {
+          "$ref": "#/$defs/f64"
+        },
+        "advanceX": {
+          "$ref": "#/$defs/f64"
+        },
+        "advanceY": {
+          "$ref": "#/$defs/f64"
+        },
+        "flags": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          }
+        }
+      }
+    },
+    "variation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tag",
+        "value"
+      ],
+      "properties": {
+        "tag": {
+          "type": "string",
+          "pattern": "^[ -~]{4}$"
+        },
+        "value": {
+          "$ref": "#/$defs/f64"
+        }
+      }
+    },
+    "font": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "byteSha256",
+        "byteLength",
+        "faceIndex",
+        "faceSha256",
+        "variations",
+        "variationSha256"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "byteSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "byteLength": {
+          "$ref": "#/$defs/uint"
+        },
+        "faceIndex": {
+          "$ref": "#/$defs/uint"
+        },
+        "faceSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "variations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/variation"
+          }
+        },
+        "variationSha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "diagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "severity",
+        "stage",
+        "blocking",
+        "subjectId"
+      ],
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/id"
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ]
+        },
+        "stage": {
+          "enum": [
+            "input",
+            "font",
+            "analysis",
+            "shape",
+            "line",
+            "realize",
+            "present",
+            "observe"
+          ]
+        },
+        "blocking": {
+          "type": "boolean"
+        },
+        "subjectId": {
+          "$ref": "#/$defs/id"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "nativeRanges",
+        "clusters",
+        "lines",
+        "glyphs",
+        "fonts",
+        "diagnostics",
+        "geometry"
+      ],
+      "properties": {
+        "nativeRanges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nativeRange"
+          }
+        },
+        "clusters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/cluster"
+          }
+        },
+        "lines": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/line"
+          }
+        },
+        "glyphs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/glyph"
+          }
+        },
+        "fonts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/font"
+          }
+        },
+        "diagnostics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/diagnostic"
+          }
+        },
+        "geometry": {
+          "$ref": "#/$defs/geometry"
+        }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "browser",
+        "wasmRuntime",
+        "os",
+        "architecture",
+        "hardware",
+        "gpu",
+        "qualificationSha256"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "browser": {
+          "type": "string",
+          "minLength": 1
+        },
+        "wasmRuntime": {
+          "type": "string",
+          "minLength": 1
+        },
+        "os": {
+          "type": "string",
+          "minLength": 1
+        },
+        "architecture": {
+          "type": "string",
+          "minLength": 1
+        },
+        "hardware": {
+          "type": "string",
+          "minLength": 1
+        },
+        "gpu": {
+          "type": "string",
+          "minLength": 1
+        },
+        "qualificationSha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "dependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "purl",
+        "sha256"
+      ],
+      "properties": {
+        "purl": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "mediaType",
+        "sha256",
+        "byteLength"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "mediaType": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "byteLength": {
+          "$ref": "#/$defs/uint"
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceRevision",
+        "buildCommandSha256",
+        "buildEnvironmentSha256",
+        "dependencies",
+        "artifacts"
+      ],
+      "properties": {
+        "sourceRevision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "buildCommandSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "buildEnvironmentSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/dependency"
+          }
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/artifact"
+          }
+        }
+      }
+    },
+    "observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "metric",
+        "unit",
+        "state",
+        "samples"
+      ],
+      "properties": {
+        "metric": {
+          "$ref": "#/$defs/id"
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1
+        },
+        "state": {
+          "enum": [
+            "cold",
+            "warm",
+            "mixed",
+            "not-applicable"
+          ]
+        },
+        "samples": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "$ref": "#/$defs/f64"
+          }
+        }
+      }
+    },
+    "realization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "environmentId",
+        "kind",
+        "artifacts"
+      ],
+      "properties": {
+        "environmentId": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "enum": [
+            "vector",
+            "raster",
+            "mixed",
+            "none"
+          ]
+        },
+        "pixelFormat": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pixelWidth": {
+          "$ref": "#/$defs/uint"
+        },
+        "pixelHeight": {
+          "$ref": "#/$defs/uint"
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/artifact"
+          }
+        }
+      },
+      "dependentRequired": {
+        "pixelFormat": [
+          "pixelWidth",
+          "pixelHeight"
+        ]
+      }
+    },
+    "geometry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "coordinateSpace",
+        "unit",
+        "axes",
+        "origin"
+      ],
+      "properties": {
+        "coordinateSpace": {
+          "enum": [
+            "candidate-layout",
+            "candidate-device",
+            "candidate-defined"
+          ]
+        },
+        "coordinateSpaceLabel": {
+          "type": "string",
+          "minLength": 1
+        },
+        "unit": {
+          "enum": [
+            "css-px",
+            "device-px",
+            "font-unit",
+            "candidate-defined"
+          ]
+        },
+        "unitLabel": {
+          "type": "string",
+          "minLength": 1
+        },
+        "axes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "x",
+            "y",
+            "inline",
+            "block"
+          ],
+          "properties": {
+            "x": {
+              "enum": [
+                "right",
+                "left"
+              ]
+            },
+            "y": {
+              "enum": [
+                "down",
+                "up"
+              ]
+            },
+            "inline": {
+              "enum": [
+                "x-positive",
+                "x-negative",
+                "y-positive",
+                "y-negative"
+              ]
+            },
+            "block": {
+              "enum": [
+                "x-positive",
+                "x-negative",
+                "y-positive",
+                "y-negative"
+              ]
+            }
+          }
+        },
+        "origin": {
+          "enum": [
+            "line-box-origin",
+            "candidate-defined"
+          ]
+        },
+        "originLabel": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

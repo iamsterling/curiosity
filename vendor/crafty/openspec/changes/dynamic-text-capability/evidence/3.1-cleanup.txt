@@ -1,0 +1,3 @@
+$ find "${TMPDIR:-/tmp}" -maxdepth 1 -name crafty-font-harness-* -print
+$ test ! -e "${TMPDIR:-/tmp}/crafty-font-security-harness-$(id -u).lock"
+exit=0

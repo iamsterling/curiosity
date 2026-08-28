@@ -1,0 +1,3 @@
+Change 'dynamic-text-capability' is valid
+
+exit_code=0

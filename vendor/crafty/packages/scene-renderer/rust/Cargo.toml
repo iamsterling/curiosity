@@ -1,0 +1,125 @@
+[package]
+name = "crafty-renderer-wasm"
+version = "0.0.0"
+edition = "2021"
+
+[lib]
+# cdylib produces the .wasm; rlib keeps `cargo test` able to run the encoder
+# natively, which is where the correctness suite lives.
+crate-type = ["cdylib", "rlib"]
+
+[features]
+# Builds the standalone ADR 0024 browser oracle export. Ordinary package builds
+# enable no features, so the independent reference renderer cannot ship in the
+# product artifact.
+pixel-oracle = []
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+# Layout evaluation is co-packaged with the existing WASM artifact but remains
+# a renderer-independent module with its own versioned JSON contract. Pinned:
+# authored files depend on stable behavior, and upgrades require conformance
+# evidence plus an ADR update.
+taffy = { version = "=0.13.0", default-features = false, features = ["std", "taffy_tree", "flexbox", "block_layout", "content_size"] }
+# Pure-Rust TrueType parser — the glyph-outline tessellation backend for the
+# text geometry. No layout/text engine is selected (ADR 0024); Parley/Skrifa
+# are historical research candidates only. ttf-parser delivers outlines with
+# zero unsafe and no heavy deps, and the encoder only needs outlines — layout
+# is single-line advance math.
+ttf-parser = "0.24"
+# Pinned exactly: the wasm-bindgen CLI and this crate must be the same version
+# or `wasm-bindgen` fails at binding-generation time. Upgrade both together —
+# see docs/architecture/renderer-build.md.
+wasm-bindgen = "=0.2.126"
+# Turns a Rust panic into a console error with a stack trace instead of an
+# opaque `unreachable` trap. ~2 KB; the difference between a diagnosable alpha
+# bug report and "the canvas went blank".
+console_error_panic_hook = "0.1.7"
+# Vello classic (wgpu line) + its scene model, pinned exactly to 0.9.0 — the
+# release the research verified (docs/research/vello-vector-rasterization.md,
+# 2026-08-07). Vello is pre-1.0 with ~3 breaking releases/yr and every minor
+# has been breaking (wgpu 26→27→28→29 across 2025–2026), so these pins move
+# together and upgrades are witnessed by the parity harness
+# (tests/ + benchmarks/), never by faith.
+#
+# `wgpu_default` is deliberate: vello's plain `wgpu` feature pulls wgpu with
+# no default features, and without the `webgpu` backend feature
+# `wgpu::Instance::new` panics on wasm — the exact cause of a 2026 blank-page
+# regression in vello's hosted demos (vello_svg#80, read 2026-08-07).
+# `wgpu_default` = wgpu + wgpu/default, and wgpu 29's defaults include the
+# webgpu backend.
+vello = { version = "=0.9.0", default-features = false, features = ["wgpu_default"] }
+vello_encoding = "=0.9.0"
+# wgpu is a transitive dep of vello 0.9.0 (`^29.0.3`); pinned directly at the
+# newest 29.x so the module's wgpu line is explicit and moves in lockstep with
+# vello. wgpu 29 requires wasm-bindgen ^0.2.108 — satisfied by the `=0.2.126`
+# pin above, so no wasm-bindgen bump was needed (checked 2026-08-07).
+wgpu = "=29.0.4"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+# wasm-bindgen's matched sibling crates (0.3.x, resolved in Cargo.lock):
+# js-sys carries the host-registered error callback (device loss / uncaptured
+# errors), web-sys carries the canvas element the host hands over at init,
+# and wasm-bindgen-futures runs the async `init_canvas` export (the macro
+# generates `future_to_promise`). Only the wasm32 build uses them; the native
+# test build stays free of the JS-interface types.
+js-sys = "0.3"
+wasm-bindgen-futures = "0.4"
+web-sys = { version = "0.3", default-features = false, features = ["HtmlCanvasElement"] }
+
+[dev-dependencies]
+# vello_cpu — the de-risking prototype's renderer (openspec vector-path-
+# rendering, section 1) and the roadmap 4.4 headless/export candidate. It is
+# NOT the interactive renderer: the shipped path (webgpu-renderer.ts ->
+# render_packet -> vello_encoder + the wgpu line below) never touches it, and
+# it is consumed only by tests/vello-prototype.rs. Dev-only so it can never
+# contribute to the shipping wasm module — audited when moved here
+# (vector-path-rendering close-out 8.3): no shipped consumer exists.
+# Pinned exactly because the sparse-strips line declares no API-stability
+# guarantees (vello_cpu 0.2.0 release notes); upgrades are witnessed by the
+# parity harness in tests/vello-prototype.rs and
+# benchmarks/vello-cpu-prototype-report.md.
+#
+# DIVERGENCE FROM THE PROPOSAL: vello_cpu 0.2.0 does NOT consume
+# `vello_encoding` — it exposes its own PostScript-style RenderContext API
+# (set_paint/fill_rect/fill_path -> render into a Pixmap) and does not depend on
+# vello_encoding at all. `vello_encoding` 0.9.0 is the scene model of the wgpu
+# (classic) line only. The vello_cpu prototype therefore carried no
+# vello_encoding dependency (dead weight for the CPU line); the wgpu-line
+# encoder below is where it gained its consumer. The "same encoder, both
+# phases" claim must be re-verified against vello_hybrid before Phase B — see
+# benchmarks/vello-cpu-prototype-report.md.
+#
+# `png` and `text` (glifo) default features are disabled: the prototype drew
+# rects and paths only, and the glyph/text path is a separate roadmap decision.
+vello_cpu = { version = "=0.2.0", default-features = false, features = ["std", "u8_pipeline"] }
+# Parity reference hashes for the vello_cpu prototype harness. Dev-only: it
+# must never contribute to the shipping wasm module.
+sha2 = "=0.11.0"
+
+[profile.release]
+# Measured on this crate (1,000-node fixture, full re-encode, median of 7):
+#
+#   profile                          raw wasm   gzip     full encode
+#   (none — cargo defaults)           219,242   77,560     —
+#   opt-level=3                       171,865   71,523   0.771 ms
+#   opt-level="s"                     150,103   59,321   1.366 ms
+#   opt-level="z"                     147,644   58,636   1.818 ms
+#
+# opt-level=3 is chosen deliberately. "z" saves 12.9 KB gzipped — a one-time
+# cost on an immutably-cached asset — and costs 2.4x the encode time on every
+# full re-encode, scaling linearly with document size. For a per-frame encoder
+# that is the wrong trade.
+#
+# `panic = "abort"` was measured and is NOT set: it changed the artifact by
+# zero bytes here (wasm32-unknown-unknown does not unwind anyway), so it would
+# be cargo-culted config with no benefit.
+#
+# `wasm-opt -O3` was measured and is NOT wired into the build: it saves 371
+# bytes gzipped (0.5%) and would add a toolchain dependency. Revisit if the
+# module grows substantially.
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+strip = true

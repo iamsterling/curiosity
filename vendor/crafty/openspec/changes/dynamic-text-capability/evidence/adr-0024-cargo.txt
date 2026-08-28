@@ -1,0 +1,90 @@
+$ CARGO_BUILD_JOBS=1 cargo test --manifest-path packages/scene-renderer/rust/Cargo.toml --features pixel-oracle
+   Compiling crafty-renderer-wasm v0.0.0 (/Volumes/dev/crafty/packages/scene-renderer/rust)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.03s
+     Running unittests src/lib.rs (packages/scene-renderer/rust/target/debug/deps/crafty_renderer_wasm-3d2f52d25dfe1873)
+
+running 65 tests
+test tests::chrome_surface_params_pack_the_screen_fields ... ok
+test tests::chrome_surface_params_degrade_to_flat_past_the_cap ... ok
+test tests::chrome_only_packets_take_the_split_path ... ok
+test tests::device_size_matches_the_retired_hosts_canvas_sizing ... ok
+test tests::authored_surface_params_default_the_inert_fields ... ok
+test tests::glass_quad_usage_supports_corner_uploads ... ok
+test tests::chrome_surfaces_round_trip_serde ... ok
+test tests::glass_surfaces_round_trip_serde_with_flat_defaulting_to_false ... ok
+test tests::find_path_locates_nested_layers ... ok
+test tests::glass_surfaces_sort_by_z_index_then_order_never_array_order ... ok
+test layout::tests::resolves_a_row_deterministically ... ok
+test tests::glass_split_encodings_partition_paths_between_scene_and_overlays ... ok
+test tests::offscreen_usage_supports_the_glass_pyramid_copy_source ... ok
+test tests::overlay_blit_uses_vello_output_alpha_convention ... ok
+test layout::tests::matches_the_recorded_chrome_reference_at_three_widths ... ok
+test tests::render_error_is_structured ... ok
+test layout::tests::covers_vertical_wrap_alignment_hug_and_nesting ... ok
+test tests::moving_a_parent_moves_its_children_exactly_once ... ok
+test tests::render_packet_without_device_returns_structured_error_and_stays_usable ... ok
+test tests::render_packet_surfaces_encode_errors_before_device_errors ... ok
+test tests::submit_orders_explicit_draw_calls ... ok
+test tests::split_packets_encode_scene_and_overlay_separately ... ok
+test tests::transforms_world_geometry_before_submission ... ok
+test text::tests::normalization_retains_degenerate_segments_and_rejects_unrepresentable_contours ... ok
+test text::tests::embedded_hole_glyphs_preserve_one_closed_subpath_per_source_contour ... ok
+test text::tests::source_callback_oracle_reconstructs_every_embedded_hole_glyph_segment_once ... ok
+test tests::invisible_ancestor_names_every_cached_descendant_for_removal ... ok
+test vello_encoder::tests::closed_subpaths_encode_the_wrap_segment_with_its_handles ... ok
+test tests::batch_encode_of_the_final_scene_matches_full_encode_output ... ok
+test vello_encoder::tests::command_transforms_compose_under_the_viewport_root ... ok
+test vello_encoder::tests::contract_violations_are_rejected ... ok
+test tests::delta_with_unknown_node_ids_falls_back_to_full_reencode ... ok
+test vello_encoder::tests::culls_layers_outside_the_viewport_but_never_the_selection ... ok
+test vello_encoder::tests::culled_parents_still_recurse_into_in_viewport_children ... ok
+test vello_encoder::tests::empty_text_and_missing_glyphs_draw_nothing_but_never_fail ... ok
+test tests::malformed_or_empty_delta_triggers_full_reencode ... ok
+test text::tests::transformed_bezier_winding_preserves_nonzero_outer_hole_relationships ... ok
+test vello_encoder::tests::encoding_is_deterministic_across_runs ... ok
+test vello_encoder::tests::grid_draws_over_the_authored_packet_and_guides_on_top ... ok
+test vello_encoder::tests::fill_rules_reach_the_style_stream ... ok
+test vello_encoder::tests::invalid_viewports_are_rejected ... ok
+test tests::visibility_removal_is_named_in_the_batch_without_a_draw_call ... ok
+test vello_encoder::tests::encode_frame_entry_is_deterministic ... ok
+test vello_encoder::tests::lod_grid_renders_at_every_zoom_no_pixel_grid ... ok
+test vello_encoder::tests::mirrored_handles_derive_handle_in_from_handle_out ... ok
+test vello_encoder::tests::non_finite_overlay_positions_are_rejected ... ok
+test vello_encoder::tests::mixed_rects_and_paths_encode_in_z_index_order ... ok
+test vello_encoder::tests::non_finite_path_coordinates_and_handles_are_rejected ... ok
+test vello_encoder::tests::non_finite_rect_bounds_are_rejected ... ok
+test vello_encoder::tests::non_finite_stroke_width_is_rejected ... ok
+test vello_encoder::tests::non_finite_transforms_are_rejected_at_the_boundary ... ok
+test vello_encoder::tests::overlay_lines_at_low_zoom_render_at_the_right_scale ... ok
+test vello_encoder::tests::overlay_lines_at_low_zoom_snap_to_device_pixels ... ok
+test vello_encoder::tests::overlay_lines_cull_offscreen ... ok
+test vello_encoder::tests::points_sort_by_order_key_within_a_subpath ... ok
+test vello_encoder::tests::scene_rects_encode_under_the_kernel_composition ... ok
+test vello_encoder::tests::text_command_without_payload_is_a_contract_violation ... ok
+test vello_encoder::tests::stroke_descriptors_encode_a_stroke_style_and_zero_width_draws_nothing ... ok
+test vello_encoder::tests::unsorted_input_is_drawn_in_z_index_order ... ok
+test vello_encoder::tests::viewport_pan_and_zoom_are_applied_as_the_root_transform ... ok
+test vello_encoder::tests::viewport_pixel_ratio_scales_the_root_transform ... ok
+test vello_encoder::tests::text_commands_tessellate_glyphs_into_path_data ... ok
+test text_pixel_oracle::tests::independent_reference_coordinates_are_bit_exact_with_production ... ok
+test tests::batch_sequences_merge_to_the_same_commands_as_full_references ... ok
+test tests::shipped_wgsl_shaders_parse_and_validate ... ok
+
+test result: ok. 65 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/vello-prototype.rs (packages/scene-renderer/rust/target/debug/deps/vello_prototype-0cf4c1c467850d30)
+
+running 4 tests
+test record_generation_harness ... ignored
+test self_overlapping_bezier_differs_between_fill_rules ... ok
+test representative_fixture_renders_byte_identically_across_runs ... ok
+test ten_thousand_rect_fixture_renders_a_non_trivial_image ... ok
+
+test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.23s
+
+   Doc-tests crafty_renderer_wasm
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

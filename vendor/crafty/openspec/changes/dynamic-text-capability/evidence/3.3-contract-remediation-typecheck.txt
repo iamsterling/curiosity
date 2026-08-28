@@ -1,0 +1,50 @@
+$ turbo run typecheck
+• turbo 2.10.9
+
+   • Packages in scope: @crafty/admin, @crafty/base, @crafty/cms, @crafty/crafty, @crafty/editor, @crafty/editor-web, @crafty/marketing, @crafty/pen-import, @crafty/scene-api, @crafty/scene-model, @crafty/scene-renderer, @crafty/scene-store, @crafty/scene-sync
+   • Running typecheck in 13 packages
+   • Remote caching disabled
+
+@crafty/marketing:typecheck: cache hit, replaying logs d21b04ccc7cb314a
+@crafty/base:typecheck: cache hit, replaying logs 695749365a2e822b
+@crafty/cms:typecheck: cache hit, replaying logs 15904e7ea5041500
+@crafty/scene-model:typecheck: cache hit, replaying logs bc6308d868ef737e
+@crafty/marketing:typecheck: $ next typegen && tsc -p tsconfig.json --noEmit
+@crafty/marketing:typecheck: Generating route types...
+@crafty/marketing:typecheck: ✓ Types generated successfully
+@crafty/base:typecheck: $ next typegen && tsc -p tsconfig.json --noEmit
+@crafty/base:typecheck: Generating route types...
+@crafty/base:typecheck: ✓ Types generated successfully
+@crafty/cms:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/scene-model:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/scene-renderer:typecheck: cache hit, replaying logs d8357600bec6ed26
+@crafty/scene-renderer:typecheck: $ bun run build:wasm && tsc -p tsconfig.json --noEmit && tsc -p tsconfig.wasm.json --noEmit
+@crafty/scene-renderer:typecheck: $ bun ../../scripts/build-scene-renderer-wasm.mjs
+@crafty/scene-renderer:typecheck:     Finished `release` profile [optimized] target(s) in 0.19s
+@crafty/scene-renderer:typecheck: [wasm-opt] unavailable; skipped (set WASM_OPT_REQUIRED=1 in CI)
+@crafty/scene-renderer:typecheck: [wbg-closure-guard] patched: /Volumes/dev/crafty/packages/scene-renderer/pkg/crafty_renderer_wasm.js
+@crafty/scene-api:typecheck: cache hit, replaying logs 4182102340c0b5de
+@crafty/editor:typecheck: cache hit, replaying logs 9bbf185fa4ef613d
+@crafty/scene-api:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/editor:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/scene-sync:typecheck: cache hit, replaying logs 6cd76c748099095f
+@crafty/scene-sync:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/pen-import:typecheck: cache hit, replaying logs 2c6fa61a024bee21
+@crafty/pen-import:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/scene-store:typecheck: cache hit, replaying logs eea832ac4277ee67
+@crafty/scene-store:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/editor-web:typecheck: cache hit, replaying logs 2ee0ed3945a80ac5
+@crafty/crafty:typecheck: cache hit, replaying logs acf2ee73f9929cce
+@crafty/admin:typecheck: cache hit, replaying logs 8303719dfc7a0a60
+@crafty/editor-web:typecheck: $ next typegen && tsc -p tsconfig.json --noEmit
+@crafty/editor-web:typecheck: Generating route types...
+@crafty/editor-web:typecheck: ✓ Types generated successfully
+@crafty/crafty:typecheck: $ tsc -p tsconfig.json --noEmit
+@crafty/admin:typecheck: $ next typegen && tsc -p tsconfig.json --noEmit
+@crafty/admin:typecheck: Generating route types...
+@crafty/admin:typecheck: ✓ Types generated successfully
+
+ Tasks:    13 successful, 13 total
+Cached:    13 cached, 13 total
+  Time:    23ms >>> FULL TURBO
+

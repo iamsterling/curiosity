@@ -1,0 +1,22 @@
+BASELINE_SHA=238968a8ca9459dc24496d3cf0e364aca6e9ae62
+ORACLE_SHA256=b57024bf2dd1556738574b2dcf02b5446a19b5478104332f704a51dad2da5d97
+COMMAND=CARGO_TARGET_DIR=<temp>/crafty-contour-target cargo test --manifest-path packages/scene-renderer/rust/Cargo.toml retained_contour_acceptance_oracle -- --nocapture
+   Compiling crafty-renderer-wasm v0.0.0 (/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/crafty-contour-green/packages/scene-renderer/rust)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.22s
+     Running unittests src/lib.rs (/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/crafty-contour-target/debug/deps/crafty_renderer_wasm-ba0353169e29c519)
+
+running 5 tests
+test text::retained_contour_acceptance_oracle::retains_curve_control_sides ... ok
+test text::retained_contour_acceptance_oracle::retains_move_anchors ... ok
+test text::retained_contour_acceptance_oracle::reconstructs_every_callback_segment_and_terminal_wrap_exactly_once ... ok
+test text::retained_contour_acceptance_oracle::retains_contour_closure ... ok
+test text::retained_contour_acceptance_oracle::retains_contour_topology ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 65 filtered out; finished in 0.00s
+
+     Running tests/vello-prototype.rs (/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/crafty-contour-target/debug/deps/vello_prototype-29626b7b70d9833e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+

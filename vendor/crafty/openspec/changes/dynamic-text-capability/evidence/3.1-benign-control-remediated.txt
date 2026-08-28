@@ -1,0 +1,14 @@
+$ bun scripts/font-security-harness.test.mjs && node --test scripts/font-security-harness-controls.test.mjs
+{"diagnostic":"HARNESS_SELF_TEST_OK","noFontBytesLoaded":true,"admission":{"adversarialDiagnostic":"HARNESS_ADVERSARIAL_BOUNDARY_UNATTESTED","callerFixtureDiagnostic":"HARNESS_FIXTURE_COUNT_CALLER_DECLARATION_REJECTED","fixtureDiagnostic":"HARNESS_FIXTURE_COUNT_EXCEEDED","uploadDiagnostic":"HARNESS_UPLOAD_BYTES_EXCEEDED","gpuDiagnostic":"HARNESS_GPU_BUFFER_BYTES_EXCEEDED","gpuUnderdeclaredDiagnostic":"HARNESS_GPU_ALLOCATION_UNDERDECLARED","gpuCountDiagnostic":"HARNESS_GPU_ALLOCATION_COUNT_EXCEEDED","stagedReplacementDiagnostic":"HARNESS_STAGED_INPUT_CHANGED"},"termination":{"cpuResult":{"diagnostic":"HARNESS_CPU_TIME_EXCEEDED","exitCode":null,"signal":"SIGXCPU","outputBytes":0,"output":"","peakRssBytes":8208384,"processGroupCleaned":true,"knownHelpersCleaned":true,"escapedCleanupGuaranteed":null},"escapeResult":{"diagnostic":"HARNESS_PROCESS_GROUP_ESCAPE_DETECTED","exitCode":0,"signal":null,"outputBytes":0,"output":"","peakRssBytes":8306688,"processGroupCleaned":true,"knownHelpersCleaned":true,"escapedCleanupGuaranteed":false},"cancelledResult":{"diagnostic":"HARNESS_CONTROLLER_CANCELLED","exitCode":null,"signal":"SIGTERM","outputBytes":0,"output":"","peakRssBytes":8273920,"processGroupCleaned":true,"knownHelpersCleaned":true,"escapedCleanupGuaranteed":null},"interrupted":{"code":130,"signal":null}},"browserControl":{"status":"passed","diagnostic":"HARNESS_CONTROLLER_CANCELLED","processGroupCleaned":true,"knownHelpersCleaned":true,"fontBytesLoaded":false,"environmentEvidence":"evidence/adr-0024-vello-pixel-oracle-2026-08-16.json","containmentClaim":false}}
+✔ derives and enforces fixture admission (0.501959ms)
+✔ controller cancellation terminates the process group (356.739041ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 435.651875
+
+exit_code=0

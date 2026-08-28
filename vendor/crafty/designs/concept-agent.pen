@@ -1,0 +1,385 @@
+{
+  "version": "2.14",
+  "children": [
+    {
+      "type": "frame",
+      "id": "PKttb",
+      "x": 0,
+      "y": 0,
+      "name": "Mark",
+      "reusable": true,
+      "width": 100,
+      "height": 100,
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "path",
+          "id": "BwnIF",
+          "name": "Convergence",
+          "geometry": "M3 3l47 47-47-8z m94 94l-47-47 47 8z",
+          "viewBox": [
+            0,
+            0,
+            100,
+            100
+          ],
+          "fill": "$amber",
+          "width": "fill_container",
+          "height": "fill_container"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "NKI4z",
+      "x": 0,
+      "y": 180,
+      "name": "Logo Exploration",
+      "clip": true,
+      "width": 1440,
+      "height": 960,
+      "fill": "$ink",
+      "layout": "vertical",
+      "gap": 40,
+      "padding": [
+        80,
+        120
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "k6MO5",
+          "name": "Title Bar",
+          "width": "fill_container",
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "caDfJ",
+              "name": "Brand",
+              "fill": "$text-primary",
+              "content": "Crafty",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "600",
+              "letterSpacing": -0.28
+            },
+            {
+              "type": "text",
+              "id": "JwWq7",
+              "name": "Sheet Type",
+              "fill": "$muted",
+              "content": "LOGO EXPLORATION",
+              "fontFamily": "JetBrains Mono",
+              "fontSize": 10,
+              "letterSpacing": 2.2
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "O2utJ",
+          "name": "Concept",
+          "fill": "$muted",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Two operators, one document. The mark is two pen-tool nibs converging on a shared anchor point — the mutation substrate. 180° rotational symmetry: every command carries its own inverse.",
+          "lineHeight": 1.6,
+          "fontFamily": "Inter",
+          "fontSize": 13
+        },
+        {
+          "type": "rectangle",
+          "id": "jYluP",
+          "name": "Divider",
+          "fill": "$hairline",
+          "width": "fill_container",
+          "height": 1
+        },
+        {
+          "type": "frame",
+          "id": "c4rkKM",
+          "name": "Content",
+          "width": "fill_container",
+          "height": "fill_container",
+          "gap": 80,
+          "children": [
+            {
+              "type": "frame",
+              "id": "njtmr",
+              "name": "Mark Display",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 20,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "bxBE5",
+                  "name": "Mark Label",
+                  "fill": "$muted",
+                  "content": "MARK",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 10,
+                  "letterSpacing": 2.2
+                },
+                {
+                  "id": "ojONO",
+                  "type": "ref",
+                  "ref": "PKttb",
+                  "name": "Mark Large",
+                  "width": 320,
+                  "height": 320
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "s6WZ1D",
+              "name": "Applications",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 48,
+              "justifyContent": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "BdUXZ",
+                  "name": "Lockup Section",
+                  "layout": "vertical",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "SA31J",
+                      "name": "Lockup Label",
+                      "fill": "$muted",
+                      "content": "LOCKUP",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 10,
+                      "letterSpacing": 2.2
+                    },
+                    {
+                      "type": "frame",
+                      "id": "WBR9y",
+                      "name": "Lockup",
+                      "gap": 16,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "kHNXB",
+                          "type": "ref",
+                          "ref": "PKttb",
+                          "name": "Lockup Mark",
+                          "width": 40,
+                          "height": 40
+                        },
+                        {
+                          "type": "text",
+                          "id": "M50SRt",
+                          "name": "Wordmark",
+                          "fill": "$text-primary",
+                          "content": "Crafty",
+                          "fontFamily": "Inter",
+                          "fontSize": 36,
+                          "fontWeight": "600",
+                          "letterSpacing": -0.72
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "XmCh7",
+                  "name": "App Icon Section",
+                  "layout": "vertical",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "mPGkM",
+                      "name": "Icon Label",
+                      "fill": "$muted",
+                      "content": "APP ICON",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 10,
+                      "letterSpacing": 2.2
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Wnqq0",
+                      "name": "App Icon",
+                      "width": 128,
+                      "height": 128,
+                      "fill": "$panel",
+                      "cornerRadius": 28,
+                      "stroke": "$hairline",
+                      "strokeWidth": 1,
+                      "layout": "vertical",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "k9D8t",
+                          "type": "ref",
+                          "ref": "PKttb",
+                          "name": "Icon Mark",
+                          "width": 72,
+                          "height": 72
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "V7BPw",
+                  "name": "Size Section",
+                  "layout": "vertical",
+                  "gap": 16,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "yEBou",
+                      "name": "Size Label",
+                      "fill": "$muted",
+                      "content": "MINIMUM SIZE",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 10,
+                      "letterSpacing": 2.2
+                    },
+                    {
+                      "type": "frame",
+                      "id": "BxGqV",
+                      "name": "Size Tests",
+                      "gap": 32,
+                      "alignItems": "end",
+                      "children": [
+                        {
+                          "type": "frame",
+                          "id": "K02iV",
+                          "name": "16px Test",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "Lw9GP",
+                              "type": "ref",
+                              "ref": "PKttb",
+                              "name": "Mark 16px",
+                              "width": 16,
+                              "height": 16
+                            },
+                            {
+                              "type": "text",
+                              "id": "Nf7X5",
+                              "name": "16px Label",
+                              "fill": "$muted",
+                              "content": "16PX",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 9,
+                              "letterSpacing": 1.98
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "pjnSN",
+                          "name": "24px Test",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "K0dR1r",
+                              "type": "ref",
+                              "ref": "PKttb",
+                              "name": "Mark 24px",
+                              "width": 24,
+                              "height": 24
+                            },
+                            {
+                              "type": "text",
+                              "id": "HOUuW",
+                              "name": "24px Label",
+                              "fill": "$muted",
+                              "content": "24PX",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 9,
+                              "letterSpacing": 1.98
+                            }
+                          ]
+                        },
+                        {
+                          "type": "frame",
+                          "id": "w2mL4",
+                          "name": "32px Test",
+                          "layout": "vertical",
+                          "gap": 8,
+                          "alignItems": "center",
+                          "children": [
+                            {
+                              "id": "XZf9H",
+                              "type": "ref",
+                              "ref": "PKttb",
+                              "name": "Mark 32px",
+                              "width": 32,
+                              "height": 32
+                            },
+                            {
+                              "type": "text",
+                              "id": "IDElz",
+                              "name": "32px Label",
+                              "fill": "$muted",
+                              "content": "32PX",
+                              "fontFamily": "JetBrains Mono",
+                              "fontSize": 9,
+                              "letterSpacing": 1.98
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "amber": {
+      "type": "color",
+      "value": "#d9a441"
+    },
+    "ink": {
+      "type": "color",
+      "value": "#0c0b09"
+    },
+    "panel": {
+      "type": "color",
+      "value": "#16150f"
+    },
+    "hairline": {
+      "type": "color",
+      "value": "#2b2921"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#efede4"
+    },
+    "muted": {
+      "type": "color",
+      "value": "#9a9589"
+    }
+  },
+  "fileToken": "9edac845-606b-43dd-ab99-f6e2b3c5f010"
+}

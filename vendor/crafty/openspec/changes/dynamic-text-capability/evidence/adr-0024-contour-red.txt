@@ -1,0 +1,50 @@
+BASELINE_SHA=238968a8ca9459dc24496d3cf0e364aca6e9ae62
+ORACLE_SHA256=b57024bf2dd1556738574b2dcf02b5446a19b5478104332f704a51dad2da5d97
+COMMAND=CARGO_TARGET_DIR=<temp>/crafty-contour-target cargo test --manifest-path packages/scene-renderer/rust/Cargo.toml retained_contour_acceptance_oracle -- --nocapture
+   Compiling crafty-renderer-wasm v0.0.0 (/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/crafty-contour-red/packages/scene-renderer/rust)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.82s
+     Running unittests src/lib.rs (/private/var/folders/wr/8bsbkjgd46v11_cpt9rfqm2r0000gn/T/opencode/crafty-contour-target/debug/deps/crafty_renderer_wasm-ba0353169e29c519)
+
+running 5 tests
+
+thread 'text::retained_contour_acceptance_oracle::reconstructs_every_callback_segment_and_terminal_wrap_exactly_once' (7408315) panicked at src/text.rs:393:9:
+assertion `left == right` failed: SEGMENT: contour mapping
+  left: 1
+ right: 2
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'text::retained_contour_acceptance_oracle::retains_contour_topology' (7408317) panicked at src/text.rs:324:13:
+assertion `left == right` failed: TOPOLOGY: O source contours must remain distinct
+  left: 1
+ right: 2
+
+thread 'text::retained_contour_acceptance_oracle::retains_contour_closure' (7408316) panicked at src/text.rs:336:13:
+CLOSURE: O source contours must be closed
+
+thread 'text::retained_contour_acceptance_oracle::retains_curve_control_sides' (7408318) panicked at src/text.rs:373:13:
+assertion `left == right` failed: CONTROL: one anchor per segment
+  left: 48
+ right: 12
+
+thread 'text::retained_contour_acceptance_oracle::retains_move_anchors' (7408319) panicked at src/text.rs:348:9:
+assertion `left == right` failed: ANCHOR: contour mapping
+  left: 1
+ right: 2
+test text::retained_contour_acceptance_oracle::retains_move_anchors ... FAILED
+test text::retained_contour_acceptance_oracle::retains_curve_control_sides ... FAILED
+test text::retained_contour_acceptance_oracle::reconstructs_every_callback_segment_and_terminal_wrap_exactly_once ... FAILED
+test text::retained_contour_acceptance_oracle::retains_contour_closure ... FAILED
+test text::retained_contour_acceptance_oracle::retains_contour_topology ... FAILED
+
+failures:
+
+failures:
+    text::retained_contour_acceptance_oracle::reconstructs_every_callback_segment_and_terminal_wrap_exactly_once
+    text::retained_contour_acceptance_oracle::retains_contour_closure
+    text::retained_contour_acceptance_oracle::retains_contour_topology
+    text::retained_contour_acceptance_oracle::retains_curve_control_sides
+    text::retained_contour_acceptance_oracle::retains_move_anchors
+
+test result: FAILED. 0 passed; 5 failed; 0 ignored; 0 measured; 60 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--lib`

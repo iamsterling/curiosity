@@ -1,0 +1,22 @@
+{
+  "version": 3,
+  "platform": "linux",
+  "boundary": "cgroup-v2",
+  "provider": "docker-desktop-cgroup-v2",
+  "cgroupPath": "/",
+  "requiredControllers": ["cpu", "memory", "pids"],
+  "cpuMax": "50000 100000",
+  "memoryMax": "268435456",
+  "memorySwapMax": "0",
+  "pidsMax": "32",
+  "uid": 65532,
+  "gid": 65532,
+  "environmentNames": [
+    "CRAFTY_FONT_HARNESS_BOUNDARY_ATTESTATION",
+    "HOME",
+    "HOSTNAME",
+    "LANG",
+    "PATH",
+    "TMPDIR"
+  ]
+}

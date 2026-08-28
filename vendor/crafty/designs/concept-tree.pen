@@ -1,0 +1,496 @@
+{
+  "version": "2.14",
+  "children": [
+    {
+      "type": "frame",
+      "id": "ksNYS",
+      "x": 0,
+      "y": 0,
+      "name": "component/Mark",
+      "reusable": true,
+      "width": 240,
+      "height": 240,
+      "layout": "none",
+      "children": [
+        {
+          "type": "path",
+          "id": "n78dq",
+          "x": 0,
+          "y": 0,
+          "name": "Frame",
+          "geometry": "M0 240l0-132m108-108l132 0 0 240-240 0",
+          "viewBox": [
+            0,
+            0,
+            240,
+            240
+          ],
+          "width": 240,
+          "height": 240,
+          "stroke": "$muted",
+          "strokeWidth": 5,
+          "strokeLinejoin": "round",
+          "strokeLinecap": "round"
+        },
+        {
+          "type": "path",
+          "id": "InEfB",
+          "x": 0,
+          "y": 0,
+          "name": "Branches",
+          "geometry": "M0 108l66-42 42-66m-42 66l-40-40",
+          "viewBox": [
+            0,
+            0,
+            240,
+            240
+          ],
+          "width": 240,
+          "height": 240,
+          "stroke": "$accent",
+          "strokeWidth": 4,
+          "strokeLinejoin": "round",
+          "strokeLinecap": "round"
+        },
+        {
+          "type": "path",
+          "id": "a3XZp",
+          "x": 0,
+          "y": 0,
+          "name": "Nodes",
+          "geometry": "M75 66a9 9 0 0 0-18 0 9 9 0 0 0 18 0z m-43-40a6 6 0 0 0-12 0 6 6 0 0 0 12 0z",
+          "viewBox": [
+            0,
+            0,
+            240,
+            240
+          ],
+          "fill": "$accent",
+          "width": 240,
+          "height": 240
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "qpqs5",
+      "x": 320,
+      "y": 0,
+      "name": "Logo Exploration Sheet",
+      "clip": true,
+      "width": 1280,
+      "height": 960,
+      "fill": "$ink",
+      "layout": "vertical",
+      "padding": [
+        48,
+        72
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "CE7Z2",
+          "name": "Header",
+          "width": "fill_container",
+          "justifyContent": "space_between",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "YZ2OT",
+              "name": "Page Title",
+              "fill": "$muted",
+              "content": "LOGO EXPLORATION",
+              "fontFamily": "JetBrains Mono",
+              "fontSize": 11,
+              "fontWeight": "500",
+              "letterSpacing": 2.4
+            },
+            {
+              "type": "text",
+              "id": "gOMuE",
+              "name": "Brand Date",
+              "fill": "$muted",
+              "content": "CRAFTY — 2026",
+              "fontFamily": "JetBrains Mono",
+              "fontSize": 11,
+              "fontWeight": "500",
+              "letterSpacing": 2.4
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "ri1XD",
+          "name": "Spacer Top",
+          "width": "fill_container",
+          "height": "fill_container"
+        },
+        {
+          "type": "frame",
+          "id": "mDhur",
+          "name": "Mark Display",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 24,
+          "alignItems": "center",
+          "children": [
+            {
+              "id": "w35ot",
+              "type": "ref",
+              "ref": "ksNYS",
+              "name": "Large Mark"
+            },
+            {
+              "type": "text",
+              "id": "ZCbMs",
+              "name": "Section 01",
+              "fill": "$muted",
+              "content": "01 — MARK",
+              "fontFamily": "JetBrains Mono",
+              "fontSize": 10,
+              "fontWeight": "500",
+              "letterSpacing": 2.2
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "AXhZ9",
+          "name": "Spacer Bottom",
+          "width": "fill_container",
+          "height": "fill_container"
+        },
+        {
+          "type": "rectangle",
+          "id": "kbrV5",
+          "name": "Divider",
+          "fill": "$hairline-color",
+          "width": "fill_container",
+          "height": 1
+        },
+        {
+          "type": "frame",
+          "id": "ZA9rw",
+          "name": "Bottom Section",
+          "width": "fill_container",
+          "height": 260,
+          "gap": 40,
+          "padding": [
+            32,
+            0,
+            0,
+            0
+          ],
+          "children": [
+            {
+              "type": "frame",
+              "id": "ieNqo",
+              "name": "Lockup Panel",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "yqx7w",
+                  "name": "Section 02",
+                  "fill": "$muted",
+                  "content": "02 — LOCKUP",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 10,
+                  "fontWeight": "500",
+                  "letterSpacing": 2.2
+                },
+                {
+                  "type": "frame",
+                  "id": "w1YmY",
+                  "name": "Lockup Row",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "gap": 14,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "id": "QyUq1",
+                      "type": "ref",
+                      "ref": "ksNYS",
+                      "name": "Lockup Mark",
+                      "width": 48,
+                      "height": 48,
+                      "descendants": {
+                        "n78dq": {
+                          "width": 48,
+                          "height": 48,
+                          "strokeWidth": 12
+                        },
+                        "InEfB": {
+                          "width": 48,
+                          "height": 48,
+                          "strokeWidth": 10
+                        },
+                        "a3XZp": {
+                          "width": 48,
+                          "height": 48,
+                          "geometry": "M 81 66 A 15 15 0 0 0 51 66 A 15 15 0 0 0 81 66 Z M 36 26 A 10 10 0 0 0 16 26 A 10 10 0 0 0 36 26 Z"
+                        }
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "id": "t3EDDw",
+                      "name": "Wordmark",
+                      "fill": "$text-primary",
+                      "content": "Crafty",
+                      "fontFamily": "Inter",
+                      "fontSize": 32,
+                      "fontWeight": "600",
+                      "letterSpacing": -0.6
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "IrhIB",
+              "name": "App Icon Panel",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "d8My5",
+                  "name": "Section 03",
+                  "fill": "$muted",
+                  "content": "03 — APP ICON",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 10,
+                  "fontWeight": "500",
+                  "letterSpacing": 2.2
+                },
+                {
+                  "type": "frame",
+                  "id": "s7Iqhb",
+                  "name": "Icon Center",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "layout": "vertical",
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "h1ZKjm",
+                      "name": "Icon Bg",
+                      "width": 128,
+                      "height": 128,
+                      "fill": "$panel",
+                      "cornerRadius": 28,
+                      "stroke": "$hairline-color",
+                      "strokeWidth": 1,
+                      "layout": "none",
+                      "children": [
+                        {
+                          "id": "lncEj",
+                          "type": "ref",
+                          "ref": "ksNYS",
+                          "name": "Icon Mark",
+                          "width": 72,
+                          "height": 72,
+                          "x": 28,
+                          "y": 28,
+                          "descendants": {
+                            "n78dq": {
+                              "width": 72,
+                              "height": 72,
+                              "strokeWidth": 8
+                            },
+                            "InEfB": {
+                              "width": 72,
+                              "height": 72,
+                              "strokeWidth": 7
+                            },
+                            "a3XZp": {
+                              "width": 72,
+                              "height": 72,
+                              "geometry": "M 80 66 A 14 14 0 0 0 52 66 A 14 14 0 0 0 80 66 Z M 35 26 A 9 9 0 0 0 17 26 A 9 9 0 0 0 35 26 Z"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "xQGN3",
+              "name": "Favicon Panel",
+              "width": "fill_container",
+              "height": "fill_container",
+              "layout": "vertical",
+              "gap": 20,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "xUgwg",
+                  "name": "Section 04",
+                  "fill": "$muted",
+                  "content": "04 — FAVICON",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 10,
+                  "fontWeight": "500",
+                  "letterSpacing": 2.2
+                },
+                {
+                  "type": "frame",
+                  "id": "H7KIz",
+                  "name": "Favicon Row",
+                  "width": "fill_container",
+                  "height": "fill_container",
+                  "gap": 48,
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "gKFvz",
+                      "name": "24px Group",
+                      "layout": "vertical",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "HXhaZ",
+                          "type": "ref",
+                          "ref": "ksNYS",
+                          "name": "Mark 24",
+                          "width": 24,
+                          "height": 24,
+                          "descendants": {
+                            "n78dq": {
+                              "width": 24,
+                              "height": 24,
+                              "strokeWidth": 4,
+                              "geometry": "M 0 240 L 0 108 L 66 66 L 108 0 L 240 0 L 240 240 Z",
+                              "fill": "$accent",
+                              "stroke": "$accent"
+                            },
+                            "InEfB": {
+                              "width": 24,
+                              "height": 24,
+                              "strokeWidth": 18,
+                              "enabled": false
+                            },
+                            "a3XZp": {
+                              "width": 24,
+                              "height": 24,
+                              "enabled": false
+                            }
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "OQ9FT",
+                          "name": "Label 24",
+                          "fill": "$muted",
+                          "content": "24PX",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 9,
+                          "fontWeight": "500",
+                          "letterSpacing": 1.8
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "R6wleI",
+                      "name": "16px Group",
+                      "layout": "vertical",
+                      "gap": 12,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "id": "Qq0lL",
+                          "type": "ref",
+                          "ref": "ksNYS",
+                          "name": "Mark 16",
+                          "width": 16,
+                          "height": 16,
+                          "descendants": {
+                            "n78dq": {
+                              "width": 16,
+                              "height": 16,
+                              "strokeWidth": 4,
+                              "geometry": "M 0 240 L 0 108 L 66 66 L 108 0 L 240 0 L 240 240 Z",
+                              "fill": "$accent",
+                              "stroke": "$accent"
+                            },
+                            "InEfB": {
+                              "width": 16,
+                              "height": 16,
+                              "strokeWidth": 28,
+                              "enabled": false
+                            },
+                            "a3XZp": {
+                              "width": 16,
+                              "height": 16,
+                              "enabled": false
+                            }
+                          }
+                        },
+                        {
+                          "type": "text",
+                          "id": "vzzZH",
+                          "name": "Label 16",
+                          "fill": "$muted",
+                          "content": "16PX",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 9,
+                          "fontWeight": "500",
+                          "letterSpacing": 1.8
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "ink": {
+      "type": "color",
+      "value": "#0c0b09"
+    },
+    "panel": {
+      "type": "color",
+      "value": "#16150f"
+    },
+    "hairline-color": {
+      "type": "color",
+      "value": "#2b2921"
+    },
+    "text-primary": {
+      "type": "color",
+      "value": "#efede4"
+    },
+    "muted": {
+      "type": "color",
+      "value": "#9a9589"
+    },
+    "accent": {
+      "type": "color",
+      "value": "#d9a441"
+    }
+  },
+  "fileToken": "f59255ae-87bd-4481-b77d-4b264e921c00"
+}

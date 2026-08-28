@@ -1,0 +1,33 @@
+$ date -u +%Y-%m-%dT%H:%M:%SZ
+2026-08-17T01:22:29Z
+
+$ uname -a
+Darwin WARMIND.local 27.0.0 Darwin Kernel Version 27.0.0: Mon Jun 15 23:01:45 PDT 2026; root:xnu-13432.0.5.501.1~2/RELEASE_ARM64_T8142 arm64
+
+$ sw_vers
+ProductName:		macOS
+ProductVersion:		27.0
+BuildVersion:		26A5368g
+
+$ sysctl -n hw.memsize
+25769803776
+
+$ bun --version
+1.3.14
+
+$ python3 --version
+Python 3.9.6
+
+$ command -v sandbox-exec
+/usr/bin/sandbox-exec
+
+$ ulimit -a
+-t: cpu time (seconds)              unlimited
+-f: file size (blocks)              unlimited
+-d: data seg size (kbytes)          unlimited
+-s: stack size (kbytes)             8176
+-c: core file size (blocks)         0
+-v: address space (kbytes)          unlimited
+-l: locked-in-memory size (kbytes)  unlimited
+-u: processes                       4000
+-n: file descriptors                1048576

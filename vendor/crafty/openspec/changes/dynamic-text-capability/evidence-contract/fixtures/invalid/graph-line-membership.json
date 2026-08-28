@@ -1,0 +1,296 @@
+{
+  "contractVersion": 1,
+  "recordId": "fixture.unicode-1/candidate-a",
+  "input": {
+    "corpusFixtureId": "fixture.unicode-1",
+    "configSha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "logicalText": "A😀é",
+    "logicalTextSha256": "17ff00477d1bd497bfd8f730aa1eed978adee5c8c1c72701988ee6faff6023e4",
+    "boundaryMaps": {
+      "utf8": {
+        "sourceUnit": "utf8-byte",
+        "derivation": {
+          "id": "derive.utf8",
+          "method": "utf8-byte-scan",
+          "artifactSha256": "2222222222222222222222222222222222222222222222222222222222222222"
+        },
+        "entries": [
+          {
+            "sourceOffset": 0,
+            "utf8Byte": 0,
+            "utf16CodeUnit": 0,
+            "codePoint": 0
+          },
+          {
+            "sourceOffset": 1,
+            "utf8Byte": 1,
+            "utf16CodeUnit": 1,
+            "codePoint": 1
+          },
+          {
+            "sourceOffset": 5,
+            "utf8Byte": 5,
+            "utf16CodeUnit": 3,
+            "codePoint": 2
+          },
+          {
+            "sourceOffset": 7,
+            "utf8Byte": 7,
+            "utf16CodeUnit": 4,
+            "codePoint": 3
+          }
+        ]
+      },
+      "utf16": {
+        "sourceUnit": "utf16-code-unit",
+        "derivation": {
+          "id": "derive.utf16",
+          "method": "utf16-code-unit-scan",
+          "artifactSha256": "3333333333333333333333333333333333333333333333333333333333333333"
+        },
+        "entries": [
+          {
+            "sourceOffset": 0,
+            "utf8Byte": 0,
+            "utf16CodeUnit": 0,
+            "codePoint": 0
+          },
+          {
+            "sourceOffset": 1,
+            "utf8Byte": 1,
+            "utf16CodeUnit": 1,
+            "codePoint": 1
+          },
+          {
+            "sourceOffset": 3,
+            "utf8Byte": 5,
+            "utf16CodeUnit": 3,
+            "codePoint": 2
+          },
+          {
+            "sourceOffset": 4,
+            "utf8Byte": 7,
+            "utf16CodeUnit": 4,
+            "codePoint": 3
+          }
+        ]
+      },
+      "codePoint": {
+        "sourceUnit": "unicode-code-point",
+        "derivation": {
+          "id": "derive.code-point",
+          "method": "unicode-scalar-scan",
+          "artifactSha256": "4444444444444444444444444444444444444444444444444444444444444444"
+        },
+        "entries": [
+          {
+            "sourceOffset": 0,
+            "utf8Byte": 0,
+            "utf16CodeUnit": 0,
+            "codePoint": 0
+          },
+          {
+            "sourceOffset": 1,
+            "utf8Byte": 1,
+            "utf16CodeUnit": 1,
+            "codePoint": 1
+          },
+          {
+            "sourceOffset": 2,
+            "utf8Byte": 5,
+            "utf16CodeUnit": 3,
+            "codePoint": 2
+          },
+          {
+            "sourceOffset": 3,
+            "utf8Byte": 7,
+            "utf16CodeUnit": 4,
+            "codePoint": 3
+          }
+        ]
+      }
+    }
+  },
+  "candidate": {
+    "id": "candidate-a",
+    "version": "investigation-pin-1",
+    "adapterSha256": "5555555555555555555555555555555555555555555555555555555555555555",
+    "nativeRangeUnit": "utf8-byte"
+  },
+  "outputs": {
+    "geometry": {
+      "coordinateSpace": "candidate-layout",
+      "unit": "css-px",
+      "axes": {
+        "x": "right",
+        "y": "down",
+        "inline": "x-positive",
+        "block": "y-positive"
+      },
+      "origin": "line-box-origin"
+    },
+    "nativeRanges": [
+      {
+        "id": "range.emoji",
+        "role": "cluster-source",
+        "unit": "utf8-byte",
+        "start": 1,
+        "end": 5,
+        "conversionStatus": "exact",
+        "convertedStart": {
+          "utf8Byte": 1,
+          "utf16CodeUnit": 1,
+          "codePoint": 1
+        },
+        "convertedEnd": {
+          "utf8Byte": 5,
+          "utf16CodeUnit": 3,
+          "codePoint": 2
+        }
+      }
+    ],
+    "clusters": [
+      {
+        "id": "cluster.emoji",
+        "rangeId": "range.emoji",
+        "bidiLevel": 0,
+        "affinities": [
+          {
+            "edge": "end",
+            "label": "candidate.trailing"
+          },
+          {
+            "edge": "start",
+            "label": "candidate.leading"
+          }
+        ],
+        "glyphIds": [
+          "glyph.emoji"
+        ]
+      }
+    ],
+    "lines": [
+      {
+        "id": "line.0",
+        "index": 0,
+        "rangeId": "range.emoji",
+        "clusterIds": [],
+        "originX": {
+          "f64": "0x0000000000000000"
+        },
+        "originY": {
+          "f64": "0x0000000000000000"
+        },
+        "inlineExtent": {
+          "f64": "0x4024000000000000"
+        },
+        "blockExtent": {
+          "f64": "0x4028000000000000"
+        }
+      }
+    ],
+    "glyphs": [
+      {
+        "id": "glyph.emoji",
+        "candidateGlyphId": "opaque:42",
+        "rangeId": "range.emoji",
+        "clusterId": "cluster.emoji",
+        "fontId": "font.fixture",
+        "x": {
+          "f64": "0x3ff0000000000000"
+        },
+        "y": {
+          "f64": "0x0000000000000000"
+        },
+        "advanceX": {
+          "f64": "0x4024000000000000"
+        },
+        "advanceY": {
+          "f64": "0x0000000000000000"
+        },
+        "flags": [
+          "emoji",
+          "base"
+        ]
+      }
+    ],
+    "fonts": [
+      {
+        "id": "font.fixture",
+        "byteSha256": "6666666666666666666666666666666666666666666666666666666666666666",
+        "byteLength": 1024,
+        "faceIndex": 0,
+        "faceSha256": "7777777777777777777777777777777777777777777777777777777777777777",
+        "variations": [
+          {
+            "tag": "wght",
+            "value": {
+              "f64": "0x4079000000000000"
+            }
+          }
+        ],
+        "variationSha256": "8888888888888888888888888888888888888888888888888888888888888888"
+      }
+    ],
+    "diagnostics": []
+  },
+  "environment": {
+    "id": "env.browser-wasm-1",
+    "browser": "qualified-browser-pin",
+    "wasmRuntime": "wasm32-unknown-unknown",
+    "os": "qualified-os",
+    "architecture": "arm64",
+    "hardware": "recorded-hardware-id",
+    "gpu": "recorded-adapter-id",
+    "qualificationSha256": "9999999999999999999999999999999999999999999999999999999999999999"
+  },
+  "provenance": {
+    "sourceRevision": "source-revision-pin",
+    "buildCommandSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "buildEnvironmentSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "dependencies": [
+      {
+        "purl": "pkg:cargo/example@1.0.0",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      }
+    ],
+    "artifacts": [
+      {
+        "id": "candidate.wasm",
+        "mediaType": "application/wasm",
+        "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "byteLength": 4096
+      }
+    ]
+  },
+  "observations": [
+    {
+      "metric": "layout.wall-time",
+      "unit": "ms",
+      "state": "cold",
+      "samples": [
+        {
+          "f64": "0x4000000000000000"
+        },
+        {
+          "f64": "0x3ff0000000000000"
+        }
+      ]
+    }
+  ],
+  "realization": {
+    "environmentId": "env.browser-wasm-1",
+    "kind": "raster",
+    "pixelFormat": "rgba8unorm-srgb",
+    "pixelWidth": 10,
+    "pixelHeight": 10,
+    "artifacts": [
+      {
+        "id": "pixels.rgba",
+        "mediaType": "application/octet-stream",
+        "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+        "byteLength": 400
+      }
+    ]
+  }
+}
