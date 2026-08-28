@@ -13,6 +13,7 @@ import {
 import {
   aiSdkStreamFailureCode,
   createAiSdkTextGenerator,
+  resolveAiSdkToolNames,
   splitAiSdkPrompt,
 } from "../src/providers/ai-sdk.js";
 
@@ -210,6 +211,32 @@ describe("plugin-native chat turns", () => {
       messages: [{ content: "question", role: "user" }],
       system: "policy one\n\npolicy two",
     });
+  });
+
+  test("aliases provider-invalid tool names without changing canonical IDs", () => {
+    const resolution = resolveAiSdkToolNames([
+      "agent.delegate",
+      "agent_delegate",
+      "workspace_read",
+      "tool with spaces",
+    ]);
+    expect(resolution.providerNames).toEqual([
+      "agent_delegate_2",
+      "agent_delegate",
+      "workspace_read",
+      "tool_with_spaces",
+    ]);
+    expect(
+      resolution.providerNames.every((name) =>
+        /^[a-zA-Z0-9_-]{1,64}$/u.test(name),
+      ),
+    ).toBe(true);
+    expect(
+      resolution.internalNameByProviderName.get("agent_delegate_2"),
+    ).toBe("agent.delegate");
+    expect(
+      resolution.internalNameByProviderName.get("workspace_read"),
+    ).toBe("workspace_read");
   });
 
   test("streams through the AI SDK OpenAI-compatible adapter", async () => {

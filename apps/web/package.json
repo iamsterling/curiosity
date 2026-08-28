@@ -4,9 +4,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun --bun next dev --port 3000",
+    "dev": "bun --bun next dev --hostname 0.0.0.0 --port 3000",
     "build": "next build",
-    "start": "bun --bun next start",
+    "start": "bun --bun next start --hostname 0.0.0.0",
     "lint": "eslint --max-warnings 0",
     "check-types": "next typegen && tsc --noEmit",
     "test": "node --test tests/config-load.test.mjs tests/dashboard-route.test.mjs tests/thread-projection.test.mjs",

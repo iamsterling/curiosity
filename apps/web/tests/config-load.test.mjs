@@ -68,5 +68,11 @@ test("Craft remains a mode of the Curiosity app rather than a second app", async
   assert.equal(rootPackage.workspaces.includes("vendor/crafty/packages/editor"), true);
   assert.match(webPackage.scripts.dev, /^bun --bun next dev/u);
   assert.match(webPackage.scripts.start, /^bun --bun next start/u);
+  assert.match(webPackage.scripts.dev, /--hostname 0\.0\.0\.0/u);
+  assert.match(webPackage.scripts.start, /--hostname 0\.0\.0\.0/u);
+  assert.doesNotMatch(
+    await readFile(new URL("../app/dashboard-client.tsx", import.meta.url), "utf8"),
+    /crypto\.randomUUID/u,
+  );
   assert.match(craftPage, /Curiosity-owned surface/u);
 });

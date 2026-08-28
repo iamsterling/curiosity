@@ -40,6 +40,12 @@ export interface DashboardTurnInput {
   readonly threadId?: string;
 }
 
+export interface DashboardTurnResult extends ChatTurnResult {
+  readonly threads: Awaited<
+    ReturnType<CuriosityHarness["projections"]["threads"]>
+  >;
+}
+
 export interface DashboardSession {
   readonly catalog: CuriosityHarness["catalog"];
   readonly messages: Awaited<
@@ -160,7 +166,7 @@ const validateIdentifier = (value: string, code: string): void => {
 
 export const submitDashboardTurn = async (
   input: DashboardTurnInput,
-): Promise<ChatTurnResult> => {
+): Promise<DashboardTurnResult> => {
   const text = input.text.trim();
   if (!text || Buffer.byteLength(text) > maximumMessageBytes)
     throw new Error("DASHBOARD_MESSAGE_INVALID");
@@ -201,9 +207,13 @@ export const submitDashboardTurn = async (
     await kernel.harness.submit(
       signPromptCommand(identity, threadId, promptCommand, createId, issuedAt),
     );
-  return kernel.harness.chat(
+  const result = await kernel.harness.chat(
     signTurn(identity, threadId, text, createId, issuedAt),
   );
+  return Object.freeze({
+    ...result,
+    threads: await kernel.harness.projections.threads(),
+  });
 };
 
 export const readDashboardSession = async (

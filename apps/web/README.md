@@ -6,7 +6,7 @@ pinned Crafty editor, renderer, and document store into the same app shell.
 
 The server must run on Bun because the sealed harness journal uses Bun's SQLite
 driver. The package's `dev` and `start` scripts enforce that runtime with
-`bun --bun`.
+`bun --bun` and bind to `0.0.0.0` for remote-work access.
 
 ## Run
 

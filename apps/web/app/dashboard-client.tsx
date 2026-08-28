@@ -8,7 +8,11 @@ import {
   Search,
 } from "lucide-react";
 import Link from "next/link";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
+import {
+  presentDashboardError,
+  readDashboardResponse,
+} from "./dashboard-response";
 import type { ThreadProjectionView } from "./thread-projections";
 import styles from "./page.module.css";
 
@@ -69,6 +73,7 @@ export const DashboardClient = ({
   const Icon = config.icon;
   const [activeThreadId, setActiveThreadId] = useState<string>();
   const [messages, setMessages] = useState<readonly Message[]>([]);
+  const [threads, setThreads] = useState(view.threads);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string>();
@@ -76,7 +81,8 @@ export const DashboardClient = ({
     view.status === "available"
       ? "Durable log online"
       : "Kernel starts on send";
-  const threadCount = useMemo(() => view.threads.length, [view.threads]);
+
+  useEffect(() => setThreads(view.threads), [view.threads]);
 
   const openThread = async (threadId: string) => {
     setActiveThreadId(threadId);
@@ -87,16 +93,16 @@ export const DashboardClient = ({
         `/api/curiosity/session?threadId=${encodeURIComponent(threadId)}`,
         { cache: "no-store" },
       );
-      const body = (await response.json()) as {
+      const body = await readDashboardResponse<{
         error?: { code?: string };
         messages?: readonly {
           messageId: string;
           role: "assistant" | "user";
           text: string;
         }[];
-      };
-      if (!response.ok)
-        throw new Error(body.error?.code ?? "THREAD_LOAD_FAILED");
+        threads?: ThreadProjectionView["threads"];
+      }>(response, "DASHBOARD_RESPONSE_INVALID");
+      if (body.threads) setThreads(body.threads);
       setMessages(
         (body.messages ?? []).map((message) => ({
           id: message.messageId,
@@ -105,7 +111,11 @@ export const DashboardClient = ({
         })),
       );
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "THREAD_LOAD_FAILED");
+      setError(
+        presentDashboardError(
+          cause instanceof Error ? cause.message : "THREAD_LOAD_FAILED",
+        ),
+      );
     } finally {
       setBusy(false);
     }
@@ -115,35 +125,47 @@ export const DashboardClient = ({
     event.preventDefault();
     const prompt = text.trim();
     if (!prompt || busy) return;
-    const threadId = activeThreadId ?? crypto.randomUUID();
-    setActiveThreadId(threadId);
+    const optimisticMessageId = `pending:${Date.now()}`;
     setText("");
     setError(undefined);
     setBusy(true);
     setMessages((current) => [
       ...current,
-      { id: crypto.randomUUID(), role: "user", text: prompt },
+      { id: optimisticMessageId, role: "user", text: prompt },
     ]);
     try {
       const response = await fetch("/api/curiosity/chat", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ text: commandText(mode, prompt), threadId }),
+        body: JSON.stringify({
+          text: commandText(mode, prompt),
+          ...(activeThreadId ? { threadId: activeThreadId } : {}),
+        }),
       });
-      const body = (await response.json()) as {
+      const body = await readDashboardResponse<{
         assistantMessageId?: string;
         error?: { code?: string };
         text?: string;
-      };
-      if (!response.ok || !body.assistantMessageId || !body.text)
-        throw new Error(body.error?.code ?? "DASHBOARD_TURN_FAILED");
+        threadId?: string;
+        threads?: ThreadProjectionView["threads"];
+      }>(response, "DASHBOARD_RESPONSE_INVALID");
+      if (!body.assistantMessageId || !body.text || !body.threadId)
+        throw new Error("DASHBOARD_RESPONSE_INVALID");
+      setActiveThreadId(body.threadId);
       setMessages((current) => [
         ...current,
         { id: body.assistantMessageId!, role: "assistant", text: body.text! },
       ]);
+      if (body.threads) setThreads(body.threads);
     } catch (cause) {
+      setMessages((current) =>
+        current.filter(({ id }) => id !== optimisticMessageId),
+      );
+      setText(prompt);
       setError(
-        cause instanceof Error ? cause.message : "DASHBOARD_TURN_FAILED",
+        presentDashboardError(
+          cause instanceof Error ? cause.message : "DASHBOARD_TURN_FAILED",
+        ),
       );
     } finally {
       setBusy(false);
@@ -196,11 +218,11 @@ export const DashboardClient = ({
         <aside className={styles.threadPanel}>
           <div className={styles.panelHeader}>
             <h2>Threads</h2>
-            <span>{threadCount}</span>
+            <span>{threads.length}</span>
           </div>
-          {view.threads.length > 0 ? (
+          {threads.length > 0 ? (
             <ol className={styles.threadList}>
-              {view.threads.map((thread) => (
+              {threads.map((thread) => (
                 <li key={thread.threadId}>
                   <button
                     data-active={activeThreadId === thread.threadId}
@@ -218,7 +240,7 @@ export const DashboardClient = ({
           )}
         </aside>
 
-        <div className={styles.conversation}>
+        <div className={styles.conversation} aria-busy={busy}>
           <div className={styles.messages} aria-live="polite">
             {messages.length === 0 ? (
               <div className={styles.emptyConversation}>
@@ -240,7 +262,11 @@ export const DashboardClient = ({
               ))
             )}
           </div>
-          {error ? <p className={styles.error}>{error}</p> : null}
+          {error ? (
+            <p className={styles.error} role="alert">
+              {error}
+            </p>
+          ) : null}
           <form className={styles.composer} onSubmit={submit}>
             <textarea
               aria-label={config.placeholder}

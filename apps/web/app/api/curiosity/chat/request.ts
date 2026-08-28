@@ -16,11 +16,49 @@ const rejected = (
   status: number,
 ): DashboardRequestValidation => ({ code, ok: false, status });
 
+const headerAuthority = (value: string | null): string | undefined => {
+  const candidate = value?.trim();
+  return candidate || undefined;
+};
+
+const normalizedOrigin = (
+  protocol: string,
+  authority: string | undefined,
+): string | undefined => {
+  if (!authority) return undefined;
+  const scheme = protocol.replace(/:$/u, "").toLowerCase();
+  if (scheme !== "http" && scheme !== "https") return undefined;
+  try {
+    return new URL(`${scheme}://${authority}`).origin;
+  } catch {
+    return undefined;
+  }
+};
+
+export const requestAllowsOrigin = (request: Request): boolean => {
+  const supplied = request.headers.get("origin");
+  if (!supplied) return true;
+
+  let requestUrl: URL;
+  let suppliedOrigin: string;
+  try {
+    requestUrl = new URL(request.url);
+    suppliedOrigin = new URL(supplied).origin;
+  } catch {
+    return false;
+  }
+
+  const host = headerAuthority(request.headers.get("host"));
+  const allowed = new Set<string>([requestUrl.origin]);
+  const hostOrigin = normalizedOrigin(requestUrl.protocol, host);
+  if (hostOrigin) allowed.add(hostOrigin);
+  return allowed.has(suppliedOrigin);
+};
+
 export const validateDashboardRequest = async (
   request: Request,
 ): Promise<DashboardRequestValidation> => {
-  const origin = request.headers.get("origin");
-  if (origin && origin !== new URL(request.url).origin)
+  if (!requestAllowsOrigin(request))
     return rejected("DASHBOARD_ORIGIN_DENIED", 403);
   if (!request.headers.get("content-type")?.startsWith("application/json"))
     return rejected("DASHBOARD_CONTENT_TYPE_INVALID", 415);

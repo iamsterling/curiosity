@@ -52,6 +52,7 @@ const openAiOAuthAuthenticationMessages = [
   "ChatGPT access token not found.",
   "ChatGPT account id not found",
 ] as const;
+const providerToolNamePattern = /^[a-zA-Z0-9_-]{1,64}$/u;
 
 const errorRecord = (value: unknown): Record<string, unknown> | undefined =>
   value && typeof value === "object" && !Array.isArray(value)
@@ -110,6 +111,52 @@ export const splitAiSdkPrompt = (
     .join("\n\n");
   const messages = input.filter(({ role }) => role !== "system");
   return system ? { messages, system } : { messages };
+};
+
+export interface AiSdkToolNameResolution {
+  readonly internalNameByProviderName: ReadonlyMap<string, string>;
+  readonly providerNames: readonly string[];
+}
+
+const suffixedProviderToolName = (base: string, ordinal: number): string => {
+  const suffix = `_${ordinal}`;
+  return `${base.slice(0, 64 - suffix.length)}${suffix}`;
+};
+
+export const resolveAiSdkToolNames = (
+  internalNames: readonly string[],
+): AiSdkToolNameResolution => {
+  const providerNames = new Array<string>(internalNames.length);
+  const internalNameByProviderName = new Map<string, string>();
+  const seenInternalNames = new Set<string>();
+
+  for (const [index, internalName] of internalNames.entries()) {
+    if (seenInternalNames.has(internalName))
+      throw new Error("AI_SDK_TOOL_NAME_DUPLICATE");
+    seenInternalNames.add(internalName);
+    if (!providerToolNamePattern.test(internalName)) continue;
+    providerNames[index] = internalName;
+    internalNameByProviderName.set(internalName, internalName);
+  }
+
+  for (const [index, internalName] of internalNames.entries()) {
+    if (providerNames[index]) continue;
+    const base =
+      internalName.replace(/[^a-zA-Z0-9_-]/gu, "_").slice(0, 64) || "tool";
+    let providerName = base;
+    let ordinal = 2;
+    while (internalNameByProviderName.has(providerName)) {
+      providerName = suffixedProviderToolName(base, ordinal);
+      ordinal += 1;
+    }
+    providerNames[index] = providerName;
+    internalNameByProviderName.set(providerName, internalName);
+  }
+
+  return Object.freeze({
+    internalNameByProviderName,
+    providerNames: Object.freeze(providerNames),
+  });
 };
 
 export const resolveAiSdkModelId = (
@@ -263,14 +310,24 @@ export const createAiSdkTextGenerator = (
     modelId,
     stream: async function* ({ abortSignal, messages, tools = [] }) {
       const prompt = splitAiSdkPrompt(messages);
+      const toolNames = resolveAiSdkToolNames(
+        tools.map(({ name }) => name),
+      );
       const modelTools = Object.fromEntries(
-        tools.map((definition) => [
-          definition.name,
-          tool({
-            description: definition.description,
-            inputSchema: jsonSchema(definition.inputSchema as never),
-          }),
-        ]),
+        tools.map((definition, index) => {
+          const providerName = toolNames.providerNames[index];
+          if (!providerName) throw new Error("AI_SDK_TOOL_NAME_UNAVAILABLE");
+          return [
+            providerName,
+            tool({
+              description:
+                providerName === definition.name
+                  ? definition.description
+                  : `${definition.description}\nInternal tool id: ${definition.name}.`,
+              inputSchema: jsonSchema(definition.inputSchema as never),
+            }),
+          ];
+        }),
       ) as ToolSet;
       const result = streamText({
         abortSignal,
@@ -288,13 +345,18 @@ export const createAiSdkTextGenerator = (
       let completed = false;
       for await (const part of result.fullStream) {
         if (part.type === "text-delta") yield part.text;
-        if (part.type === "tool-call")
+        if (part.type === "tool-call") {
+          const internalToolName =
+            toolNames.internalNameByProviderName.get(part.toolName);
+          if (!internalToolName)
+            throw new Error("AI_SDK_TOOL_NAME_UNRECOGNIZED");
           yield {
             input: part.input,
             toolCallId: part.toolCallId,
-            toolName: part.toolName,
+            toolName: internalToolName,
             type: "tool-call" as const,
           };
+        }
         if (part.type === "error")
           throw new Error(aiSdkStreamFailureCode(providerId, part.error));
         if (part.type === "abort") throw new Error("AI_SDK_STREAM_ABORTED");
