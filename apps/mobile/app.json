@@ -17,13 +17,7 @@
     "ios": {
       "bundleIdentifier": "com.iamsterling.curiosity",
       "supportsTablet": true,
-      "requireFullScreen": false,
-      "infoPlist": {
-        "NSLocalNetworkUsageDescription": "Connect to the Curiosity server on your local network.",
-        "NSAppTransportSecurity": {
-          "NSAllowsLocalNetworking": true
-        }
-      }
+      "requireFullScreen": false
     }
   }
 }

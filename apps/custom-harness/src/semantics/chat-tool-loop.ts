@@ -1,4 +1,5 @@
 import { Effect } from "effect";
+import { completeChatTurn } from "@curiosity/authority";
 import type { StoredEvent } from "../domain/event.js";
 import { PluginFailure } from "../kernel/errors.js";
 import type {
@@ -116,12 +117,13 @@ export const chatCorrelation = (
   const candidate = record(value);
   if (
     candidate?.kind !== "curiosity.chat.turn" ||
-    (candidate.agentId !== undefined && typeof candidate.agentId !== "string") ||
+    (candidate.agentId !== undefined &&
+      typeof candidate.agentId !== "string") ||
     typeof candidate.assistantMessageId !== "string" ||
     typeof candidate.threadId !== "string" ||
     typeof candidate.turnId !== "string" ||
-    ((candidate.roleActivationCommand === undefined) !==
-      (candidate.roleActivationEventId === undefined)) ||
+    (candidate.roleActivationCommand === undefined) !==
+      (candidate.roleActivationEventId === undefined) ||
     (candidate.roleActivationCommand !== undefined &&
       typeof candidate.roleActivationCommand !== "string") ||
     (candidate.roleActivationEventId !== undefined &&
@@ -228,7 +230,9 @@ const chatToolCorrelation = (
   };
 };
 
-const decodeToolCalls = (value: unknown): readonly ModelToolCall[] | undefined => {
+const decodeToolCalls = (
+  value: unknown,
+): readonly ModelToolCall[] | undefined => {
   if (!Array.isArray(value) || value.length > maximumToolCallsPerBatch)
     return undefined;
   const calls: ModelToolCall[] = [];
@@ -248,7 +252,8 @@ const decodeToolCalls = (value: unknown): readonly ModelToolCall[] | undefined =
       toolVersion: call.toolVersion,
     });
   }
-  return new Set(calls.map(({ toolCallId }) => toolCallId)).size === calls.length
+  return new Set(calls.map(({ toolCallId }) => toolCallId)).size ===
+    calls.length
     ? calls
     : undefined;
 };
@@ -412,65 +417,55 @@ const recoverWithAgent = (
   };
 };
 
-export const providerSucceeded = Effect.fn(
-  "ChatToolLoop.providerSucceeded",
-)(function* (event: StoredEvent, context: PluginReactionContext) {
-  const receipt = record(event.body);
-  const correlation = chatCorrelation(receipt?.correlation);
-  if (receipt?.actionType !== "provider.generate" || !correlation)
-    return emptyChatReaction;
-  const output = record(receipt.output);
-  const toolCalls = decodeToolCalls(output?.toolCalls);
-  if (
-    typeof output?.text !== "string" ||
-    typeof output.durationMs !== "number" ||
-    typeof output.effort !== "string" ||
-    typeof output.modelId !== "string"
-  )
-    return yield* new PluginFailure({
-      message: "CHAT_PROVIDER_RECEIPT_INVALID",
-      pluginId: "curiosity.stock.chat",
-    });
-  if (!toolCalls)
-    return recoverWithAgent(
-      correlation,
-      context.events,
-      event.sequence,
-      {
+export const providerSucceeded = Effect.fn("ChatToolLoop.providerSucceeded")(
+  function* (event: StoredEvent, context: PluginReactionContext) {
+    const receipt = record(event.body);
+    const correlation = chatCorrelation(receipt?.correlation);
+    if (receipt?.actionType !== "provider.generate" || !correlation)
+      return emptyChatReaction;
+    const output = record(receipt.output);
+    const toolCalls = decodeToolCalls(output?.toolCalls);
+    if (
+      typeof output?.text !== "string" ||
+      typeof output.durationMs !== "number" ||
+      typeof output.effort !== "string" ||
+      typeof output.modelId !== "string"
+    )
+      return yield* new PluginFailure({
+        message: "CHAT_PROVIDER_RECEIPT_INVALID",
+        pluginId: "curiosity.stock.chat",
+      });
+    if (!toolCalls)
+      return recoverWithAgent(correlation, context.events, event.sequence, {
         code: "CHAT_PROVIDER_TOOL_CALLS_INVALID",
         details:
           "The provider returned an invalid tool-call batch. Emit at most eight uniquely identified calls using exact current tool names, versions, and schemas.",
         draft: output.text,
         modelId: output.modelId,
         phase: "model-output",
-      },
-    );
-  if (toolCalls.length === 0) {
-    const researchReceipt =
-      correlation.agentId === "researcher"
-        ? generateResearchReceipt({
-            assistantMessageId: correlation.assistantMessageId,
-            events: context.events.filter(
-              (candidate) => candidate.sequence <= event.sequence,
-            ),
-            modelId: output.modelId,
-            text: output.text,
-            threadId: correlation.threadId,
-            turnId: correlation.turnId,
-          })
-        : undefined;
-    if (
-      researchReceipt &&
-      !researchReceipt.ok &&
-      researchReceipt.failure !== "RESEARCH_SOURCE_CUSTODY_INVALID"
-    ) {
-      const targets = researchReceipt.citationTargets ?? [];
-      const inventory = citationTargetInventory(targets);
-      return recoverWithAgent(
-        correlation,
-        context.events,
-        event.sequence,
-        {
+      });
+    if (toolCalls.length === 0) {
+      const researchReceipt =
+        correlation.agentId === "researcher"
+          ? generateResearchReceipt({
+              assistantMessageId: correlation.assistantMessageId,
+              events: context.events.filter(
+                (candidate) => candidate.sequence <= event.sequence,
+              ),
+              modelId: output.modelId,
+              text: output.text,
+              threadId: correlation.threadId,
+              turnId: correlation.turnId,
+            })
+          : undefined;
+      if (
+        researchReceipt &&
+        !researchReceipt.ok &&
+        researchReceipt.failure !== "RESEARCH_SOURCE_CUSTODY_INVALID"
+      ) {
+        const targets = researchReceipt.citationTargets ?? [];
+        const inventory = citationTargetInventory(targets);
+        return recoverWithAgent(correlation, context.events, event.sequence, {
           code: researchReceipt.failure,
           details: [
             targets.length > 0
@@ -481,28 +476,26 @@ export const providerSucceeded = Effect.fn(
           draft: output.text,
           modelId: output.modelId,
           phase: "model-output",
-        },
-      );
-    }
-    if (researchReceipt && !researchReceipt.ok)
-      return turnFailed(correlation, researchReceipt.failure, output.modelId);
-    return {
-      actions: [],
-      events: [
-        ...(researchReceipt?.ok
-          ? [
-              {
-                body: researchReceipt.receipt,
-                streamId: correlation.threadId,
-                type: "research.receipt.generated",
-              },
-            ]
-          : []),
-        {
-          body: {
+        });
+      }
+      if (researchReceipt && !researchReceipt.ok)
+        return turnFailed(correlation, researchReceipt.failure, output.modelId);
+      return {
+        actions: [],
+        events: [
+          ...(researchReceipt?.ok
+            ? [
+                {
+                  body: researchReceipt.receipt,
+                  streamId: correlation.threadId,
+                  type: "research.receipt.generated",
+                },
+              ]
+            : []),
+          ...completeChatTurn({
+            assistantMessageId: correlation.assistantMessageId,
             durationMs: output.durationMs,
             effort: output.effort,
-            messageId: correlation.assistantMessageId,
             modelId: output.modelId,
             ...(researchReceipt?.ok
               ? {
@@ -515,54 +508,27 @@ export const providerSucceeded = Effect.fn(
                   },
                 }
               : {}),
-            role: "assistant",
-            schemaVersion: 1,
             text: output.text,
             threadId: correlation.threadId,
             turnId: correlation.turnId,
-          },
-          streamId: correlation.threadId,
-          type: "message.appended",
-        },
-        {
-          body: {
-            assistantMessageId: correlation.assistantMessageId,
-            durationMs: output.durationMs,
-            effort: output.effort,
-            modelId: output.modelId,
-            schemaVersion: 1,
-            threadId: correlation.threadId,
-            turnId: correlation.turnId,
-          },
-          streamId: correlation.threadId,
-          type: "turn.completed",
-        },
-      ],
-    };
-  }
-  if (correlation.finalizationOnly)
-    return recoverWithAgent(
-      correlation,
-      context.events,
-      event.sequence,
-      {
+          }),
+        ],
+      };
+    }
+    if (correlation.finalizationOnly)
+      return recoverWithAgent(correlation, context.events, event.sequence, {
         code: "CHAT_FINALIZATION_TOOL_CALL_FORBIDDEN",
         details: `The finalization response attempted ${toolCalls.length} tool call(s), but this bounded phase has no tool authority. Produce the final answer from existing evidence.`,
         draft: output.text,
         modelId: output.modelId,
         phase: "model-output",
-      },
-    );
-  const budget = toolBudget(correlation.agentId);
-  const assistantContext = [correlation.assistantContext, output.text]
-    .filter(Boolean)
-    .join("\n");
-  if (Buffer.byteLength(assistantContext) > maximumAssistantContextBytes)
-    return recoverWithAgent(
-      correlation,
-      context.events,
-      event.sequence,
-      {
+      });
+    const budget = toolBudget(correlation.agentId);
+    const assistantContext = [correlation.assistantContext, output.text]
+      .filter(Boolean)
+      .join("\n");
+    if (Buffer.byteLength(assistantContext) > maximumAssistantContextBytes)
+      return recoverWithAgent(correlation, context.events, event.sequence, {
         code: "CHAT_ASSISTANT_CONTEXT_TOO_LARGE",
         details:
           "The accumulated planning text exceeded the bounded assistant context. Produce a concise final answer from existing evidence without calling another tool.",
@@ -570,114 +536,104 @@ export const providerSucceeded = Effect.fn(
         finalizationOnly: true,
         modelId: output.modelId,
         phase: "model-output",
-      },
-    );
-  if (
-    correlation.toolRound >= budget.maximumToolRounds ||
-    correlation.toolCallCount + toolCalls.length > budget.maximumToolCalls
-  )
-    return budgetFinalization(
-      correlation,
-      context.events,
-      event.sequence,
-      assistantContext,
-    );
-
-  const providerActionId = receipt.actionId;
-  if (typeof providerActionId !== "string")
-    return yield* new PluginFailure({
-      message: "CHAT_PROVIDER_RECEIPT_INVALID",
-      pluginId: "curiosity.stock.chat",
-    });
-  const expectedToolCallIds = toolCalls.map(({ toolCallId }) => toolCallId);
-  const delegationCallIds = toolCalls
-    .filter(({ toolName }) => toolName === "agent.delegate")
-    .map(({ toolCallId }) => toolCallId);
-  if (delegationCallIds.length > 4)
-    return turnFailed(correlation, "CHILD_COUNT_EXCEEDED", output.modelId);
-  const actions: ReactionProposal["actions"][number][] = [];
-  for (const call of toolCalls) {
-    const selected = modelTools.find((tool) => tool.name === call.toolName);
-    if (!selected || selected.version !== call.toolVersion)
-      return recoverWithAgent(
+      });
+    if (
+      correlation.toolRound >= budget.maximumToolRounds ||
+      correlation.toolCallCount + toolCalls.length > budget.maximumToolCalls
+    )
+      return budgetFinalization(
         correlation,
         context.events,
         event.sequence,
-        {
+        assistantContext,
+      );
+
+    const providerActionId = receipt.actionId;
+    if (typeof providerActionId !== "string")
+      return yield* new PluginFailure({
+        message: "CHAT_PROVIDER_RECEIPT_INVALID",
+        pluginId: "curiosity.stock.chat",
+      });
+    const expectedToolCallIds = toolCalls.map(({ toolCallId }) => toolCallId);
+    const delegationCallIds = toolCalls
+      .filter(({ toolName }) => toolName === "agent.delegate")
+      .map(({ toolCallId }) => toolCallId);
+    if (delegationCallIds.length > 4)
+      return turnFailed(correlation, "CHILD_COUNT_EXCEEDED", output.modelId);
+    const actions: ReactionProposal["actions"][number][] = [];
+    for (const call of toolCalls) {
+      const selected = modelTools.find((tool) => tool.name === call.toolName);
+      if (!selected || selected.version !== call.toolVersion)
+        return recoverWithAgent(correlation, context.events, event.sequence, {
           code: "CHAT_PROVIDER_TOOL_NOT_VISIBLE",
           details: `The requested tool snapshot is unavailable: ${call.toolName}@${call.toolVersion}. Select a tool and version from the current tool catalog.`,
           draft: output.text,
           modelId: output.modelId,
           phase: "model-output",
-        },
-      );
-    const proposed = yield* selected
-      .propose(call.input, {
-        executionId: correlation.turnId,
-        resource: selected.actionType.startsWith("workspace.")
-          ? `workspace:thread:${correlation.threadId}`
-          : `thread:${correlation.threadId}`,
-      })
-      .pipe(Effect.result);
-    if (proposed._tag === "Failure")
-      return recoverWithAgent(
-        correlation,
-        context.events,
-        event.sequence,
-        {
+        });
+      const proposed = yield* selected
+        .propose(call.input, {
+          executionId: correlation.turnId,
+          resource: selected.actionType.startsWith("workspace.")
+            ? `workspace:thread:${correlation.threadId}`
+            : `thread:${correlation.threadId}`,
+        })
+        .pipe(Effect.result);
+      if (proposed._tag === "Failure")
+        return recoverWithAgent(correlation, context.events, event.sequence, {
           code: "MODEL_TOOL_INPUT_INVALID",
           details: `The input for ${call.toolName}@${call.toolVersion} did not satisfy its current schema. Inspect the exposed schema and submit corrected arguments rather than repeating the same call.`,
           draft: output.text,
           modelId: output.modelId,
           phase: "model-output",
+        });
+      const proposal = proposed.success;
+      const proposedInput = record(proposal.input);
+      actions.push({
+        ...proposal,
+        input: {
+          correlation: {
+            ...correlation,
+            assistantContext,
+            delegationCallIds,
+            delegationGroupId: `delegation:${providerActionId}`,
+            expectedToolCallIds,
+            kind: "curiosity.chat.tool",
+            providerActionId,
+            toolCallCount: correlation.toolCallCount + toolCalls.length,
+            toolCallId: call.toolCallId,
+            toolName: call.toolName,
+            toolVersion: call.toolVersion,
+          },
+          request: [
+            "agent.delegate",
+            "fetch.web",
+            "git.diff",
+            "git.ref.inspect",
+            "git.ref.update",
+            "git.status",
+            "git.worktree.create",
+            "git.worktree.inspect",
+            "git.worktree.remove",
+            "process.run",
+            "question.ask",
+            "search.web",
+            "workspace.glob",
+            "workspace.list",
+            "workspace.read",
+            "workspace.search",
+            "workspace.write",
+            "workspace.patch",
+            "workspace.delete",
+          ].includes(selected.actionType)
+            ? proposedInput?.request
+            : proposal.input,
         },
-      );
-    const proposal = proposed.success;
-    const proposedInput = record(proposal.input);
-    actions.push({
-      ...proposal,
-      input: {
-        correlation: {
-          ...correlation,
-          assistantContext,
-          delegationCallIds,
-          delegationGroupId: `delegation:${providerActionId}`,
-          expectedToolCallIds,
-          kind: "curiosity.chat.tool",
-          providerActionId,
-          toolCallCount: correlation.toolCallCount + toolCalls.length,
-          toolCallId: call.toolCallId,
-          toolName: call.toolName,
-          toolVersion: call.toolVersion,
-        },
-        request: [
-          "agent.delegate",
-          "fetch.web",
-          "git.diff",
-          "git.ref.inspect",
-          "git.ref.update",
-          "git.status",
-          "git.worktree.create",
-          "git.worktree.inspect",
-          "git.worktree.remove",
-          "process.run",
-          "question.ask",
-          "search.web",
-          "workspace.glob",
-          "workspace.list",
-          "workspace.read",
-          "workspace.search",
-          "workspace.write",
-          "workspace.patch",
-          "workspace.delete",
-        ].includes(selected.actionType)
-          ? proposedInput?.request
-          : proposal.input,
-      },
-    });
-  }
-  return { actions, events: [] };
-});
+      });
+    }
+    return { actions, events: [] };
+  },
+);
 
 const matchingToolReceipts = (
   context: PluginReactionContext,
@@ -687,8 +643,12 @@ const matchingToolReceipts = (
   context.events.filter((candidate) => {
     if (candidate.type !== eventType) return false;
     const candidateBody = record(candidate.body);
-    const candidateCorrelation = chatToolCorrelation(candidateBody?.correlation);
-    return candidateCorrelation?.providerActionId === correlation.providerActionId;
+    const candidateCorrelation = chatToolCorrelation(
+      candidateBody?.correlation,
+    );
+    return (
+      candidateCorrelation?.providerActionId === correlation.providerActionId
+    );
   });
 
 const toolEvidence = (
@@ -721,9 +681,7 @@ const toolEvidence = (
             `Tool ${candidateCorrelation?.toolName ?? "unknown"} (${toolCallId}) failed:`,
             JSON.stringify({
               errorCode:
-                typeof errorCode === "string"
-                  ? errorCode
-                  : "MODEL_TOOL_FAILED",
+                typeof errorCode === "string" ? errorCode : "MODEL_TOOL_FAILED",
             }),
           ].join("\n")
         : [
@@ -749,7 +707,11 @@ const continueAfterToolBatch = Effect.fn("ChatToolLoop.continueAfterToolBatch")(
     context: PluginReactionContext,
     correlation: ChatToolCorrelation,
   ) {
-    const failures = matchingToolReceipts(context, correlation, "action.failed");
+    const failures = matchingToolReceipts(
+      context,
+      correlation,
+      "action.failed",
+    );
     const successes = matchingToolReceipts(
       context,
       correlation,
@@ -768,19 +730,24 @@ const continueAfterToolBatch = Effect.fn("ChatToolLoop.continueAfterToolBatch")(
     )
       return emptyChatReaction;
     const evidence = toolEvidence(correlation, receipts);
-    if (Buffer.byteLength(evidence) > toolBudget(correlation.agentId).maximumEvidenceBytes)
+    if (
+      Buffer.byteLength(evidence) >
+      toolBudget(correlation.agentId).maximumEvidenceBytes
+    )
       return budgetFinalization(
         correlation,
         context.events,
         event.sequence,
         correlation.assistantContext,
       );
-    const groupReady = [...context.events].reverse().find(
-      (candidate) =>
-        candidate.type === "delegation.group-ready" &&
-        record(candidate.body)?.delegationGroupId ===
-          correlation.delegationGroupId,
-    );
+    const groupReady = [...context.events]
+      .reverse()
+      .find(
+        (candidate) =>
+          candidate.type === "delegation.group-ready" &&
+          record(candidate.body)?.delegationGroupId ===
+            correlation.delegationGroupId,
+      );
     const resultDigest = record(groupReady?.body)?.resultDigest;
     const deliveryEvents: ReactionProposal["events"] =
       correlation.delegationCallIds.length === 0
@@ -818,25 +785,20 @@ const continueAfterToolBatch = Effect.fn("ChatToolLoop.continueAfterToolBatch")(
       );
       if (terminal) return turnFailed(correlation, terminal.errorCode);
       const primary = diagnostics[0]!;
-      return recoverWithAgent(
-        correlation,
-        context.events,
-        event.sequence,
-        {
-          code: primary.errorCode,
-          details: [
-            "One or more tool actions failed with known non-ambiguous delivery. Diagnose them before choosing a changed action:",
-            ...diagnostics.map(
-              ({ actionType, errorCode, toolName }) =>
-                `- ${toolName} (${actionType}): ${errorCode}`,
-            ),
-          ].join("\n"),
-          evidence,
-          events: deliveryEvents,
-          phase: "tool-execution",
-          toolRound: correlation.toolRound + 1,
-        },
-      );
+      return recoverWithAgent(correlation, context.events, event.sequence, {
+        code: primary.errorCode,
+        details: [
+          "One or more tool actions failed with known non-ambiguous delivery. Diagnose them before choosing a changed action:",
+          ...diagnostics.map(
+            ({ actionType, errorCode, toolName }) =>
+              `- ${toolName} (${actionType}): ${errorCode}`,
+          ),
+        ].join("\n"),
+        evidence,
+        events: deliveryEvents,
+        phase: "tool-execution",
+        toolRound: correlation.toolRound + 1,
+      });
     }
     const messages = projectChatMessages(context.events, correlation.threadId)
       .filter((message) => message.sequence <= event.sequence)
@@ -867,8 +829,7 @@ const continueAfterToolBatch = Effect.fn("ChatToolLoop.continueAfterToolBatch")(
               ...(correlation.roleActivationCommand &&
               correlation.roleActivationEventId
                 ? {
-                    roleActivationCommand:
-                      correlation.roleActivationCommand,
+                    roleActivationCommand: correlation.roleActivationCommand,
                     roleActivationEventId: correlation.roleActivationEventId,
                   }
                 : {}),
@@ -894,29 +855,31 @@ const continueAfterToolBatch = Effect.fn("ChatToolLoop.continueAfterToolBatch")(
   },
 );
 
-export const toolSucceeded = Effect.fn("ChatToolLoop.toolSucceeded")(
-  function* (event: StoredEvent, context: PluginReactionContext) {
-    const receipt = record(event.body);
-    const correlation = chatToolCorrelation(receipt?.correlation);
-    if (!correlation) return emptyChatReaction;
-    return yield* continueAfterToolBatch(event, context, correlation);
-  },
-);
+export const toolSucceeded = Effect.fn("ChatToolLoop.toolSucceeded")(function* (
+  event: StoredEvent,
+  context: PluginReactionContext,
+) {
+  const receipt = record(event.body);
+  const correlation = chatToolCorrelation(receipt?.correlation);
+  if (!correlation) return emptyChatReaction;
+  return yield* continueAfterToolBatch(event, context, correlation);
+});
 
-export const actionFailed = Effect.fn("ChatToolLoop.actionFailed")(
-  function* (event: StoredEvent, context: PluginReactionContext) {
-    const receipt = record(event.body);
-    const providerCorrelation = chatCorrelation(receipt?.correlation);
-    if (receipt?.actionType === "provider.generate" && providerCorrelation)
-      return turnFailed(
-        providerCorrelation,
-        typeof receipt.errorCode === "string"
-          ? receipt.errorCode
-          : "TEXT_GENERATION_FAILED",
-        typeof receipt.modelId === "string" ? receipt.modelId : "",
-      );
-    const correlation = chatToolCorrelation(receipt?.correlation);
-    if (!correlation) return emptyChatReaction;
-    return yield* continueAfterToolBatch(event, context, correlation);
-  },
-);
+export const actionFailed = Effect.fn("ChatToolLoop.actionFailed")(function* (
+  event: StoredEvent,
+  context: PluginReactionContext,
+) {
+  const receipt = record(event.body);
+  const providerCorrelation = chatCorrelation(receipt?.correlation);
+  if (receipt?.actionType === "provider.generate" && providerCorrelation)
+    return turnFailed(
+      providerCorrelation,
+      typeof receipt.errorCode === "string"
+        ? receipt.errorCode
+        : "TEXT_GENERATION_FAILED",
+      typeof receipt.modelId === "string" ? receipt.modelId : "",
+    );
+  const correlation = chatToolCorrelation(receipt?.correlation);
+  if (!correlation) return emptyChatReaction;
+  return yield* continueAfterToolBatch(event, context, correlation);
+});

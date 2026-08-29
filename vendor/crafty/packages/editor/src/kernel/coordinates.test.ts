@@ -1,9 +1,30 @@
 import { describe, expect, it } from "vitest";
-import { clampViewport, clampWorldLimit, resizeRect, screenToWorld, type Viewport, WORLD_LIMIT, ZOOM_MAX, ZOOM_MIN, zoomAt, zoomTo } from "./coordinates.js";
+import { clampViewport, clampWorldLimit, inverseTransform, multiplyTransforms, resizeRect, screenToWorld, type Viewport, viewportCenteredAt, WORLD_LIMIT, ZOOM_MAX, ZOOM_MIN, worldToScreen, zoomAt, zoomTo } from "./coordinates.js";
 import { createFoundationDocument } from "./document.js";
 import { createEditorKernel } from "./kernel.js";
 
 describe("unified zoom clamp and world pan limit", () => {
+  it("centres one world point through the authoritative viewport transform", () => {
+    const viewport = viewportCenteredAt({ x: 400, y: 250 }, { width: 1_000, height: 800 }, 0.75, 2);
+    expect(worldToScreen({ x: 400, y: 250 }, viewport)).toEqual({ x: 500, y: 400 });
+    expect(viewport).toEqual({ panX: 200, panY: 212.5, zoom: 0.75, devicePixelRatio: 2 });
+  });
+
+  it("inverts an affine transform for selection gesture projection", () => {
+    const transform = { a: 0, b: 2, c: -3, d: 0, e: 40, f: -20 };
+    const inverse = inverseTransform(transform);
+    expect(inverse).toBeDefined();
+    expect(multiplyTransforms(transform, inverse!)).toEqual({
+      a: 1,
+      b: 0,
+      c: 0,
+      d: 1,
+      e: 0,
+      f: 0,
+    });
+    expect(inverseTransform({ ...transform, b: 0 })).toBeUndefined();
+  });
+
   it("resizes from every handle while anchoring the opposite edge", () => {
     const start = { x: 10, y: 20, width: 100, height: 80 };
     expect(resizeRect(start, "nw", -5, -10, 10)).toEqual({ x: 5, y: 10, width: 105, height: 90 });

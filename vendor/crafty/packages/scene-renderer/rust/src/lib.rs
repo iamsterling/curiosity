@@ -926,7 +926,7 @@ fn glass_error(prefix: &str, detail: &str) -> String {
 /// byte-level write; avoids a bytemuck-style dependency for one cast).
 /// Production uploads are wasm32-only; native tests compile the helper with
 /// the present module.
-#[cfg(any(target_arch = "wasm32", test))]
+#[cfg(any(target_arch = "wasm32", target_vendor = "apple", test))]
 #[cfg_attr(test, allow(dead_code))]
 fn f32_bytes(values: &[f32]) -> Vec<u8> {
     let mut bytes = Vec::with_capacity(values.len() * 4);
@@ -1206,25 +1206,14 @@ impl RendererCore {
         .map_err(|error| JsValue::from_str(&format!("Render submission failed: {error}")))
     }
 
-    /// Encodes a version-3 packet JSON into a `vello_encoding::Encoding` and
+    /// Encodes a versioned packet JSON into a `vello_encoding::Encoding` and
     /// returns deterministic evidence about it: total encoded bytes and the
     /// stream fingerprint. Headless — no device, no surface; this is the
     /// encode-level parity hook (task 7.1) and keeps the encoder reachable in
     /// the wasm module so module-size records measure the real dependency
     /// cost. Non-finite input fails with `VELLO_ENCODE_FAILED:<node>:<field>`.
     pub fn encode_frame(&mut self, frame_json: &str) -> Result<String, JsValue> {
-        let frame: RenderFrame = serde_json::from_str(frame_json)
-            .map_err(|error| JsValue::from_str(&format!("Frame decode failed: {error}")))?;
-        let encoding =
-            vello_encoder::encode_frame(&frame.commands, &frame.viewport, frame.overlay.as_ref())
-                .map_err(|error| JsValue::from_str(&error.to_string()))?;
-        Ok(format!(
-            "{{\"bytes\":{},\"fingerprint\":\"{:016x}\",\"paths\":{},\"segments\":{}}}",
-            vello_encoder::encoded_bytes(&encoding),
-            vello_encoder::stream_fingerprint(&encoding),
-            encoding.n_paths,
-            encoding.n_path_segments
-        ))
+        encode_frame_evidence_json(frame_json).map_err(|error| JsValue::from_str(&error))
     }
 
     fn collect_dirty_set(&self, frame: &Frame, delta_ids: &[String]) -> Option<HashSet<String>> {
@@ -1278,7 +1267,7 @@ impl RendererCore {
         Ok(())
     }
 
-    /// Encodes a version-3 packet into the Vello scene, renders it on the
+    /// Encodes a versioned packet into the Vello scene, renders it on the
     /// module-owned device into the offscreen target, and presents it to the
     /// surface. One crossing per frame: the packet, JS → WASM. No pixels
     /// return to the host. Fails with `VELLO_ENCODE_FAILED:<node>:<field>` for
@@ -1332,23 +1321,101 @@ impl RendererCore {
     }
 }
 
+/// Headless encode evidence shared by the wasm-bindgen edge and native C ABI.
+/// Keeping this function safe and packet-sized lets every host prove that it is
+/// using the same encoder without weakening the crate's unsafe-code ban or
+/// adding per-object crossings.
+pub fn encode_frame_evidence_json(frame_json: &str) -> Result<String, String> {
+    let frame: RenderFrame = serde_json::from_str(frame_json)
+        .map_err(|error| format!("Frame decode failed: {error}"))?;
+    let encoding =
+        vello_encoder::encode_frame(&frame.commands, &frame.viewport, frame.overlay.as_ref())
+            .map_err(|error| error.to_string())?;
+    Ok(format!(
+        "{{\"bytes\":{},\"fingerprint\":\"{:016x}\",\"paths\":{},\"segments\":{}}}",
+        vello_encoder::encoded_bytes(&encoding),
+        vello_encoder::stream_fingerprint(&encoding),
+        encoding.n_paths,
+        encoding.n_path_segments
+    ))
+}
+
+struct EncodedRenderFrame {
+    encoding: vello_encoding::Encoding,
+    overlay_encoding: Option<vello_encoding::Encoding>,
+    glass: Vec<GlassSurface>,
+    chrome: Vec<ChromeGlassSurface>,
+    viewport: Viewport,
+    size: (u32, u32),
+}
+
+fn encode_render_frame_json(frame_json: &str) -> Result<EncodedRenderFrame, String> {
+    let mut frame: RenderFrame = serde_json::from_str(frame_json)
+        .map_err(|error| format!("Frame decode failed: {error}"))?;
+    let size = device_size(&frame.viewport);
+    // The packet is authoritative but packet array order is not: preserve the
+    // same explicit ordering rule on every host before encoding or presenting.
+    sort_glass_surfaces(&mut frame.glass_surfaces);
+    let (encoding, overlay_encoding) =
+        encode_packet_layers(&frame, &frame.glass_surfaces, &frame.chrome_glass)?;
+
+    Ok(EncodedRenderFrame {
+        encoding,
+        overlay_encoding,
+        glass: frame.glass_surfaces,
+        chrome: frame.chrome_glass,
+        viewport: frame.viewport,
+        size,
+    })
+}
+
+/// Safe native owner for a wgpu surface created at the foreign edge. It accepts
+/// exactly one complete `RenderFrame` JSON packet per presentation and uses the
+/// same packet decoder, Vello encoder, and present pipeline as the WASM path.
+#[cfg(target_vendor = "apple")]
+pub struct NativeRenderer {
+    gpu: wgpu_present::NativePresentState,
+}
+
+#[cfg(target_vendor = "apple")]
+impl NativeRenderer {
+    pub async fn new(
+        instance: std::sync::Arc<wgpu::Instance>,
+        surface: wgpu::Surface<'static>,
+    ) -> Result<Self, String> {
+        Ok(Self {
+            gpu: wgpu_present::init_native(instance, surface).await?,
+        })
+    }
+
+    pub fn render_frame_json(&mut self, frame_json: &str) -> Result<(), String> {
+        let frame = encode_render_frame_json(frame_json)?;
+        self.gpu.render_and_present(
+            frame.encoding,
+            frame.overlay_encoding,
+            &frame.glass,
+            &frame.chrome,
+            &frame.viewport,
+            frame.size,
+        )
+    }
+}
+
+/// Creates the safe half of the native Metal surface boundary. Converting the
+/// caller's Core Animation pointer into a surface is deliberately not exposed
+/// from this unsafe-free crate.
+#[cfg(target_vendor = "apple")]
+pub fn native_metal_instance() -> std::sync::Arc<wgpu::Instance> {
+    wgpu_present::native_metal_instance()
+}
+
 /// The packet-driven render path, separate from the wasm edge so it is
 /// testable headless: it returns the module's structured error string instead
 /// of a `JsValue` (which cannot be constructed off-wasm — renderer-build.md
 /// known gap 3).
 impl RendererCore {
     fn render_packet_inner(&mut self, frame_json: &str) -> Result<(), String> {
-        let mut frame: RenderFrame = serde_json::from_str(frame_json)
-            .map_err(|error| format!("Frame decode failed: {error}"))?;
-        let size = device_size(&frame.viewport);
-        // Glass surfaces draw in (zIndex, order) sequence like scene commands
-        // — re-sort every packet, never trust array order (I33). Chrome
-        // surfaces draw in array order (screen space has no z-index).
-        sort_glass_surfaces(&mut frame.glass_surfaces);
-        let (encoding, overlay_encoding) =
-            encode_packet_layers(&frame, &frame.glass_surfaces, &frame.chrome_glass)?;
-        let glass = frame.glass_surfaces;
-        let chrome = frame.chrome_glass;
+        let frame = encode_render_frame_json(frame_json)?;
         #[cfg(target_arch = "wasm32")]
         {
             let gpu = self
@@ -1356,17 +1423,17 @@ impl RendererCore {
                 .as_mut()
                 .ok_or_else(|| render_error("device-not-initialized", None))?;
             gpu.render_and_present(
-                encoding,
-                overlay_encoding,
-                &glass,
-                &chrome,
+                frame.encoding,
+                frame.overlay_encoding,
+                &frame.glass,
+                &frame.chrome,
                 &frame.viewport,
-                size,
+                frame.size,
             )
         }
         #[cfg(not(target_arch = "wasm32"))]
         {
-            let _ = (encoding, overlay_encoding, glass, chrome, size);
+            let _ = frame;
             // The native build has no surface; report the same structured
             // error a wasm build reports before init_canvas succeeds.
             Err(render_error("device-not-initialized", None))
@@ -1400,7 +1467,7 @@ fn encode_packet_layers(
     }
 }
 
-/// Encodes the version-3 packet into a `vello_encoding::Encoding` — the scene
+/// Encodes the versioned packet into a `vello_encoding::Encoding` — the scene
 /// model the wgpu renderer consumes (`Scene::from(Encoding)`). One seam:
 /// everything the renderer draws comes from the packet, in `(zIndex, order)`
 /// sequence, with overlays appended after the authored content. Overlays stay
@@ -1419,7 +1486,7 @@ mod text;
 #[cfg(feature = "pixel-oracle")]
 mod text_pixel_oracle;
 
-#[cfg(any(target_arch = "wasm32", test))]
+#[cfg(any(target_arch = "wasm32", target_vendor = "apple", test))]
 #[cfg_attr(test, allow(dead_code))]
 mod wgpu_present;
 

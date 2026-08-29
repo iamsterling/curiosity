@@ -2,13 +2,14 @@
 # produces the same artifact without relying on whatever rustup default a
 # developer machine happens to have.
 #
-# `targets` means `rustup` installs wasm32-unknown-unknown automatically —
-# a fresh clone does not need a separate `rustup target add` step.
+# `targets` means `rustup` installs the web renderer plus arm64 iOS device and
+# simulator standard libraries automatically — a fresh clone does not need a
+# separate `rustup target add` step before either renderer build.
 #
 # Upgrade procedure: docs/architecture/renderer-build.md. wasm-bindgen the
 # crate (Cargo.toml) and wasm-bindgen the CLI must move together.
 [toolchain]
 channel = "1.97.1"
 components = ["rustfmt", "clippy"]
-targets = ["wasm32-unknown-unknown"]
+targets = ["aarch64-apple-ios", "aarch64-apple-ios-sim", "wasm32-unknown-unknown"]
 profile = "minimal"

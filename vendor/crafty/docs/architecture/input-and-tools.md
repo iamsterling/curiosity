@@ -1,7 +1,8 @@
 # Input and Tools
 
-Status: **Current** for the reducer and the three implemented tools. **Target**
-for everything past `select`, `rectangle`, `hand`.
+Status: **Current** for the reducer and `select`, `rectangle`, `ellipse`, `line`,
+`frame`, `hand`, and `pen`. **Target** for the missing tools and remaining pen
+polish listed below.
 
 Source of truth: `packages/editor/src/kernel/interaction.ts`.
 
@@ -44,8 +45,10 @@ The reducer emits intents, not mutations:
 ```
 select | begin-marquee | update-marquee | commit-marquee
 begin-pan | pan | zoom
-preview-rectangle | commit-rectangle
-move
+preview-rectangle | commit-rectangle | commit-ellipse | commit-line | commit-frame
+move | rotate | corner-radius
+pen-begin | pen-add-point | pen-preview | pen-close | pen-join | pen-end
+pen-select-points | pen-move-points | pen-move-handle | pen-cycle-type | pen-delete-point
 cancel
 ```
 
@@ -60,15 +63,19 @@ The core safety mechanism (`interaction.ts:33`):
 ```ts
 TOOL_EFFECT_VOCABULARIES = {
   select:    { select, begin-marquee, update-marquee, commit-marquee, move,
-               begin-pan, pan, cancel, zoom },
+               rotate, corner-radius, begin-pan, pan, cancel, zoom },
   rectangle: { begin-pan, pan, preview-rectangle, commit-rectangle, cancel, zoom },
+  ellipse:   { begin-pan, pan, preview-rectangle, commit-ellipse, cancel, zoom },
+  line:      { begin-pan, pan, preview-rectangle, commit-line, cancel, zoom },
+  frame:     { begin-pan, pan, preview-rectangle, commit-frame, cancel, zoom },
   hand:      { begin-pan, pan, cancel, zoom },
+  pen:       { begin-pan, pan, cancel, zoom, pen-* },
 }
 ```
 
-Each tool declares the closed set of effects it may emit. Only `rectangle` can
-emit `commit-rectangle`. A zoom, a pan, a pinch or a select **cannot** produce a
-shape, because the effect is not in the vocabulary.
+Each tool declares the closed set of effects it may emit. Only each matching
+creation tool can emit its commit effect. A zoom, a pan, a pinch or a select
+**cannot** produce a shape, because those effects are not in its vocabulary.
 
 When you add a tool, add its vocabulary entry. When you add an effect, decide
 which tools may emit it. This table is the contract; the reducer body is the
@@ -86,13 +93,13 @@ Arbitration happens in one place, in this order (`interaction.ts:45`):
    deliberately NOT navigation: the ratified modifier grammar spends Alt on
    duplicate / from-center / measure (the industry grammar — see the QOL
    program, `docs/architecture/qol-program.md`).
-3. **Tool dispatch.** `rectangle` arms creation; everything else hit-tests and
-   emits `select`.
+3. **Tool dispatch.** Rectangle, ellipse, line, and frame arm box/endpoint
+   creation; pen routes anchor/path editing; select hit-tests.
 4. **Threshold.** In `armed`, a move shorter than `context.dragThreshold` (4px in
    the browser, `harness.ts:28`) produces no effect at all.
-5. **Commit.** On pointer-up, a rectangle commits only if both draft dimensions
-   reach the threshold; a marquee likewise. Otherwise the gesture ends with no
-   effect.
+5. **Commit.** On pointer-up, box tools commit only if both draft dimensions
+   reach the threshold; line commits its endpoints (including its click default);
+   a marquee likewise requires threshold geometry.
 
 Exactly one owner per pointer session. There is no fallthrough.
 

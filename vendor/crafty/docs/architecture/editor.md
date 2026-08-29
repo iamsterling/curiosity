@@ -11,11 +11,15 @@ currently lives in the harness (`packages/editor/src/ui/editor/harness.ts`).
 ```
 packages/editor/
   src/kernel/     ← the kernel: zero React, zero DOM (lint-enforced)
+  src/rendering/  ← renderer-packet projection shared by web and native hosts
   src/ui/         ← the chrome: primitives kit, editor primitives, harness glue
 ```
 
-Two subpath exports, one hard boundary: `@crafty/editor/kernel` is the only
-surface `scene-renderer`, `scene-store`, `pen-import` and `apps/cli` import;
+Three subpath exports, one hard boundary: `@crafty/editor/kernel` is the only
+editing surface `scene-renderer`, `scene-store`, `pen-import` and `apps/cli`
+import. `@crafty/editor/rendering` is the framework-free adapter from a resolved
+document to renderer path/text/compound/glass packet data and is shared by the
+web and native hosts;
 `@crafty/editor/ui` ships composable primitives (one per file, `cva` variants,
 `Slot`/`asChild`), never assembled chrome — the app's layouts compose them.
 
@@ -58,6 +62,20 @@ commands. A shape gesture snapshots the pair at pointer-down and a pen session
 snapshots it at its first point; changing the live preset cannot restyle an
 in-progress creation. The preset is absent from serialization, save payloads,
 document revision, and history.
+
+Basic rectangle, ellipse, line, and frame creation is one kernel operation:
+`createShape` consumes world-space geometry, plans validated commands, records
+one history entry, and selects the new node. Ellipses and lines receive
+node-qualified point/subpath ids. Frame creation includes containment absorption
+and local-coordinate rebasing in the same entry. Browser and native adapters use
+this operation rather than independently constructing document nodes.
+
+Deep selection and isolation transitions are also kernel operations.
+`deepSelectAt` resolves the deepest canonical hit and enters a selected frame or
+group; `exitIsolationAt` tests the current container through the authoritative
+composed world transform before laddering out. Browser double-click and native
+tap-count adapters call the same operations, so platform hosts no longer own a
+second isolation rule.
 
 ## What the kernel must never own
 
@@ -125,17 +143,19 @@ rollback()                     // restores the snapshot wholesale
 
 Semantics worth knowing (`kernel.ts:151-167`):
 
-- `preview` **replaces** the transaction's command list each call rather than
-  appending. That is correct for continuous drags, where each move is the full
-  delta from the gesture start, and it is why inverses are recomputed against
-  `beforeDocument` rather than the current document.
+- `preview` accumulates commands against the transaction's advancing working
+  document. Continuous adapters therefore emit absolute `set-bounds` previews
+  from their captured gesture start; alt-drag and frame creation may add
+  prerequisite create/reparent commands during the same entry. Inverses are
+  computed incrementally and stored in reverse application order.
 - `rollback` restores by replacing the whole document with the snapshot. This is
   the strongest possible guarantee and the reason a cancelled interaction can
   never leave residue (I18).
 - `commit` with no changes pushes nothing.
 
-The harness arms a transaction lazily on the first `move` effect and finishes it
-on pointer-up/cancel (`harness.ts:507`, `:579`).
+The harness arms a transaction lazily on the first continuous edit effect and
+finishes it on pointer-up/cancel. Basic creation has no durable preview: its
+release effect calls the kernel's atomic `createShape` operation.
 
 **Current limitation:** `preview` snapshots the *whole* document on
 `beginTransaction` (`structuredClone`). For large documents this is a per-gesture
@@ -196,6 +216,7 @@ The five harness-held editor semantics listed here were moved into the kernel
 | Paste target resolution | The kernel resolves the paste parent over the authored document (`pasteTargetParent` closure, powered by `documentHitTest`). |
 | Context-menu selection | `handleContextMenu` resolves the target through `documentHitTest` over the resolved authored document, then maps the resolved id back to the authored selection id. |
 | Duplicate | `kernel.duplicateSelection()`: fresh ids, one history entry, selection lands on the copy. |
+| Basic shape creation | `kernel.createShape()`: rectangle/ellipse/line/frame node and path construction, unique path identities, frame absorption/rebasing, selection, and one history entry. Web and native hosts only convert screen geometry to world geometry. |
 
 The harness is thinner and closer to its target shape: DOM events in, kernel
 calls out, projection to the renderer. It still owns the spatial index for

@@ -1,23 +1,20 @@
+import {
+  canonicalJson as portableCanonicalJson,
+  PortableAuthorityError,
+} from "@curiosity/authority";
 import { InputRejected } from "./errors.js";
 
-const canonicalObject = (value: Record<string, unknown>): string => {
-  const entries = Object.keys(value)
-    .sort()
-    .map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`);
-  return `{${entries.join(",")}}`;
-};
-
 export const canonicalJson = (value: unknown): string => {
-  if (value === null || typeof value === "string" || typeof value === "boolean")
-    return JSON.stringify(value);
-  if (typeof value === "number" && Number.isFinite(value))
-    return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
-  if (
-    typeof value === "object" &&
-    Object.getPrototypeOf(value) === Object.prototype
-  ) {
-    return canonicalObject(value as Record<string, unknown>);
+  try {
+    return portableCanonicalJson(value);
+  } catch (error) {
+    if (
+      error instanceof PortableAuthorityError &&
+      error.code === "COMMAND_JSON_CANONICALIZATION_FAILED"
+    )
+      throw new InputRejected({
+        message: "COMMAND_JSON_CANONICALIZATION_FAILED",
+      });
+    throw error;
   }
-  throw new InputRejected({ message: "COMMAND_JSON_CANONICALIZATION_FAILED" });
 };

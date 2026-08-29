@@ -20,14 +20,13 @@ export const useWorkstationCommands = (
     readonly showCraft: () => void;
     readonly showIssues: () => void;
     readonly showMemory: () => void;
-    readonly toggleSidebar: () => void;
   },
 ) => {
   const [paletteVisible, setPaletteVisible] = useState(false);
-  const { busy, sidebarVisible, view } = context;
+  const { busy, view } = context;
   const commands = useMemo(
-    () => resolveWorkstationCommands({ busy, sidebarVisible, view }),
-    [busy, sidebarVisible, view],
+    () => resolveWorkstationCommands({ busy, view }),
+    [busy, view],
   );
 
   const execute = useCallback(
@@ -66,8 +65,6 @@ export const useWorkstationCommands = (
         case workstationCommandIds.startResearch:
           actions.preparePrompt("/research ");
           return;
-        case workstationCommandIds.toggleSidebar:
-          actions.toggleSidebar();
       }
     },
     [actions, commands],

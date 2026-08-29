@@ -6,7 +6,7 @@ import path from "node:path";
 import { migrateDocument, parseDocument, sceneToEditorDocument, serializeDocument, type EditorDocument, type ValidationDiagnostic } from "@crafty/editor/kernel";
 import { importPenDocument, type PenImportDiagnostic } from "@crafty/pen-import";
 import { createEmptyScene, validateScene, type Scene } from "@crafty/scene-model";
-import { entryFile, parseUiManifest, serializeDocumentEntry, serializeUiManifest, UI_DOCUMENT_FORMAT, UI_DOCUMENT_ROLE, UI_PACKAGE_FORMAT, UI_FORMAT_VERSION } from "./ui-format.js";
+import { entryFile, parseDocumentEntry, parseUiManifest, serializeDocumentEntry, serializeUiManifest, UI_DOCUMENT_ROLE, UI_PACKAGE_FORMAT, UI_FORMAT_VERSION } from "./ui-format.js";
 
 export { entryFile, parseUiManifest, serializeDocumentEntry, serializeUiManifest, UI_DOCUMENT_FORMAT, UI_DOCUMENT_ROLE, UI_PACKAGE_FORMAT, UI_FORMAT_VERSION } from "./ui-format.js";
 
@@ -52,8 +52,6 @@ export type StoreResult<T> = { ok: true; value: T } | { ok: false; error: SceneS
 const failure = (error: SceneStoreError): StoreResult<never> => ({ ok: false, error });
 
 const slugFailure = (): StoreResult<never> => failure({ code: "SLUG_INVALID", status: 400, message: "The file slug may contain only lowercase letters, digits, and dashes." });
-
-const record = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === "object" && !Array.isArray(value);
 
 export interface PublicationIdentity {
   source: "package" | "legacy" | "fresh";
@@ -152,19 +150,22 @@ const writeAll = (handle: number, contents: Uint8Array): void => {
 };
 
 const parseDocumentEntryBytes = (bytes: Buffer): StoreResult<{ document: EditorDocument; applied: string[] }> => {
-  let envelope: unknown;
-  try {
-    envelope = JSON.parse(bytes.toString("utf8"));
-  } catch {
-    return failure({ code: "UI_FORMAT_MISSING", status: 400, message: `UI_FORMAT_MISSING:the ${UI_DOCUMENT_ROLE} entry is not a valid crafty.ui-document` });
+  const parsed = parseDocumentEntry(bytes.toString("utf8"));
+  if (!parsed.ok) {
+    return failure({
+      code: parsed.code,
+      status: 400,
+      message:
+        parsed.code === "DOCUMENT_INPUT_INVALID"
+          ? "The document entry failed validation."
+          : parsed.code,
+      diagnostics: parsed.diagnostics,
+    });
   }
-  if (!record(envelope) || envelope.format !== UI_DOCUMENT_FORMAT) return failure({ code: "UI_FORMAT_MISSING", status: 400, message: `UI_FORMAT_MISSING:the ${UI_DOCUMENT_ROLE} entry lacks the crafty.ui-document marker` });
-  const parsed = parseDocument(JSON.stringify(envelope.document) ?? "");
-  if (!parsed.ok || !parsed.document) {
-    const unsupported = parsed.diagnostics.some((diagnostic) => diagnostic.code === "DOCUMENT_UNSUPPORTED_SCHEMA");
-    return failure({ code: unsupported ? "DOCUMENT_UNSUPPORTED_SCHEMA" : "DOCUMENT_INPUT_INVALID", status: 400, message: unsupported ? "DOCUMENT_UNSUPPORTED_SCHEMA" : "The document entry failed validation.", diagnostics: parsed.diagnostics });
-  }
-  return { ok: true, value: { document: parsed.document, applied: parsed.applied } };
+  return {
+    ok: true,
+    value: { document: parsed.document, applied: parsed.applied },
+  };
 };
 
 interface DescriptorRead {

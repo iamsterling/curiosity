@@ -14,7 +14,11 @@ test("mobile package is an iPhone and multitasking iPad Expo target", async () =
   assert.deepEqual(app.platforms, ["ios"]);
   assert.equal(app.ios.supportsTablet, true);
   assert.equal(app.ios.requireFullScreen, false);
-  assert.match(app.ios.infoPlist.NSLocalNetworkUsageDescription, /Curiosity/u);
+  assert.equal(app.ios.infoPlist?.NSLocalNetworkUsageDescription, undefined);
+  assert.equal(
+    app.ios.infoPlist?.NSAppTransportSecurity?.NSAllowsLocalNetworking,
+    undefined,
+  );
   assert.deepEqual(app.plugins, [
     "./plugins/with-ios-scene-lifecycle.cjs",
     "expo-router",
@@ -22,7 +26,10 @@ test("mobile package is an iPhone and multitasking iPad Expo target", async () =
   assert.equal(app.userInterfaceStyle, "automatic");
   assert.equal(packageJson.main, "expo-router/entry");
   assert.equal(packageJson.dependencies["@expo/ui"], "~57.0.14");
+  assert.equal(packageJson.dependencies["@curiosity/authority"], "workspace:*");
+  assert.equal(packageJson.dependencies["@crafty/editor"], "workspace:*");
   assert.equal(packageJson.dependencies["expo-router"], "~57.0.17");
+  assert.equal(packageJson.dependencies["expo-crypto"], "~57.0.2");
   assert.equal(packageJson.dependencies["react-native-drawer-layout"], "4.2.10");
   assert.equal(packageJson.dependencies["react-native-gesture-handler"], "~2.32.0");
   assert.equal(packageJson.dependencies["react-native-reanimated"], "4.5.1");
@@ -69,10 +76,6 @@ test("native controls cross the SwiftUI host boundary explicitly", async () => {
     new URL("../src/screens/workspace-screen.tsx", import.meta.url),
     "utf8",
   );
-  const sidebar = await readFile(
-    new URL("../src/components/workspace-sidebar.tsx", import.meta.url),
-    "utf8",
-  );
   const theme = await readFile(
     new URL("../src/theme.ts", import.meta.url),
     "utf8",
@@ -81,8 +84,10 @@ test("native controls cross the SwiftUI host boundary explicitly", async () => {
   assert.match(craft, /CRAFT \/ DOCUMENT/u);
   assert.match(craft, /LAYERS/u);
   assert.match(craft, /INSPECTOR/u);
-  assert.match(issues, /CUR-42/u);
+  assert.match(issues, /Lifecycle bridge stalls after scene resize/u);
+  assert.match(issues, /Ready for review/u);
   assert.match(issues, /In progress/u);
+  assert.match(issues, /Issues Inspector/u);
   assert.match(memory, /OBSERVE/u);
   assert.match(memory, /ADJUDICATE/u);
   assert.match(memory, /SYNTHESIZE/u);
@@ -105,18 +110,18 @@ test("native controls cross the SwiftUI host boundary explicitly", async () => {
   assert.match(glassPanel, /glassEffect/u);
   assert.match(glassPanel, /variant: "regular"/u);
   assert.match(workspace, /headerBackground: \(\) => null/u);
-  assert.match(workspace, /headerTitle: ""/u);
-  assert.match(workspace, /headerTransparent: true/u);
+  assert.match(workspace, /headerTitle: \(\) =>/u);
+  assert.match(workspace, /headerShown: true/u);
   assert.match(workspace, /title: ""/u);
-  assert.match(workspace, /<Stack\.Toolbar/u);
-  assert.match(workspace, /<Drawer/u);
   assert.match(workspace, /style=\{styles\.composerOverlay\}/u);
   assert.match(workspace, /useState<WorkspaceView>\("issues"\)/u);
   assert.doesNotMatch(workspace, /AtmosphericBackdrop|ModeSelector|appModes/u);
-  assert.match(sidebar, /PROJECTS/u);
-  assert.match(sidebar, /CONVERSATIONS · \{threads\.length\}/u);
-  assert.match(sidebar, /PROJECT SYSTEM/u);
-  assert.match(sidebar, /Session connected/u);
+  assert.match(surfaceSwitcher, /<Menu/u);
+  assert.match(surfaceSwitcher, /pickerStyle\("segmented"\)/u);
+  assert.match(surfaceSwitcher, /buttonStyle\("glass"\)/u);
+  assert.match(surfaceSwitcher, /runtimeStatusLabel/u);
+  assert.doesNotMatch(surfaceSwitcher, /Session connected|Session offline|serverUrl/u);
+  assert.doesNotMatch(workspace, /<Drawer|WorkspaceSidebar|toggleSidebar/u);
   assert.doesNotMatch(theme, /atmosphereBlue|atmosphereGreen|atmosphereViolet/u);
 });
 
@@ -193,5 +198,127 @@ test("iPad workstation commands use a prebuild-safe native menu bridge", async (
   assert.match(nativeClient, /requireOptionalNativeModule/u);
   assert.match(registry, /curiosity\.file\.newChat/u);
   assert.match(registry, /curiosity\.work\.commandPalette/u);
-  assert.match(registry, /curiosity\.view\.toggleSidebar/u);
+  assert.doesNotMatch(registry, /curiosity\.view\.toggleSidebar/u);
+});
+
+test("Craft uses an Expo-native Metal canvas", async () => {
+  const moduleConfig = JSON.parse(
+    await readFile(
+      new URL(
+        "../modules/curiosity-canvas/expo-module.config.json",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  );
+  const craft = await readFile(
+    new URL("../src/components/craft-surface.tsx", import.meta.url),
+    "utf8",
+  );
+  const nativeView = await readFile(
+    new URL(
+      "../modules/curiosity-canvas/ios/CuriosityCanvasView.swift",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  const renderer = await readFile(
+    new URL(
+      "../modules/curiosity-canvas/ios/CuriosityCanvasRenderer.swift",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  const podspec = await readFile(
+    new URL(
+      "../modules/curiosity-canvas/ios/CuriosityCanvas.podspec",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+
+  assert.deepEqual(moduleConfig.apple.modules, ["CuriosityCanvasModule"]);
+  assert.match(craft, /<CuriosityCanvasView/u);
+  assert.match(craft, /METAL RENDERER ONLINE/u);
+  assert.doesNotMatch(craft, /ScrollView/u);
+  assert.match(nativeView, /MTKView/u);
+  assert.match(nativeView, /UIPinchGestureRecognizer/u);
+  assert.match(nativeView, /onPointerInput/u);
+  assert.match(nativeView, /onAccessibilityCommand/u);
+  assert.doesNotMatch(nativeView, /EditorKernel|rectangle-portability/u);
+  assert.match(renderer, /MTKViewDelegate/u);
+  assert.match(renderer, /CuriosityCraftyRendererNativeHost/u);
+  assert.match(renderer, /renderFrameJSON/u);
+  assert.match(renderer, /updateFrameJSON/u);
+  assert.doesNotMatch(
+    renderer,
+    /simd_float4x4|makeRenderPipelineState|CanvasScene|native-ffi-rectangle|rectangle-1/u,
+  );
+  assert.match(
+    podspec,
+    /CRAFTY_RENDERER_LIBRARY="\$\{PODS_CONFIGURATION_BUILD_DIR\}\/libcrafty_renderer_native_ffi\.a"/u,
+  );
+});
+
+test("Craft feature work is gated by the canonical Crafty translation matrix", async () => {
+  const matrix = await readFile(
+    new URL(
+      "../design/CRAFT-IPAD-FEATURE-TRANSLATION.md",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  const standards = await readFile(
+    new URL("../design/APPLE-DESIGN-STANDARDS.md", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(standards, /CRAFT-IPAD-FEATURE-TRANSLATION\.md/u);
+  assert.match(matrix, /EditorDocument.*one authored model/u);
+  assert.match(matrix, /CanvasScene\.swift.*renderer proof/u);
+  assert.match(matrix, /must not evolve[\s\S]*Swift-authored scene graph/u);
+  assert.match(matrix, /versioned `RenderFrame`/u);
+  assert.match(matrix, /Rust\/Vello\/wgpu Metal candidate/u);
+  assert.match(matrix, /PencilKit as canonical pen/u);
+  assert.match(matrix, /GPU-object accessibility and focus/u);
+  assert.match(matrix, /Durable collaboration and local drafts/u);
+  assert.match(matrix, /2D-to-3D evolution/u);
+  assert.match(matrix, /CURIOSITY_NO_GO/u);
+  assert.match(matrix, /## Stop decision/u);
+});
+
+test("Craft runs the canonical kernel portability gate from a real .ui package", async () => {
+  const craft = await readFile(
+    new URL("../src/components/craft-surface.tsx", import.meta.url),
+    "utf8",
+  );
+  const gate = await readFile(
+    new URL("../src/crafty/crafty-kernel-portability.ts", import.meta.url),
+    "utf8",
+  );
+  const fixtureLoader = await readFile(
+    new URL("../src/crafty/crafty-ui-fixture.ts", import.meta.url),
+    "utf8",
+  );
+  const runtimeAdapter = await readFile(
+    new URL("../src/crafty/crafty-runtime-adapter.ts", import.meta.url),
+    "utf8",
+  );
+  const metro = await readFile(
+    new URL("../metro.config.cjs", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(gate, /from "@crafty\/editor\/kernel"/u);
+  assert.match(gate, /beginTransaction\("Cancel rectangle move"\)/u);
+  assert.match(gate, /kernel\.rollback\(\)/u);
+  assert.match(gate, /beginTransaction\("Move rectangle"\)/u);
+  assert.match(gate, /kernel\.undo\(\)/u);
+  assert.match(gate, /kernel\.redo\(\)/u);
+  assert.match(fixtureLoader, /crafty-kernel-portability\.ui\/manifest\.ui/u);
+  assert.match(fixtureLoader, /crafty-kernel-portability\.ui\/document-1\.ui/u);
+  assert.match(runtimeAdapter, /structuredClone/u);
+  assert.match(runtimeAdapter, /uuidv4/u);
+  assert.match(metro, /moduleName\.endsWith\("\.js"\)/u);
+  assert.match(craft, /CRAFTY KERNEL \/ \{kernelStatus\.toUpperCase\(\)\}/u);
 });

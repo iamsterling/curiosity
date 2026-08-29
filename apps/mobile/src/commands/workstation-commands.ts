@@ -12,7 +12,6 @@ export const workstationCommandIds = Object.freeze({
   showMemory: "curiosity.view.showMemory",
   startBuild: "curiosity.work.startBuild",
   startResearch: "curiosity.work.startResearch",
-  toggleSidebar: "curiosity.view.toggleSidebar",
 });
 
 export type WorkstationCommandId =
@@ -20,7 +19,6 @@ export type WorkstationCommandId =
 
 export interface WorkstationCommandContext {
   readonly busy: boolean;
-  readonly sidebarVisible: boolean;
   readonly view: WorkspaceView;
 }
 
@@ -109,18 +107,6 @@ const specs: readonly CommandSpec[] = Object.freeze([
     symbol: "waveform",
     title: "Audio",
     selected: ({ view }) => view === "audio",
-  },
-  {
-    description: "Show or hide chats, projects, and session navigation.",
-    destructive: false,
-    id: workstationCommandIds.toggleSidebar,
-    key: "b",
-    menu: "view",
-    modifiers: ["command"],
-    section: 1,
-    symbol: "sidebar.left",
-    title: "Toggle Sidebar",
-    selected: ({ sidebarVisible }) => sidebarVisible,
   },
   {
     description: "Search and run every available workstation command.",

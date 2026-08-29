@@ -1,0 +1,253 @@
+{
+  "cases": [
+    {
+      "desktopOracle": {
+        "file": "workflow-orchestration.test.ts",
+        "test": "completes only through kernel terminal predicates and replays the run"
+      },
+      "expected": {
+        "events": {
+          "forbidden": ["workflow.failed"],
+          "ordered": ["workflow.started", "workflow.advanced", "workflow.advanced", "workflow.completed"]
+        },
+        "operationalState": {
+          "cancellable": false,
+          "pendingActions": 0,
+          "runnable": false
+        },
+        "projection": {
+          "status": "completed",
+          "stepCount": 2
+        }
+      },
+      "id": "workflow-start-advance-terminal",
+      "input": {
+        "instanceId": "workflow-goal-001",
+        "workflowName": "goal-loop"
+      },
+      "mobileOwner": "AgentJournalPort.startRun/commitTransition/reconcileTerminals"
+    },
+    {
+      "desktopOracle": {
+        "file": "action-reaction.test.ts",
+        "test": "reclaims an interrupted pure reaction and commits its action exactly once"
+      },
+      "expected": {
+        "events": {
+          "counts": { "action.proposed": 1 },
+          "forbidden": ["action.succeeded"]
+        },
+        "operationalState": {
+          "physicalCalls": 0,
+          "readyForAllocation": true
+        },
+        "projection": {
+          "actionCount": 1,
+          "actionStatus": "proposed"
+        }
+      },
+      "id": "action-allocation-idempotent",
+      "input": {
+        "actionType": "provider.generate",
+        "completionAttempts": 2,
+        "executionId": "execution-test"
+      },
+      "mobileOwner": "AgentJournalPort.commitTransition"
+    },
+    {
+      "desktopOracle": {
+        "file": "attempt-governance.test.ts",
+        "test": "binds one authenticated actor decision to the exact gate revision and payload"
+      },
+      "expected": {
+        "events": {
+          "counts": { "gate.decision-recorded": 1 },
+          "ordered": ["action.proposed", "gate.decision-recorded"]
+        },
+        "operationalState": {
+          "dispatchReadyAfterDecision": true,
+          "dispatchReadyBeforeDecision": false
+        },
+        "projection": {
+          "decision": "approved",
+          "proposalRevision": 1,
+          "status": "approved"
+        }
+      },
+      "id": "binding-gate-exact-decision",
+      "input": {
+        "actorId": "local-owner",
+        "decision": "approved",
+        "gateClass": "binding-human-requested",
+        "proposalRevision": 1
+      },
+      "mobileOwner": "AgentJournalPort.armDispatch"
+    },
+    {
+      "desktopOracle": {
+        "file": "workflow-orchestration.test.ts",
+        "test": "runs one bounded child and denies child capability widening"
+      },
+      "expected": {
+        "events": {
+          "ordered": ["workflow.started", "workflow.advanced", "workflow.child-created", "workflow.completed"],
+          "required": ["workflow.child-created"]
+        },
+        "operationalState": {
+          "childCanWidenCapabilities": false,
+          "pendingChildren": 0,
+          "rootRunnable": false
+        },
+        "projection": {
+          "childDepth": 1,
+          "childStatus": "completed",
+          "rootStatus": "completed"
+        }
+      },
+      "id": "bounded-child-lineage",
+      "input": {
+        "childKey": "review",
+        "instanceId": "orchestration-review-001",
+        "workflowName": "delegated-review"
+      },
+      "mobileOwner": "AgentJournalPort.commitTransition/reconcileTerminals"
+    },
+    {
+      "desktopOracle": {
+        "file": "workflow-orchestration.test.ts",
+        "test": "propagates authenticated cancellation through descendants and pending actions"
+      },
+      "expected": {
+        "events": {
+          "forbidden": ["workflow.completed", "action.succeeded"],
+          "required": ["execution.cancelled", "workflow.failed"]
+        },
+        "operationalState": {
+          "pendingActions": 0,
+          "runnableRuns": 0
+        },
+        "projection": {
+          "childStatus": "cancelled",
+          "pendingActionErrorCode": "ACTION_CANCELLED",
+          "rootStatus": "cancelled"
+        }
+      },
+      "id": "cancellation-descendant-fence",
+      "input": {
+        "executionId": "orchestration-cancel-001"
+      },
+      "mobileOwner": "PortableAuthority.cancel/AgentJournalPort.reconcileInterrupted"
+    },
+    {
+      "desktopOracle": {
+        "file": "workflow-orchestration.test.ts",
+        "test": "fails closed at the deterministic no-progress budget"
+      },
+      "expected": {
+        "events": {
+          "forbidden": ["workflow.completed"],
+          "ordered": ["workflow.started", "workflow.advanced", "workflow.advanced", "workflow.failed"]
+        },
+        "operationalState": {
+          "runnable": false
+        },
+        "projection": {
+          "errorCode": "WORKFLOW_NO_PROGRESS_EXCEEDED",
+          "status": "failed",
+          "stepCount": 2
+        }
+      },
+      "id": "no-progress-budget",
+      "input": {
+        "instanceId": "workflow-stalled-001",
+        "maxNoProgress": 2,
+        "progressKey": "no-progress"
+      },
+      "mobileOwner": "AgentJournalPort.commitTransition"
+    },
+    {
+      "desktopOracle": {
+        "file": "chat.test.ts",
+        "test": "executes bounded workspace evidence tools and continues the governed turn"
+      },
+      "expected": {
+        "events": {
+          "counts": { "action.succeeded": 3, "turn.completed": 1 },
+          "forbidden": ["turn.failed"]
+        },
+        "operationalState": {
+          "generations": 2,
+          "physicalCalls": 3,
+          "toolCalls": 1
+        },
+        "projection": {
+          "orderedActionTypes": ["provider.generate", "workspace.search", "provider.generate"],
+          "toolDeliveryCertainty": "DELIVERED",
+          "toolStatus": "succeeded"
+        }
+      },
+      "id": "bounded-tool-loop",
+      "input": {
+        "maximumToolRounds": 1,
+        "toolName": "workspace_search",
+        "turnId": "turn-001"
+      },
+      "mobileOwner": "AgentKernel/AgentJournalPort.armDispatch/settleAttempt"
+    },
+    {
+      "desktopOracle": {
+        "file": "action-reaction.test.ts",
+        "test": "turns an allocated call interrupted by restart into delivery-unknown evidence"
+      },
+      "expected": {
+        "events": {
+          "forbidden": ["action.succeeded"],
+          "required": ["action.failed"]
+        },
+        "operationalState": {
+          "deliveryCertainty": "UNKNOWN",
+          "retrySafe": false,
+          "usageState": "UNKNOWN"
+        },
+        "projection": {
+          "errorCode": "PROVIDER_DELIVERY_UNKNOWN",
+          "status": "delivery-unknown"
+        }
+      },
+      "id": "provider-delivery-ambiguity",
+      "input": {
+        "dispatchState": "dispatched",
+        "interruption": "process-restart"
+      },
+      "mobileOwner": "AgentJournalPort.reconcileInterrupted"
+    },
+    {
+      "desktopOracle": {
+        "file": "attempt-governance.test.ts",
+        "test": "fences an older generation, quarantines its receipt, and preserves immutable snapshots"
+      },
+      "expected": {
+        "events": {
+          "forbidden": ["action.succeeded@stale-generation"]
+        },
+        "operationalState": {
+          "currentGeneration": 2,
+          "quarantinedReceipts": 1,
+          "staleSettlement": "stale"
+        },
+        "projection": {
+          "attemptGenerations": [1, 2],
+          "currentAttemptStatus": "running"
+        }
+      },
+      "id": "terminal-receipt-reconciliation",
+      "input": {
+        "currentGeneration": 2,
+        "receiptGeneration": 1,
+        "receiptStatus": "succeeded"
+      },
+      "mobileOwner": "AgentJournalPort.settleAttempt"
+    }
+  ],
+  "schemaVersion": 1
+}

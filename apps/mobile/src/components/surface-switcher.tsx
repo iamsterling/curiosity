@@ -1,149 +1,294 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Button,
+  Divider,
+  Host,
+  HStack,
+  Image,
+  Menu,
+  Picker,
+  Spacer,
+  Text,
+} from "@expo/ui/swift-ui";
+import {
+  accessibilityHint as axHint,
+  accessibilityLabel as axLabel,
+  buttonStyle,
+  disabled,
+  font,
+  foregroundStyle,
+  frame,
+  lineLimit,
+  menuIndicator,
+  menuStyle,
+  padding,
+  pickerStyle,
+  tag,
+  tint,
+} from "@expo/ui/swift-ui/modifiers";
+import { Share, StyleSheet, View } from "react-native";
+import type { CuriosityThread } from "../curiosity-client";
 import { palette } from "../theme";
 import type { WorkspaceView } from "../workspace-types";
 
 const surfaces: readonly {
   readonly label: string;
-  readonly symbol: string;
   readonly view: WorkspaceView;
 }[] = Object.freeze([
-  { label: "Issues", symbol: "☷", view: "issues" },
-  { label: "Chat", symbol: "◌", view: "chat" },
-  { label: "Craft", symbol: "◇", view: "craft" },
-  { label: "Memory", symbol: "⌘", view: "memory" },
-  { label: "Audio", symbol: "≋", view: "audio" },
+  { label: "Issues", view: "issues" },
+  { label: "Chat", view: "chat" },
+  { label: "Craft", view: "craft" },
+  { label: "Memory", view: "memory" },
+  { label: "Audio", view: "audio" },
 ]);
 
+const collaboratorNames = "2 collaborators and 2 more in this project";
+
 export const SurfaceSwitcher = ({
+  activeThreadId,
   compact,
-  online,
+  filterOn,
+  onAdd,
+  onFilter,
+  onNewThread,
+  onOpenThread,
+  onSearch,
   onSelect,
-  topInset,
+  runtimeStatusLabel,
+  threads,
   view,
 }: {
+  readonly activeThreadId?: string;
   readonly compact: boolean;
-  readonly online: boolean;
+  readonly filterOn: boolean;
+  readonly onAdd: () => void;
+  readonly onFilter: () => void;
+  readonly onNewThread: () => void;
+  readonly onOpenThread: (threadId: string) => void;
+  readonly onSearch: () => void;
   readonly onSelect: (view: WorkspaceView) => void;
-  readonly topInset: number;
+  readonly runtimeStatusLabel: string;
+  readonly threads: readonly CuriosityThread[];
   readonly view: WorkspaceView;
 }) => (
-  <View style={[styles.root, compact && { paddingTop: topInset + 38 }]}>
-    {!compact ? (
-      <View style={styles.identity}>
-        <Text style={styles.projectLabel}>PROJECT</Text>
-        <Text numberOfLines={1} style={styles.projectTitle}>
-          Curiosity
-        </Text>
-      </View>
-    ) : null}
-    <ScrollView
-      contentContainerStyle={styles.tabs}
-      horizontal
-      showsHorizontalScrollIndicator={false}
+  <View style={styles.shell}>
+    <Host
+      matchContents={{ vertical: true }}
+      seedColor={palette.focus}
+      style={styles.host}
+      useViewportSizeMeasurement
     >
-      {surfaces.map((surface) => {
-        const selected = surface.view === view;
-        return (
-          <Pressable
-            accessibilityRole="tab"
-            accessibilityState={{ selected }}
-            key={surface.view}
-            onPress={() => onSelect(surface.view)}
-            style={({ pressed }) => [
-              styles.tab,
-              selected && styles.selectedTab,
-              pressed && styles.pressed,
+      <HStack
+        alignment="center"
+        spacing={10}
+        modifiers={[
+          frame({ maxWidth: 10_000 }),
+          padding({ horizontal: 12, vertical: 8 }),
+        ]}
+      >
+        <Menu
+          label={
+            <HStack alignment="center" spacing={8}>
+              <Image size={18} systemName="folder" color={palette.focus} />
+              <Text
+                modifiers={[
+                  font({ size: 15, weight: "semibold" }),
+                  foregroundStyle(palette.textPrimary),
+                  ...(compact ? [lineLimit(1)] : []),
+                ]}
+              >
+                {compact ? "Curiosity" : "Curiosity Super Bench"}
+              </Text>
+              <Image
+                size={14}
+                systemName="chevron.down"
+                color={palette.textSecondary}
+              />
+            </HStack>
+          }
+          modifiers={[
+            axHint("Shows projects, conversations, and session status."),
+            axLabel("Project menu."),
+            buttonStyle("glass"),
+            frame({ height: 44 }),
+            menuIndicator("hidden"),
+            menuStyle("button"),
+            padding({ horizontal: 12 }),
+          ]}
+        >
+          <Button
+            modifiers={[
+              axLabel("Start a clean conversation."),
+              font({ size: 14, weight: "medium" }),
+            ]}
+            onPress={onNewThread}
+          >
+            <Text modifiers={[font({ size: 14, weight: "medium" })]}>
+              New Conversation
+            </Text>
+          </Button>
+          <Divider />
+          {threads.slice(0, 8).map((thread) => (
+            <Button
+              key={thread.threadId}
+              modifiers={[
+                axLabel(
+                  `${thread.title}. Session ${thread.sequence}. Open in Chat.`,
+                ),
+                font({ size: 13, weight: thread.threadId === activeThreadId ? "semibold" : "regular" }),
+              ]}
+              onPress={() => onOpenThread(thread.threadId)}
+            >
+              <Text
+                modifiers={[
+                  font({
+                    size: 13,
+                    weight:
+                      thread.threadId === activeThreadId
+                        ? "semibold"
+                        : "regular",
+                  }),
+                ]}
+              >
+                {thread.title} · Session {thread.sequence}
+              </Text>
+            </Button>
+          ))}
+          {threads.length === 0 ? (
+            <Button modifiers={[disabled(true)]}>
+              <Text modifiers={[font({ size: 13 })]}>
+                No conversations yet
+              </Text>
+            </Button>
+          ) : null}
+          <Divider />
+          <Button modifiers={[disabled(true)]}>
+            <Text modifiers={[font({ size: 12 }), foregroundStyle(palette.textSecondary)]}>
+              {runtimeStatusLabel}
+            </Text>
+          </Button>
+        </Menu>
+
+        <Picker
+          modifiers={[pickerStyle("segmented"), tint(palette.focus)]}
+          onSelectionChange={(value) => onSelect(value)}
+          selection={view}
+        >
+          {surfaces.map(({ label, view: surfaceView }) => (
+            <Text key={surfaceView} modifiers={[tag(surfaceView)]}>
+              {label}
+            </Text>
+          ))}
+        </Picker>
+
+        <Spacer />
+
+        <Button
+          modifiers={[
+            axHint("Opens the command palette."),
+            axLabel("Search"),
+            buttonStyle("glass"),
+            frame({ height: 44, width: 44 }),
+          ]}
+          onPress={onSearch}
+        >
+          <Image size={18} systemName="magnifyingglass" color={palette.textPrimary} />
+        </Button>
+
+        {!compact ? (
+          <Button
+            modifiers={[
+              axLabel(
+                filterOn
+                  ? "Filter: high priority only. Tap to show all priorities."
+                  : "Filter: all priorities. Tap to show high priority only.",
+              ),
+              buttonStyle("glass"),
+              frame({ height: 44, width: 44 }),
+              ...(filterOn ? [tint(palette.focus)] : []),
+            ]}
+            onPress={onFilter}
+          >
+            <Image
+              size={18}
+              systemName="slider.horizontal.3"
+              color={filterOn ? palette.focus : palette.textPrimary}
+            />
+          </Button>
+        ) : null}
+
+        <Button
+          modifiers={[
+            axHint("Starts a clean conversation."),
+            axLabel("New conversation"),
+            buttonStyle("glassProminent"),
+            frame({ height: 44, minWidth: 44 }),
+            padding({ horizontal: 12 }),
+            tint(palette.focus),
+          ]}
+          onPress={onAdd}
+        >
+          <Image size={18} systemName="plus" color="#FFFFFF" />
+        </Button>
+
+        {!compact ? (
+          <HStack
+            alignment="center"
+            spacing={4}
+            modifiers={[
+              axLabel(collaboratorNames),
+              padding({ horizontal: 6 }),
             ]}
           >
-            <Text style={[styles.tabSymbol, selected && styles.selectedText]}>
-              {surface.symbol}
+            <Image
+              size={24}
+              systemName="person.crop.circle.fill"
+              color={palette.textSecondary}
+            />
+            <Image
+              size={24}
+              systemName="person.crop.circle.fill"
+              color={palette.textSecondary}
+            />
+            <Text
+              modifiers={[
+                font({ size: 11, weight: "medium" }),
+                foregroundStyle(palette.textSecondary),
+              ]}
+            >
+              +2
             </Text>
-            <Text style={[styles.tabLabel, selected && styles.selectedText]}>
-              {surface.label}
-            </Text>
-          </Pressable>
-        );
-      })}
-    </ScrollView>
-    {!compact ? (
-      <Pressable
-        accessibilityLabel="Open memory system"
-        accessibilityRole="button"
-        onPress={() => onSelect("memory")}
-        style={({ pressed }) => [styles.kernel, pressed && styles.pressed]}
-      >
-        <View
-          style={[
-            styles.statusDot,
-            { backgroundColor: online ? palette.success : palette.danger },
-          ]}
-        />
-        <View>
-          <Text style={styles.kernelLabel}>MEMORY / MODEL</Text>
-          <Text style={styles.kernelState}>{online ? "session live" : "offline"}</Text>
-        </View>
-      </Pressable>
-    ) : null}
+          </HStack>
+        ) : null}
+
+        {!compact ? (
+          <Button
+            modifiers={[
+              axHint("Opens the system share sheet for this project."),
+              axLabel("Share project"),
+              buttonStyle("glass"),
+              frame({ height: 44, width: 44 }),
+            ]}
+            onPress={() =>
+              void Share.share({
+                message: "Join me on the Curiosity Project Bench.",
+                title: "Curiosity Project Bench",
+              })
+            }
+          >
+            <Image
+              size={18}
+              systemName="square.and.arrow.up"
+              color={palette.textPrimary}
+            />
+          </Button>
+        ) : null}
+      </HStack>
+    </Host>
   </View>
 );
 
 const styles = StyleSheet.create({
-  identity: {
-    borderRightColor: palette.line,
-    borderRightWidth: StyleSheet.hairlineWidth,
-    justifyContent: "center",
-    paddingHorizontal: 18,
-    width: 150,
-  },
-  kernel: {
-    alignItems: "center",
-    borderLeftColor: palette.line,
-    borderLeftWidth: StyleSheet.hairlineWidth,
-    flexDirection: "row",
-    gap: 8,
-    minWidth: 150,
-    paddingHorizontal: 16,
-  },
-  kernelLabel: {
-    color: palette.textSecondary,
-    fontSize: 8,
-    fontWeight: "800",
-    letterSpacing: 1,
-  },
-  kernelState: { color: palette.textMuted, fontSize: 9, marginTop: 2 },
-  pressed: { opacity: 0.58 },
-  projectLabel: {
-    color: palette.textMuted,
-    fontSize: 8,
-    fontWeight: "800",
-    letterSpacing: 1.2,
-  },
-  projectTitle: {
-    color: palette.textPrimary,
-    fontSize: 14,
-    fontWeight: "700",
-    marginTop: 2,
-  },
-  root: {
-    backgroundColor: palette.surfaceQuiet,
-    borderBottomColor: palette.line,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    flexDirection: "row",
-    minHeight: 58,
-  },
-  selectedTab: { borderBottomColor: palette.focus, borderBottomWidth: 2 },
-  selectedText: { color: palette.textPrimary },
-  statusDot: { borderRadius: 4, height: 7, width: 7 },
-  tab: {
-    alignItems: "center",
-    borderBottomColor: "transparent",
-    borderBottomWidth: 2,
-    flexDirection: "row",
-    gap: 7,
-    minHeight: 58,
-    paddingHorizontal: 15,
-  },
-  tabLabel: { color: palette.textMuted, fontSize: 12, fontWeight: "700" },
-  tabSymbol: { color: palette.textMuted, fontSize: 13 },
-  tabs: { alignItems: "stretch", flexGrow: 1 },
+  host: { width: "100%" },
+  // The leading pad clears the system window-control pill in every mode.
+  shell: { alignSelf: "stretch", paddingLeft: 60 },
 });

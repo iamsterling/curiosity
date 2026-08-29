@@ -1,12 +1,9 @@
 import { Stack } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { KeyboardAvoidingView, Platform, useWindowDimensions, View } from "react-native";
-import { Drawer } from "react-native-drawer-layout";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useWorkstationCommands } from "../commands/use-workstation-commands";
+import { workstationCommandIds } from "../commands/workstation-commands";
 import { AudioSurface } from "../components/audio-surface";
 import { CommandPalette } from "../components/command-palette";
 import { Composer } from "../components/composer";
@@ -15,67 +12,45 @@ import { CraftSurface } from "../components/craft-surface";
 import { IssuesSurface } from "../components/issues-surface";
 import { MemorySurface } from "../components/memory-surface";
 import { SurfaceSwitcher } from "../components/surface-switcher";
-import { WorkspaceSidebar } from "../components/workspace-sidebar";
-import { createCuriosityApi } from "../curiosity-api";
+import { runtimeStatusLabel } from "../curiosity-client";
+import { localCuriosityClient } from "../local-curiosity-runtime";
 import { palette } from "../theme";
 import { useCuriosityWorkspace } from "../use-curiosity-workspace";
 import type { WorkspaceView } from "../workspace-types";
 import { styles } from "./workspace-screen.styles";
 
-const defaultServerUrl = "http://10.1.0.121:3000";
-
 export const WorkspaceScreen = () => {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const split = width >= 760;
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [sidebarVisible, setSidebarVisible] = useState(true);
   const [view, setView] = useState<WorkspaceView>("issues");
+  const [showHighOnly, setShowHighOnly] = useState(false);
   const [draft, setDraft] = useState("");
-  const serverUrl =
-    process.env.EXPO_PUBLIC_CURIOSITY_URL?.trim() || defaultServerUrl;
-  const api = useMemo(() => createCuriosityApi(serverUrl), [serverUrl]);
-  const workspace = useCuriosityWorkspace(api);
+  const workspace = useCuriosityWorkspace(localCuriosityClient);
   const { loadSession, newThread: resetThread, send: sendMessage, state } = workspace;
-
-  const closeCompactDrawer = useCallback(() => {
-    if (!split) setDrawerOpen(false);
-  }, [split]);
 
   const selectView = useCallback((nextView: WorkspaceView) => {
     setView(nextView);
-    closeCompactDrawer();
-  }, [closeCompactDrawer]);
+  }, []);
 
   const newThread = useCallback(() => {
     setView("chat");
     resetThread();
-    closeCompactDrawer();
-  }, [closeCompactDrawer, resetThread]);
+  }, [resetThread]);
 
   const openThread = useCallback((threadId: string) => {
     setView("chat");
-    closeCompactDrawer();
     void loadSession(threadId);
-  }, [closeCompactDrawer, loadSession]);
+  }, [loadSession]);
 
   const preparePrompt = useCallback((prefix: string) => {
     setView("chat");
     setDraft(prefix);
-    closeCompactDrawer();
-  }, [closeCompactDrawer]);
+  }, []);
 
   const refreshSession = useCallback(() => {
     void loadSession(state.activeThreadId);
   }, [loadSession, state.activeThreadId]);
-
-  const toggleSidebar = useCallback(() => {
-    if (split) {
-      setSidebarVisible((current) => !current);
-      return;
-    }
-    setDrawerOpen((current) => !current);
-  }, [split]);
 
   const commandActions = useMemo(() => ({
     newChat: newThread,
@@ -86,12 +61,10 @@ export const WorkspaceScreen = () => {
     showCraft: () => selectView("craft"),
     showIssues: () => selectView("issues"),
     showMemory: () => selectView("memory"),
-    toggleSidebar,
-  }), [newThread, preparePrompt, refreshSession, selectView, toggleSidebar]);
+  }), [newThread, preparePrompt, refreshSession, selectView]);
   const workstationCommands = useWorkstationCommands(
     {
       busy: state.busy,
-      sidebarVisible: split ? sidebarVisible : drawerOpen,
       view,
     },
     commandActions,
@@ -106,13 +79,6 @@ export const WorkspaceScreen = () => {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       style={styles.keyboard}
     >
-      <SurfaceSwitcher
-        compact={!split}
-        online={state.online}
-        onSelect={selectView}
-        topInset={insets.top}
-        view={view}
-      />
       <View style={styles.surface}>
       {view === "chat" ? (
         <>
@@ -147,7 +113,14 @@ export const WorkspaceScreen = () => {
       ) : view === "audio" ? (
         <AudioSurface />
       ) : (
-        <IssuesSurface />
+        <IssuesSurface
+          busy={state.busy}
+          compact={!split}
+          draft={draft}
+          filterOn={showHighOnly}
+          onChangeText={setDraft}
+          onSend={() => void send()}
+        />
       )}
       </View>
     </KeyboardAvoidingView>
@@ -160,83 +133,37 @@ export const WorkspaceScreen = () => {
           headerBackVisible: false,
           headerBackground: () => null,
           headerShadowVisible: false,
-          headerShown: !split && !drawerOpen,
+          headerShown: true,
           headerStyle: { backgroundColor: "transparent" },
           headerTintColor: palette.controlTint,
-          headerTitle: "",
-          headerTransparent: true,
+          headerTitle: () => (
+            <View style={[styles.headerTitle, { width }]}>
+              <SurfaceSwitcher
+                activeThreadId={state.activeThreadId}
+                compact={!split}
+                filterOn={showHighOnly}
+                onAdd={newThread}
+                onFilter={() => setShowHighOnly((current) => !current)}
+                onNewThread={newThread}
+                onOpenThread={openThread}
+                onSearch={() =>
+                  workstationCommands.execute(
+                    workstationCommandIds.commandPalette,
+                  )
+                }
+                onSelect={selectView}
+                runtimeStatusLabel={runtimeStatusLabel(state.runtimeStatus)}
+                threads={state.threads}
+                view={view}
+              />
+            </View>
+          ),
           title: "",
         }}
       />
-      {!split && !drawerOpen ? (
-        <>
-          <Stack.Toolbar placement="left">
-            <Stack.Toolbar.Button
-              accessibilityLabel="Open sidebar"
-              icon="sidebar.left"
-              onPress={() => setDrawerOpen(true)}
-            />
-          </Stack.Toolbar>
-          <Stack.Toolbar placement="right">
-            <Stack.Toolbar.Button
-              accessibilityLabel="New conversation"
-              disabled={state.busy}
-              icon="square.and.pencil"
-              onPress={newThread}
-            />
-          </Stack.Toolbar>
-        </>
-      ) : null}
-      {split && !sidebarVisible ? (
-        <SafeAreaView
-          edges={["top", "right", "bottom", "left"]}
-          style={styles.safe}
-        >
-          {workspaceContent}
-        </SafeAreaView>
-      ) : (
-        <Drawer
-          drawerPosition="left"
-          drawerStyle={[
-            styles.drawer,
-            { width: split ? 300 : Math.min(width * 0.88, 360) },
-          ]}
-          drawerType={split ? "permanent" : "front"}
-          onClose={() => setDrawerOpen(false)}
-          onOpen={() => setDrawerOpen(true)}
-          open={split || drawerOpen}
-          overlayAccessibilityLabel="Close sidebar"
-          overlayStyle={styles.drawerOverlay}
-          renderDrawerContent={() => (
-            <WorkspaceSidebar
-              activeThreadId={state.activeThreadId}
-              busy={state.busy}
-              compact={!split}
-              onClose={() => setDrawerOpen(false)}
-              onNewThread={newThread}
-              onOpenThread={openThread}
-              onSelectView={selectView}
-              online={state.online}
-              serverUrl={serverUrl}
-              threads={state.threads}
-              view={view}
-            />
-          )}
-          style={styles.drawerLayout}
-          swipeEnabled={!split}
-        >
-          {split ? (
-            <SafeAreaView
-              edges={["top", "right", "bottom"]}
-              style={styles.safe}
-            >
-              {workspaceContent}
-            </SafeAreaView>
-          ) : (
-            workspaceContent
-          )}
-        </Drawer>
-      )}
+      <SafeAreaView edges={["left", "right", "bottom"]} style={styles.safe}>
+        {workspaceContent}
+      </SafeAreaView>
       <CommandPalette
         commands={workstationCommands.commands}
         onClose={workstationCommands.closePalette}

@@ -67,11 +67,14 @@ export const readCuriosityResponse = async (
 };
 
 const errorCopy: Readonly<Record<string, string>> = Object.freeze({
+  ACTION_CANCELLED: "The turn was cancelled.",
+  MOBILE_CANCEL_UNAVAILABLE: "Cancellation is unavailable for this remote adapter.",
   MOBILE_RESPONSE_INVALID: "The server returned an invalid response.",
   MOBILE_RESPONSE_TOO_LARGE: "The server response was too large.",
   MOBILE_NETWORK_UNAVAILABLE: "The Curiosity server is unreachable.",
   MOBILE_REQUEST_TIMEOUT: "The Curiosity server did not respond in time.",
   MOBILE_SERVER_URL_INVALID: "The Curiosity server URL is invalid.",
+  PROVIDER_ROUTE_UNAVAILABLE: "No local generation route is available yet.",
   OPENAI_OAUTH_AUTHENTICATION_REQUIRED: "Connect the configured OpenAI account.",
   PROMPT_COMMAND_UNKNOWN: "That Curiosity command is not available.",
 });

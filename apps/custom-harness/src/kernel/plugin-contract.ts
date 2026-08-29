@@ -1,9 +1,24 @@
 import type { Effect } from "effect";
+import type {
+  ActionProposal,
+  ReactionProposal,
+  WorkflowChildProposal,
+  WorkflowTransition,
+  WorkflowTransitionInput,
+} from "@curiosity/authority";
 import type { HarnessCommand } from "../domain/command.js";
 import type { ProposedEvent, StoredEvent } from "../domain/event.js";
 import type { InputRejected, PluginFailure } from "./errors.js";
 
 export const KERNEL_PLUGIN_API_VERSION = "2.0.0";
+
+export type {
+  ActionProposal,
+  ReactionProposal,
+  WorkflowChildProposal,
+  WorkflowTransition,
+  WorkflowTransitionInput,
+} from "@curiosity/authority";
 
 export interface PluginDecisionContext {
   readonly defaultPrimaryRole: string;
@@ -47,25 +62,6 @@ export interface CommandDeciderContribution {
   ) => Effect.Effect<readonly ProposedEvent[], InputRejected | PluginFailure>;
   readonly id: `${string}.commands.${string}`;
   readonly schemaVersion: 1;
-}
-
-export interface ActionProposal {
-  readonly actionSchemaVersion: number;
-  readonly actionType: string;
-  readonly deadlineClass: "interactive" | "background";
-  readonly gateClass: "none-requested" | "binding-human-requested";
-  readonly input: unknown;
-  readonly requestedCapabilities: readonly string[];
-  readonly schemaVersion: 1;
-  readonly subject: {
-    readonly executionId: string;
-    readonly resource: string;
-  };
-}
-
-export interface ReactionProposal {
-  readonly actions: readonly ActionProposal[];
-  readonly events: readonly ProposedEvent[];
 }
 
 export interface EventReactorContribution {
@@ -180,31 +176,6 @@ export interface ToolContribution {
   readonly requestedCapabilities: readonly string[];
   readonly schemaVersion: 1;
   readonly version: string;
-}
-
-export interface WorkflowChildProposal {
-  readonly id: string;
-  readonly requestedCapabilities: readonly string[];
-  readonly workflowName: string;
-}
-
-export interface WorkflowTransitionInput {
-  readonly children: readonly {
-    readonly id: string;
-    readonly status: "cancelled" | "completed" | "failed" | "running";
-  }[];
-  readonly input: unknown;
-  readonly instanceId: string;
-  readonly state: unknown;
-  readonly step: number;
-}
-
-export interface WorkflowTransition {
-  readonly actions: readonly ActionProposal[];
-  readonly children: readonly WorkflowChildProposal[];
-  readonly nextState: unknown;
-  readonly progressKey: string;
-  readonly terminalRequested: boolean;
 }
 
 export interface WorkflowContribution {

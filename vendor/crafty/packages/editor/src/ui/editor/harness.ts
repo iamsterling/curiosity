@@ -34,9 +34,11 @@ import {
   planGroup,
   planUngroup,
   pointsOfSubpath,
-  projectGlassRecords,
+  projectConstrainedResize as projectKernelConstrainedResize,
+  projectNodeWorldTransform,
+  projectRotatedTransform,
+  projectSelectionBox as projectKernelSelectionBox,
   resolveAutoHandles,
-  resolveCompoundOutlineResult,
   serializeClipboardPayload,
   screenToWorld,
   snapCornerDecision,
@@ -83,6 +85,8 @@ import {
   type PenSnapPayload,
   type Rect,
   type ResizeHandle,
+  type ResizeOptions as KernelResizeOptions,
+  type SelectionProjectionBox,
   type SnapGuidesPayload,
   type SnapChoicesPayload,
   type SnapObjectPositions,
@@ -93,14 +97,14 @@ import {
   snapshotGridDescriptor,
 } from "../../kernel/index.js";
 import {
+  projectDocumentDrawCommands,
+  projectDocumentGlassSurfaces,
+} from "../../rendering/index.js";
+import {
   defaultViewport,
-  hasMinimumBounds,
   normalizeBounds,
   type DrawCommand,
   type DrawGlassSurface,
-  type DrawPathGeometry,
-  type DrawPathPoint,
-  type DrawPathSubpath,
 } from "@crafty/scene-renderer";
 import { buildStructureProjection, type StructureProjection } from "./structure-projection.js";
 
@@ -225,305 +229,8 @@ const midpoint = (left: Point, right: Point): Point => ({
   y: (left.y + right.y) / 2,
 });
 
-export interface ResizeOptions {
-  /** Shift: keep the start aspect ratio; the primary axis is the one with
-   *  the larger relative delta and the secondary follows. */
-  constrainAspect: boolean;
-  /** Alt: resize symmetrically around the box center (the opposite edge is
-   *  NOT the anchor). */
-  fromCenter: boolean;
-  minSize: number;
-}
-
-/** Grows/shrinks a LOCAL rect from one of the eight handles. The anchor is
- *  the opposite edge (east handles pin the left edge, west pin the right,
- *  south pin the top, north pin the bottom); corner handles pin both.
- *  Pure local-space arithmetic — the caller converts the world delta. */
-export const projectConstrainedResize = (
-  start: Bounds,
-  handle: ResizeHandle,
-  worldDelta: Point,
-  worldTransform: Transform2D,
-  options: ResizeOptions,
-): Bounds => {
-  const det = worldTransform.a * worldTransform.d - worldTransform.b * worldTransform.c;
-  const dx = det !== 0
-    ? (worldTransform.d * worldDelta.x - worldTransform.c * worldDelta.y) / det
-    : worldDelta.x;
-  const dy = det !== 0
-    ? (-worldTransform.b * worldDelta.x + worldTransform.a * worldDelta.y) / det
-    : worldDelta.y;
-  const east = handle === "e" || handle === "ne" || handle === "se";
-  const west = handle === "w" || handle === "nw" || handle === "sw";
-  const south = handle === "s" || handle === "se" || handle === "sw";
-  const north = handle === "n" || handle === "ne" || handle === "nw";
-  let width = start.width + (east ? dx : west ? -dx : 0);
-  let height = start.height + (south ? dy : north ? -dy : 0);
-  if (options.constrainAspect && start.width > 0 && start.height > 0) {
-    const ratio = start.width / start.height;
-    const relDx = Math.abs(width - start.width) / start.width;
-    const relDy = Math.abs(height - start.height) / start.height;
-    if (relDx >= relDy) height = width / ratio;
-    else width = height * ratio;
-  }
-  width = Math.max(options.minSize, width);
-  height = Math.max(options.minSize, height);
-  if (options.fromCenter) {
-    return {
-      x: start.x + (start.width - width) / 2,
-      y: start.y + (start.height - height) / 2,
-      width,
-      height,
-    };
-  }
-  const sideX = (east || west) && !north && !south;
-  const sideY = (north || south) && !east && !west;
-  return {
-    x: sideY && options.constrainAspect ? start.x + (start.width - width) / 2 : east ? start.x : west ? start.x + (start.width - width) : start.x,
-    y: sideX && options.constrainAspect ? start.y + (start.height - height) / 2 : south ? start.y : north ? start.y + (start.height - height) : start.y,
-    width,
-    height,
-  };
-};
-
-/** `#rrggbb` → straight-alpha sRGB, the packet's fill convention. */
-const hexToRgba = (hex: string): [number, number, number, number] => {
-  const value = Number.parseInt(hex.slice(1), 16);
-  return [
-    ((value >> 16) & 0xff) / 255,
-    ((value >> 8) & 0xff) / 255,
-    (value & 0xff) / 255,
-    1,
-  ];
-};
-
-/** Kernel glass records → protocol surfaces: the projection the renderer's
- *  composite pass consumes. Plain disposable values, never written back. The
- *  packet tint's alpha carries `tintOpacity`; the surface's own `opacity`
- *  carries the authored node opacity — the composite multiplies the two,
- *  exactly like solid fills fold node opacity into the fill alpha. */
-const projectGlassSurfaces = (document: EditorDocument): DrawGlassSurface[] =>
-  projectGlassRecords(document).map((record) => {
-    const tint = hexToRgba(record.tint);
-    return {
-      nodeId: record.nodeId,
-      bounds: record.bounds,
-      transform: record.transform,
-      blurRadius: record.blurRadius,
-      tint: [tint[0], tint[1], tint[2], record.tintOpacity],
-      saturation: record.saturation,
-      refraction: record.refraction,
-      opacity: record.opacity,
-      zIndex: record.zIndex,
-      order: record.order,
-    };
-  });
-
-/** The packet shape shared by path nodes and compound outlines: the composed
- *  WORLD transform, the RESOLVED geometry (auto handles materialized — the
- *  packet vocabulary has no `auto` mode), and the visible-slot `order` the
- *  node's layer occupies in the encoder's walk. `bounds` is the geometry's
- *  world draw rect: for a path node the authored bounds (validated equal to
- *  the geometry bbox); for a compound the outline's DERIVED bbox at its
- *  derived placement — the authored compound bounds may be stale after a
- *  member edit and are never trusted here. */
-const drawPathCommand = (
-  node: DocumentNode,
-  resolved: PathGeometry,
-  bounds: { x: number; y: number; width: number; height: number },
-  transform: Transform2D,
-  order: number,
-): DrawCommand => {
-  if (typeof node.fill !== "string")
-    throw new Error(`SCENE_ADAPTER_INVALID_FILL:${node.id}`);
-  const points: Record<string, DrawPathPoint> = {};
-  for (const point of Object.values(resolved.points)) {
-    points[point.id] = {
-      id: point.id,
-      subpathId: point.subpathId,
-      order: point.order,
-      x: point.x,
-      y: point.y,
-      // Resolved geometry never carries `auto` — resolveAutoHandles
-      // materializes derived handles as `asymmetric`, the packet vocabulary.
-      handleMode: point.handleMode as DrawPathPoint["handleMode"],
-      ...(point.handleIn !== undefined
-        ? { handleIn: { ...point.handleIn } }
-        : {}),
-      ...(point.handleOut !== undefined
-        ? { handleOut: { ...point.handleOut } }
-        : {}),
-    };
-  }
-  const subpaths: Record<string, DrawPathSubpath> = {};
-  for (const subpath of Object.values(resolved.subpaths))
-    subpaths[subpath.id] = { id: subpath.id, closed: subpath.closed };
-  return {
-    geometry: "path",
-    nodeId: node.id,
-    bounds,
-    transform,
-    fill: hexToRgba(node.fill),
-    opacity: node.opacity,
-    zIndex: node.zIndex,
-    order,
-    path: { points, subpaths },
-    fillRule: resolved.fillRule,
-  };
-};
-
-/** The packet shape of one path node: authored bounds and fill with the
- *  composed WORLD transform and the RESOLVED geometry. */
-const pathCommandFor = (
-  node: DocumentNode,
-  transform: Transform2D,
-  order: number,
-): DrawCommand =>
-  drawPathCommand(
-    node,
-    resolveAutoHandles(node.path!),
-    { ...node.bounds },
-    transform,
-    order,
-  );
-
-/** The packet shape of one text node (protocol v5): the string and its
- *  size, drawn with the authored fill. The model carries no font metrics —
- *  the box height is the size proxy until a font-size property exists. The
- *  encoder tessellates the glyphs from its embedded font. A glass fill has
- *  no hex colour to draw with, so glass text keeps the rect pass (the node
- *  still draws its glass); hex text renders as glyphs. */
-const textCommandFor = (
-  node: DocumentNode,
-  transform: Transform2D,
-  order: number,
-): DrawCommand | undefined => {
-  if (typeof node.fill !== "string") return undefined;
-  const fill = hexToRgba(node.fill);
-  return {
-    geometry: "text",
-    nodeId: node.id,
-    bounds: { x: 0, y: 0, width: node.bounds.width, height: node.bounds.height },
-    transform,
-    fill,
-    opacity: node.opacity,
-    zIndex: node.zIndex,
-    order,
-    ...(node.text !== undefined ? { text: node.text } : {}),
-    fontSize: Math.max(node.bounds.height, 1),
-  };
-};
-
-/** The packet shape of one compound: the RESOLVED outline (a resolution
- *  product — never authored geometry) placed at its DERIVED world bbox
- *  corner, with the compound's surface (fill, opacity, zIndex). */
-const compoundCommandFor = (
-  node: DocumentNode,
-  outline: { geometry: PathGeometry; placement: { x: number; y: number } },
-  transform: Transform2D,
-  order: number,
-): DrawCommand => {
-  const resolved = resolveAutoHandles(outline.geometry);
-  const bbox = computePathBounds(resolved);
-  return drawPathCommand(
-    node,
-    resolved,
-    {
-      x: outline.placement.x,
-      y: outline.placement.y,
-      width: bbox.maxX - bbox.minX,
-      height: bbox.maxY - bbox.minY,
-    },
-    transform,
-    order,
-  );
-};
-
-/**
- * Projects the active page's path nodes as packet draw commands. Walks the
- * node tree exactly like the scene encoder walks the projected layers
- * (depth-first pre-order, one order slot per visible node), so a command's
- * `order` is the slot its invisible rect layer occupies — sorting commands by
- * `(zIndex, order)` reproduces the authored draw sequence. Only the ACTIVE
- * page projects: the renderer draws one frame, and another page's paths must
- * never leak into it (unlike glass, which the composite draws from records
- * that carry their own world bounds — pre-existing behavior, not replicated).
- */
-const projectPathCommands = (
-  document: EditorDocument,
-  pageId: DocumentId,
-): DrawCommand[] => {
-  const commands: DrawCommand[] = [];
-  let order = 0;
-  const walk = (
-    parentId: DocumentId,
-    inheritedVisible: boolean,
-    parentWorld: Transform2D,
-  ): void => {
-    const parent = document.nodes[parentId];
-    if (!parent) return;
-    for (const childId of parent.childIds) {
-      const node = document.nodes[childId];
-      if (!node) continue;
-      const visible = inheritedVisible && node.visible;
-      // The kernel's authoritative composition (interaction.ts
-      // `visiblePathNodes`): bounds carry the placement, the transform is the
-      // extra affine — path points are node-local, so the translate is the
-      // only thing that positions them. A compound's outline sits at its
-      // DERIVED placement (the outline re-resolves on member edits, so the
-      // authored compound bounds may be stale) — the same composition, with
-      // the derived corner in place of the authored bounds corner.
-      const position = {
-        a: 1,
-        b: 0,
-        c: 0,
-        d: 1,
-        e: node.bounds.x,
-        f: node.bounds.y,
-      };
-      const world = multiplyTransforms(
-        parentWorld,
-        multiplyTransforms(position, node.transform),
-      );
-      if (visible) {
-        order += 1;
-        // Compound members never draw individually: the outline is the only
-        // visual, so a member's own path stays out of the channel. The
-        // member subtrees still consume their encoder slots below.
-        const isMember = parent.kind === "compound";
-        if (node.kind === "path" && node.path && !isMember)
-          commands.push(pathCommandFor(node, world, order));
-        else if (node.kind === "text" && node.text && !isMember) {
-          const textCommand = textCommandFor(node, world, order);
-          if (textCommand) commands.push(textCommand);
-        } else if (node.kind === "compound" && !isMember) {
-          const outline = resolveCompoundOutlineResult(document, node.id);
-          if (outline) {
-            const placement = {
-              a: 1,
-              b: 0,
-              c: 0,
-              d: 1,
-              e: outline.placement.x,
-              f: outline.placement.y,
-            };
-            const outlineWorld = multiplyTransforms(
-              parentWorld,
-              multiplyTransforms(placement, node.transform),
-            );
-            commands.push(
-              compoundCommandFor(node, outline, outlineWorld, order),
-            );
-          }
-        }
-      }
-      walk(childId, visible, world);
-    }
-  };
-  const page = document.pages[pageId];
-  if (page) walk(page.rootId, true, identityTransform());
-  return commands;
-};
+export type ResizeOptions = KernelResizeOptions;
+export const projectConstrainedResize = projectKernelConstrainedResize;
 
 /**
  * Kernel-backed document adapter for the browser surface. Owns the kernel,
@@ -592,7 +299,14 @@ export class CanvasEditor {
   private marqueeScope: DocumentId | undefined;
   /** The rotate gesture's start angle (box-center → cursor), keyed by node —
    *  the delta that follows the cursor. Cleared at gesture end. */
-  private rotateStart: { key: string; angle: number } | undefined;
+  private rotateStart:
+    | {
+        key: string;
+        box: SelectionProjectionBox;
+        point: Point;
+        transform: AffineTransform;
+      }
+    | undefined;
   private cornerRadiusStart: { nodeId: string; value: number } | undefined;
   /** The last alt-drag's world delta — ⌘D's repeat offset ("smart
    *  duplicate"). A fresh editor duplicates by 10px on each axis. */
@@ -1499,29 +1213,9 @@ export class CanvasEditor {
         };
       return;
     }
-    const currentState = this.kernel.getState();
     const worldPoint = screenToWorld(input.point, this.viewport);
-    const authored = this.kernel.getDocument();
-    const page = authored.pages[currentState.currentPageId];
-    const root = currentState.isolationRootId ? authored.nodes[currentState.isolationRootId] : undefined;
-    if (root && (worldPoint.x < root.bounds.x || worldPoint.y < root.bounds.y || worldPoint.x > root.bounds.x + root.bounds.width || worldPoint.y > root.bounds.y + root.bounds.height)) {
-      // Isolation is a temporary pointer scope. A miss outside its bounds is
-      // the normal top-level click, not a click that leaves the editor trapped.
-      this.kernel.exitIsolation();
-    }
-    if ((input.clickCount ?? 1) >= 2 && page) {
-      const deep = documentDeepHitTest(authored, currentState.currentPageId, worldPoint, currentState.isolationRootId);
-      let candidate = deep ? authored.nodes[deep]?.parentId : undefined;
-      while (candidate) {
-        const node = authored.nodes[candidate];
-        if (node && (node.kind === "frame" || node.kind === "group") && currentState.selectedIds.includes(node.id)) {
-          this.kernel.enterIsolation(node.id);
-          if (deep) this.kernel.setSelection([deep]);
-          break;
-        }
-        candidate = node?.parentId ?? undefined;
-      }
-    }
+    this.kernel.exitIsolationAt(worldPoint);
+    if ((input.clickCount ?? 1) >= 2) this.kernel.deepSelectAt(worldPoint);
     this.applyInteraction({
       type: "pointer-down",
       pointerId: input.pointerId,
@@ -2141,95 +1835,7 @@ export class CanvasEditor {
     pageId: DocumentId,
     selectedIds: readonly string[],
   ): { bounds: Bounds; transform: Transform2D; cornerRadius?: number } | undefined {
-    if (selectedIds.length === 0) return undefined;
-    const page = document.pages[pageId];
-    if (!page) return undefined;
-    const composeWorld = (
-      node: EditorDocument["nodes"][string],
-    ): Transform2D => {
-      const position = {
-        a: 1,
-        b: 0,
-        c: 0,
-        d: 1,
-        e: node.bounds.x,
-        f: node.bounds.y,
-      };
-      return multiplyTransforms(position, node.transform);
-    };
-    if (selectedIds.length === 1) {
-      const wanted = selectedIds[0];
-      let found: { bounds: Bounds; transform: Transform2D } | undefined;
-      const walk = (parentId: DocumentId, parentWorld: Transform2D): void => {
-        if (found) return;
-        const parent = document.nodes[parentId];
-        if (!parent || !parent.visible || parent.locked) return;
-        for (const childId of parent.childIds) {
-          const node = document.nodes[childId];
-          if (!node || !node.visible || node.locked) continue;
-          const world = multiplyTransforms(parentWorld, composeWorld(node));
-          if (childId === wanted) {
-            // The box is the node's LOCAL space: the placement rides the
-            // world transform (e/f carry bounds.x/y), so the local box is
-            // anchored at the origin — drawing the authored bounds here
-            // would place it twice.
-            found = {
-              bounds: {
-                x: 0,
-                y: 0,
-                width: node.bounds.width,
-                height: node.bounds.height,
-              },
-              transform: world,
-              ...(node.kind === "rectangle" || node.kind === "frame" ? { cornerRadius: node.cornerRadius } : {}),
-            };
-            return;
-          }
-          walk(childId, world);
-        }
-      };
-      walk(page.rootId, identityTransform());
-      return found;
-    }
-    const wanted = new Set(selectedIds);
-    let union: Bounds | undefined;
-    const walk = (parentId: DocumentId, parentWorld: Transform2D): void => {
-      const parent = document.nodes[parentId];
-      if (!parent || !parent.visible || parent.locked) return;
-      for (const childId of parent.childIds) {
-        const node = document.nodes[childId];
-        if (!node || !node.visible || node.locked) continue;
-        const world = multiplyTransforms(parentWorld, composeWorld(node));
-        if (wanted.has(childId)) {
-          const box = transformBounds(
-            {
-              x: 0,
-              y: 0,
-              width: node.bounds.width,
-              height: node.bounds.height,
-            },
-            world,
-          );
-          union = union
-            ? {
-                x: Math.min(union.x, box.x),
-                y: Math.min(union.y, box.y),
-                width:
-                  Math.max(union.x + union.width, box.x + box.width) -
-                  Math.min(union.x, box.x),
-                height:
-                  Math.max(union.y + union.height, box.y + box.height) -
-                  Math.min(union.y, box.y),
-              }
-            : box;
-        }
-        walk(childId, world);
-      }
-    };
-    walk(page.rootId, identityTransform());
-    return union
-      ? { bounds: union, transform: identityTransform() }
-      : undefined;
+    return projectKernelSelectionBox(document, pageId, selectedIds);
   }
 
   /** The selected points' world anchors and resolved handle endpoints, across
@@ -3181,38 +2787,14 @@ export class CanvasEditor {
    *  same walk the path-commands projection uses. */
   private worldTransformOf(nodeId: DocumentId, boundsOverride?: Bounds): Transform2D {
     const { document, state } = this.kernel.getProjection();
-    const page = document.pages[state.currentPageId];
-    if (!page) return identityTransform();
-    let found: Transform2D | undefined;
-    const walk = (parentId: DocumentId, parentWorld: Transform2D): void => {
-      if (found) return;
-      const parent = document.nodes[parentId];
-      if (!parent) return;
-      for (const childId of parent.childIds) {
-        const node = document.nodes[childId];
-        if (!node) continue;
-        const bounds = childId === nodeId && boundsOverride ? boundsOverride : node.bounds;
-        const position = {
-          a: 1,
-          b: 0,
-          c: 0,
-          d: 1,
-          e: bounds.x,
-          f: bounds.y,
-        };
-        const world = multiplyTransforms(
-          parentWorld,
-          multiplyTransforms(position, node.transform),
-        );
-        if (childId === nodeId) {
-          found = world;
-          return;
-        }
-        walk(childId, world);
-      }
-    };
-    walk(page.rootId, identityTransform());
-    return found ?? identityTransform();
+    return (
+      projectNodeWorldTransform(
+        document,
+        state.currentPageId,
+        nodeId,
+        boundsOverride,
+      ) ?? identityTransform()
+    );
   }
 
   /** Rebases a point-record patch so the geometry's min corner is (0,0) and
@@ -3574,251 +3156,63 @@ export class CanvasEditor {
     if (!node) return;
     const box = this.projectSelectionBox(document, pageId, selectedIds);
     if (!box) return;
-    const world = transformBounds(box.bounds, box.transform);
-    const center = {
-      x: world.x + world.width / 2,
-      y: world.y + world.height / 2,
-    };
     const cursor = screenToWorld(point, this.viewport);
-    const angle = Math.atan2(cursor.y - center.y, cursor.x - center.x);
     if (!this.rotateStart || this.rotateStart.key !== nodeId) {
-      // The start angle is the POINTER-DOWN point's angle — the cursor
-      // grabbed the ring there — so the first move already rotates.
       const startPoint = this.interaction.start;
-      const startCursor = startPoint
-        ? screenToWorld(startPoint, this.viewport)
-        : cursor;
       this.rotateStart = {
         key: nodeId,
-        angle: Math.atan2(startCursor.y - center.y, startCursor.x - center.x),
+        box,
+        point: startPoint ? screenToWorld(startPoint, this.viewport) : cursor,
+        transform: { ...node.transform },
       };
       if (!this.transactionArmed) {
         this.kernel.beginTransaction("Rotate layer");
         this.transactionArmed = true;
       }
     }
-    let delta = angle - this.rotateStart.angle;
-    if (shiftKey) {
-      const step = Math.PI / 12; // 15°
-      delta = Math.round(delta / step) * step;
-    }
-    if (Math.abs(delta) < 1e-6) return;
-    // b = the world position of the local origin = the world transform's
-    // translation (e, f); C = the box's world center.
-    const b = { x: box.transform.e, y: box.transform.f };
-    const tx = (x: number, y: number): AffineTransform => ({ a: 1, b: 0, c: 0, d: 1, e: x, f: y });
-    const rotate = (radians: number): AffineTransform => {
-      const cos = Math.cos(radians);
-      const sin = Math.sin(radians);
-      return { a: cos, b: sin, c: -sin, d: cos, e: 0, f: 0 };
-    };
-    const a = multiplyTransforms(
-      tx(center.x - b.x, center.y - b.y),
-      multiplyTransforms(rotate(delta), tx(b.x - center.x, b.y - center.y)),
-    );
     this.kernel.preview({
       type: "set-transform",
       nodeId,
-      transform: multiplyTransforms(a, node.transform),
+      transform: projectRotatedTransform(
+        this.rotateStart.transform,
+        this.rotateStart.box,
+        this.rotateStart.point,
+        cursor,
+        shiftKey,
+      ),
     });
   }
 
   private commitRectangle(bounds: Rect): void {
-    const style = this.creationStyleCapture ?? this.kernel.getState().creationStyle;
-    const world = this.toWorldBounds(bounds);
-    if (!hasMinimumBounds(world)) return;
-    const parentId = `page-root-${this.frameId}`;
-    const { document } = this.kernel.getProjection();
-    const zIndex = document.nodes[parentId]?.childIds.length ?? 0;
-    const node: DocumentNode = {
-      id: makeId("rectangle"),
-      kind: "rectangle",
-      name: "New rectangle",
-      parentId,
-      childIds: [],
-      bounds: world,
-      transform: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 },
-      visible: true,
-      locked: false,
-      opacity: 1,
-      fill: style.fill,
-      stroke: style.stroke,
-      cornerRadius: 16,
-      zIndex,
-    };
-    this.kernel.dispatch({ type: "create-node", node }, "Create rectangle");
-    this.kernel.setSelection([node.id]);
+    this.kernel.createShape(
+      { tool: "rectangle", bounds: this.toWorldBounds(bounds) },
+      this.creationStyleCapture,
+    );
   }
 
-  /** The ellipse tool commits a PATH node whose geometry is the standard
-   *  4-cubic circle approximation (k = 0.55228r, mirrored handles) — the
-   *  industry's own ellipse representation (Figma and Sketch store ellipses
-   *  as path geometry), so no new node kind touches the schema. */
   private commitEllipse(bounds: Rect): void {
-    const style = this.creationStyleCapture ?? this.kernel.getState().creationStyle;
-    const world = this.toWorldBounds(bounds);
-    if (!hasMinimumBounds(world)) return;
-    const parentId = `page-root-${this.frameId}`;
-    const { document } = this.kernel.getProjection();
-    const zIndex = document.nodes[parentId]?.childIds.length ?? 0;
-    const width = world.width;
-    const height = world.height;
-    const kx = width / 2 * 0.5522847498;
-    const ky = height / 2 * 0.5522847498;
-    const subpathId = "sp-ellipse";
-    const points: Record<string, PathPoint> = {
-      "pt-top": { id: "pt-top", subpathId, order: orderKeyForSigned(0), x: width / 2, y: 0, handleMode: "mirrored", handleOut: { dx: kx, dy: 0 } },
-      "pt-right": { id: "pt-right", subpathId, order: orderKeyForSigned(65536), x: width, y: height / 2, handleMode: "mirrored", handleOut: { dx: 0, dy: ky } },
-      "pt-bottom": { id: "pt-bottom", subpathId, order: orderKeyForSigned(131072), x: width / 2, y: height, handleMode: "mirrored", handleOut: { dx: -kx, dy: 0 } },
-      "pt-left": { id: "pt-left", subpathId, order: orderKeyForSigned(196608), x: 0, y: height / 2, handleMode: "mirrored", handleOut: { dx: 0, dy: -ky } },
-    };
-    const node: DocumentNode = {
-      id: makeId("ellipse"),
-      kind: "path",
-      name: "Ellipse",
-      parentId,
-      childIds: [],
-      bounds: world,
-      transform: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 },
-      visible: true,
-      locked: false,
-      opacity: 1,
-      fill: style.fill,
-      stroke: style.stroke,
-      cornerRadius: 0,
-      zIndex,
-      path: {
-        points,
-        subpaths: { [subpathId]: { id: subpathId, closed: true } },
-        fillRule: "nonzero",
-      },
-    };
-    this.kernel.dispatch({ type: "create-node", node }, "Create ellipse");
-    this.kernel.setSelection([node.id]);
+    this.kernel.createShape(
+      { tool: "ellipse", bounds: this.toWorldBounds(bounds) },
+      this.creationStyleCapture,
+    );
   }
 
-  /** The line tool commits a 2-point OPEN path — a path node, like every
-   *  other vector shape. A click without a drag already carried a default
-   *  endpoint from the reducer. */
   private commitLine(start: Point, end: Point): void {
-    const style = this.creationStyleCapture ?? this.kernel.getState().creationStyle;
-    const worldStart = screenToWorld(start, this.viewport);
-    const worldEnd = screenToWorld(end, this.viewport);
-    const minX = Math.min(worldStart.x, worldEnd.x);
-    const minY = Math.min(worldStart.y, worldEnd.y);
-    const width = Math.abs(worldEnd.x - worldStart.x);
-    const height = Math.abs(worldEnd.y - worldStart.y);
-    // A line may legitimately be horizontal or vertical; only reject a
-    // genuinely zero-length drag.
-    if (width < MIN_LAYER_SIZE && height < MIN_LAYER_SIZE) return;
-    const parentId = `page-root-${this.frameId}`;
-    const { document } = this.kernel.getProjection();
-    const zIndex = document.nodes[parentId]?.childIds.length ?? 0;
-    const subpathId = "sp-line";
-    const points: Record<string, PathPoint> = {
-      "pt-a": { id: "pt-a", subpathId, order: orderKeyForSigned(0), x: worldStart.x - minX, y: worldStart.y - minY, handleMode: "corner" },
-      "pt-b": { id: "pt-b", subpathId, order: orderKeyForSigned(65536), x: worldEnd.x - minX, y: worldEnd.y - minY, handleMode: "corner" },
-    };
-    const node: DocumentNode = {
-      id: makeId("line"),
-      kind: "path",
-      name: "Line",
-      parentId,
-      childIds: [],
-      bounds: { x: minX, y: minY, width, height },
-      transform: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 },
-      visible: true,
-      locked: false,
-      opacity: 1,
-      fill: style.fill,
-      stroke: style.stroke,
-      cornerRadius: 0,
-      zIndex,
-      path: {
-        points,
-        subpaths: { [subpathId]: { id: subpathId, closed: false } },
-        fillRule: "nonzero",
+    this.kernel.createShape(
+      {
+        tool: "line",
+        start: screenToWorld(start, this.viewport),
+        end: screenToWorld(end, this.viewport),
       },
-    };
-    this.kernel.dispatch({ type: "create-node", node }, "Create line");
-    this.kernel.setSelection([node.id]);
+      this.creationStyleCapture,
+    );
   }
 
-  /** The frame tool commits a FRAME node, then absorbs every top-level node
-   *  fully contained in the drawn box as its children — one history entry,
-   *  the frame tool's contract (drawing a frame around objects groups them
-   *  into it). */
   private commitFrame(bounds: Rect): void {
-    const style = this.creationStyleCapture ?? this.kernel.getState().creationStyle;
-    const world = this.toWorldBounds(bounds);
-    if (!hasMinimumBounds(world)) return;
-    const parentId = `page-root-${this.frameId}`;
-    const { document } = this.kernel.getProjection();
-    const zIndex = document.nodes[parentId]?.childIds.length ?? 0;
-    const frame: DocumentNode = {
-      id: makeId("frame"),
-      kind: "frame",
-      name: "Frame",
-      parentId,
-      childIds: [],
-      bounds: world,
-      transform: { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 },
-      visible: true,
-      locked: false,
-      opacity: 1,
-      fill: style.fill,
-      stroke: style.stroke,
-      cornerRadius: 0,
-      zIndex,
-    };
-    if (!this.transactionArmed) {
-      this.kernel.beginTransaction("Create frame");
-      this.transactionArmed = true;
-    }
-    this.kernel.preview({ type: "create-node", node: frame });
-    // Absorb fully-contained top-level siblings (visibility- and lock-
-    // respecting) as children of the new frame.
-    const contained = document.nodes[parentId]?.childIds
-      .map((id) => document.nodes[id])
-      .filter(
-        (node): node is DocumentNode =>
-          node !== undefined &&
-          node.visible &&
-          !node.locked &&
-          node.id !== frame.id &&
-          node.bounds.x >= world.x &&
-          node.bounds.y >= world.y &&
-          node.bounds.x + node.bounds.width <= world.x + world.width &&
-          node.bounds.y + node.bounds.height <= world.y + world.height,
-      ) ?? [];
-    for (const node of contained) {
-      // Absorption REBASES each node's placement into the frame's local
-      // space: the frame's world box is its (identity) placement, so the
-      // local bounds are the world bounds minus the frame's origin. Without
-      // the rebase the node keeps page-root-local coordinates and jumps to
-      // (frame.x + bounds.x) in world space.
-      this.kernel.preview([
-        {
-          type: "set-bounds",
-          nodeId: node.id,
-          bounds: {
-            x: node.bounds.x - world.x,
-            y: node.bounds.y - world.y,
-            width: node.bounds.width,
-            height: node.bounds.height,
-          },
-        },
-        {
-          type: "reparent-node",
-          nodeId: node.id,
-          parentId: frame.id,
-          index: document.nodes[frame.id]?.childIds.length ?? 0,
-        },
-      ]);
-    }
-    this.kernel.commit();
-    this.transactionArmed = false;
-    this.kernel.setSelection([frame.id]);
+    this.kernel.createShape(
+      { tool: "frame", bounds: this.toWorldBounds(bounds) },
+      this.creationStyleCapture,
+    );
   }
 
   private commitMarquee(bounds: Rect, additive: boolean): void {
@@ -3887,8 +3281,8 @@ export class CanvasEditor {
     this.sceneCache = {
       key,
       scene,
-      glassSurfaces: projectGlassSurfaces(document),
-      pathCommands: projectPathCommands(
+      glassSurfaces: projectDocumentGlassSurfaces(document),
+      pathCommands: projectDocumentDrawCommands(
         document,
         this.kernel.getState().currentPageId,
       ),

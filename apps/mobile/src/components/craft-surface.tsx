@@ -1,21 +1,108 @@
-import { useState } from "react";
 import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
+import {
+  PixelRatio,
   Pressable,
-  ScrollView,
-  StyleSheet,
   Text,
+  type LayoutChangeEvent,
   useWindowDimensions,
   View,
 } from "react-native";
+import {
+  viewportCenteredAt,
+  type DocumentNode,
+  type EditorKernel,
+  type EditorTool,
+} from "@crafty/editor/kernel";
+import {
+  CuriosityCanvasView,
+  type CanvasViewport,
+} from "../../modules/curiosity-canvas";
+import {
+  getCraftyKernelPortabilityStatus,
+  subscribeToCraftyKernelPortabilityStatus,
+} from "../crafty/crafty-kernel-portability-runtime";
+import {
+  createCraftyKernelFromUiPackage,
+  parseCraftyUiPackage,
+} from "../crafty/crafty-kernel-portability";
+import {
+  serializeCraftyNativeFrame,
+  type CanvasSize,
+} from "../crafty/crafty-native-frame";
+import { loadCraftyKernelPortabilityFixture } from "../crafty/crafty-ui-fixture";
+import { ExpoCraftyUiPackageStore } from "../crafty/crafty-ui-expo-store";
+import {
+  loadCraftyUiPackage,
+  saveCraftyUiPackage,
+} from "../crafty/crafty-ui-persistence";
+import {
+  CraftySelectionInteraction,
+} from "../crafty/crafty-selection-interaction";
+import {
+  CraftyCreationInteraction,
+  type CraftyCreationTool,
+} from "../crafty/crafty-creation-interaction";
+import { applyCraftyAccessibilityCommand } from "../crafty/crafty-accessibility-interaction";
 import { palette } from "../theme";
+import { styles } from "./craft-surface.styles";
 
 const tools = Object.freeze([
-  { label: "Select", symbol: "↖" },
-  { label: "Frame", symbol: "□" },
-  { label: "Ellipse", symbol: "○" },
-  { label: "Text", symbol: "T" },
-  { label: "Pen", symbol: "⌁" },
+  { label: "Select", symbol: "↖", tool: "select" },
+  { label: "Frame", symbol: "▣", tool: "frame" },
+  { label: "Rectangle", symbol: "□", tool: "rectangle" },
+  { label: "Ellipse", symbol: "○", tool: "ellipse" },
+  { label: "Line", symbol: "╱", tool: "line" },
+] as const satisfies readonly {
+  label: string;
+  symbol: string;
+  tool: EditorTool;
+}[]);
+
+const layerSymbols = Object.freeze({
+  compound: "◇",
+  frame: "▣",
+  group: "⊞",
+  image: "▧",
+  path: "⌁",
+  rectangle: "□",
+  text: "T",
+} as const);
+
+const creationTools = new Set<EditorTool>([
+  "ellipse",
+  "frame",
+  "line",
+  "rectangle",
 ]);
+
+const isCreationTool = (tool: EditorTool): tool is CraftyCreationTool =>
+  creationTools.has(tool);
+
+const flattenLayerNodes = (
+  nodes: Readonly<Record<string, DocumentNode>>,
+  nodeIds: readonly string[],
+  depth = 1,
+): readonly Readonly<{ depth: number; node: DocumentNode }>[] =>
+  nodeIds.flatMap((nodeId) => {
+    const node = nodes[nodeId];
+    if (!node) return [];
+    return [
+      { depth, node },
+      ...flattenLayerNodes(nodes, node.childIds, depth + 1),
+    ];
+  });
+
+const initialCanvasViewport: CanvasViewport = {
+  centerX: 400,
+  centerY: 250,
+  zoom: 0.75,
+};
 
 const LayerRow = ({
   depth = 0,
@@ -28,7 +115,13 @@ const LayerRow = ({
   readonly selected?: boolean;
   readonly symbol: string;
 }) => (
-  <View style={[styles.layerRow, selected && styles.layerSelected, { paddingLeft: 10 + depth * 13 }]}>
+  <View
+    style={[
+      styles.layerRow,
+      selected && styles.layerSelected,
+      { paddingLeft: 10 + depth * 13 },
+    ]}
+  >
     <Text style={styles.layerSymbol}>{symbol}</Text>
     <Text numberOfLines={1} style={styles.layerLabel}>
       {label}
@@ -36,44 +129,242 @@ const LayerRow = ({
   </View>
 );
 
+const PanelHeader = ({ label, meta }: { label: string; meta: string }) => (
+  <View style={styles.panelHeader}>
+    <Text style={styles.panelLabel}>{label}</Text>
+    <Text style={styles.panelMeta}>{meta}</Text>
+  </View>
+);
+
 export const CraftSurface = () => {
   const { width } = useWindowDimensions();
-  const [activeTool, setActiveTool] = useState("Select");
+  const [activeTool, setActiveTool] = useState<EditorTool>("select");
+  const [canvasSize, setCanvasSize] = useState<CanvasSize>();
+  const [canvasViewport, setCanvasViewport] = useState(initialCanvasViewport);
+  const [kernel, setKernel] = useState<EditorKernel>();
+  const [packageRevision, setPackageRevision] = useState(0);
+  const [saveStatus, setSaveStatus] = useState<
+    "failed" | "modified" | "saved" | "saving"
+  >("saved");
+  const [kernelProjectionRevision, setKernelProjectionRevision] = useState(0);
+  const savedDocumentBytes = useRef<string | undefined>(undefined);
+  const packageStore = useMemo(() => new ExpoCraftyUiPackageStore(), []);
+  const kernelStatus = useSyncExternalStore(
+    subscribeToCraftyKernelPortabilityStatus,
+    getCraftyKernelPortabilityStatus,
+  );
   const showsPanels = width >= 1_150;
+  void kernelProjectionRevision;
+  const projection = kernel?.getProjection();
+  const page = projection
+    ? projection.document.pages[projection.state.currentPageId]
+    : undefined;
+  const selectedId =
+    projection?.state.selectedIds.length === 1
+      ? projection.state.selectedIds[0]
+      : undefined;
+  const selectedNode = selectedId
+    ? projection?.document.nodes[selectedId]
+    : undefined;
+  const layerNodes =
+    projection && page
+      ? flattenLayerNodes(
+          projection.document.nodes,
+          projection.document.nodes[page.rootId]?.childIds ?? [],
+        )
+      : [];
+  const frameJSON =
+    kernel && canvasSize
+      ? serializeCraftyNativeFrame(kernel, canvasSize)
+      : undefined;
+  const selectMoveInteraction = useMemo(
+    () => (kernel ? new CraftySelectionInteraction(kernel) : undefined),
+    [kernel],
+  );
+  const creationInteraction = useMemo(
+    () =>
+      kernel && isCreationTool(activeTool)
+        ? new CraftyCreationInteraction(kernel, activeTool)
+        : undefined,
+    [activeTool, kernel],
+  );
+
+  useEffect(() => {
+    kernel?.setTool(activeTool);
+  }, [activeTool, kernel]);
+
+  useEffect(() => {
+    let active = true;
+    void loadCraftyUiPackage(packageStore)
+      .then(async (persistedPackage) => ({
+        persisted: persistedPackage !== undefined,
+        uiPackage:
+          persistedPackage ?? (await loadCraftyKernelPortabilityFixture()),
+      }))
+      .then(({ persisted, uiPackage }) => {
+        const loadedKernel = createCraftyKernelFromUiPackage(uiPackage);
+        const parsedPackage = parseCraftyUiPackage(uiPackage);
+        if (active) {
+          savedDocumentBytes.current = persisted
+            ? loadedKernel.serialize()
+            : undefined;
+          setKernel(loadedKernel);
+          setPackageRevision(persisted ? parsedPackage.revision : 0);
+          setSaveStatus(persisted ? "saved" : "modified");
+        }
+      })
+      .catch(() => {
+        if (active) setKernel(undefined);
+      });
+    return () => {
+      active = false;
+    };
+  }, [packageStore]);
+
+  useEffect(() => {
+    if (!kernel) return;
+    return kernel.subscribe(() => {
+      setKernelProjectionRevision((revision) => revision + 1);
+      setSaveStatus(
+        kernel.serialize() === savedDocumentBytes.current
+          ? "saved"
+          : "modified",
+      );
+    });
+  }, [kernel]);
+
+  useEffect(() => {
+    if (!canvasSize || !kernel) return;
+    kernel.setViewport(
+      viewportCenteredAt(
+        { x: canvasViewport.centerX, y: canvasViewport.centerY },
+        canvasSize,
+        canvasViewport.zoom,
+        canvasSize.pixelRatio,
+      ),
+    );
+  }, [canvasSize, canvasViewport, kernel]);
+
+  const updateCanvasSize = (event: LayoutChangeEvent) => {
+    const { height, width } = event.nativeEvent.layout;
+    const next = { height, pixelRatio: PixelRatio.get(), width };
+    setCanvasSize((current) =>
+      current?.height === next.height &&
+      current.pixelRatio === next.pixelRatio &&
+      current.width === next.width
+        ? current
+        : next,
+    );
+  };
+
+  const saveDocument = async () => {
+    if (!kernel || saveStatus === "saving") return;
+    setSaveStatus("saving");
+    try {
+      const publication = await saveCraftyUiPackage(
+        packageStore,
+        kernel,
+        packageRevision,
+      );
+      savedDocumentBytes.current = publication.documentBytes;
+      setPackageRevision(publication.revision);
+      setSaveStatus(
+        kernel.serialize() === publication.documentBytes ? "saved" : "modified",
+      );
+    } catch {
+      setSaveStatus("failed");
+    }
+  };
 
   return (
     <View style={styles.root}>
       <View style={styles.toolbar}>
         <View>
           <Text style={styles.eyebrow}>CRAFT / DOCUMENT</Text>
-          <Text style={styles.documentTitle}>Product shell.ui</Text>
+          <Text style={styles.documentTitle}>
+            {projection?.document.file.name ?? "Loading document…"}
+          </Text>
         </View>
         <View style={styles.toolbarCenter}>
-          <Text style={styles.zoom}>75%</Text>
+          <Pressable
+            accessibilityLabel="Undo"
+            accessibilityRole="button"
+            disabled={!kernel?.canUndo()}
+            onPress={() => kernel?.undo()}
+            style={({ pressed }) => [
+              styles.historyButton,
+              !kernel?.canUndo() && styles.historyButtonDisabled,
+              pressed && styles.pressed,
+            ]}
+          >
+            <Text style={styles.historyButtonText}>↶</Text>
+          </Pressable>
+          <Pressable
+            accessibilityLabel="Redo"
+            accessibilityRole="button"
+            disabled={!kernel?.canRedo()}
+            onPress={() => kernel?.redo()}
+            style={({ pressed }) => [
+              styles.historyButton,
+              !kernel?.canRedo() && styles.historyButtonDisabled,
+              pressed && styles.pressed,
+            ]}
+          >
+            <Text style={styles.historyButtonText}>↷</Text>
+          </Pressable>
           <View style={styles.toolbarRule} />
-          <Text style={styles.toolbarValue}>Frame 01</Text>
+          <Text style={styles.zoom}>{Math.round(canvasViewport.zoom * 100)}%</Text>
+          <View style={styles.toolbarRule} />
+          <Text style={styles.toolbarValue}>{page?.name ?? "Loading page…"}</Text>
         </View>
-        <Text style={styles.preview}>BRIDGE PREVIEW</Text>
+        <View style={styles.saveGroup}>
+          <Text style={styles.preview}>NATIVE METAL</Text>
+          <Pressable
+            accessibilityLabel="Save document"
+            accessibilityRole="button"
+            disabled={!kernel || saveStatus === "saving"}
+            onPress={() => void saveDocument()}
+            style={({ pressed }) => [
+              styles.saveButton,
+              (!kernel || saveStatus === "saving") &&
+                styles.historyButtonDisabled,
+              pressed && styles.pressed,
+            ]}
+          >
+            <Text accessibilityLiveRegion="polite" style={styles.saveButtonText}>
+              {saveStatus === "failed"
+                ? "SAVE FAILED"
+                : saveStatus === "modified"
+                  ? "SAVE"
+                  : saveStatus.toUpperCase()}
+            </Text>
+          </Pressable>
+        </View>
       </View>
 
       <View style={styles.editor}>
         <View style={styles.toolRail}>
           {tools.map((tool) => {
-            const selected = activeTool === tool.label;
+            const selected = activeTool === tool.tool;
             return (
               <Pressable
                 accessibilityLabel={tool.label}
                 accessibilityRole="button"
                 accessibilityState={{ selected }}
                 key={tool.label}
-                onPress={() => setActiveTool(tool.label)}
+                onPress={() => setActiveTool(tool.tool)}
                 style={({ pressed }) => [
                   styles.tool,
                   selected && styles.toolSelected,
                   pressed && styles.pressed,
                 ]}
               >
-                <Text style={[styles.toolSymbol, selected && styles.toolSymbolSelected]}>
+                <Text
+                  style={[
+                    styles.toolSymbol,
+                    selected && styles.toolSymbolSelected,
+                  ]}
+                >
                   {tool.symbol}
                 </Text>
               </Pressable>
@@ -83,107 +374,97 @@ export const CraftSurface = () => {
 
         {showsPanels ? (
           <View style={styles.layers}>
-            <View style={styles.panelHeader}>
-              <Text style={styles.panelLabel}>LAYERS</Text>
-              <Text style={styles.panelMeta}>6</Text>
-            </View>
-            <LayerRow label="Product shell" symbol="▣" />
-            <LayerRow depth={1} label="Navigation" symbol="□" />
-            <LayerRow depth={1} label="Surface switcher" symbol="□" />
-            <LayerRow depth={1} label="Issue board" selected symbol="□" />
-            <LayerRow depth={2} label="CUR-42" symbol="T" />
-            <LayerRow depth={2} label="Focus rail" symbol="—" />
+            <PanelHeader label="LAYERS" meta={String(layerNodes.length)} />
+            <LayerRow label={page?.name ?? "Loading page…"} symbol="▣" />
+            {layerNodes.map(({ depth, node }) => (
+              <LayerRow
+                depth={depth}
+                key={node.id}
+                label={node.name}
+                selected={projection?.state.selectedIds.includes(node.id)}
+                symbol={
+                  node.kind === "page-root"
+                    ? "▣"
+                    : layerSymbols[node.kind]
+                }
+              />
+            ))}
           </View>
         ) : null}
 
-        <ScrollView
-          contentContainerStyle={styles.canvasContent}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.canvas}
-        >
-          <View style={styles.artboard}>
-            <View style={styles.artboardSidebar}>
-              <View style={styles.mockBrand} />
-              <View style={[styles.mockNav, styles.mockNavActive]} />
-              <View style={styles.mockNav} />
-              <View style={styles.mockNav} />
-              <View style={styles.mockNav} />
-            </View>
-            <View style={styles.artboardMain}>
-              <View style={styles.mockTopbar}>
-                <View style={styles.mockTitle} />
-                <View style={styles.mockTabs}>
-                  <View style={styles.mockTab} />
-                  <View style={[styles.mockTab, styles.mockTabActive]} />
-                  <View style={styles.mockTab} />
-                </View>
-              </View>
-              <View style={styles.mockWorkspace}>
-                <View style={styles.mockColumn}>
-                  <View style={styles.mockColumnTitle} />
-                  <View style={styles.mockIssue} />
-                  <View style={styles.mockIssueShort} />
-                </View>
-                <View style={styles.mockColumn}>
-                  <View style={styles.mockColumnTitle} />
-                  <View style={[styles.mockIssue, styles.mockIssueFocused]} />
-                </View>
-                <View style={styles.mockColumn}>
-                  <View style={styles.mockColumnTitle} />
-                  <View style={styles.mockIssueShort} />
-                  <View style={styles.mockIssue} />
-                </View>
-              </View>
-            </View>
-            <View pointerEvents="none" style={styles.selection}>
-              <View style={[styles.handle, styles.handleTopLeft]} />
-              <View style={[styles.handle, styles.handleTopRight]} />
-              <View style={[styles.handle, styles.handleBottomLeft]} />
-              <View style={[styles.handle, styles.handleBottomRight]} />
-            </View>
-            <Text style={styles.artboardName}>Issue board / iPad landscape</Text>
-          </View>
-        </ScrollView>
+        <View style={styles.canvas}>
+          <CuriosityCanvasView
+            accentColor={palette.focus}
+            accessibilityValue={{
+              text: selectedNode
+                ? `${selectedNode.name}, x ${selectedNode.bounds.x}, y ${selectedNode.bounds.y}`
+                : "No selection",
+            }}
+            frameJSON={frameJSON}
+            onLayout={updateCanvasSize}
+            onAccessibilityCommand={(command) => {
+              if (kernel) {
+                applyCraftyAccessibilityCommand(
+                  kernel,
+                  selectedId ?? "rectangle-portability",
+                  command,
+                );
+              }
+            }}
+            onPointerInput={
+              activeTool === "select"
+                ? selectMoveInteraction?.handle
+                : creationInteraction?.handle
+            }
+            onViewportChange={setCanvasViewport}
+            style={styles.nativeCanvas}
+          />
+        </View>
 
         {showsPanels ? (
           <View style={styles.inspector}>
-            <View style={styles.panelHeader}>
-              <Text style={styles.panelLabel}>INSPECTOR</Text>
-              <Text style={styles.panelMeta}>FRAME</Text>
-            </View>
-            <Text style={styles.inspectorTitle}>Issue board</Text>
+            <PanelHeader
+              label="INSPECTOR"
+              meta={selectedNode ? selectedNode.kind.toUpperCase() : "NONE"}
+            />
+            <Text style={styles.inspectorTitle}>
+              {selectedNode?.name ?? "No selection"}
+            </Text>
             <View style={styles.propertyGroup}>
               <Text style={styles.propertyHeading}>POSITION</Text>
               <View style={styles.propertyRow}>
                 <Text style={styles.propertyLabel}>X</Text>
-                <Text style={styles.propertyValue}>320</Text>
+                <Text style={styles.propertyValue}>
+                  {selectedNode?.bounds.x ?? "—"}
+                </Text>
                 <Text style={styles.propertyLabel}>Y</Text>
-                <Text style={styles.propertyValue}>184</Text>
+                <Text style={styles.propertyValue}>
+                  {selectedNode?.bounds.y ?? "—"}
+                </Text>
               </View>
             </View>
             <View style={styles.propertyGroup}>
               <Text style={styles.propertyHeading}>SIZE</Text>
               <View style={styles.propertyRow}>
                 <Text style={styles.propertyLabel}>W</Text>
-                <Text style={styles.propertyValue}>1024</Text>
+                <Text style={styles.propertyValue}>
+                  {selectedNode?.bounds.width ?? "—"}
+                </Text>
                 <Text style={styles.propertyLabel}>H</Text>
-                <Text style={styles.propertyValue}>768</Text>
+                <Text style={styles.propertyValue}>
+                  {selectedNode?.bounds.height ?? "—"}
+                </Text>
               </View>
             </View>
             <View style={styles.propertyGroup}>
-              <Text style={styles.propertyHeading}>LAYOUT</Text>
+              <Text style={styles.propertyHeading}>RENDERER</Text>
               <View style={styles.instrumentRow}>
-                <Text style={styles.instrumentLabel}>Direction</Text>
-                <Text style={styles.instrumentValue}>Horizontal</Text>
+                <Text style={styles.instrumentLabel}>Projection</Text>
+                <Text style={styles.instrumentValue}>Orthographic</Text>
               </View>
               <View style={styles.instrumentRow}>
-                <Text style={styles.instrumentLabel}>Gap</Text>
-                <Text style={styles.instrumentValue}>0</Text>
-              </View>
-              <View style={styles.instrumentRow}>
-                <Text style={styles.instrumentLabel}>Sizing</Text>
-                <Text style={styles.instrumentValue}>Fixed × Fixed</Text>
+                <Text style={styles.instrumentLabel}>Geometry</Text>
+                <Text style={styles.instrumentValue}>RenderFrame v5</Text>
               </View>
             </View>
           </View>
@@ -192,112 +473,19 @@ export const CraftSurface = () => {
 
       <View style={styles.statusStrip}>
         <Text style={styles.statusText}>TOOL / {activeTool.toUpperCase()}</Text>
-        <Text style={styles.statusText}>CANVAS / WEBGPU TARGET</Text>
-        <Text style={styles.statusWarning}>CRAFT BRIDGE NOT CONNECTED</Text>
+        <Text style={styles.statusText}>CANVAS / RUST + VELLO</Text>
+        <Text
+          accessibilityLiveRegion="polite"
+          style={[
+            styles.statusText,
+            kernelStatus === "verified" && styles.statusVerified,
+            kernelStatus === "failed" && styles.statusFailed,
+          ]}
+        >
+          CRAFTY KERNEL / {kernelStatus.toUpperCase()}
+        </Text>
+        <Text style={styles.statusOnline}>METAL RENDERER ONLINE</Text>
       </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  artboard: {
-    backgroundColor: "#f2f4f5",
-    flexDirection: "row",
-    height: 360,
-    position: "relative",
-    width: 570,
-  },
-  artboardMain: { flex: 1 },
-  artboardName: {
-    bottom: -24,
-    color: palette.textMuted,
-    fontSize: 9,
-    left: 0,
-    position: "absolute",
-  },
-  artboardSidebar: { backgroundColor: "#171c20", padding: 13, width: 105 },
-  canvas: { backgroundColor: palette.canvas, flex: 1 },
-  canvasContent: {
-    alignItems: "center",
-    flexGrow: 1,
-    justifyContent: "center",
-    minWidth: 650,
-    padding: 54,
-  },
-  documentTitle: { color: palette.textPrimary, fontSize: 14, fontWeight: "700", marginTop: 3 },
-  editor: { flex: 1, flexDirection: "row" },
-  eyebrow: { color: palette.textMuted, fontSize: 8, fontWeight: "800", letterSpacing: 1.1 },
-  handle: {
-    backgroundColor: palette.canvas,
-    borderColor: palette.focus,
-    borderWidth: 1,
-    height: 7,
-    position: "absolute",
-    width: 7,
-  },
-  handleBottomLeft: { bottom: -4, left: -4 },
-  handleBottomRight: { bottom: -4, right: -4 },
-  handleTopLeft: { left: -4, top: -4 },
-  handleTopRight: { right: -4, top: -4 },
-  inspector: {
-    backgroundColor: palette.surfaceQuiet,
-    borderLeftColor: palette.line,
-    borderLeftWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 14,
-    width: 210,
-  },
-  inspectorTitle: { color: palette.textPrimary, fontSize: 14, fontWeight: "700", paddingVertical: 13 },
-  instrumentLabel: { color: palette.textSecondary, fontSize: 10 },
-  instrumentRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 11 },
-  instrumentValue: { color: palette.textPrimary, fontSize: 10, fontVariant: ["tabular-nums"] },
-  layerLabel: { color: palette.textSecondary, flex: 1, fontSize: 10 },
-  layerRow: { alignItems: "center", flexDirection: "row", gap: 7, height: 31 },
-  layerSelected: { backgroundColor: palette.focusQuiet },
-  layerSymbol: { color: palette.textMuted, fontSize: 10, width: 13 },
-  layers: {
-    backgroundColor: palette.surfaceQuiet,
-    borderRightColor: palette.line,
-    borderRightWidth: StyleSheet.hairlineWidth,
-    paddingHorizontal: 7,
-    width: 166,
-  },
-  mockBrand: { backgroundColor: "#e7edf0", borderRadius: 3, height: 8, marginBottom: 25, width: 46 },
-  mockColumn: { borderRightColor: "#d6dade", borderRightWidth: 1, flex: 1, padding: 10 },
-  mockColumnTitle: { backgroundColor: "#9ba7ad", borderRadius: 2, height: 5, marginBottom: 14, width: 42 },
-  mockIssue: { backgroundColor: "#ffffff", borderColor: "#d8dde0", borderWidth: 1, height: 58, marginBottom: 8 },
-  mockIssueFocused: { borderColor: "#087da8", borderLeftWidth: 3 },
-  mockIssueShort: { backgroundColor: "#ffffff", borderColor: "#d8dde0", borderWidth: 1, height: 43, marginBottom: 8 },
-  mockNav: { backgroundColor: "#354048", borderRadius: 2, height: 6, marginBottom: 13, width: 55 },
-  mockNavActive: { backgroundColor: "#8bd5f7", width: 64 },
-  mockTab: { backgroundColor: "#aab4b9", height: 4, width: 30 },
-  mockTabActive: { backgroundColor: "#087da8", width: 38 },
-  mockTabs: { flexDirection: "row", gap: 13 },
-  mockTitle: { backgroundColor: "#263139", borderRadius: 2, height: 7, width: 55 },
-  mockTopbar: { alignItems: "center", borderBottomColor: "#d6dade", borderBottomWidth: 1, flexDirection: "row", height: 52, justifyContent: "space-between", paddingHorizontal: 14 },
-  mockWorkspace: { flex: 1, flexDirection: "row" },
-  panelHeader: { alignItems: "center", borderBottomColor: palette.line, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: "row", height: 43, justifyContent: "space-between" },
-  panelLabel: { color: palette.textMuted, fontSize: 8, fontWeight: "800", letterSpacing: 1 },
-  panelMeta: { color: palette.textMuted, fontSize: 8 },
-  pressed: { opacity: 0.55 },
-  preview: { color: palette.warning, fontSize: 8, fontWeight: "800", letterSpacing: 1 },
-  propertyGroup: { borderTopColor: palette.line, borderTopWidth: StyleSheet.hairlineWidth, paddingVertical: 14 },
-  propertyHeading: { color: palette.textMuted, fontSize: 8, fontWeight: "800", letterSpacing: 1 },
-  propertyLabel: { color: palette.textMuted, fontSize: 9 },
-  propertyRow: { alignItems: "center", flexDirection: "row", gap: 8, marginTop: 10 },
-  propertyValue: { backgroundColor: palette.surface, color: palette.textPrimary, flex: 1, fontSize: 10, paddingHorizontal: 7, paddingVertical: 6 },
-  root: { backgroundColor: palette.canvas, flex: 1 },
-  selection: { borderColor: palette.focus, borderWidth: 1, height: 262, left: 177, position: "absolute", top: 67, width: 250 },
-  statusStrip: { alignItems: "center", borderTopColor: palette.line, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: "row", gap: 22, height: 27, paddingHorizontal: 12 },
-  statusText: { color: palette.textMuted, fontSize: 7, fontWeight: "700", letterSpacing: 0.8 },
-  statusWarning: { color: palette.warning, fontSize: 7, fontWeight: "700", letterSpacing: 0.8, marginLeft: "auto" },
-  tool: { alignItems: "center", height: 42, justifyContent: "center", width: 42 },
-  toolRail: { alignItems: "center", backgroundColor: palette.surfaceQuiet, borderRightColor: palette.line, borderRightWidth: StyleSheet.hairlineWidth, paddingTop: 8, width: 48 },
-  toolSelected: { backgroundColor: palette.focusQuiet },
-  toolSymbol: { color: palette.textMuted, fontSize: 16 },
-  toolSymbolSelected: { color: palette.focus },
-  toolbar: { alignItems: "center", borderBottomColor: palette.line, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: "row", height: 56, justifyContent: "space-between", paddingHorizontal: 16 },
-  toolbarCenter: { alignItems: "center", flexDirection: "row", gap: 10 },
-  toolbarRule: { backgroundColor: palette.line, height: 18, width: StyleSheet.hairlineWidth },
-  toolbarValue: { color: palette.textSecondary, fontSize: 10 },
-  zoom: { color: palette.textPrimary, fontSize: 10, fontVariant: ["tabular-nums"] },
-});

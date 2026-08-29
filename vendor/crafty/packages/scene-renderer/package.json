@@ -6,6 +6,8 @@
   "exports": {
     ".": {
       "types": "./src/index.ts",
+      "react-native": "./src/index.ts",
+      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./wasm": {

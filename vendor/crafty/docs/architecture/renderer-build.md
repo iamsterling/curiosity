@@ -1,11 +1,15 @@
 # Renderer Build and Publishing
 
-Status: **Current** for the build, profile, packaging and serving pipeline —
+Status: **Current** for the web build, profile, packaging and serving pipeline —
 each claim here was verified by running it, and the measurements are recorded
 with the machine they came from. **Current** for the renderer's success path in
 a real browser, proven by `scripts/smoke-renderer.mjs` against the production
-binary. **Unverified** for GPU failure paths — device loss, adapter variation,
-non-Chromium browsers — stated precisely in
+binary. **Current** for the native iOS static-library build, application
+link/launch, retained-layer host, and physical-iPad packet presentation.
+**Blocked** for CoreSimulator presentation because its Metal adapter lacks
+`INDIRECT_EXECUTION`; S1 records that exact unsupported-runtime exception.
+**Unverified** for GPU failure paths — device loss, adapter variation,
+non-Chromium browsers, and native iOS presentation — stated precisely in
 [Supported alpha runtime](#supported-alpha-runtime).
 
 Companion documents: [`wasm-boundary.md`](wasm-boundary.md) for what crosses the
@@ -47,6 +51,55 @@ does `new URL('crafty_renderer_wasm_bg.wasm', import.meta.url)`. Turbopack
 rewrites that to the hashed asset path. Do not hand-roll a loader or hardcode a
 path; both would break the content hashing that makes stale-pairing impossible.
 
+## Native iOS path
+
+Verified on an arm64 simulator and a physical iPad on 2026-08-28:
+
+```text
+Curiosity .ui fixture → EditorKernel.getProjection()
+  → editorDocumentToScene → one complete RenderFrame JSON prop
+packages/scene-renderer/rust/src/lib.rs
+  → safe encode_frame_evidence_json(frame packet)
+  → rust/native-ffi/ whole-frame C ABI (the only unsafe edge)
+  → cargo staticlib for aarch64-apple-ios[-sim]
+  → CuriosityCanvas CocoaPod build phase
+  → Objective-C bridge → Swift ABI-version check and retained CAMetalLayer
+  → native C ABI creates Metal wgpu surface/adapter/device + Vello renderer
+  → one complete RenderFrame → existing Vello encoder/present pipeline
+  → Release Curiosity.app pixels on physical iPad
+```
+
+The encoder crate still has `#![forbid(unsafe_code)]`; raw pointer validation,
+panic containment, owned-result access, and destruction are isolated in
+`rust/native-ffi/`. `scripts/build-scene-renderer-ios.sh` uses the committed
+lockfile and only accepts the two pinned arm64 Apple targets. The local pod
+builds from source so no generated binary or signing identity is committed.
+
+S0 and S1 are complete: the physical iPad presents the canonical rounded
+rectangle through Rust/Vello/wgpu, while CoreSimulator fails closed because its
+adapter lacks `INDIRECT_EXECUTION`. No alternate renderer masks that exact
+blocker. Pixel comparison, lifecycle/recovery, latency, and memory remain
+S2–S6 work in `openspec/changes/native-ios-renderer-host/`.
+
+The shipping Curiosity adapter no longer constructs the S1 rectangle in Swift:
+it loads the canonical `.ui` document into `EditorKernel`, projects the current
+page through `editorDocumentToScene`/`sceneToRenderFrame`, and passes that one
+JSON packet to the native host. Swift remains a lifecycle and presentation
+adapter. One-finger pointer samples return through the Expo view event boundary
+and enter the shared `transitionInteraction` reducer; selection is ephemeral and
+move previews use one `EditorKernel` transaction, with pointer cancellation
+rolling back the exact authored bytes. Two-finger pan and pinch remain viewport
+gestures. The visible undo/redo controls call kernel history directly. Native
+accessibility emits only generic activate/increment/decrement commands; the
+TypeScript adapter maps them to selection and validated one-pixel kernel nudges,
+so Swift still carries no document ids or editing semantics.
+
+The current rectangle slice also exposes transformed selection handles. Resize
+and rotate samples use the shared reducer and one kernel transaction; rotation
+is projected from the fixed pointer-down transform so repeated previews do not
+accumulate. Cancel rolls both gestures back byte-for-byte, and undo restores
+each as one history entry.
+
 ## Building locally
 
 ```bash
@@ -55,6 +108,10 @@ bun run build:browser
 
 # Just the renderer module
 bun run build --filter @crafty/scene-renderer/wasm
+
+# Native arm64 static libraries (S0)
+./scripts/build-scene-renderer-ios.sh aarch64-apple-ios-sim
+./scripts/build-scene-renderer-ios.sh aarch64-apple-ios
 
 # The shippable single binary
 bun run bundle && ./dist/crafty serve
@@ -164,7 +221,7 @@ Pinned deliberately:
 | Thing | Pin | Where |
 |---|---|---|
 | Rust toolchain | `1.97.1` | `packages/scene-renderer/rust-toolchain.toml` |
-| wasm32 target | auto-installed by the toolchain file | same |
+| wasm32 and arm64 iOS device/simulator targets | auto-installed by the toolchain file | same |
 | `wasm-bindgen` crate | `=0.2.126` (exact) | `Cargo.toml` |
 | `wasm-bindgen` CLI | read from `Cargo.lock` in CI | `.github/workflows/renderer.yml` |
 | Rust dependencies | `Cargo.lock` (committed) | — |
@@ -279,7 +336,8 @@ is the one thing to prove before wiring this into CI as a hard gate.
 |---|---|
 | `packages/scene-renderer/src/wasm/**` | Source of truth |
 | `packages/scene-renderer/pkg/**` | **Generated, gitignored.** Rebuild with `bun run build --filter @crafty/scene-renderer/wasm` |
-| `packages/scene-renderer/target/**` | Build cache, gitignored |
+| `packages/scene-renderer/rust/target/**` | Web/native build cache, gitignored |
+| `libcrafty_renderer_native_ffi.a` | **Generated, never committed.** Built into Xcode products by the Curiosity canvas pod |
 | `Cargo.lock` | Committed — this is a binary-producing crate |
 | `dist/**` | Generated distribution, gitignored |
 
@@ -300,11 +358,16 @@ production-readiness gap with a known shape.
 2. **Nesting-depth ceiling is undiagnosed to the user.** Hitting `serde_json`'s
    limit produces a generic renderer failure rather than "this document is
    nested too deeply".
-3. **Error paths are untestable natively.** `JsValue::from_str` panics off-wasm,
-   so every `Err(...)` branch in the boundary is unreachable from `cargo test`.
-   Testing them needs `wasm-bindgen-test` in a headless browser.
+3. **The wasm-bindgen `JsValue` error edge remains untestable off-wasm.** The
+   shared safe encoder errors and native C ABI malformed/null-input paths now
+   have cargo coverage; browser-only glue still needs `wasm-bindgen-test` in a
+   headless browser.
 4. **No brotli** on the standalone server (above).
-5. **Build script resolves tools from `~/.cargo/bin`** rather than `PATH`.
+5. **Native iOS simulator presentation is unsupported.** A packet has been presented through a
+   Core Animation surface on physical iPad. CoreSimulator reaches Vello frame
+   submission but its wgpu Metal adapter lacks `INDIRECT_EXECUTION`, so the
+   exact blocker is recorded instead of masked by an alternate renderer.
+   Lifecycle, recovery, latency and memory evidence remain outstanding.
 6. **No memory-growth or long-session testing** has been performed.
 7. **Uncaptured-error reporting is implemented but unverified in a browser.**
    The module installs `device.on_uncaptured_error` and routes the error into

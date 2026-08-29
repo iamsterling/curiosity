@@ -519,7 +519,7 @@ mod tests {
                     (subpath_id, anchors)
                 })
                 .collect();
-            production.sort_by(|(left, _), (right, _)| left.cmp(right));
+            production.sort_by_key(|(left, _)| *left);
             assert_eq!(production.len(), raw.contours.len(), "{character}");
             for (source, (_, stored)) in raw.contours.iter().zip(production.iter()) {
                 assert_eq!(stored.len(), source.segments.len());

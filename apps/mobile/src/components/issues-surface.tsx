@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import {
+  type ColorValue,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -7,80 +8,64 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { Composer } from "./composer";
 import { palette } from "../theme";
 
-type IssueState = "Backlog" | "Done" | "In progress";
+type IssuePriority = "P0" | "P1" | "P2";
 
 type Issue = {
   readonly id: string;
-  readonly priority: "High" | "Low" | "Medium";
-  readonly state: IssueState;
+  readonly priority: IssuePriority;
+  readonly state: string;
   readonly title: string;
-  readonly area: string;
+  readonly updated: string;
 };
 
 const issues: readonly Issue[] = Object.freeze([
   {
-    area: "Core",
-    id: "CUR-42",
-    priority: "High",
+    id: "CUR-1",
+    priority: "P0",
+    state: "Ready for review",
+    title: "Lifecycle bridge stalls after scene resize",
+    updated: "changed 4m ago",
+  },
+  {
+    id: "CUR-2",
+    priority: "P1",
+    state: "Investigating",
+    title: "Composer loses keyboard focus when tab switches",
+    updated: "changed 4m ago",
+  },
+  {
+    id: "CUR-3",
+    priority: "P1",
     state: "In progress",
-    title: "Unify project surfaces under one command shell",
+    title: "Memory artifact preview needs contrast fallback",
+    updated: "changed 4m ago",
   },
   {
-    area: "Search",
-    id: "CUR-38",
-    priority: "High",
-    state: "Backlog",
-    title: "Quick Open across projects, issues, artifacts, and memory",
-  },
-  {
-    area: "Memory",
-    id: "CUR-35",
-    priority: "High",
-    state: "Backlog",
-    title: "Expose evidence, belief revisions, and decision impact",
-  },
-  {
-    area: "Craft",
-    id: "CUR-31",
-    priority: "Medium",
-    state: "Backlog",
-    title: "Connect the native Craft document and editor surface",
-  },
-  {
-    area: "iPadOS",
-    id: "CUR-27",
-    priority: "Medium",
-    state: "Done",
-    title: "Install native menu commands and keyboard routing",
-  },
-  {
-    area: "Core",
-    id: "CUR-24",
-    priority: "Low",
-    state: "Done",
-    title: "Ship responsive project and session navigation",
+    id: "CUR-4",
+    priority: "P2",
+    state: "Queued",
+    title: "Audio transcript marker needs VoiceOver order",
+    updated: "changed 4m ago",
   },
 ]);
 const defaultIssue = issues[0]!;
 
-const stateOrder: readonly IssueState[] = ["Backlog", "In progress", "Done"];
+const priorityColor = (priority: IssuePriority): ColorValue =>
+  priority === "P0"
+    ? palette.danger
+    : priority === "P1"
+      ? palette.warning
+      : palette.focus;
 
-const PriorityMark = ({ priority }: { readonly priority: Issue["priority"] }) => (
-  <View style={styles.priority}>
-    {[0, 1, 2].map((index) => (
-      <View
-        key={index}
-        style={[
-          styles.priorityBar,
-          index >= (priority === "High" ? 0 : priority === "Medium" ? 1 : 2) &&
-            styles.priorityBarActive,
-          { height: 4 + index * 3 },
-        ]}
-      />
-    ))}
-  </View>
+const PriorityMark = ({ priority }: { readonly priority: IssuePriority }) => (
+  <View
+    accessibilityElementsHidden
+    importantForAccessibility="no-hide-descendants"
+    style={[styles.priorityIndicator, { backgroundColor: priorityColor(priority) }]}
+  />
 );
 
 const IssueRow = ({
@@ -93,6 +78,8 @@ const IssueRow = ({
   readonly selected: boolean;
 }) => (
   <Pressable
+    accessibilityHint={`${issue.priority} priority. ${issue.state}.`}
+    accessibilityLabel={`${issue.title}. ${issue.priority} priority, ${issue.state}, ${issue.updated}.`}
     accessibilityRole="button"
     accessibilityState={{ selected }}
     onPress={() => onSelect(issue.id)}
@@ -102,16 +89,34 @@ const IssueRow = ({
       pressed && styles.pressed,
     ]}
   >
-    <View style={styles.issueMeta}>
-      <PriorityMark priority={issue.priority} />
-      <Text style={styles.issueId}>{issue.id}</Text>
-      <Text style={styles.issueArea}>{issue.area}</Text>
+    <PriorityMark priority={issue.priority} />
+    <View style={styles.issueCopy}>
+      <Text style={styles.issueTitle}>{issue.title}</Text>
+      <Text style={styles.issueMeta}>
+        {issue.priority} · {issue.state} · {issue.updated}
+      </Text>
     </View>
-    <Text style={styles.issueTitle}>{issue.title}</Text>
+    <Text accessibilityElementsHidden style={styles.issueAccessory}>
+      ›
+    </Text>
   </Pressable>
 );
 
-export const IssuesSurface = () => {
+export const IssuesSurface = ({
+  busy,
+  compact,
+  draft,
+  filterOn,
+  onChangeText,
+  onSend,
+}: {
+  readonly busy: boolean;
+  readonly compact: boolean;
+  readonly draft: string;
+  readonly filterOn: boolean;
+  readonly onChangeText: (value: string) => void;
+  readonly onSend: () => void;
+}) => {
   const { width } = useWindowDimensions();
   const [selectedId, setSelectedId] = useState(defaultIssue.id);
   const selected = useMemo(
@@ -119,65 +124,76 @@ export const IssuesSurface = () => {
     [selectedId],
   );
   const showsInspector = width >= 1_150;
-  const boardColumns = stateOrder.map((state) => {
-    const stateIssues = issues.filter((issue) => issue.state === state);
-    return (
-      <View key={state} style={styles.column}>
-        <View style={styles.columnHeader}>
-          <View
-            style={[
-              styles.stateMark,
-              state === "In progress" && styles.stateMarkActive,
-              state === "Done" && styles.stateMarkDone,
-            ]}
-          />
-          <Text style={styles.columnTitle}>{state}</Text>
-          <Text style={styles.columnCount}>{stateIssues.length}</Text>
-        </View>
-        {stateIssues.map((issue) => (
-          <IssueRow
-            issue={issue}
-            key={issue.id}
-            onSelect={setSelectedId}
-            selected={selectedId === issue.id}
-          />
-        ))}
-      </View>
-    );
-  });
+  const visible = useMemo(
+    () =>
+      filterOn
+        ? issues.filter((issue) => issue.priority !== "P2")
+        : issues,
+    [filterOn],
+  );
 
   return (
     <View style={styles.root}>
       <View style={styles.header}>
-        <View>
-          <Text style={styles.eyebrow}>PROJECT / LOCAL PLAN</Text>
+        <View style={styles.headerCopy}>
           <Text style={styles.title}>Issues</Text>
+          <Text style={styles.subtitle}>
+            Default peer surface with dense issue list and trailing inspector.
+          </Text>
         </View>
-        <View style={styles.headerMeta}>
-          <Text style={styles.readOnly}>READ-ONLY PREVIEW</Text>
-          <Text style={styles.issueTotal}>{issues.length} issues</Text>
-        </View>
+        <Pressable
+          accessibilityLabel="More issue options"
+          accessibilityRole="button"
+          style={({ pressed }) => [styles.headerAction, pressed && styles.pressed]}
+        >
+          <Text style={styles.headerActionGlyph}>…</Text>
+        </Pressable>
       </View>
 
       <View style={styles.body}>
-        {showsInspector ? (
-          <View style={[styles.board, styles.boardWide]}>{boardColumns}</View>
-        ) : (
-          <ScrollView
-            contentContainerStyle={styles.board}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.boardScroll}
-          >
-            {boardColumns}
-          </ScrollView>
-        )}
+        <ScrollView
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+          style={styles.listScroll}
+        >
+          {visible.map((issue) => (
+            <IssueRow
+              issue={issue}
+              key={issue.id}
+              onSelect={setSelectedId}
+              selected={selectedId === issue.id}
+            />
+          ))}
+          {visible.length === 0 ? (
+            <Text style={styles.empty}>No issues match the active filter.</Text>
+          ) : null}
+
+          {compact ? (
+            <View
+              accessibilityLabel={`Selection summary: ${selected.title}. ${selected.priority} priority, ${selected.state}.`}
+              style={styles.summary}
+            >
+              <Text style={styles.summaryLabel}>SELECTION SUMMARY</Text>
+              <Text style={styles.summaryTitle}>{selected.title}</Text>
+              <Text style={styles.summaryMeta}>
+                {selected.priority} · {selected.state} · {selected.updated}
+              </Text>
+              <Text style={styles.summaryNotice}>
+                The inspector collapses to this inline summary in narrow width;
+                it does not become a persistent sidebar.
+              </Text>
+            </View>
+          ) : null}
+        </ScrollView>
 
         {showsInspector ? (
           <View style={styles.inspector}>
             <View style={styles.focusRail} />
-            <Text style={styles.inspectorId}>{selected.id}</Text>
-            <Text style={styles.inspectorTitle}>{selected.title}</Text>
+            <Text style={styles.inspectorTitle}>Issues Inspector</Text>
+            <Text style={styles.inspectorCaption}>
+              Selection details remain trailing. Selection follows the surface;
+              project context stays stable.
+            </Text>
             <View style={styles.detailRule} />
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>STATUS</Text>
@@ -188,8 +204,8 @@ export const IssuesSurface = () => {
               <Text style={styles.detailValue}>{selected.priority}</Text>
             </View>
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>AREA</Text>
-              <Text style={styles.detailValue}>{selected.area}</Text>
+              <Text style={styles.detailLabel}>UPDATED</Text>
+              <Text style={styles.detailValue}>{selected.updated}</Text>
             </View>
             <View style={styles.detailRule} />
             <Text style={styles.detailLabel}>ACCEPTANCE</Text>
@@ -203,37 +219,20 @@ export const IssuesSurface = () => {
           </View>
         ) : null}
       </View>
+
+      <Composer
+        busy={busy}
+        onChangeText={onChangeText}
+        onSend={onSend}
+        prompt="Ask about this issues context"
+        value={draft}
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  board: { flexDirection: "row", flexGrow: 1, minWidth: 660 },
-  boardScroll: { flex: 1 },
-  boardWide: { flex: 1, minWidth: 0 },
   body: { flex: 1, flexDirection: "row" },
-  column: {
-    borderRightColor: palette.line,
-    borderRightWidth: StyleSheet.hairlineWidth,
-    flex: 1,
-    minWidth: 220,
-    paddingHorizontal: 14,
-  },
-  columnCount: {
-    color: palette.textMuted,
-    fontSize: 11,
-    fontVariant: ["tabular-nums"],
-    marginLeft: "auto",
-  },
-  columnHeader: {
-    alignItems: "center",
-    borderBottomColor: palette.line,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    flexDirection: "row",
-    gap: 8,
-    height: 48,
-  },
-  columnTitle: { color: palette.textSecondary, fontSize: 12, fontWeight: "700" },
   description: {
     color: palette.textSecondary,
     fontSize: 12,
@@ -258,11 +257,11 @@ const styles = StyleSheet.create({
     marginVertical: 18,
   },
   detailValue: { color: palette.textPrimary, fontSize: 11, fontWeight: "600" },
-  eyebrow: {
+  empty: {
     color: palette.textMuted,
-    fontSize: 8,
-    fontWeight: "800",
-    letterSpacing: 1.2,
+    fontSize: 13,
+    paddingHorizontal: 18,
+    paddingVertical: 28,
   },
   focusRail: {
     backgroundColor: palette.focus,
@@ -277,50 +276,65 @@ const styles = StyleSheet.create({
     borderBottomColor: palette.line,
     borderBottomWidth: StyleSheet.hairlineWidth,
     flexDirection: "row",
+    gap: 12,
     justifyContent: "space-between",
-    minHeight: 70,
+    minHeight: 78,
     paddingHorizontal: 20,
   },
-  headerMeta: { alignItems: "flex-end", gap: 3 },
+  headerAction: {
+    alignItems: "center",
+    borderRadius: 13,
+    height: 44,
+    justifyContent: "center",
+    width: 44,
+  },
+  headerActionGlyph: { color: palette.textSecondary, fontSize: 22, lineHeight: 24 },
+  headerCopy: { flexShrink: 1 },
   inspector: {
     backgroundColor: palette.surfaceQuiet,
     borderLeftColor: palette.line,
     borderLeftWidth: StyleSheet.hairlineWidth,
     padding: 20,
-    width: 252,
+    width: 306,
   },
-  inspectorId: {
-    color: palette.focus,
-    fontSize: 9,
-    fontWeight: "800",
-    letterSpacing: 1,
+  inspectorCaption: {
+    color: palette.textSecondary,
+    fontSize: 13,
+    lineHeight: 18,
+    marginTop: 6,
   },
   inspectorTitle: {
     color: palette.textPrimary,
-    fontSize: 17,
-    fontWeight: "700",
-    lineHeight: 23,
-    marginTop: 8,
+    fontSize: 20,
+    fontWeight: "600",
+    letterSpacing: -0.3,
   },
   issue: {
+    alignItems: "center",
     borderBottomColor: palette.line,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    minHeight: 100,
-    paddingHorizontal: 10,
-    paddingVertical: 14,
+    flexDirection: "row",
+    gap: 12,
+    minHeight: 68,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
   },
-  issueArea: { color: palette.textMuted, fontSize: 9, marginLeft: "auto" },
-  issueId: { color: palette.textMuted, fontSize: 9, fontWeight: "700" },
-  issueMeta: { alignItems: "center", flexDirection: "row", gap: 7 },
+  issueAccessory: { color: palette.textMuted, fontSize: 22, lineHeight: 24 },
+  issueCopy: { flex: 1 },
+  issueMeta: {
+    color: palette.textMuted,
+    fontSize: 12,
+    marginTop: 4,
+  },
   issueSelected: { backgroundColor: palette.focusQuiet },
   issueTitle: {
     color: palette.textPrimary,
-    fontSize: 13,
-    fontWeight: "600",
-    lineHeight: 18,
-    marginTop: 10,
+    fontSize: 15,
+    fontWeight: "500",
+    lineHeight: 20,
   },
-  issueTotal: { color: palette.textSecondary, fontSize: 11 },
+  list: { flexGrow: 1, paddingBottom: 12 },
+  listScroll: { flex: 1 },
   pressed: { opacity: 0.6 },
   previewNotice: {
     color: palette.warning,
@@ -328,30 +342,50 @@ const styles = StyleSheet.create({
     lineHeight: 15,
     marginTop: 18,
   },
-  priority: { alignItems: "flex-end", flexDirection: "row", gap: 1, height: 12 },
-  priorityBar: { backgroundColor: palette.line, width: 2 },
-  priorityBarActive: { backgroundColor: palette.textSecondary },
-  readOnly: {
-    color: palette.warning,
+  priorityIndicator: { borderRadius: 2, height: 38, width: 4 },
+  root: { backgroundColor: palette.canvas, flex: 1 },
+  subtitle: {
+    color: palette.textSecondary,
+    fontSize: 15,
+    marginTop: 3,
+  },
+  summary: {
+    backgroundColor: palette.surfaceQuiet,
+    borderColor: palette.line,
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+    margin: 16,
+    padding: 16,
+  },
+  summaryLabel: {
+    color: palette.textMuted,
     fontSize: 8,
     fontWeight: "800",
-    letterSpacing: 0.9,
+    letterSpacing: 1,
   },
-  root: { backgroundColor: palette.canvas, flex: 1 },
-  stateMark: {
-    borderColor: palette.textMuted,
-    borderRadius: 6,
-    borderWidth: 1,
-    height: 12,
-    width: 12,
+  summaryMeta: {
+    color: palette.textSecondary,
+    fontSize: 12,
+    marginTop: 5,
   },
-  stateMarkActive: { borderColor: palette.focus, borderWidth: 3 },
-  stateMarkDone: { backgroundColor: palette.success, borderColor: palette.success },
+  summaryNotice: {
+    color: palette.textMuted,
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 10,
+  },
+  summaryTitle: {
+    color: palette.textPrimary,
+    fontSize: 16,
+    fontWeight: "600",
+    lineHeight: 21,
+    marginTop: 6,
+  },
   title: {
     color: palette.textPrimary,
-    fontSize: 22,
-    fontWeight: "700",
-    letterSpacing: -0.4,
-    marginTop: 3,
+    fontSize: 30,
+    fontWeight: "600",
+    letterSpacing: -0.5,
+    lineHeight: 36,
   },
 });

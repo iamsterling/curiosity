@@ -47,6 +47,7 @@
     "@ai-sdk/openai-compatible": "2.0.72",
     "@openai-oauth/ai-sdk": "2.0.0",
     "@openai-oauth/local": "2.0.0",
+    "@curiosity/authority": "workspace:*",
     "@curiosity/runtime": "workspace:*",
     "ai": "6.0.266",
     "effect": "4.0.0-rc.111",

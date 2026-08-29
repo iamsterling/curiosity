@@ -6,7 +6,15 @@
   "exports": {
     "./kernel": {
       "types": "./src/kernel/index.ts",
+      "react-native": "./src/kernel/index.ts",
+      "bun": "./src/kernel/index.ts",
       "import": "./dist/kernel/index.js"
+    },
+    "./rendering": {
+      "types": "./src/rendering/index.ts",
+      "react-native": "./src/rendering/index.ts",
+      "bun": "./src/rendering/index.ts",
+      "import": "./dist/rendering/index.js"
     },
     "./ui": {
       "types": "./src/ui/index.ts",
@@ -15,6 +23,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "build:kernel": "tsc -p tsconfig.kernel.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run"
   },

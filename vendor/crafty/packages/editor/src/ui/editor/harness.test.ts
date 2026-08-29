@@ -710,6 +710,29 @@ describe("create, move, and resize gestures", () => {
     expect(restored?.transform.b).toBe(0);
   });
 
+  it("projects repeated rotation previews from the fixed gesture start", () => {
+    const editor = install();
+    editor.setSelection(["layer-card"]);
+    const viewport = editor.getSnapshot().viewport;
+    const corner = worldToScreen({ x: 600, y: 360 }, viewport);
+    const center = worldToScreen({ x: 430, y: 255 }, viewport);
+    const grab = { x: corner.x + 20, y: corner.y + 20 };
+    const vector = { x: grab.x - center.x, y: grab.y - center.y };
+    const middle = {
+      x: center.x + (vector.x - vector.y) / Math.sqrt(2),
+      y: center.y + (vector.x + vector.y) / Math.sqrt(2),
+    };
+    const end = { x: center.x - vector.y, y: center.y + vector.x };
+
+    down(editor, 1, grab);
+    move(editor, 1, middle);
+    move(editor, 1, end);
+    up(editor, 1, end);
+
+    const card = editor.getSnapshot().frame?.layers.find((layer) => layer.id === "layer-card");
+    expect(Math.atan2(card?.transform.b ?? 0, card?.transform.a ?? 1)).toBeCloseTo(Math.PI / 2, 8);
+  });
+
   it.each([
     { name: "resize", grab: { x: 200, y: 200 }, target: { x: 212, y: 208 }, field: "resizeHandle" as const },
     { name: "corner radius", grab: { x: 114.63, y: 114.63 }, target: { x: 124.63, y: 124.63 }, field: "cornerHandle" as const },

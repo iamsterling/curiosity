@@ -28,9 +28,22 @@ export const inverseTransformPoint = (point: Point, transform: AffineTransform):
   const y = point.y - transform.f;
   return { x: (transform.d * x - transform.c * y) / determinant, y: (-transform.b * x + transform.a * y) / determinant };
 };
+export const inverseTransform = (transform: AffineTransform): AffineTransform | undefined => {
+  const determinant = transform.a * transform.d - transform.b * transform.c;
+  if (Math.abs(determinant) < 1e-9) return undefined;
+  return {
+    a: transform.d / determinant,
+    b: -transform.b / determinant,
+    c: -transform.c / determinant,
+    d: transform.a / determinant,
+    e: (transform.c * transform.f - transform.d * transform.e) / determinant,
+    f: (transform.b * transform.e - transform.a * transform.f) / determinant,
+  };
+};
 export const worldToScreen = (point: Point, viewport: Viewport): Point => ({ x: point.x * viewport.zoom + viewport.panX, y: point.y * viewport.zoom + viewport.panY });
 export const screenToWorld = (point: Point, viewport: Viewport): Point => ({ x: (point.x - viewport.panX) / viewport.zoom, y: (point.y - viewport.panY) / viewport.zoom });
 export const worldToDevice = (point: Point, viewport: Viewport): Point => ({ x: worldToScreen(point, viewport).x * viewport.devicePixelRatio, y: worldToScreen(point, viewport).y * viewport.devicePixelRatio });
+export const viewportCenteredAt = (center: Point, size: { width: number; height: number }, zoom: number, devicePixelRatio: number): Viewport => clampViewport({ panX: size.width / 2 - center.x * zoom, panY: size.height / 2 - center.y * zoom, zoom, devicePixelRatio });
 export const zoomAt = (viewport: Viewport, anchor: Point, factor: number): Viewport => {
   const safeFactor = Number.isFinite(factor) ? Math.min(4, Math.max(0.25, factor)) : 1;
   const nextZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, viewport.zoom * safeFactor));

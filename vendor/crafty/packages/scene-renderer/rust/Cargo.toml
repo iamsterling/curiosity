@@ -3,6 +3,10 @@ name = "crafty-renderer-wasm"
 version = "0.0.0"
 edition = "2021"
 
+[workspace]
+members = ["native-ffi"]
+resolver = "2"
+
 [lib]
 # cdylib produces the .wasm; rlib keeps `cargo test` able to run the encoder
 # natively, which is where the correctness suite lives.

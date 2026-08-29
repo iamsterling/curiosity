@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type {
-  CuriosityApi,
+  CuriosityClient,
   CuriosityMessage,
+  CuriosityRuntimeStatus,
   CuriosityThread,
-} from "./curiosity-api";
-import { presentCuriosityError } from "./curiosity-api";
+} from "./curiosity-client";
+import { startingRuntimeStatus } from "./curiosity-client";
+import { presentCuriosityError } from "./curiosity-response";
 import type { ConversationMode } from "./workspace-types";
 
 export interface CuriosityWorkspaceState {
@@ -12,18 +14,18 @@ export interface CuriosityWorkspaceState {
   readonly busy: boolean;
   readonly error?: string;
   readonly messages: readonly CuriosityMessage[];
-  readonly online: boolean;
+  readonly runtimeStatus: CuriosityRuntimeStatus;
   readonly threads: readonly CuriosityThread[];
 }
 
 const initialState: CuriosityWorkspaceState = Object.freeze({
   busy: false,
   messages: Object.freeze([]),
-  online: false,
+  runtimeStatus: startingRuntimeStatus,
   threads: Object.freeze([]),
 });
 
-export const useCuriosityWorkspace = (api: CuriosityApi) => {
+export const useCuriosityWorkspace = (client: CuriosityClient) => {
   const [state, setState] = useState(initialState);
   const requestRevision = useRef(0);
 
@@ -37,13 +39,16 @@ export const useCuriosityWorkspace = (api: CuriosityApi) => {
         error: undefined,
       }));
       try {
-        const session = await api.session(threadId);
+        const [session, runtimeStatus] = await Promise.all([
+          client.session(threadId),
+          client.status(),
+        ]);
         if (revision !== requestRevision.current) return;
         setState((current) => ({
           ...current,
           busy: false,
           messages: session.messages,
-          online: true,
+          runtimeStatus,
           threads: session.threads,
         }));
       } catch (error) {
@@ -52,11 +57,14 @@ export const useCuriosityWorkspace = (api: CuriosityApi) => {
           ...current,
           busy: false,
           error: presentCuriosityError(error),
-          online: false,
+          runtimeStatus: {
+            ...current.runtimeStatus,
+            localRuntime: "unavailable",
+          },
         }));
       }
     },
-    [api],
+    [client],
   );
 
   useEffect(() => {
@@ -94,7 +102,7 @@ export const useCuriosityWorkspace = (api: CuriosityApi) => {
         messages: [...current.messages, optimisticMessage],
       }));
       try {
-        const turn = await api.submit({
+        const turn = await client.submit({
           mode,
           text: prompt,
           ...(state.activeThreadId
@@ -113,7 +121,6 @@ export const useCuriosityWorkspace = (api: CuriosityApi) => {
               text: turn.text,
             },
           ],
-          online: true,
           threads: turn.threads,
         }));
         return true;
@@ -129,7 +136,7 @@ export const useCuriosityWorkspace = (api: CuriosityApi) => {
         return false;
       }
     },
-    [api, state.activeThreadId, state.busy],
+    [client, state.activeThreadId, state.busy],
   );
 
   return Object.freeze({

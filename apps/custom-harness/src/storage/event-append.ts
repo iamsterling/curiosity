@@ -1,10 +1,14 @@
 import type { Database } from "bun:sqlite";
 import { createHash } from "node:crypto";
+import { eventHashSource, eventIdSource } from "@curiosity/authority";
 import type { CommandAcknowledgement, ProposedEvent } from "../domain/event.js";
 import { canonicalJson } from "../kernel/canonical-json.js";
 
 const emptyHash = "0".repeat(64);
-const field = (value: unknown, ...names: readonly string[]): string | undefined =>
+const field = (
+  value: unknown,
+  ...names: readonly string[]
+): string | undefined =>
   value && typeof value === "object" && !Array.isArray(value)
     ? names
         .map((name) => (value as Record<string, unknown>)[name])
@@ -148,11 +152,11 @@ export const admitInTransaction = (
           .get(executionId)?.ancestor_execution_id
       : undefined;
     const aggregateVersion =
-      (database
+      database
         .query<{ version: number }, [string]>(
           "SELECT count(*) + 1 AS version FROM events WHERE stream_id = ?",
         )
-        .get(event.streamId)?.version ?? 1);
+        .get(event.streamId)?.version ?? 1;
     const eventContext = input.eventContexts?.[index];
     const causationId =
       eventContext?.causationId ??
@@ -234,7 +238,7 @@ export const admitInTransaction = (
       parentExecutionId,
       rootExecutionId,
     };
-    const hashInput = canonicalJson({
+    const hashInput = eventHashSource({
       actorId: input.actorId,
       body: event.body,
       commandId: input.commandId,
@@ -248,7 +252,7 @@ export const admitInTransaction = (
     });
     const eventHash = createHash("sha256").update(hashInput).digest("hex");
     const eventId = createHash("sha256")
-      .update(`${input.actorId}:${input.commandId}:${index}:${eventHash}`)
+      .update(eventIdSource(input.actorId, input.commandId, index, eventHash))
       .digest("hex");
     database.run(
       "INSERT INTO events(global_sequence,event_id,command_id,actor_id,plugin_id,event_type,stream_id,body_json,occurred_at,previous_hash,event_hash,event_schema_version,aggregate_version,causation_id,correlation_id,root_execution_id,parent_execution_id,child_execution_id,contribution_id,contribution_version,catalog_digest) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",

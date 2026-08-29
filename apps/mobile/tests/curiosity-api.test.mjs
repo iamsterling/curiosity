@@ -3,7 +3,7 @@ import test from "node:test";
 
 import {
   commandText,
-  createCuriosityApi,
+  createHttpCuriosityClient,
   normalizeCuriosityUrl,
 } from "../src/curiosity-api.ts";
 
@@ -27,7 +27,7 @@ test("mobile API preserves mode command routing", () => {
 
 test("mobile API loads sessions and submits server-owned thread identities", async () => {
   const requests = [];
-  const api = createCuriosityApi("http://10.1.0.121:3000", async (url, init) => {
+  const api = createHttpCuriosityClient("http://10.1.0.121:3000", async (url, init) => {
     requests.push({ init, url: String(url) });
     if (!init?.method)
       return Response.json({
@@ -52,7 +52,7 @@ test("mobile API loads sessions and submits server-owned thread identities", asy
 });
 
 test("mobile API keeps stable server failures", async () => {
-  const api = createCuriosityApi("https://curiosity.example", async () =>
+  const api = createHttpCuriosityClient("https://curiosity.example", async () =>
     Response.json({ error: { code: "PROMPT_COMMAND_UNKNOWN" } }, { status: 400 }),
   );
   await assert.rejects(
@@ -62,14 +62,14 @@ test("mobile API keeps stable server failures", async () => {
 });
 
 test("mobile API bounds responses before parsing", async () => {
-  const api = createCuriosityApi("https://curiosity.example", async () =>
+  const api = createHttpCuriosityClient("https://curiosity.example", async () =>
     new Response("{}", { headers: { "content-length": "524289" } }),
   );
   await assert.rejects(api.session(), { message: "MOBILE_RESPONSE_TOO_LARGE" });
 });
 
 test("mobile API turns stalled and failed fetches into stable errors", async () => {
-  const stalled = createCuriosityApi(
+  const stalled = createHttpCuriosityClient(
     "https://curiosity.example",
     async (_url, init) =>
       new Promise((_resolve, reject) => {
@@ -77,7 +77,7 @@ test("mobile API turns stalled and failed fetches into stable errors", async () 
       }),
     1,
   );
-  const failed = createCuriosityApi(
+  const failed = createHttpCuriosityClient(
     "https://curiosity.example",
     async () => {
       throw new Error("socket details must not escape");

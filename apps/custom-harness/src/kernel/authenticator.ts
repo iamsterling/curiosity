@@ -1,4 +1,5 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
+import { commandDigestSource } from "@curiosity/authority";
 import { Effect, Schema } from "effect";
 import {
   AuthenticatedCommandEnvelope,
@@ -88,14 +89,7 @@ export const makeAuthenticator = (config: AuthenticatorConfig) =>
 
     return {
       commandDigest: createHash("sha256")
-        .update(
-          canonicalJson({
-            id: envelope.command.id,
-            kind: envelope.command.kind,
-            payload: envelope.command.payload,
-            schemaVersion: envelope.command.schemaVersion,
-          }),
-        )
+        .update(commandDigestSource(envelope.command))
         .digest("hex"),
       envelope,
     } satisfies AuthenticatedCommand;

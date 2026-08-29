@@ -29,12 +29,14 @@ export const Composer = ({
   busy,
   onChangeText,
   onSend,
+  prompt = "Ask Curiosity or direct the work…",
   value,
 }: {
   readonly bottomInset?: number;
   readonly busy: boolean;
   readonly onChangeText: (value: string) => void;
   readonly onSend: () => void;
+  readonly prompt?: string;
   readonly value: string;
 }) => {
   const text = useNativeState(value);
@@ -74,7 +76,7 @@ export const Composer = ({
               axis="vertical"
               maxLength={65_536}
               onTextChange={onChangeText}
-              placeholder="Ask Curiosity or direct the work…"
+              placeholder={prompt}
               text={text}
               modifiers={[
                 textFieldStyle("plain"),

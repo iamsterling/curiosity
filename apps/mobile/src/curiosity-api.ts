@@ -1,37 +1,30 @@
 import type { ConversationMode } from "./workspace-types.ts";
+import { commandText } from "./curiosity-client.ts";
+import type {
+  CuriosityClient,
+  CuriosityMessage,
+  CuriositySession,
+  CuriosityThread,
+  CuriosityTurn,
+} from "./curiosity-client.ts";
 import {
   CuriosityApiError,
   readCuriosityResponse,
   responseRecord,
 } from "./curiosity-response.ts";
+export { commandText } from "./curiosity-client.ts";
+export type {
+  CuriosityClient,
+  CuriosityMessage,
+  CuriositySession,
+  CuriositySubmit,
+  CuriosityThread,
+  CuriosityTurn,
+} from "./curiosity-client.ts";
 export {
   CuriosityApiError,
   presentCuriosityError,
 } from "./curiosity-response.ts";
-
-export interface CuriosityThread {
-  readonly sequence: number;
-  readonly threadId: string;
-  readonly title: string;
-}
-
-export interface CuriosityMessage {
-  readonly messageId: string;
-  readonly role: "assistant" | "user";
-  readonly text: string;
-}
-
-export interface CuriositySession {
-  readonly messages: readonly CuriosityMessage[];
-  readonly threads: readonly CuriosityThread[];
-}
-
-export interface CuriosityTurn {
-  readonly assistantMessageId: string;
-  readonly text: string;
-  readonly threadId: string;
-  readonly threads: readonly CuriosityThread[];
-}
 
 const parseThreads = (value: unknown): readonly CuriosityThread[] => {
   if (!Array.isArray(value))
@@ -71,12 +64,6 @@ const parseMessages = (value: unknown): readonly CuriosityMessage[] => {
   });
 };
 
-export const commandText = (mode: ConversationMode, text: string): string => {
-  if (mode === "research") return `/research ${text}`;
-  if (mode === "build") return `/task ${text}`;
-  return text;
-};
-
 export const normalizeCuriosityUrl = (value: string): string => {
   let url: URL;
   try {
@@ -99,11 +86,11 @@ export const normalizeCuriosityUrl = (value: string): string => {
 const endpoint = (baseUrl: string, path: string): string =>
   `${normalizeCuriosityUrl(baseUrl)}${path}`;
 
-export const createCuriosityApi = (
+export const createHttpCuriosityClient = (
   baseUrl: string,
   fetchImplementation: typeof fetch = fetch,
   timeoutMilliseconds = 30_000,
-) => {
+): CuriosityClient => {
   const request = async (
     input: string,
     init?: RequestInit,
@@ -172,9 +159,23 @@ export const createCuriosityApi = (
         text: body.text,
         threadId: body.threadId,
         threads: parseThreads(body.threads),
+        ...(typeof body.turnId === "string" ? { turnId: body.turnId } : {}),
       });
     },
+    cancel: async () => {
+      throw new CuriosityApiError("MOBILE_CANCEL_UNAVAILABLE");
+    },
+    status: async () =>
+      Object.freeze({
+        localRuntime: "unavailable" as const,
+        mainProvider: "unknown" as const,
+        onDeviceModel: "unavailable" as const,
+        profile: "remote" as const,
+        researchProvider: "unknown" as const,
+        storage: "unavailable" as const,
+      }),
   };
 };
 
-export type CuriosityApi = ReturnType<typeof createCuriosityApi>;
+export const createCuriosityApi = createHttpCuriosityClient;
+export type CuriosityApi = CuriosityClient;

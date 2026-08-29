@@ -3,8 +3,10 @@ import { createHash } from "node:crypto";
 import type {
   StoredWorkflowInstance,
   WorkflowActionRecord,
-} from "../domain/workflow.js";
-import type { RegisteredWorkflow } from "../kernel/plugin.js";
+  WorkflowChildAllocation,
+  WorkflowCommitTransitionInput,
+  WorkflowEnsureRootInput,
+} from "@curiosity/authority";
 import { canonicalJson } from "../kernel/canonical-json.js";
 import { admitInTransaction } from "./event-append.js";
 
@@ -36,14 +38,6 @@ interface WorkflowRow {
   readonly step_count: number;
   readonly updated_at: string;
   readonly workflow_name: string;
-}
-
-export interface WorkflowChildAllocation {
-  readonly capabilityCeiling: readonly string[];
-  readonly childKey: string;
-  readonly contribution: RegisteredWorkflow;
-  readonly executionId: string;
-  readonly instanceId: string;
 }
 
 const hash = (value: unknown): string =>
@@ -104,14 +98,7 @@ const actionEvent = (action: WorkflowActionRecord) => ({
 export class WorkflowJournal {
   constructor(private readonly database: Database) {}
 
-  ensureRoot(input: {
-    readonly capabilityCeiling: readonly string[];
-    readonly contribution: RegisteredWorkflow;
-    readonly input: unknown;
-    readonly instanceId: string;
-    readonly sourceEventId: string;
-    readonly startedAt: string;
-  }): "created" | "existing" {
+  ensureRoot(input: WorkflowEnsureRootInput): "created" | "existing" {
     return this.database
       .transaction(() => {
         const existing = this.database
@@ -253,19 +240,7 @@ export class WorkflowJournal {
       }));
   }
 
-  commitTransition(input: {
-    readonly actions: readonly WorkflowActionRecord[];
-    readonly children: readonly WorkflowChildAllocation[];
-    readonly committedAt: string;
-    readonly expectedStep: number;
-    readonly instanceId: string;
-    readonly nextState: unknown;
-    readonly progressKey: string;
-    readonly terminalRequested: boolean;
-    readonly transitionDigest: string;
-    readonly gateEligibleActorId: string;
-    readonly gateExpiresAt: string;
-  }): void {
+  commitTransition(input: WorkflowCommitTransitionInput): void {
     this.database
       .transaction(() => {
         const row = this.database

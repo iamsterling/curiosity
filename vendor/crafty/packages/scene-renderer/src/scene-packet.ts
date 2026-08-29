@@ -129,18 +129,116 @@ const appendOverlay = (
   bounds: Bounds,
   fill: [number, number, number, number],
   order: number,
+  transform: Transform2D = identityTransform,
+  cornerRadius?: number,
 ): number => {
   commands.push({
     geometry: "rect",
     nodeId,
     bounds,
-    transform: identityTransform,
+    transform,
     fill,
     opacity: 1,
     zIndex: Number.MAX_SAFE_INTEGER,
     order,
+    ...(cornerRadius !== undefined ? { cornerRadius } : {}),
   });
   return order + 1;
+};
+
+const appendSelectionBox = (
+  commands: DrawCommand[],
+  box: { bounds: Bounds; transform: Transform2D },
+  viewport: RenderFrame["viewport"],
+  order: number,
+): number => {
+  const accent: [number, number, number, number] = [0.25, 0.78, 0.91, 1];
+  const white: [number, number, number, number] = [1, 1, 1, 1];
+  const { bounds, transform } = box;
+  const scaleX = Math.max(Math.hypot(transform.a, transform.b), 1e-9);
+  const scaleY = Math.max(Math.hypot(transform.c, transform.d), 1e-9);
+  const thicknessX = 1.5 / viewport.zoom / scaleX;
+  const thicknessY = 1.5 / viewport.zoom / scaleY;
+  const handleWidth = 8 / viewport.zoom / scaleX;
+  const handleHeight = 8 / viewport.zoom / scaleY;
+  const innerWidth = 5 / viewport.zoom / scaleX;
+  const innerHeight = 5 / viewport.zoom / scaleY;
+  const edge = (name: string, edgeBounds: Bounds): void => {
+    order = appendOverlay(
+      commands,
+      `selection-outline-${name}`,
+      edgeBounds,
+      accent,
+      order,
+      transform,
+    );
+  };
+  edge("top", {
+    x: bounds.x - thicknessX,
+    y: bounds.y - thicknessY,
+    width: bounds.width + thicknessX * 2,
+    height: thicknessY,
+  });
+  edge("bottom", {
+    x: bounds.x - thicknessX,
+    y: bounds.y + bounds.height,
+    width: bounds.width + thicknessX * 2,
+    height: thicknessY,
+  });
+  edge("left", {
+    x: bounds.x - thicknessX,
+    y: bounds.y,
+    width: thicknessX,
+    height: bounds.height,
+  });
+  edge("right", {
+    x: bounds.x + bounds.width,
+    y: bounds.y,
+    width: thicknessX,
+    height: bounds.height,
+  });
+
+  const positions = [
+    ["nw", bounds.x, bounds.y],
+    ["n", bounds.x + bounds.width / 2, bounds.y],
+    ["ne", bounds.x + bounds.width, bounds.y],
+    ["e", bounds.x + bounds.width, bounds.y + bounds.height / 2],
+    ["se", bounds.x + bounds.width, bounds.y + bounds.height],
+    ["s", bounds.x + bounds.width / 2, bounds.y + bounds.height],
+    ["sw", bounds.x, bounds.y + bounds.height],
+    ["w", bounds.x, bounds.y + bounds.height / 2],
+  ] as const;
+  for (const [name, x, y] of positions) {
+    order = appendOverlay(
+      commands,
+      `selection-handle-${name}-outer`,
+      {
+        x: x - handleWidth / 2,
+        y: y - handleHeight / 2,
+        width: handleWidth,
+        height: handleHeight,
+      },
+      accent,
+      order,
+      transform,
+      Math.min(handleWidth, handleHeight) / 2,
+    );
+    order = appendOverlay(
+      commands,
+      `selection-handle-${name}-inner`,
+      {
+        x: x - innerWidth / 2,
+        y: y - innerHeight / 2,
+        width: innerWidth,
+        height: innerHeight,
+      },
+      white,
+      order,
+      transform,
+      Math.min(innerWidth, innerHeight) / 2,
+    );
+  }
+  return order;
 };
 
 const appendOutline = (
@@ -164,6 +262,7 @@ export const composeRenderFrame = (
     pathCommands?: DrawCommand[];
     previewBounds?: Bounds;
     overlayCommands?: DrawCommand[];
+    selectionBox?: { bounds: Bounds; transform: Transform2D };
     overlay?: RenderFrame["overlay"];
     glassSurfaces?: RenderFrame["glassSurfaces"];
     chromeGlass?: RenderFrame["chromeGlass"];
@@ -171,6 +270,11 @@ export const composeRenderFrame = (
 ): RenderFrame => {
   const commands = [...frame.commands, ...(options.pathCommands ?? [])];
   let order = commands.reduce((highest, command) => Math.max(highest, command.order), -1) + 1;
+  if (options.selectionBox) {
+    order = appendSelectionBox(commands, options.selectionBox, frame.viewport, order);
+  } else if (frame.selectionBounds) {
+    order = appendOutline(commands, "selection-outline", frame.selectionBounds, frame.viewport, [0.25, 0.78, 0.91, 1], order);
+  }
   if (options.previewBounds) {
     order = appendOverlay(commands, "preview", options.previewBounds, [0.27, 0.29, 0.48, 1], order);
     order = appendOutline(commands, "preview-outline", options.previewBounds, frame.viewport, [0.88, 0.78, 0.48, 1], order);

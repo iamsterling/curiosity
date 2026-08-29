@@ -1,0 +1,7 @@
+Timestamp               Ty Process[PID:TID]
+2026-08-29 07:03:57.808 E  Curiosity[41004:25ab2b] [com.curiosity.canvas:CraftyRenderer] RENDERER_NATIVE_PRESENT_FAILED: RENDERER_NATIVE_PANIC:wgpu error: Validation Error
+
+Caused by:
+  In Device::create_buffer, label = 'vello.reduced_buf'
+    Downlevel flags DownlevelFlags(INDIRECT_EXECUTION) are required but not supported on the device.
+This is not an invalid use of WebGPU: the underlying API or device does not support enough features to be a fully compliant implementation. A subset of the features can still be used. If you are running this program on native and not in a browser and wish to work around this issue, call Adapter::downlevel_properties or Device::downlevel_properties to get a listing of the features the current platform supports.

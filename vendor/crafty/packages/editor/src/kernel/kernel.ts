@@ -1,11 +1,13 @@
 import { applyDocumentCommand, type DocumentCommand } from "./commands.js";
 import { buildClipboardContent, clipboardSubtreeBounds, planClipboardInsert, type ClipboardContent, type PasteDiagnostic, type PasteOutcome } from "./clipboard.js";
-import { clampViewport, clampWorldLimit, type Point } from "./coordinates.js";
+import { clampViewport, clampWorldLimit, inverseTransformPoint, type Point } from "./coordinates.js";
 import type { DocumentId, DocumentNode, EditorDocument, EditorDocumentV1, PointId, Rect } from "./document.js";
 import { canonicalEditorDocumentString, migrateDocument } from "./document.js";
-import { documentHitTest, initialInteractionState, marqueeSelectableIds, type EditorTool, type InteractionState } from "./interaction.js";
+import { documentDeepHitTest, documentHitTest, initialInteractionState, marqueeSelectableIds, type EditorTool, type InteractionState } from "./interaction.js";
 import { LastValidLayoutResolver, projectResolvedDocument, type LayoutEvaluator, type MeasurementDependency } from "./layout.js";
 import { resolveScene, resolvedSceneToDocument, type ResolvedScene } from "./component-resolution.js";
+import { planShapeCreation, type ShapeCreationRequest } from "./shape-creation.js";
+import { projectNodeWorldTransform } from "./selection-projection.js";
 
 export interface EditorState {
   activeTool: EditorTool;
@@ -60,11 +62,17 @@ export interface EditorKernel {
   setTool(tool: EditorTool): void;
   setCreationFill(fill: string): void;
   setCreationStroke(stroke: string): void;
+  /** Create one basic shape from world-space geometry as one history entry. */
+  createShape(request: ShapeCreationRequest, style?: CreationStyle): DocumentId | undefined;
   setSelection(ids: DocumentId[]): void;
   toggleSelection(ids: DocumentId[]): void;
   /** Ephemeral structure-panel scope; never serialized or recorded in history. */
   enterIsolation(rootId: DocumentId): boolean;
   exitIsolation(): boolean;
+  /** Double/deep-select into the selected container under a world point. */
+  deepSelectAt(world: Point): boolean;
+  /** Exit the current isolation scope when a world point misses its transformed box. */
+  exitIsolationAt(world: Point): boolean;
   legalDropDestinations(nodeId: DocumentId): LegalDropDestination[];
   /** Select every visible, unlocked node on the current page — ⌘A. */
   selectAll(): void;
@@ -261,6 +269,27 @@ export const createEditorKernel = (initialDocument: EditorDocument | EditorDocum
       state = { ...state, creationStyle: { ...state.creationStyle, stroke } };
       emit();
     },
+    createShape(request, style = state.creationStyle) {
+      const nodeId = makeId(request.tool);
+      const plan = planShapeCreation(
+        document,
+        state.currentPageId,
+        nodeId,
+        request,
+        style,
+      );
+      if (!plan) return undefined;
+      this.beginTransaction(plan.label);
+      try {
+        this.preview(plan.commands);
+        this.setSelection([plan.nodeId]);
+        this.commit();
+        return plan.nodeId;
+      } catch (error) {
+        this.rollback();
+        throw error;
+      }
+    },
     setSelection(ids) {
       const next = [...new Set(ids)].filter((id) => document.nodes[id] !== undefined && inIsolation(id));
       pageSelections[state.currentPageId] = [...next];
@@ -293,6 +322,57 @@ export const createEditorKernel = (initialDocument: EditorDocument | EditorDocum
       if (!parent || parent.kind === "page-root") delete state.isolationRootId;
       emit();
       return true;
+    },
+    deepSelectAt(world) {
+      const deep = documentDeepHitTest(
+        document,
+        state.currentPageId,
+        world,
+        state.isolationRootId,
+      );
+      let candidate = deep ? document.nodes[deep]?.parentId : undefined;
+      while (candidate) {
+        const node = document.nodes[candidate];
+        if (
+          node &&
+          (node.kind === "frame" || node.kind === "group") &&
+          state.selectedIds.includes(node.id)
+        ) {
+          this.enterIsolation(node.id);
+          if (deep) this.setSelection([deep]);
+          return true;
+        }
+        candidate = node?.parentId ?? undefined;
+      }
+      return false;
+    },
+    exitIsolationAt(world) {
+      let exited = false;
+      while (state.isolationRootId) {
+        const rootId = state.isolationRootId;
+        const root = document.nodes[rootId];
+        const transform = projectNodeWorldTransform(
+          document,
+          state.currentPageId,
+          rootId,
+        );
+        const local = transform
+          ? inverseTransformPoint(world, transform)
+          : undefined;
+        if (
+          root &&
+          local &&
+          local.x >= 0 &&
+          local.y >= 0 &&
+          local.x <= root.bounds.width &&
+          local.y <= root.bounds.height
+        ) {
+          return exited;
+        }
+        if (!this.exitIsolation()) return exited;
+        exited = true;
+      }
+      return exited;
     },
     legalDropDestinations,
     selectAll() {

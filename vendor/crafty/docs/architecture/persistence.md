@@ -55,6 +55,22 @@ the legacy file untouched. The legacy save direction is retired. A legacy
   package writer.
 - CLI `import`, `save` and `load` operate on `.ui` packages.
 
+### Native iOS adapter
+
+The Curiosity iPad slice consumes the same portable format codec through
+`@crafty/scene-store/ui-format`; manifest gates, document-entry validation and
+canonical serializers are no longer reimplemented in the app. It reloads an
+app-private `crafty-portability.ui` package at launch and exposes a manual save
+that writes and verifies a temporary immutable revision entry before moving it
+into place, then moves `manifest.ui` last as the commit point. A stale published
+revision fails with `DOCUMENT_REVISION_STALE`; an interrupted entry write never
+advances the manifest.
+
+This is app-sandbox persistence through Expo FileSystem, not yet a document
+provider contract. Expo's API does not expose `fsync`, and the adapter has not
+yet added `UIDocument`, security-scoped provider access, or provider/crash
+testing. Those remain required before claiming Files-app/provider durability.
+
 ## Deliberately deferred
 
 Recovery journals, embedded asset blobs, repository sync, collaboration and

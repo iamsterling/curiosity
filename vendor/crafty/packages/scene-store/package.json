@@ -5,6 +5,19 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "bun": "./src/index.ts",
+      "import": "./dist/index.js"
+    },
+    "./ui-format": {
+      "types": "./src/ui-format-portable.ts",
+      "react-native": "./src/ui-format-portable.ts",
+      "bun": "./src/ui-format-portable.ts",
+      "import": "./dist/ui-format-portable.js"
+    }
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",

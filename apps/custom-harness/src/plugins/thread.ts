@@ -1,4 +1,5 @@
 import { Effect, Schema } from "effect";
+import { proposeThreadOpen } from "@curiosity/authority";
 import { InputRejected } from "../kernel/errors.js";
 import {
   KERNEL_PLUGIN_API_VERSION,
@@ -57,76 +58,68 @@ export const threadPlugin: CuriosityPluginV2 = {
             () => new InputRejected({ message: "THREAD_OPEN_PAYLOAD_INVALID" }),
           ),
         );
-        return [
-          {
-            type: "thread.opened",
-            streamId: payload.threadId,
-            body: {
-              schemaVersion: 1,
-              threadId: payload.threadId,
-              title: payload.title,
-            },
-          },
-        ];
+        return proposeThreadOpen(payload);
       }),
       id: "curiosity.stock.thread.commands.open",
       schemaVersion: 1,
     },
     {
       commandKinds: ["client.lifecycle"],
-      decide: Effect.fn("ThreadPlugin.clientLifecycle")(function* (
-        command,
-        context,
-      ) {
-        const payload = yield* decodeLifecycle(command.payload).pipe(
-          Effect.mapError(
-            () =>
-              new InputRejected({
-                message: "CLIENT_LIFECYCLE_PAYLOAD_INVALID",
-              }),
-          ),
-        );
-        const needsTarget = ["resume", "agent", "children"].includes(
-          payload.operation,
-        );
-        if (
-          needsTarget !== Boolean(payload.target) ||
-          (payload.target?.length ?? 0) > 256
-        )
-          return yield* new InputRejected({
-            message: "CLIENT_LIFECYCLE_TARGET_INVALID",
-          });
-        if (
-          payload.operation === "agent" &&
-          !context.enabledPrimaryAgentIds.has(payload.target!)
-        )
-          return yield* new InputRejected({
-            message: "CLIENT_PRIMARY_AGENT_INVALID",
-          });
-        if (
-          payload.operation === "resume" &&
-          !context.events.some(
-            (event) =>
-              event.type === "thread.opened" &&
-              event.body !== null &&
-              typeof event.body === "object" &&
-              !Array.isArray(event.body) &&
-              (event.body as Record<string, unknown>).threadId === payload.target,
+      decide: Effect.fn("ThreadPlugin.clientLifecycle")(
+        function* (command, context) {
+          const payload = yield* decodeLifecycle(command.payload).pipe(
+            Effect.mapError(
+              () =>
+                new InputRejected({
+                  message: "CLIENT_LIFECYCLE_PAYLOAD_INVALID",
+                }),
+            ),
+          );
+          const needsTarget = ["resume", "agent", "children"].includes(
+            payload.operation,
+          );
+          if (
+            needsTarget !== Boolean(payload.target) ||
+            (payload.target?.length ?? 0) > 256
           )
-        )
-          return yield* new InputRejected({ message: "CLIENT_THREAD_NOT_FOUND" });
-        return [
-          {
-            body: {
-              operation: payload.operation,
-              schemaVersion: 1,
-              ...(payload.target ? { target: payload.target } : {}),
+            return yield* new InputRejected({
+              message: "CLIENT_LIFECYCLE_TARGET_INVALID",
+            });
+          if (
+            payload.operation === "agent" &&
+            !context.enabledPrimaryAgentIds.has(payload.target!)
+          )
+            return yield* new InputRejected({
+              message: "CLIENT_PRIMARY_AGENT_INVALID",
+            });
+          if (
+            payload.operation === "resume" &&
+            !context.events.some(
+              (event) =>
+                event.type === "thread.opened" &&
+                event.body !== null &&
+                typeof event.body === "object" &&
+                !Array.isArray(event.body) &&
+                (event.body as Record<string, unknown>).threadId ===
+                  payload.target,
+            )
+          )
+            return yield* new InputRejected({
+              message: "CLIENT_THREAD_NOT_FOUND",
+            });
+          return [
+            {
+              body: {
+                operation: payload.operation,
+                schemaVersion: 1,
+                ...(payload.target ? { target: payload.target } : {}),
+              },
+              streamId: payload.target ?? `client:${payload.operation}`,
+              type: "client.lifecycle-recorded",
             },
-            streamId: payload.target ?? `client:${payload.operation}`,
-            type: "client.lifecycle-recorded",
-          },
-        ];
-      }),
+          ];
+        },
+      ),
       id: "curiosity.stock.thread.commands.client-lifecycle",
       schemaVersion: 1,
     },

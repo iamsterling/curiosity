@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createSceneSpatialIndex, createSeedScene } from "@crafty/scene-model";
-import { createSceneRenderer, defaultViewport, hasMinimumBounds, hitTestScene, normalizeBounds, sceneToRenderFrame, screenToWorld, worldToScreen, ZOOM_MAX, ZOOM_MIN, zoomAt, zoomTo } from "./index.js";
+import { composeRenderFrame, createSceneRenderer, defaultViewport, hasMinimumBounds, hitTestScene, normalizeBounds, sceneToRenderFrame, screenToWorld, worldToScreen, ZOOM_MAX, ZOOM_MIN, zoomAt, zoomTo } from "./index.js";
 
 const fakeCanvas = (size: { width: number; height: number }): HTMLCanvasElement => {
   const canvas = {
@@ -195,5 +195,40 @@ describe("scene renderer transforms", () => {
       order: 1,
     });
     expect(packet.selectionBounds).toEqual({ x: 260, y: 150, width: 340, height: 210 });
+  });
+
+  it("composes selected bounds as renderer-owned outline commands", () => {
+    const scene = createSeedScene();
+    const viewport = { ...defaultViewport(), width: 640, height: 360, pixelRatio: 1 };
+    const packet = composeRenderFrame(sceneToRenderFrame(scene, "frame-home", viewport, "layer-card"), {});
+
+    expect(packet.commands.slice(-4).map((command) => command.nodeId)).toEqual([
+      "selection-outline-top",
+      "selection-outline-bottom",
+      "selection-outline-left",
+      "selection-outline-right",
+    ]);
+  });
+
+  it("composes transformed selection handles without changing the packet protocol", () => {
+    const scene = createSeedScene();
+    const viewport = { ...defaultViewport(), width: 640, height: 360, pixelRatio: 1 };
+    const transform = { a: 0, b: 1, c: -1, d: 0, e: 100, f: 80 };
+    const packet = composeRenderFrame(
+      sceneToRenderFrame(scene, "frame-home", viewport, "layer-card"),
+      {
+        selectionBox: {
+          bounds: { x: 0, y: 0, width: 340, height: 210 },
+          transform,
+        },
+      },
+    );
+
+    const handles = packet.commands.filter((command) =>
+      command.nodeId.startsWith("selection-handle-"),
+    );
+    expect(packet.protocolVersion).toBe(5);
+    expect(handles).toHaveLength(16);
+    expect(handles.every((command) => command.transform === transform)).toBe(true);
   });
 });

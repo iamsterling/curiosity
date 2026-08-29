@@ -8,7 +8,6 @@ import {
 test("workstation registry keeps stable unique commands and shortcuts", () => {
   const commands = resolveWorkstationCommands({
     busy: false,
-    sidebarVisible: true,
     view: "chat",
   });
   const ids = commands.map(({ id }) => id);
@@ -43,7 +42,6 @@ test("workstation registry keeps stable unique commands and shortcuts", () => {
 test("workstation command state follows active work and navigation", () => {
   const commands = resolveWorkstationCommands({
     busy: true,
-    sidebarVisible: false,
     view: "craft",
   });
   const command = (id) => commands.find((candidate) => candidate.id === id);
@@ -52,5 +50,4 @@ test("workstation command state follows active work and navigation", () => {
   assert.equal(command(workstationCommandIds.startResearch)?.enabled, false);
   assert.equal(command(workstationCommandIds.refreshSession)?.enabled, false);
   assert.equal(command(workstationCommandIds.showCraft)?.selected, true);
-  assert.equal(command(workstationCommandIds.toggleSidebar)?.selected, false);
 });

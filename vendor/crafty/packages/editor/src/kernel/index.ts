@@ -20,3 +20,6 @@ export * from "./scene-adapter.js";
 export * from "./snap.js";
 export * from "./stress-fixtures.js";
 export * from "./selection.js";
+export * from "./selection-geometry.js";
+export * from "./selection-projection.js";
+export * from "./shape-creation.js";

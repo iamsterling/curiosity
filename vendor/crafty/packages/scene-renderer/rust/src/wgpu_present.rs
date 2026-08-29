@@ -1,3 +1,4 @@
+#[cfg(target_arch = "wasm32")]
 use std::cell::RefCell;
 #[cfg(target_arch = "wasm32")]
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -7,13 +8,15 @@ use std::sync::Arc;
 use wasm_bindgen::JsValue;
 #[cfg(target_arch = "wasm32")]
 use web_sys::HtmlCanvasElement;
+#[cfg(target_arch = "wasm32")]
+use wgpu::SurfaceTarget;
 use wgpu::{
     Adapter, BindGroup, BindGroupLayout, Buffer, CompositeAlphaMode, Device, FilterMode, Instance,
     PresentMode, Queue, RenderPipeline, Sampler, ShaderStages, Surface, SurfaceConfiguration,
     TexelCopyTextureInfo, Texture, TextureDescriptor, TextureFormat, TextureUsages, TextureView,
 };
-#[cfg(target_arch = "wasm32")]
-use wgpu::{Backends, DeviceDescriptor, InstanceDescriptor, SurfaceTarget};
+#[cfg(any(target_arch = "wasm32", target_vendor = "apple"))]
+use wgpu::{Backends, DeviceDescriptor, InstanceDescriptor};
 
 use crate::{
     f32_bytes, glass_error, glass_quad_buffer_usage, offscreen_texture_usage, render_error,
@@ -934,6 +937,7 @@ pub struct PresentState {
 /// Send/Sync), and on wasm there is exactly one thread, so a thread-local
 /// is the same thing with the right bounds.
 #[derive(Clone)]
+#[cfg_attr(not(target_arch = "wasm32"), allow(dead_code))]
 struct SharedGpu {
     instance: Arc<Instance>,
     adapter: Arc<Adapter>,
@@ -941,6 +945,7 @@ struct SharedGpu {
     queue: Arc<Queue>,
 }
 
+#[cfg(target_arch = "wasm32")]
 thread_local! {
     static SHARED_GPU: RefCell<Option<SharedGpu>> = const { RefCell::new(None) };
     static SHARED_RENDERER: RefCell<Option<vello::Renderer>> = const { RefCell::new(None) };
@@ -949,8 +954,10 @@ thread_local! {
 /// Restores the shared renderer to its thread-local slot on drop — every
 /// exit path, including errors, so a failed frame leaves the renderer
 /// reusable by the next one.
+#[cfg(target_arch = "wasm32")]
 struct RendererSlot(Option<vello::Renderer>);
 
+#[cfg(target_arch = "wasm32")]
 impl Drop for RendererSlot {
     fn drop(&mut self) {
         SHARED_RENDERER.with(|slot| *slot.borrow_mut() = self.0.take());
@@ -1009,6 +1016,7 @@ fn register_error_surfaces(device: &Device, error_callback: js_sys::Function) {
 /// must build a fresh one. The old device's registered closures are
 /// leak-forgotten (wgpu) — late events find live state and report into
 /// the captured (possibly dead) relay, which is benign.
+#[cfg(target_arch = "wasm32")]
 pub fn reset_shared_gpu() {
     SHARED_GPU.with(|slot| *slot.borrow_mut() = None);
     SHARED_RENDERER.with(|slot| *slot.borrow_mut() = None);
@@ -1045,6 +1053,7 @@ impl PresentState {
     /// presented and the surface keeps showing the last valid frame —
     /// "a render failure preserves the last valid image" holds by
     /// construction, without retaining frames.
+    #[cfg(target_arch = "wasm32")]
     pub fn render_and_present(
         &mut self,
         encoding: vello_encoding::Encoding,
@@ -1356,6 +1365,121 @@ impl PresentState {
         frame.present();
         Ok(())
     }
+}
+
+/// Native Apple ownership for the same Vello/present path used by WASM. Unlike
+/// the browser runtime, the iOS host has one renderer per retained layer, so it
+/// owns its GPU stack directly instead of using the wasm-only remount singleton.
+#[cfg(target_vendor = "apple")]
+pub struct NativePresentState {
+    present: PresentState,
+    shared: SharedGpu,
+    renderer: vello::Renderer,
+}
+
+#[cfg(target_vendor = "apple")]
+impl NativePresentState {
+    pub fn render_and_present(
+        &mut self,
+        encoding: vello_encoding::Encoding,
+        overlay_encoding: Option<vello_encoding::Encoding>,
+        glass: &[crate::GlassSurface],
+        chrome: &[crate::ChromeGlassSurface],
+        viewport: &crate::Viewport,
+        size: (u32, u32),
+    ) -> Result<(), String> {
+        self.present.render_frame(
+            &self.shared,
+            &mut self.renderer,
+            encoding,
+            overlay_encoding,
+            glass,
+            chrome,
+            viewport,
+            size,
+        )
+    }
+}
+
+/// Creates a Metal-only instance without touching the Core Animation pointer.
+/// The unsafe layer-to-surface conversion remains isolated in `native-ffi`.
+#[cfg(target_vendor = "apple")]
+pub fn native_metal_instance() -> Arc<Instance> {
+    Arc::new(Instance::new(InstanceDescriptor {
+        backends: Backends::METAL,
+        flags: wgpu::InstanceFlags::default(),
+        memory_budget_thresholds: Default::default(),
+        backend_options: Default::default(),
+        display: None,
+    }))
+}
+
+/// Initializes one native GPU stack for an already-retained Core Animation
+/// surface. Adapter selection is constrained to that surface, so a successful
+/// return proves the device can present to the supplied layer.
+#[cfg(target_vendor = "apple")]
+pub async fn init_native(
+    instance: Arc<Instance>,
+    surface: Surface<'static>,
+) -> Result<NativePresentState, String> {
+    let adapter = instance
+        .request_adapter(&wgpu::RequestAdapterOptions {
+            power_preference: wgpu::PowerPreference::HighPerformance,
+            force_fallback_adapter: false,
+            compatible_surface: Some(&surface),
+        })
+        .await
+        .map_err(|error| render_error("init", Some(&format!("adapter:{error}"))))?;
+    let (device, queue) = adapter
+        .request_device(&DeviceDescriptor {
+            // CoreSimulator exposes 15 inter-stage variables (below WebGPU's
+            // default 16), while Vello needs 5 compute storage buffers (above
+            // the downlevel baseline of 4). The adapter-reported Metal limits
+            // satisfy both and are the authoritative native capability set.
+            required_limits: adapter.limits(),
+            ..Default::default()
+        })
+        .await
+        .map_err(|error| render_error("init", Some(&format!("device:{error}"))))?;
+    let renderer = vello::Renderer::new(
+        &device,
+        vello::RendererOptions {
+            use_cpu: false,
+            antialiasing_support: vello::AaSupport::area_only(),
+            // Vello defaults to one initialization thread on macOS because
+            // parallel pipeline creation is not reliable on Metal. iOS shares
+            // that backend but misses Vello's target_os = "macos" default.
+            num_init_threads: std::num::NonZeroUsize::new(1),
+            ..Default::default()
+        },
+    )
+    .map_err(|error| render_error("init", Some(&format!("renderer:{error}"))))?;
+    let capabilities = surface.get_capabilities(&adapter);
+    let surface_format = pick_surface_format(&capabilities.formats)
+        .ok_or_else(|| render_error("init", Some("format")))?;
+    let alpha_mode = pick_alpha_mode(&capabilities.alpha_modes);
+    let present = PresentPipeline::new(&device, surface_format);
+    let shared = SharedGpu {
+        instance,
+        adapter: Arc::new(adapter),
+        device: Arc::new(device),
+        queue: Arc::new(queue),
+    };
+
+    Ok(NativePresentState {
+        present: PresentState {
+            surface,
+            surface_format,
+            alpha_mode,
+            configured_size: None,
+            offscreen: None,
+            overlay: None,
+            present,
+            glass: None,
+        },
+        shared,
+        renderer,
+    })
 }
 
 /// Creates the surface for this canvas and returns the per-canvas state.

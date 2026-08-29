@@ -32,7 +32,9 @@ the ADRs. The user separately accepted ADR-001 through ADR-010 and the Phase 1
 implementation plan on 2026-08-24; their original proposal dates and contexts
 remain recorded. On 2026-08-25, ADR-011 authorized direct implementation and
 retained qualification as a capability-specific acceptance boundary rather than
-an OpenCode-coupled entry gate.
+an OpenCode-coupled entry gate. ADR-016 adds a profile-scoped exception to
+AC-01's mandatory supervisor: desktop remains unchanged, while `ipados-local`
+uses one bundled authority with fail-closed optional native ports.
 
 The first integrated implementation slice now exists in `apps/custom-harness/`:
 authenticated `thread.open` admission, one Effect authority, a static stock
@@ -75,6 +77,20 @@ closed rather than inheriting these claims.
 
 ## Implementation specifications
 
+- [iPadOS native runtime severance](IPADOS-NATIVE-RUNTIME-SEVERANCE.md) —
+  accepted decomposition of the Mac-hosted harness into a portable authority,
+  bundled Swift/Rust primitives, explicit provider routes, and no-server
+  physical-device gates. ADR-016 through ADR-018 authorize their implementation;
+  the implemented native-journal and Foundation Models spikes do not establish
+  durability, provider, or mobile release qualification.
+- [iPadOS intelligence architecture](IPADOS-INTELLIGENCE-ARCHITECTURE.md) —
+  proposed exact-route generation, native broker-session custody, AI SDK
+  frontier boundary, and governed on-device memory curation under ADR-019 and
+  ADR-020.
+- [iPadOS native agent harness](IPADOS-NATIVE-AGENT-HARNESS.md) — deep-research
+  architecture for the portable durable graph kernel, model-step protocol,
+  native capability grants, child agents, lifecycle recovery, and implementation
+  tranches under accepted ADR-021.
 - [Plugin-native kernel specification](PLUGIN-NATIVE-SPEC.md) — proposed ABI,
   authority boundary, capability translation, migration sequence, and binary
   acceptance checks for the native Curiosity intelligence layer. It does not
@@ -105,13 +121,21 @@ closed rather than inheriting these claims.
 | [ADR-011](decisions/ADR-011-direct-build-and-host-decoupling.md)       | Accepted | Direct build and replaceable copied host adapters           |
 | [ADR-012](decisions/ADR-012-bubbletea-presentation-client.md)          | Accepted | Bubble Tea v2 non-authoritative presentation client         |
 | [ADR-013](decisions/ADR-013-typescript-default-presentation.md)        | Accepted | TypeScript default TTY; Bubble Tea explicit experimental    |
-| [ADR-014](decisions/ADR-014-benchmark-owned-retrieval.md)             | Accepted | Isolated benchmark acquisition and owned Retrieval v3       |
-| [ADR-015](decisions/ADR-015-default-oauth-hosted-search.md)           | Accepted | Existing OAuth enables governed hosted search by default    |
+| [ADR-014](decisions/ADR-014-benchmark-owned-retrieval.md)              | Accepted | Isolated benchmark acquisition and owned Retrieval v3       |
+| [ADR-015](decisions/ADR-015-default-oauth-hosted-search.md)            | Accepted | Existing OAuth enables governed hosted search by default    |
+| [ADR-016](decisions/ADR-016-ipados-local-authority-profile.md)         | Accepted | iPad local authority and fail-closed optional native ports  |
+| [ADR-017](decisions/ADR-017-ipados-native-journal-abi.md)              | Accepted | Mobile-owned versioned Rust/SQLite journal ABI              |
+| [ADR-018](decisions/ADR-018-ipados-foundation-models-route.md)         | Accepted | Tool-free Foundation Models generation route                |
+| [ADR-019](decisions/ADR-019-ipados-explicit-generation-routes.md)      | Accepted | Exact local/frontier routes and provider credential custody |
+| [ADR-020](decisions/ADR-020-ipados-governed-memory-curation.md)        | Accepted | Authority-governed on-device memory curation                 |
+| [ADR-021](decisions/ADR-021-ipados-durable-agent-graph-kernel.md)      | Accepted | Durable portable iPad agent loops and execution graphs       |
 
 ## Package-wide invariants
 
-1. **PKG-I01:** Effect owns every application command and durable domain
-   transition.
+1. **PKG-I01:** One application authority owns every command and domain
+   transition: Effect in the desktop profile, or the serialized portable
+   TypeScript authority in the `ipados-local` profile under ADR-016. Durability
+   remains profile-qualified.
 2. **PKG-I02:** Rust validates each reviewed-tool invocation against an exact action grant
    but does not confine that cooperative TCB tool's complete runtime authority;
    Rust never creates policy or domain state.
