@@ -26,7 +26,7 @@ test("workstation registry keeps stable unique commands and shortcuts", () => {
     true,
   );
   assert.equal(
-    commands.find(({ id }) => id === workstationCommandIds.showIssues)?.key,
+    commands.find(({ id }) => id === workstationCommandIds.showAgents)?.key,
     "3",
   );
   assert.equal(

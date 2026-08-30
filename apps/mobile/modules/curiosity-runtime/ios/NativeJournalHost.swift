@@ -96,6 +96,7 @@ actor NativeJournalHost {
       [
         "armDispatch",
         "commitTransition",
+        "listRunProjections",
         "readRunProjection",
         "reconcileInterrupted",
         "runnableRuns",

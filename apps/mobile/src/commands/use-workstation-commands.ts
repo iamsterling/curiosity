@@ -18,7 +18,7 @@ export const useWorkstationCommands = (
     readonly showAudio: () => void;
     readonly showChat: () => void;
     readonly showCraft: () => void;
-    readonly showIssues: () => void;
+    readonly showAgents: () => void;
     readonly showMemory: () => void;
     readonly showProviders: () => void;
   },
@@ -51,8 +51,8 @@ export const useWorkstationCommands = (
         case workstationCommandIds.showCraft:
           actions.showCraft();
           return;
-        case workstationCommandIds.showIssues:
-          actions.showIssues();
+        case workstationCommandIds.showAgents:
+          actions.showAgents();
           return;
         case workstationCommandIds.showMemory:
           actions.showMemory();

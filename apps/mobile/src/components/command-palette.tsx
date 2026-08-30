@@ -56,7 +56,7 @@ export const CommandPalette = ({
 
   return (
     <Modal
-      animationType="fade"
+      animationType="none"
       onRequestClose={close}
       presentationStyle="overFullScreen"
       transparent

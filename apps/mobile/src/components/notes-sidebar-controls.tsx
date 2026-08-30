@@ -1,68 +1,63 @@
-import type { ColorValue } from "react-native";
+import { forwardRef } from "react";
+import type { ColorValue, PressableProps, ViewProps } from "react-native";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { palette } from "../theme";
 
-export const NotesHeaderButton = ({
-  label,
-  onPress,
-  symbol,
-}: {
-  readonly label: string;
-  readonly onPress: () => void;
-  readonly symbol: string;
-}) => (
+export const NotesHeaderButton = forwardRef<
+  View,
+  Omit<PressableProps, "children"> & {
+    readonly label: string;
+    readonly symbol: string;
+  }
+>(({ label, style, symbol, ...props }, ref) => (
   <Pressable
     accessibilityLabel={label}
     accessibilityRole="button"
     hitSlop={4}
-    onPress={onPress}
-    style={({ pressed }) => [
+    ref={ref}
+    style={(state) => [
       styles.headerButton,
-      pressed && styles.pressed,
+      state.pressed && styles.pressed,
+      typeof style === "function" ? style(state) : style,
     ]}
+    {...props}
   >
     <Text accessibilityElementsHidden style={styles.headerSymbol}>
       {symbol}
     </Text>
   </Pressable>
-);
+));
+NotesHeaderButton.displayName = "NotesHeaderButton";
 
-export const NotesTextButton = ({
-  label,
-  onPress,
-}: {
-  readonly label: string;
-  readonly onPress: () => void;
-}) => (
-  <Pressable
-    accessibilityRole="button"
-    onPress={onPress}
-    style={({ pressed }) => [styles.textButton, pressed && styles.pressed]}
-  >
-    <Text style={styles.textButtonLabel}>{label}</Text>
-  </Pressable>
-);
-
-export const FolderGlyph = () => (
-  <View accessibilityElementsHidden style={styles.folder}>
-    <View style={styles.folderTab} />
-  </View>
-);
-
-export const SmartGlyph = ({
-  color,
-  symbol,
-}: {
-  readonly color: ColorValue;
-  readonly symbol: string;
-}) => (
+export const FolderGlyph = forwardRef<View, ViewProps>(({ style, ...props }, ref) => (
   <View
     accessibilityElementsHidden
-    style={[styles.smartGlyph, { backgroundColor: color }]}
+    ref={ref}
+    style={[styles.folder, style]}
+    {...props}
+  >
+    <View style={styles.folderTab} />
+  </View>
+));
+FolderGlyph.displayName = "FolderGlyph";
+
+export const SmartGlyph = forwardRef<
+  View,
+  ViewProps & {
+    readonly color: ColorValue;
+    readonly symbol: string;
+  }
+>(({ color, style, symbol, ...props }, ref) => (
+  <View
+    accessibilityElementsHidden
+    ref={ref}
+    style={[styles.smartGlyph, { backgroundColor: color }, style]}
+    {...props}
   >
     <Text style={styles.smartSymbol}>{symbol}</Text>
   </View>
-);
+));
+SmartGlyph.displayName = "SmartGlyph";
 
 const styles = StyleSheet.create({
   folder: {
@@ -109,15 +104,4 @@ const styles = StyleSheet.create({
     width: 28,
   },
   smartSymbol: { color: "#FFFFFF", fontSize: 16, fontWeight: "700" },
-  textButton: {
-    alignItems: "center",
-    backgroundColor: palette.navigationControl,
-    borderColor: palette.glassLine,
-    borderRadius: 22,
-    borderWidth: StyleSheet.hairlineWidth,
-    height: 44,
-    justifyContent: "center",
-    paddingHorizontal: 17,
-  },
-  textButtonLabel: { color: palette.textPrimary, fontSize: 16, fontWeight: "600" },
 });

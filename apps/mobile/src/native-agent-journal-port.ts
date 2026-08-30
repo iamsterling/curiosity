@@ -14,6 +14,12 @@ export interface NativeAgentJournalModule {
   agentJournalCall(inputJson: string): Promise<string>;
 }
 
+export interface AgentActivityPort {
+  readonly listRunProjections: (
+    limit: number,
+  ) => Promise<readonly AgentRunProjection[]>;
+}
+
 const codes = new Set([
   "COMMAND_DIGEST_CONFLICT",
   "EVENT_HASH_CHAIN_INVALID",
@@ -321,7 +327,7 @@ const reconciled = (value: unknown): AgentJournalReconciledAttempt => {
 
 export const createNativeAgentJournal = (
   native: NativeAgentJournalModule,
-): AgentJournalPort => ({
+): AgentJournalPort & AgentActivityPort => ({
   armDispatch: async (input) => {
     const result = dispatch(
       await call(native, { dispatch: input, operation: "armDispatch" }),
@@ -342,6 +348,12 @@ export const createNativeAgentJournal = (
     )
       throw new PortableAuthorityError("NATIVE_AGENT_REVISION_FENCED");
     return result;
+  },
+  listRunProjections: async (limit) => {
+    const value = await call(native, { limit, operation: "listRunProjections" });
+    if (!Array.isArray(value))
+      throw new PortableAuthorityError("NATIVE_JOURNAL_RESPONSE_INVALID");
+    return value.map(projection);
   },
   readRunProjection: async (runId) => {
     const value = await call(native, { operation: "readRunProjection", runId });

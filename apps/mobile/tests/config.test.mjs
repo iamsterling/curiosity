@@ -55,8 +55,20 @@ test("native controls cross the SwiftUI host boundary explicitly", async () => {
     new URL("../src/components/craft-surface.tsx", import.meta.url),
     "utf8",
   );
-  const issues = await readFile(
-    new URL("../src/components/issues-surface.tsx", import.meta.url),
+  const agents = await readFile(
+    new URL("../src/screens/agent-activity-screen.tsx", import.meta.url),
+    "utf8",
+  );
+  const settings = await readFile(
+    new URL("../src/screens/settings-screen.tsx", import.meta.url),
+    "utf8",
+  );
+  const workspaceRoutes = await readFile(
+    new URL("../app/(app)/(project)/_layout.tsx", import.meta.url),
+    "utf8",
+  );
+  const systemRoutes = await readFile(
+    new URL("../app/(app)/(system)/_layout.tsx", import.meta.url),
     "utf8",
   );
   const memory = await readFile(
@@ -67,16 +79,82 @@ test("native controls cross the SwiftUI host boundary explicitly", async () => {
     new URL("../src/components/audio-surface.tsx", import.meta.url),
     "utf8",
   );
-  const nestedSidebar = await readFile(
-    new URL("../src/components/nested-sidebar.tsx", import.meta.url),
+  const projectLayout = await readFile(
+    new URL(
+      "../app/(app)/(project)/projects/[projectId]/_layout.tsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  const organizationSelector = await readFile(
+    new URL("../src/components/organization-selector.tsx", import.meta.url),
+    "utf8",
+  );
+  const sourceSidebar = await readFile(
+    new URL("../src/components/parent-sidebar-content.tsx", import.meta.url),
+    "utf8",
+  );
+  const parentShell = await readFile(
+    new URL("../src/components/parent-sidebar-shell.tsx", import.meta.url),
+    "utf8",
+  );
+  const parentController = await readFile(
+    new URL("../src/use-parent-sidebar-controller.ts", import.meta.url),
+    "utf8",
+  );
+  const appSidebarPrimitives = await readFile(
+    new URL("../src/components/app-sidebar-primitives.tsx", import.meta.url),
+    "utf8",
+  );
+  const rootLayout = await readFile(
+    new URL("../app/(app)/_layout.tsx", import.meta.url),
+    "utf8",
+  );
+  const defaultRoute = await readFile(
+    new URL("../app/(app)/(overview)/index.tsx", import.meta.url),
+    "utf8",
+  );
+  const systemShell = await readFile(
+    new URL("../src/components/system-screen-shell.tsx", import.meta.url),
+    "utf8",
+  );
+  const workspacePrimitives = await readFile(
+    new URL(
+      "../src/components/project-workspace-primitives.tsx",
+      import.meta.url,
+    ),
     "utf8",
   );
   const workspaceToolbar = await readFile(
-    new URL("../src/components/workspace-toolbar.tsx", import.meta.url),
+    new URL("../src/components/project-route-toolbar.tsx", import.meta.url),
+    "utf8",
+  );
+  const routeCanvas = await readFile(
+    new URL("../src/components/project-route-canvas.tsx", import.meta.url),
+    "utf8",
+  );
+  const toolbarPrimitives = await readFile(
+    new URL("../src/components/project-toolbar-primitives.tsx", import.meta.url),
+    "utf8",
+  );
+  const catalog = await readFile(
+    new URL("../src/workspace-catalog-context.tsx", import.meta.url),
+    "utf8",
+  );
+  const projectController = await readFile(
+    new URL("../src/use-project-route-controller.ts", import.meta.url),
+    "utf8",
+  );
+  const workspaceRouteBuilder = await readFile(
+    new URL("../src/workspace-routes.ts", import.meta.url),
     "utf8",
   );
   const composer = await readFile(
     new URL("../src/components/composer.tsx", import.meta.url),
+    "utf8",
+  );
+  const commandPalette = await readFile(
+    new URL("../src/components/command-palette.tsx", import.meta.url),
     "utf8",
   );
   const glassPanel = await readFile(
@@ -84,7 +162,7 @@ test("native controls cross the SwiftUI host boundary explicitly", async () => {
     "utf8",
   );
   const workspace = await readFile(
-    new URL("../src/screens/workspace-screen.tsx", import.meta.url),
+    new URL("../src/screens/project-sessions-screen.tsx", import.meta.url),
     "utf8",
   );
   const theme = await readFile(
@@ -95,10 +173,17 @@ test("native controls cross the SwiftUI host boundary explicitly", async () => {
   assert.match(craft, /CRAFT \/ DOCUMENT/u);
   assert.match(craft, /LAYERS/u);
   assert.match(craft, /INSPECTOR/u);
-  assert.match(issues, /Lifecycle bridge stalls after scene resize/u);
-  assert.match(issues, /Ready for review/u);
-  assert.match(issues, /In progress/u);
-  assert.match(issues, /Issues Inspector/u);
+  assert.match(agents, /App-wide durable execution log/u);
+  assert.match(agents, /SUBAGENT · DEPTH/u);
+  assert.match(agents, /listRunProjections|useAgentActivity/u);
+  assert.match(settings, /Provider Connections/u);
+  assert.match(settings, /Native Keychain/u);
+  assert.match(workspaceRoutes, /headerShown: false/u);
+  assert.match(systemRoutes, /headerShown: false/u);
+  assert.match(workspaceRoutes, /animation: "none"/u);
+  assert.match(systemRoutes, /animation: "none"/u);
+  assert.match(rootLayout, /animation: "none"/u);
+  assert.match(commandPalette, /animationType="none"/u);
   assert.match(memory, /OBSERVE/u);
   assert.match(memory, /ADJUDICATE/u);
   assert.match(memory, /SYNTHESIZE/u);
@@ -106,11 +191,37 @@ test("native controls cross the SwiftUI host boundary explicitly", async () => {
   assert.match(memory, /decision_based_on/u);
   assert.match(audio, /BAR · BEAT · TICK/u);
   assert.match(audio, /AUDIO ENGINE NOT IMPLEMENTED/u);
-  assert.match(nestedSidebar, /NotesSourceSidebar/u);
-  assert.match(nestedSidebar, /NotesArtifactList/u);
-  assert.match(nestedSidebar, /onSelectCollection/u);
-  assert.match(nestedSidebar, /onOpenThread/u);
-  assert.match(nestedSidebar, /navigationLevel/u);
+  assert.doesNotMatch(projectLayout, /NotesSourceSidebar/u);
+  assert.equal((projectLayout.match(/ProjectSessionSidebar/gu) ?? []).length, 2);
+  assert.match(parentShell, /ParentSidebarContent/u);
+  assert.match(rootLayout, /<ParentSidebarShell>/u);
+  assert.match(rootLayout, /<Stack/u);
+  assert.match(defaultRoute, /<Redirect href="\/projects\/curiosity\/sessions/u);
+  assert.match(parentController, /parentSidebarOpen/u);
+  assert.match(appSidebarPrimitives, /StyleSheet\.absoluteFill/u);
+  assert.doesNotMatch(parentShell, /sourceVisible|childVisible|width >= 700/u);
+  assert.match(systemShell, /openParentSidebar/u);
+  assert.match(workspaceToolbar, /onShowAppSidebar/u);
+  assert.match(workspacePrimitives, /forwardRef/u);
+  assert.match(projectLayout, /ProjectSessionSidebar/u);
+  assert.match(projectLayout, /<Slot/u);
+  assert.match(projectLayout, /ProjectWorkspaceRoot/u);
+  assert.match(parentShell, /onOpenProject/u);
+  assert.match(projectLayout, /onOpenThread/u);
+  assert.match(projectLayout, /project\.layout/u);
+  assert.match(sourceSidebar, /OrganizationSelector/u);
+  assert.doesNotMatch(sourceSidebar, /label="Search"/u);
+  assert.match(sourceSidebar, />Agents</u);
+  assert.doesNotMatch(sourceSidebar, />Issues</u);
+  assert.doesNotMatch(sourceSidebar, />Craft|>Audio|>Providers/u);
+  assert.match(sourceSidebar, />\s*Projects\s*</u);
+  assert.match(sourceSidebar, /AppSidebarNavigationFooter/u);
+  assert.match(sourceSidebar, /Math\.max\(12, bottomInset\)/u);
+  assert.match(organizationSelector, /<Menu/u);
+  assert.match(organizationSelector, /buttonStyle\("glass"\)/u);
+  assert.match(organizationSelector, /menuStyle\("button"\)/u);
+  assert.match(organizationSelector, /New Organization…/u);
+  assert.match(parentController, /Alert\.prompt/u);
   assert.match(workspaceToolbar, /Show sessions/u);
   assert.match(composer, /@expo\/ui\/swift-ui/u);
   assert.match(composer, /<Host/u);
@@ -124,20 +235,24 @@ test("native controls cross the SwiftUI host boundary explicitly", async () => {
   assert.match(composer, /buttonStyle\("plain"\)/u);
   assert.match(glassPanel, /glassEffect/u);
   assert.match(glassPanel, /variant: "regular"/u);
-  assert.match(workspace, /headerShown: false/u);
-  assert.match(workspace, /edges=\{\["left", "right"\]\}/u);
-  assert.doesNotMatch(workspace, /"left", "right", "bottom"/u);
-  assert.match(workspace, /title: ""/u);
-  assert.match(workspace, /style=\{styles\.composerOverlay\}/u);
-  assert.match(workspace, /useState<WorkspaceView>\("chat"\)/u);
+  assert.match(parentShell, /edges=\{\["left", "right"\]\}/u);
+  assert.doesNotMatch(parentShell, /"left", "right", "bottom"/u);
+  assert.match(workspace, /<ProjectComposerOverlay>/u);
   assert.doesNotMatch(workspace, /AtmosphericBackdrop|ModeSelector|appModes/u);
-  assert.match(workspace, /<NestedSidebar/u);
+  assert.doesNotMatch(workspace, /NestedSidebar|collectionForPath|view ===/u);
+  assert.match(workspace, /<ProjectRouteCanvas/u);
+  assert.match(routeCanvas, /<ProjectCanvasRoot/u);
   assert.doesNotMatch(workspace, /SurfaceSwitcher/u);
-  assert.match(workspaceToolbar, /buttonStyle\("glass"\)/u);
-  assert.doesNotMatch(nestedSidebar, /runtimeStatusLabel/u);
+  assert.match(toolbarPrimitives, /buttonStyle\(prominent \? "glassProminent" : "glass"\)/u);
+  assert.doesNotMatch(projectLayout, /runtimeStatusLabel/u);
   assert.doesNotMatch(workspaceToolbar, /<Picker|pickerStyle\("segmented"\)/u);
+  assert.match(catalog, /WorkspaceProject/u);
+  assert.match(projectController, /catalog\.project\(projectId\)/u);
+  assert.match(projectController, /threadsForProject\(\s*projectId/u);
+  assert.match(projectController, /projectState\(projectId\)/u);
+  assert.doesNotMatch(workspaceRouteBuilder, /projectName|\?/u);
   assert.doesNotMatch(
-    nestedSidebar,
+    projectLayout,
     /Session connected|Session offline|serverUrl/u,
   );
   assert.doesNotMatch(

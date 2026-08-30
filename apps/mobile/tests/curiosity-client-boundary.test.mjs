@@ -7,13 +7,13 @@ const mobileRoot = new URL("../", import.meta.url);
 const sourceRoot = new URL("../src/", import.meta.url);
 
 test("the iPad product selects the local client without URL configuration", async () => {
-  const screen = await readFile(
-    new URL("screens/workspace-screen.tsx", sourceRoot),
+  const workspaceContext = await readFile(
+    new URL("curiosity-workspace-context.tsx", sourceRoot),
     "utf8",
   );
-  assert.match(screen, /localCuriosityClient/u);
+  assert.match(workspaceContext, /localCuriosityClient/u);
   assert.doesNotMatch(
-    screen,
+    workspaceContext,
     /createHttpCuriosityClient|createCuriosityApi|fetch\s*\(|EXPO_PUBLIC_|https?:\/\//u,
   );
 });

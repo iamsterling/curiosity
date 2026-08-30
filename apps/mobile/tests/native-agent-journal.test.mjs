@@ -71,12 +71,15 @@ test("native agent journal sends only coarse operations without storage authorit
         return JSON.stringify(projection);
       if (request.operation === "runnableRuns")
         return JSON.stringify([projection]);
+      if (request.operation === "listRunProjections")
+        return JSON.stringify([projection]);
       throw new Error("unexpected");
     },
   });
   await journal.startRun(start);
   assert.equal((await journal.readRunProjection("run-1"))?.revision, 0);
   assert.equal((await journal.runnableRuns(8)).length, 1);
+  assert.equal((await journal.listRunProjections(128)).length, 1);
   for (const request of requests) {
     assert.equal("databasePath" in request, false);
     assert.equal("catalogDigest" in request, false);

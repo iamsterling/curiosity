@@ -3,11 +3,20 @@ import type { CraftyUiPackagePublicationStore } from "./crafty-ui-persistence";
 
 const PACKAGE_DIRECTORY = "crafty-portability.ui";
 
+const packageDirectoryFor = (projectId?: string): string =>
+  projectId
+    ? `${PACKAGE_DIRECTORY}-${projectId.replace(/[^a-zA-Z0-9._-]/gu, "-")}`
+    : PACKAGE_DIRECTORY;
+
 const readIfPresent = async (file: File): Promise<string | undefined> =>
   file.exists ? file.text() : undefined;
 
 export class ExpoCraftyUiPackageStore implements CraftyUiPackagePublicationStore {
-  private readonly directory = new Directory(Paths.document, PACKAGE_DIRECTORY);
+  private readonly directory: Directory;
+
+  public constructor(projectId?: string) {
+    this.directory = new Directory(Paths.document, packageDirectoryFor(projectId));
+  }
 
   public readDocumentEntry = (path: string): Promise<string | undefined> =>
     readIfPresent(new File(this.directory, path));

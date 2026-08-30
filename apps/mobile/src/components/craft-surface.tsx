@@ -10,7 +10,6 @@ import {
   Pressable,
   Text,
   type LayoutChangeEvent,
-  useWindowDimensions,
   View,
 } from "react-native";
 import {
@@ -48,6 +47,7 @@ import {
 } from "../crafty/crafty-creation-interaction";
 import { applyCraftyAccessibilityCommand } from "../crafty/crafty-accessibility-interaction";
 import { palette } from "../theme";
+import { useContainerWidth } from "../use-container-width";
 import { styles } from "./craft-surface.styles";
 
 const tools = Object.freeze([
@@ -134,8 +134,8 @@ const PanelHeader = ({ label, meta }: { label: string; meta: string }) => (
   </View>
 );
 
-export const CraftSurface = () => {
-  const { width } = useWindowDimensions();
+export const CraftSurface = ({ projectId }: { readonly projectId: string }) => {
+  const container = useContainerWidth();
   const [activeTool, setActiveTool] = useState<EditorTool>("select");
   const [canvasSize, setCanvasSize] = useState<CanvasSize>();
   const [canvasViewport, setCanvasViewport] = useState(initialCanvasViewport);
@@ -146,12 +146,15 @@ export const CraftSurface = () => {
   >("saved");
   const [kernelProjectionRevision, setKernelProjectionRevision] = useState(0);
   const savedDocumentBytes = useRef<string | undefined>(undefined);
-  const packageStore = useMemo(() => new ExpoCraftyUiPackageStore(), []);
+  const packageStore = useMemo(
+    () => new ExpoCraftyUiPackageStore(projectId),
+    [projectId],
+  );
   const kernelStatus = useSyncExternalStore(
     subscribeToCraftyKernelPortabilityStatus,
     getCraftyKernelPortabilityStatus,
   );
-  const showsPanels = width >= 1_150;
+  const showsPanels = container.width >= 1_150;
   void kernelProjectionRevision;
   const projection = kernel?.getProjection();
   const page = projection
@@ -275,7 +278,7 @@ export const CraftSurface = () => {
   };
 
   return (
-    <View style={styles.root}>
+    <View onLayout={container.onLayout} style={styles.root}>
       <View style={styles.toolbar}>
         <View>
           <Text style={styles.eyebrow}>CRAFT / DOCUMENT</Text>

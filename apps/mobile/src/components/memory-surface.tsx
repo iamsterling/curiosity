@@ -4,10 +4,10 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  useWindowDimensions,
   View,
 } from "react-native";
 import { palette } from "../theme";
+import { useContainerWidth } from "../use-container-width";
 
 type MemoryTab = "Decision impact" | "Evidence" | "Projection";
 
@@ -74,13 +74,13 @@ const Relationship = ({
 );
 
 export const MemorySurface = () => {
-  const { width } = useWindowDimensions();
+  const container = useContainerWidth();
   const [tab, setTab] = useState<MemoryTab>("Decision impact");
   const [selected, setSelected] = useState("belief");
-  const showsInspector = width >= 1_100;
+  const showsInspector = container.width >= 1_100;
 
   return (
-    <View style={styles.root}>
+    <View onLayout={container.onLayout} style={styles.root}>
       <View style={styles.header}>
         <View>
           <Text style={styles.eyebrow}>CURIOSITY / GOVERNED MEMORY</Text>

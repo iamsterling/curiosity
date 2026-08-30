@@ -18,7 +18,7 @@ export const palette = Object.freeze({
   glassStrong: adaptive("rgba(255,255,255,0.72)", "rgba(23,39,48,0.5)"),
   glassTint: adaptive("rgba(255,255,255,0.12)", "rgba(174,223,244,0.08)"),
   line: adaptive("rgba(25,55,70,0.1)", "rgba(210,235,246,0.12)"),
-  issuesAccent: adaptive("#16b9d4", "#64d2ff"),
+  agentsAccent: adaptive("#16b9d4", "#64d2ff"),
   navigationControl: adaptive("rgba(255,255,255,0.58)", "rgba(58,58,60,0.72)"),
   navigationSelection: adaptive("rgba(60,60,67,0.12)", "rgba(235,235,245,0.14)"),
   navigationSidebar: adaptive("#f0efeb", "#171715"),

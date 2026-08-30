@@ -95,6 +95,15 @@ enum Request {
         database_path: String,
         limit: u32,
     },
+    ListRunProjections {
+        #[serde(rename = "abiVersion")]
+        abi_version: u32,
+        #[serde(rename = "catalogDigest")]
+        catalog_digest: String,
+        #[serde(rename = "databasePath")]
+        database_path: String,
+        limit: u32,
+    },
     ReadRunProjection {
         #[serde(rename = "abiVersion")]
         abi_version: u32,
@@ -369,6 +378,19 @@ fn execute(request: Request) -> Result<Vec<u8>> {
             }
             let connection = open_ready_database(&database_path, &catalog_digest)?;
             encode(&agent_journal::runnable_runs(&connection, limit)?)
+        }
+        Request::ListRunProjections {
+            abi_version,
+            catalog_digest,
+            database_path,
+            limit,
+        } => {
+            validate_agent_common(abi_version, &database_path, &catalog_digest)?;
+            if limit == 0 || limit > MAX_READ_PAGE {
+                return Err(JournalError::RequestInvalid);
+            }
+            let connection = open_ready_database(&database_path, &catalog_digest)?;
+            encode(&agent_journal::list_run_projections(&connection, limit)?)
         }
         Request::ReadRunProjection {
             abi_version,

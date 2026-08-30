@@ -537,6 +537,25 @@ pub(super) fn runnable_runs(connection: &Connection, limit: u32) -> Result<Vec<R
     .collect()
 }
 
+pub(super) fn list_run_projections(
+    connection: &Connection,
+    limit: u32,
+) -> Result<Vec<RunProjection>> {
+    let mut statement = connection
+        .prepare(
+            "SELECT workflow_instances.action_count,workflow_instances.capability_ceiling_json,workflow_instances.child_count,workflow_instances.child_key,workflow_instances.contribution_id,workflow_instances.contribution_version,workflow_instances.created_at,workflow_instances.depth,workflow_instances.error_code,workflow_instances.execution_id,workflow_instances.input_json,workflow_instances.last_progress_key,workflow_instances.max_actions,workflow_instances.max_children,workflow_instances.max_delegation_depth,workflow_instances.max_no_progress,workflow_instances.max_steps,workflow_instances.no_progress_count,workflow_instances.parent_instance_id,workflow_instances.plugin_id,workflow_instances.instance_id,workflow_instances.source_event_id,workflow_instances.state_json,workflow_instances.status,workflow_instances.step_count,workflow_instances.updated_at,workflow_instances.workflow_name,executions.generation FROM workflow_instances JOIN executions ON executions.execution_id=workflow_instances.execution_id ORDER BY workflow_instances.updated_at DESC,workflow_instances.instance_id DESC LIMIT ?1",
+        )
+        .map_err(|_| JournalError::TransactionFailed)?;
+    let rows = statement
+        .query_map([limit], row_from_record)
+        .map_err(|_| JournalError::TransactionFailed)?;
+    rows.map(|row| {
+        row.map_err(|_| JournalError::TransactionFailed)
+            .and_then(|value| to_projection(connection, value))
+    })
+    .collect()
+}
+
 pub(super) fn read_run_projection(
     connection: &Connection,
     run_id: &str,
@@ -1319,6 +1338,10 @@ mod tests {
             runnable_runs(&connection, 8).unwrap()[0].run_id,
             "run-child"
         );
+        let activity = list_run_projections(&connection, 8).unwrap();
+        assert_eq!(activity.len(), 2);
+        assert!(activity.iter().any(|run| run.depth == 1));
+        assert!(activity.iter().any(|run| run.run_id == "run-root"));
         verify_integrity(&connection).unwrap();
     }
 
