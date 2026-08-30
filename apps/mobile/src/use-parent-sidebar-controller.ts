@@ -5,7 +5,12 @@ import { useAppShell } from "./app-shell-context";
 import { useCuriosityWorkspaceContext } from "./curiosity-workspace-context";
 import { useProjectSessionIndex } from "./project-session-index-context";
 import { useWorkspaceCatalog } from "./workspace-catalog-context";
-import { projectCollectionRoute } from "./workspace-routes";
+import type { WorkspaceProject } from "./workspace-catalog";
+import {
+  organizationAgentsRoute,
+  organizationRecentRoute,
+  projectCollectionRoute,
+} from "./workspace-routes";
 
 const prompt = (
   title: string,
@@ -49,26 +54,48 @@ export const useParentSidebarController = () => {
     [appShell, router],
   );
   const navigateToProject = useCallback(
-    (projectId: string) => {
+    (project: WorkspaceProject) => {
+      if (catalog.activeOrganizationId !== project.organizationId)
+        catalog.selectOrganization(project.organizationId);
       appShell.setNavigationLevel("artifacts");
-      closeAndReplace(projectCollectionRoute(projectId, "sessions"));
+      closeAndReplace(projectCollectionRoute(project.id, "sessions"));
     },
-    [appShell, closeAndReplace],
+    [appShell, catalog, closeAndReplace],
   );
   const openProject = useCallback(
     (projectId: string) => {
-      if (catalog.project(projectId)) navigateToProject(projectId);
+      const project = catalog.project(projectId);
+      if (project) navigateToProject(project);
     },
     [catalog, navigateToProject],
   );
+  const selectOrganization = useCallback(
+    (organizationId: string) => {
+      const organization = catalog.organizations.find(
+        ({ id }) => id === organizationId,
+      );
+      if (!organization) return;
+      catalog.selectOrganization(organization.id);
+      const project = organization.projects[0];
+      if (project) {
+        navigateToProject(project);
+        return;
+      }
+      closeAndReplace(organizationRecentRoute(organization.id));
+    },
+    [catalog, closeAndReplace, navigateToProject],
+  );
   return {
     activeOrganizationId: catalog.activeOrganizationId,
-    agentsActive: pathname === "/agents",
+    agentsActive: pathname.endsWith("/agents"),
     close: appShell.closeParentSidebar,
     open: appShell.parentSidebarOpen,
-    openAgents: () => closeAndReplace("/agents"),
+    openSidebar: appShell.openParentSidebar,
+    openAgents: () =>
+      closeAndReplace(organizationAgentsRoute(catalog.activeOrganizationId)),
     openProject,
-    openRecent: () => closeAndReplace("/recent"),
+    openRecent: () =>
+      closeAndReplace(organizationRecentRoute(catalog.activeOrganizationId)),
     openSettings: () => closeAndReplace("/settings"),
     organizations: catalog.organizations,
     projects: catalog.activeOrganization?.projects ?? [],
@@ -86,12 +113,12 @@ export const useParentSidebarController = () => {
         `Create a project in ${organization.name}.`,
         (name) => {
           const project = catalog.addProject(name);
-          if (project) navigateToProject(project.id);
+          if (project) navigateToProject(project);
         },
       );
     },
-    recentActive: pathname === "/recent",
-    selectOrganization: catalog.selectOrganization,
+    recentActive: pathname.endsWith("/recent"),
+    selectOrganization,
     settingsActive: pathname.startsWith("/settings"),
     threadCount: organizationThreads.length,
   } as const;

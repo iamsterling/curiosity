@@ -116,6 +116,7 @@ export const createLocalCuriosityClient = (
         kind: "chat.turn",
         payload: {
           assistantMessageId: config.createId(),
+          ...(input.projectId ? { projectId: input.projectId } : {}),
           text: commandText(input.mode, input.text),
           threadId,
           turnId,

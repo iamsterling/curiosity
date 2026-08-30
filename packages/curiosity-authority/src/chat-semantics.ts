@@ -29,11 +29,15 @@ export const decodeChatTurnPayload = (value: unknown): ChatTurnPayload => {
     !nonEmptyString(payload.threadId) ||
     !nonEmptyString(payload.turnId) ||
     !nonEmptyString(payload.userMessageId) ||
-    (payload.agentId !== undefined && !nonEmptyString(payload.agentId))
+    (payload.agentId !== undefined && !nonEmptyString(payload.agentId)) ||
+    (payload.projectId !== undefined && !nonEmptyString(payload.projectId))
   )
     throw new PortableAuthorityError("CHAT_TURN_PAYLOAD_INVALID");
   const decoded: ChatTurnPayload = {
     assistantMessageId: payload.assistantMessageId,
+    ...(typeof payload.projectId === "string"
+      ? { projectId: payload.projectId }
+      : {}),
     text: payload.text,
     threadId: payload.threadId,
     turnId: payload.turnId,
@@ -49,6 +53,7 @@ export const decodeChatTurnPayload = (value: unknown): ChatTurnPayload => {
 export const validateChatTurnBounds = (payload: ChatTurnPayload): void => {
   const identifiers = [
     ...(payload.agentId ? [payload.agentId] : []),
+    ...(payload.projectId ? [payload.projectId] : []),
     payload.assistantMessageId,
     payload.threadId,
     payload.turnId,
@@ -112,6 +117,7 @@ export const proposeChatTurn = (
       body: {
         assistantMessageId: payload.assistantMessageId,
         agentId,
+        ...(payload.projectId ? { projectId: payload.projectId } : {}),
         ...(roleActivation
           ? {
               roleActivationCommand: roleActivation.commandName,

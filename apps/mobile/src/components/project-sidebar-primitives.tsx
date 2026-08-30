@@ -89,6 +89,34 @@ export const ProjectSidebarDestinationLabel = forwardRef<
 ));
 ProjectSidebarDestinationLabel.displayName = "ProjectSidebarDestinationLabel";
 
+export const ProjectSidebarDestinationCopy = forwardRef<View, ViewProps>(
+  ({ style, ...props }, ref) => (
+    <View ref={ref} style={[styles.destinationCopy, style]} {...props} />
+  ),
+);
+ProjectSidebarDestinationCopy.displayName = "ProjectSidebarDestinationCopy";
+
+export const ProjectSidebarDestinationDetail = forwardRef<Text, TextProps>(
+  ({ style, ...props }, ref) => (
+    <Text ref={ref} style={[styles.destinationDetail, style]} {...props} />
+  ),
+);
+ProjectSidebarDestinationDetail.displayName = "ProjectSidebarDestinationDetail";
+
+export const ProjectSidebarItemScope = forwardRef<View, ViewProps>(
+  ({ style, ...props }, ref) => (
+    <View ref={ref} style={[styles.scope, style]} {...props} />
+  ),
+);
+ProjectSidebarItemScope.displayName = "ProjectSidebarItemScope";
+
+export const ProjectSidebarItemScopeTitle = forwardRef<Text, TextProps>(
+  ({ style, ...props }, ref) => (
+    <Text ref={ref} style={[styles.scopeTitle, style]} {...props} />
+  ),
+);
+ProjectSidebarItemScopeTitle.displayName = "ProjectSidebarItemScopeTitle";
+
 export const ProjectSidebarSectionTitle = forwardRef<Text, TextProps>(
   ({ style, ...props }, ref) => (
     <Text ref={ref} style={[styles.sectionTitle, style]} {...props} />
@@ -96,7 +124,7 @@ export const ProjectSidebarSectionTitle = forwardRef<Text, TextProps>(
 );
 ProjectSidebarSectionTitle.displayName = "ProjectSidebarSectionTitle";
 
-export const ProjectSidebarSession = forwardRef<
+export const ProjectSidebarItem = forwardRef<
   View,
   PressableProps & { readonly selected?: boolean }
 >(({ accessibilityState, selected = false, style, ...props }, ref) => (
@@ -105,7 +133,7 @@ export const ProjectSidebarSession = forwardRef<
     accessibilityState={{ ...accessibilityState, selected }}
     ref={ref}
     style={(state) => [
-      styles.session,
+      styles.item,
       selected && styles.selected,
       state.pressed && styles.pressed,
       typeof style === "function" ? style(state) : style,
@@ -113,20 +141,20 @@ export const ProjectSidebarSession = forwardRef<
     {...props}
   />
 ));
-ProjectSidebarSession.displayName = "ProjectSidebarSession";
+ProjectSidebarItem.displayName = "ProjectSidebarItem";
 
-export const ProjectSidebarSessionTitle = forwardRef<Text, TextProps>(
+export const ProjectSidebarItemTitle = forwardRef<Text, TextProps>(
   ({ style, ...props }, ref) => (
-    <Text ref={ref} style={[styles.sessionTitle, style]} {...props} />
+    <Text ref={ref} style={[styles.itemTitle, style]} {...props} />
   ),
 );
-ProjectSidebarSessionTitle.displayName = "ProjectSidebarSessionTitle";
+ProjectSidebarItemTitle.displayName = "ProjectSidebarItemTitle";
 
-export const ProjectSidebarSessionDetail = forwardRef<Text, TextProps>(
+export const ProjectSidebarItemDetail = forwardRef<Text, TextProps>(
   ({ style, ...props }, ref) => (
-    <Text ref={ref} style={[styles.sessionDetail, style]} {...props} />
+    <Text ref={ref} style={[styles.itemDetail, style]} {...props} />
   ),
 );
-ProjectSidebarSessionDetail.displayName = "ProjectSidebarSessionDetail";
+ProjectSidebarItemDetail.displayName = "ProjectSidebarItemDetail";
 
 export { projectSidebarStyles };

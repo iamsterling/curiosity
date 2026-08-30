@@ -64,12 +64,33 @@ export const AppSidebarNavigationRow = forwardRef<
 ));
 AppSidebarNavigationRow.displayName = "AppSidebarNavigationRow";
 
-export const AppSidebarNavigationLabel = forwardRef<Text, TextProps>(
+export const AppSidebarNavigationTitle = forwardRef<Text, TextProps>(
   ({ style, ...props }, ref) => (
-    <Text ref={ref} style={[styles.label, style]} {...props} />
+    <Text ref={ref} style={[styles.title, style]} {...props} />
   ),
 );
-AppSidebarNavigationLabel.displayName = "AppSidebarNavigationLabel";
+AppSidebarNavigationTitle.displayName = "AppSidebarNavigationTitle";
+
+export const AppSidebarNavigationDetail = forwardRef<Text, TextProps>(
+  ({ style, ...props }, ref) => (
+    <Text ref={ref} style={[styles.detail, style]} {...props} />
+  ),
+);
+AppSidebarNavigationDetail.displayName = "AppSidebarNavigationDetail";
+
+export const AppSidebarNavigationRowCopy = forwardRef<View, ViewProps>(
+  ({ style, ...props }, ref) => (
+    <View ref={ref} style={[styles.rowCopy, style]} {...props} />
+  ),
+);
+AppSidebarNavigationRowCopy.displayName = "AppSidebarNavigationRowCopy";
+
+export const AppSidebarNavigationGroupLabel = forwardRef<Text, TextProps>(
+  ({ style, ...props }, ref) => (
+    <Text ref={ref} style={[styles.groupLabel, style]} {...props} />
+  ),
+);
+AppSidebarNavigationGroupLabel.displayName = "AppSidebarNavigationGroupLabel";
 
 export const AppSidebarNavigationSection = forwardRef<View, ViewProps>(
   ({ style, ...props }, ref) => (
@@ -85,6 +106,14 @@ export const AppSidebarNavigationSectionTitle = forwardRef<Text, TextProps>(
 );
 AppSidebarNavigationSectionTitle.displayName =
   "AppSidebarNavigationSectionTitle";
+
+export const AppSidebarNavigationSectionMeta = forwardRef<Text, TextProps>(
+  ({ style, ...props }, ref) => (
+    <Text ref={ref} style={[styles.sectionMeta, style]} {...props} />
+  ),
+);
+AppSidebarNavigationSectionMeta.displayName =
+  "AppSidebarNavigationSectionMeta";
 
 export const appSidebarNavigationStyles = StyleSheet.create({
   count: {
@@ -102,6 +131,28 @@ export const appSidebarNavigationStyles = StyleSheet.create({
     paddingVertical: 12,
   },
   headerSpacer: { flex: 1 },
+  organizationContext: { minWidth: 0 },
+  organizationCount: {
+    alignItems: "center",
+    flexDirection: "row",
+    marginHorizontal: 10,
+    marginTop: 8,
+  },
+  organizationCountLabel: {
+    color: palette.textMuted,
+    flex: 1,
+    fontSize: 9,
+    fontWeight: "700",
+    letterSpacing: 0.6,
+  },
+  organizationEyebrow: {
+    color: palette.textMuted,
+    fontSize: 9,
+    fontWeight: "800",
+    letterSpacing: 0.8,
+    marginBottom: 2,
+    marginLeft: 2,
+  },
   sectionAction: {
     alignItems: "center",
     height: 30,
@@ -125,6 +176,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingTop: 8,
   },
+  detail: {
+    color: palette.textMuted,
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  groupLabel: {
+    color: palette.textMuted,
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 0.9,
+    marginBottom: 7,
+    marginHorizontal: 10,
+    marginTop: 8,
+  },
   header: {
     alignItems: "center",
     flexDirection: "row",
@@ -133,11 +198,11 @@ const styles = StyleSheet.create({
     paddingBottom: 9,
     paddingHorizontal: 12,
   },
-  label: {
+  title: {
     color: palette.textPrimary,
-    flex: 1,
-    fontSize: 16,
-    lineHeight: 21,
+    fontSize: 15,
+    fontWeight: "600",
+    lineHeight: 19,
   },
   pressed: { opacity: 0.55 },
   root: {
@@ -152,10 +217,11 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     flexDirection: "row",
     gap: 11,
-    minHeight: 44,
+    minHeight: 54,
     paddingHorizontal: 10,
     paddingVertical: 7,
   },
+  rowCopy: { flex: 1, gap: 1, minWidth: 0 },
   section: {
     alignItems: "center",
     flexDirection: "row",
@@ -168,6 +234,12 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontWeight: "600",
+  },
+  sectionMeta: {
+    color: palette.textMuted,
+    fontSize: 10,
+    fontWeight: "700",
+    letterSpacing: 0.6,
   },
   selected: { backgroundColor: palette.navigationSelection },
 });

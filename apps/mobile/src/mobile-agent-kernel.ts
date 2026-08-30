@@ -1,21 +1,19 @@
 import {
   AgentKernel,
   type AgentKernelPlanPort,
+  type AgentStepPort,
   type Sha256,
 } from "@curiosity/authority";
-import {
-  createFoundationModelAgentStep,
-  type AgentStepNativePort,
-} from "./foundation-model-agent-step-port.ts";
 import {
   createNativeAgentJournal,
   type NativeAgentJournalModule,
 } from "./native-agent-journal-port.ts";
 
 export interface MobileAgentKernelConfig {
+  readonly agentStep: AgentStepPort;
   readonly catalogDigest: string;
   readonly eligibleActorId: string;
-  readonly native: AgentStepNativePort & NativeAgentJournalModule;
+  readonly native: NativeAgentJournalModule;
   readonly now: () => string;
   readonly ownerId?: string;
   readonly planner: AgentKernelPlanPort;
@@ -26,7 +24,7 @@ export const createMobileAgentKernel = (
   config: MobileAgentKernelConfig,
 ): AgentKernel =>
   new AgentKernel({
-    agentStep: createFoundationModelAgentStep(config.native),
+    agentStep: config.agentStep,
     catalogDigest: config.catalogDigest,
     eligibleActorId: config.eligibleActorId,
     journal: createNativeAgentJournal(config.native),

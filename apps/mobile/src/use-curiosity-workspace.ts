@@ -144,12 +144,14 @@ export const useCuriosityWorkspace = (client: CuriosityClient) => {
       try {
         const turn = await client.submit({
           mode,
+          projectId,
           text: prompt,
           ...(project.activeThreadId
             ? { threadId: project.activeThreadId }
             : {}),
         });
-        if (revision !== requestRevisions.current.get(projectId)) return undefined;
+        if (revision !== requestRevisions.current.get(projectId))
+          return undefined;
         setState((current) => ({
           ...updateProjectWorkspaceState(
             current,
@@ -175,7 +177,8 @@ export const useCuriosityWorkspace = (client: CuriosityClient) => {
         }));
         return turn.threadId;
       } catch (error) {
-        if (revision !== requestRevisions.current.get(projectId)) return undefined;
+        if (revision !== requestRevisions.current.get(projectId))
+          return undefined;
         setState((current) =>
           updateProjectWorkspaceState(current, projectId, (currentProject) => ({
             ...currentProject,

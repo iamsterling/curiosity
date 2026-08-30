@@ -3,30 +3,38 @@ import { useCallback, useMemo } from "react";
 import { useAppShell } from "./app-shell-context";
 import type { SidebarCollectionId } from "./components/notes-shell-model";
 import { useCuriosityWorkspaceContext } from "./curiosity-workspace-context";
-import { projectCollectionRoute } from "./workspace-routes";
+import { projectCollectionRoute, projectSessionRoute } from "./workspace-routes";
 
 export const useProjectNavigationController = (projectId: string) => {
   const router = useRouter();
   const { openParentSidebar, setNavigationLevel } = useAppShell();
-  const { loadSession, newThread: resetThread } = useCuriosityWorkspaceContext();
+  const { loadSession, newThread: resetThread, projectState } =
+    useCuriosityWorkspaceContext();
+  const activeThreadId = projectState(projectId).activeThreadId;
 
   const selectCollection = useCallback(
     (collectionId: SidebarCollectionId) => {
       setNavigationLevel("content");
+      if (collectionId === "sessions" && activeThreadId) {
+        router.replace(projectSessionRoute(projectId, activeThreadId));
+        return;
+      }
       router.replace(projectCollectionRoute(projectId, collectionId));
     },
-    [projectId, router, setNavigationLevel],
+    [activeThreadId, projectId, router, setNavigationLevel],
   );
   const newThread = useCallback(() => {
     resetThread(projectId);
-    selectCollection("sessions");
-  }, [projectId, resetThread, selectCollection]);
+    setNavigationLevel("content");
+    router.replace(projectCollectionRoute(projectId, "sessions"));
+  }, [projectId, resetThread, router, setNavigationLevel]);
   const openThread = useCallback(
     (threadId: string) => {
-      selectCollection("sessions");
+      setNavigationLevel("content");
+      router.replace(projectSessionRoute(projectId, threadId));
       void loadSession(projectId, threadId);
     },
-    [loadSession, projectId, selectCollection],
+    [loadSession, projectId, router, setNavigationLevel],
   );
   const showSidebar = useCallback(
     () => setNavigationLevel("artifacts"),

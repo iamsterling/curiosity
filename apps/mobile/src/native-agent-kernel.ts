@@ -3,7 +3,13 @@ import {
   createMobileAgentKernel,
   type MobileAgentKernelConfig,
 } from "./mobile-agent-kernel.ts";
+import { createFrontierAgentStep } from "./frontier-agent-step-port.ts";
 
 export const createNativeAgentKernel = (
-  config: Omit<MobileAgentKernelConfig, "native">,
-) => createMobileAgentKernel({ ...config, native: CuriosityRuntimeModule });
+  config: Omit<MobileAgentKernelConfig, "agentStep" | "native">,
+) =>
+  createMobileAgentKernel({
+    ...config,
+    agentStep: createFrontierAgentStep(CuriosityRuntimeModule),
+    native: CuriosityRuntimeModule,
+  });

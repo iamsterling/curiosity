@@ -4,30 +4,38 @@ import { palette } from "../theme";
 export const projectSidebarStyles = StyleSheet.create({
   content: { flex: 1 },
   expanded: { flex: 1, width: undefined },
-  sessionGroup: { paddingBottom: 6 },
+  itemGroup: { paddingBottom: 6 },
 });
 
 export const projectSidebarPrimitiveStyles = StyleSheet.create({
   destination: {
     alignItems: "center",
-    borderRadius: 10,
-    flexGrow: 1,
-    justifyContent: "center",
-    minHeight: 34,
-    paddingHorizontal: 8,
+    borderRadius: 14,
+    flexDirection: "row",
+    gap: 10,
+    minHeight: 58,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  destinationCopy: { flex: 1, gap: 1, minWidth: 0 },
+  destinationDetail: {
+    color: palette.textMuted,
+    fontSize: 11,
+    lineHeight: 15,
   },
   destinationLabel: {
     color: palette.textSecondary,
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: "600",
+    lineHeight: 18,
   },
   destinationLabelSelected: { color: palette.textPrimary },
   destinations: {
     borderBottomColor: palette.line,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    flexDirection: "row",
-    gap: 3,
-    padding: 10,
+    gap: 2,
+    paddingBottom: 12,
+    paddingHorizontal: 10,
   },
   eyebrow: {
     color: palette.textMuted,
@@ -53,19 +61,29 @@ export const projectSidebarPrimitiveStyles = StyleSheet.create({
     borderRightColor: palette.line,
     borderRightWidth: StyleSheet.hairlineWidth,
   },
-  sectionTitle: {
-    borderBottomColor: palette.line,
-    borderBottomWidth: StyleSheet.hairlineWidth,
+  scope: {
+    paddingBottom: 3,
+    paddingHorizontal: 16,
+    paddingTop: 15,
+  },
+  scopeTitle: {
     color: palette.textPrimary,
     fontSize: 18,
     fontWeight: "700",
-    marginBottom: 5,
+    lineHeight: 23,
+  },
+  sectionTitle: {
+    color: palette.textMuted,
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 0.8,
+    marginBottom: 4,
     marginHorizontal: 16,
-    paddingBottom: 8,
-    paddingTop: 17,
+    paddingBottom: 5,
+    paddingTop: 12,
   },
   selected: { backgroundColor: palette.artifactSelection },
-  session: {
+  item: {
     borderRadius: 16,
     gap: 2,
     marginHorizontal: 12,
@@ -73,8 +91,8 @@ export const projectSidebarPrimitiveStyles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 10,
   },
-  sessionDetail: { color: palette.textMuted, fontSize: 13, lineHeight: 18 },
-  sessionTitle: {
+  itemDetail: { color: palette.textMuted, fontSize: 13, lineHeight: 18 },
+  itemTitle: {
     color: palette.textPrimary,
     fontSize: 15,
     fontWeight: "600",

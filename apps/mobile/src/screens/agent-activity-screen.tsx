@@ -7,9 +7,11 @@ import {
   Text,
   View,
 } from "react-native";
+import { agentRunsForProjects } from "../agent-activity-scope";
 import { SystemScreenShell } from "../components/system-screen-shell";
 import { palette } from "../theme";
 import { useAgentActivity } from "../use-agent-activity";
+import { useOrganizationRoute } from "../use-organization-route";
 import { agentActivityStyles as styles } from "./agent-activity-screen.styles";
 
 const statusColor = (status: AgentRunStatus) => {
@@ -69,15 +71,20 @@ const AgentRunRow = ({ run }: { readonly run: AgentRunProjection }) => (
 
 export const AgentActivityScreen = () => {
   const activity = useAgentActivity();
+  const organization = useOrganizationRoute();
+  const runs = useMemo(
+    () => agentRunsForProjects(activity.state.runs, organization.projectIds),
+    [activity.state.runs, organization.projectIds],
+  );
   const counts = useMemo(() => {
-    const active = activity.state.runs.filter(({ status }) =>
+    const active = runs.filter(({ status }) =>
       ["running", "completion-requested"].includes(status),
     ).length;
-    const failed = activity.state.runs.filter(({ status }) =>
+    const failed = runs.filter(({ status }) =>
       ["failed", "cancelled"].includes(status),
     ).length;
-    return { active, failed, total: activity.state.runs.length };
-  }, [activity.state.runs]);
+    return { active, failed, total: runs.length };
+  }, [runs]);
 
   const refreshButton = (
     <Pressable
@@ -92,13 +99,13 @@ export const AgentActivityScreen = () => {
 
   return (
     <SystemScreenShell
-      subtitle="App-wide durable execution log across projects and sessions"
-      title="Agents"
+      subtitle={`Durable execution log across ${organization.organization?.name ?? "this organization"}`}
+      title="Activity"
       trailing={refreshButton}
     >
       <FlatList
         contentContainerStyle={styles.content}
-        data={activity.state.runs}
+        data={runs}
         keyExtractor={({ runId }) => runId}
         ListEmptyComponent={
           <View style={styles.empty}>

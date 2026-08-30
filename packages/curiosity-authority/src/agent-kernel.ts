@@ -1,6 +1,7 @@
 import {
   assertAgentStepEnvelope,
   decodeAgentStepProposal,
+  validateAgentStepProposalAuthority,
   type AgentIdentitySnapshot,
   type AgentStepPort,
   type AgentStepProposal,
@@ -457,6 +458,44 @@ const providerTransition = async (
   };
 };
 
+const providerFailureTransition = async (
+  run: AgentRunProjection,
+  actionId: string,
+  errorCode: string,
+  stepId: string,
+  committedAt: string,
+  eligibleActorId: string,
+  sha256: Sha256,
+): Promise<AgentJournalCommitTransition> => {
+  const phase = errorCode === "ACTION_CANCELLED" ? "cancelled" : "failed";
+  const nextState = {
+    errorCode,
+    phase,
+    providerActionId: actionId,
+    schemaVersion: 1,
+  };
+  const progressKey = `agent-provider-terminal:${run.revision + 1}:${stepId}:${errorCode}`;
+  const terminalRequested = true;
+  const transitionDigest = await sha256(
+    canonicalJson({ actions: [], nextState, progressKey, terminalRequested }),
+  );
+  const time = checkedTime(committedAt);
+  return {
+    actions: [],
+    children: [],
+    committedAt,
+    expectedRevision: run.revision,
+    gateEligibleActorId: eligibleActorId,
+    gateExpiresAt: new Date(time + gateLifetimeMs).toISOString(),
+    nextState,
+    observedStateDigest: run.stateDigest,
+    progressKey,
+    runId: run.runId,
+    terminalRequested,
+    transitionDigest,
+  };
+};
+
 const decodeProviderInput = async (
   action: AgentJournalProviderActionProjection,
   sha256: Sha256,
@@ -542,7 +581,37 @@ export class AgentKernel {
     run: AgentRunProjection,
     signal: AbortSignal,
   ): Promise<AgentKernelDrainResult> {
-    const plan = await this.#config.planner.plan(run, signal);
+    let plan: AgentKernelStepPlan;
+    try {
+      plan = await this.#config.planner.plan(run, signal);
+    } catch (error) {
+      const errorCode = stableErrorCode(error, signal);
+      const stepId = await this.#config.sha256(
+        canonicalJson({
+          errorCode,
+          kind: "agent-plan-failure",
+          revision: run.revision,
+          runId: run.runId,
+        }),
+      );
+      const transition = await providerFailureTransition(
+        run,
+        `provider-plan:${stepId}`,
+        errorCode,
+        stepId,
+        this.#config.now(),
+        this.#config.eligibleActorId,
+        this.#config.sha256,
+      );
+      const commit = await this.#config.journal.commitTransition(transition);
+      return {
+        commit,
+        kind: "committed",
+        proposalKind: "no-go",
+        runId: run.runId,
+        stepId,
+      };
+    }
     if (signal.aborted) throw new PortableAuthorityError("ACTION_CANCELLED");
     if (
       plan.tools.length > 8 ||
@@ -618,7 +687,14 @@ export class AgentKernel {
       return this.#applySettledProvider(run, action, input, signal);
     if (action.status === "delivery-unknown")
       return this.#blocked(run, action, "delivery-unknown");
-    if (action.status === "failed" || (action.status === "proposed" && call))
+    if (action.status === "failed")
+      return this.#finalizeProviderFailure(
+        run,
+        action,
+        input.request.stepId,
+        action.errorCode ?? call?.errorCode ?? "PROVIDER_GENERATION_FAILED",
+      );
+    if (action.status === "proposed" && call)
       return this.#blocked(run, action, "failed");
     if (action.status === "running" && call?.dispatchState === "dispatched")
       return this.#blocked(run, action, "dispatched-unsettled");
@@ -661,15 +737,7 @@ export class AgentKernel {
           kind: "attempt",
         }),
       ));
-    const callId =
-      action.call?.callId ??
-      (await this.#config.sha256(
-        canonicalJson({
-          actionId: action.actionId,
-          generation,
-          kind: "provider-call",
-        }),
-      ));
+    const callId = action.call?.callId ?? input.request.stepId;
     const snapshot = {
       catalogDigest: this.#config.catalogDigest,
       grantedCapabilities: [...run.capabilityCeiling],
@@ -732,7 +800,10 @@ export class AgentKernel {
       const result = await this.#config.agentStep.step(request);
       if (signal.aborted) throw new PortableAuthorityError("ACTION_CANCELLED");
       exactResultIdentity(result, request);
-      const proposal = decodeAgentStepProposal(result.proposal);
+      const proposal = validateAgentStepProposalAuthority(
+        decodeAgentStepProposal(result.proposal),
+        request,
+      );
       durableResult = { ...result, proposal };
     } catch (error) {
       const errorCode = stableErrorCode(error, signal);
@@ -745,7 +816,7 @@ export class AgentKernel {
         generation,
         schemaVersion: 1,
       };
-      await this.#config.journal.settleAttempt({
+      const settlement = await this.#config.journal.settleAttempt({
         actionId: action.actionId,
         attemptId,
         callId,
@@ -768,7 +839,18 @@ export class AgentKernel {
         usage: {},
         usageState: "UNKNOWN",
       });
-      throw error;
+      if (settlement.disposition !== "committed")
+        return this.#blocked(run, action, "failed");
+      const current = currentRun(
+        await this.#config.journal.readRunProjection(run.runId),
+        run,
+      );
+      return this.#finalizeProviderFailure(
+        current,
+        current.providerAction ?? action,
+        input.request.stepId,
+        errorCode,
+      );
     }
     const outputDigest = await this.#config.sha256(
       canonicalJson(durableResult),
@@ -891,6 +973,36 @@ export class AgentKernel {
       proposalKind: proposal.kind,
       runId: run.runId,
       stepId: input.request.stepId,
+    };
+  }
+
+  async #finalizeProviderFailure(
+    run: AgentRunProjection,
+    action: AgentJournalProviderActionProjection,
+    stepId: string,
+    errorCode: string,
+  ): Promise<AgentKernelDrainResult> {
+    if (!identifierPattern.test(errorCode))
+      throw new PortableAuthorityError("AGENT_STEP_PROPOSAL_INVALID");
+    const waiting = waitingProvider(run);
+    if (!waiting || waiting.providerActionId !== action.actionId)
+      return stale();
+    const transition = await providerFailureTransition(
+      run,
+      action.actionId,
+      errorCode,
+      stepId,
+      this.#config.now(),
+      this.#config.eligibleActorId,
+      this.#config.sha256,
+    );
+    const commit = await this.#config.journal.commitTransition(transition);
+    return {
+      commit,
+      kind: "committed",
+      proposalKind: "no-go",
+      runId: run.runId,
+      stepId,
     };
   }
 }

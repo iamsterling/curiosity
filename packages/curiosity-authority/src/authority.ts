@@ -21,6 +21,7 @@ import {
 import {
   createGenerationRouteReceipt,
   validateGenerationSelection,
+  type GenerationPurpose,
   type GenerationRouteReceipt,
   type GenerationSelection,
 } from "./generation-route.js";
@@ -89,7 +90,7 @@ export interface GenerationPort {
 
 export interface GenerationSelectionRequest {
   readonly contextPlanId: string;
-  readonly purpose: "turn.answer";
+  readonly purpose: GenerationPurpose;
   readonly turnId: string;
 }
 

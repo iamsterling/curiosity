@@ -257,6 +257,36 @@ export const decodeAgentStepProposal = (
   throw new PortableAuthorityError("AGENT_STEP_PROPOSAL_INVALID");
 };
 
+export const validateAgentStepProposalAuthority = (
+  proposal: AgentStepProposal,
+  request: Omit<AgentStepRequest, "signal">,
+): AgentStepProposal => {
+  if (request.finalizationOnly && proposal.kind === "actions")
+    throw new PortableAuthorityError("AGENT_STEP_PROPOSAL_INVALID");
+  if (proposal.kind === "actions") {
+    const tools = new Map(
+      request.availableTools.map((tool) => [tool.toolId, tool.version]),
+    );
+    if (
+      proposal.actions.some(
+        (action) => tools.get(action.toolId) !== action.toolVersion,
+      )
+    )
+      throw new PortableAuthorityError("AGENT_STEP_PROPOSAL_INVALID");
+  }
+  if (proposal.kind === "final") {
+    const sources = new Set(
+      request.contextPlan.blocks.flatMap((block) => [
+        block.blockId,
+        ...block.sourceEventIds,
+      ]),
+    );
+    if (proposal.citations.some(({ sourceId }) => !sources.has(sourceId)))
+      throw new PortableAuthorityError("AGENT_STEP_PROPOSAL_INVALID");
+  }
+  return proposal;
+};
+
 export const estimateAgentStepInputTokens = (
   request: Omit<AgentStepRequest, "signal">,
 ): number =>

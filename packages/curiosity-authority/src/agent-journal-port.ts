@@ -40,6 +40,12 @@ export interface AgentJournalActionAllocation {
   readonly sourceEventId: string;
 }
 
+export interface AgentJournalRunnableToolAction extends AgentJournalActionAllocation {
+  readonly createdAt: string;
+  readonly executionGeneration: number;
+  readonly runId: string;
+}
+
 export interface AgentJournalChildAllocation {
   readonly capabilityCeiling: readonly string[];
   readonly childKey: string;
@@ -232,6 +238,23 @@ export interface AgentJournalReconciledAttempt {
   readonly kind: "provider" | "tool";
 }
 
+export interface AgentJournalTerminalRun {
+  readonly runId: string;
+  readonly status: "cancelled" | "completed" | "failed";
+}
+
+export interface AgentJournalPhysicalCancellation {
+  readonly callId: string;
+  readonly kind: "provider" | "tool";
+}
+
+export interface AgentJournalCancelRunResult {
+  readonly disposition: "accepted" | "duplicate";
+  readonly physicalCalls: readonly AgentJournalPhysicalCancellation[];
+  readonly runId: string;
+  readonly status: "cancelled" | "completed" | "failed";
+}
+
 export interface AgentJournalPort {
   readonly armDispatch: (
     input: AgentJournalArmDispatch,
@@ -254,4 +277,26 @@ export interface AgentJournalPort {
   readonly startRun: (
     input: AgentJournalStartRun,
   ) => Awaitable<AgentJournalMutationResult>;
+}
+
+export interface AgentToolJournalPort {
+  readonly armDispatch: AgentJournalPort["armDispatch"];
+  readonly runnableToolActions: (
+    limit: number,
+  ) => Awaitable<readonly AgentJournalRunnableToolAction[]>;
+  readonly settleAttempt: AgentJournalPort["settleAttempt"];
+}
+
+export interface AgentTerminalJournalPort {
+  readonly reconcileTerminalRuns: (
+    reconciledAt: string,
+    limit: number,
+  ) => Awaitable<readonly AgentJournalTerminalRun[]>;
+}
+
+export interface AgentCancellationJournalPort {
+  readonly cancelRun: (
+    runId: string,
+    cancelledAt: string,
+  ) => Awaitable<AgentJournalCancelRunResult>;
 }

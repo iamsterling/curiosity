@@ -10,15 +10,17 @@ export const ProjectRouteToolbar = ({
   onNewSession,
   onSearch,
   onShowAppSidebar,
-  onShowSessions,
+  onShowProjectNavigator,
+  projectNavigationLabel,
   title,
   topInset,
 }: {
   readonly compact: boolean;
-  readonly onNewSession: () => void;
+  readonly onNewSession?: () => void;
   readonly onSearch: () => void;
   readonly onShowAppSidebar: () => void;
-  readonly onShowSessions: () => void;
+  readonly onShowProjectNavigator: () => void;
+  readonly projectNavigationLabel: string;
   readonly title: string;
   readonly topInset: number;
 }) => (
@@ -31,13 +33,13 @@ export const ProjectRouteToolbar = ({
     />
     {compact ? (
       <ProjectToolbarButton
-        hint="Opens this project's sessions."
+        hint={`Opens this project's ${projectNavigationLabel.toLowerCase()}.`}
         icon="list.bullet.rectangle"
-        label="Show sessions"
-        onPress={onShowSessions}
+        label={`Show ${projectNavigationLabel}`}
+        onPress={onShowProjectNavigator}
       />
     ) : null}
-    {compact ? <ProjectToolbarTitle>{title}</ProjectToolbarTitle> : null}
+    <ProjectToolbarTitle>{title}</ProjectToolbarTitle>
     <ProjectToolbarSpacer />
     <ProjectToolbarButton
       hint="Opens the command palette."
@@ -45,12 +47,14 @@ export const ProjectRouteToolbar = ({
       label="Search"
       onPress={onSearch}
     />
-    <ProjectToolbarButton
-      hint="Starts a clean conversation."
-      icon="square.and.pencil"
-      label="New session"
-      onPress={onNewSession}
-      prominent
-    />
+    {onNewSession ? (
+      <ProjectToolbarButton
+        hint="Starts a clean conversation in this project."
+        icon="square.and.pencil"
+        label="New session"
+        onPress={onNewSession}
+        prominent
+      />
+    ) : null}
   </ProjectToolbarRoot>
 );

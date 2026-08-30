@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SystemScreenShell } from "../components/system-screen-shell";
 import { palette } from "../theme";
+import { useWorkspaceCatalog } from "../workspace-catalog-context";
 
 interface SettingRowProps {
   readonly detail: string;
@@ -49,6 +50,7 @@ const SettingsSection = ({
 
 export const SettingsScreen = () => {
   const router = useRouter();
+  const catalog = useWorkspaceCatalog();
   return (
     <SystemScreenShell
       subtitle="App-wide identity, runtime, and provider configuration"
@@ -59,7 +61,7 @@ export const SettingsScreen = () => {
           <SettingRow
             detail="Active organization for collections and sessions."
             label="Organization"
-            value="Curiosity"
+            value={catalog.activeOrganization?.name ?? "None"}
           />
           <SettingRow
             detail="Authenticate providers and inspect qualified models."

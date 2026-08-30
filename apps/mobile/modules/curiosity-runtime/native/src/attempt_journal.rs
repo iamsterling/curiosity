@@ -461,6 +461,12 @@ pub(super) fn settle_attempt(
         .transaction_with_behavior(TransactionBehavior::Immediate)
         .map_err(|_| JournalError::TransactionFailed)?;
     if let Some(disposition) = terminal_duplicate(&transaction, &input)? {
+        if disposition == "stale" {
+            quarantine(&transaction, &input, "STALE_OR_CANCELLED_GENERATION")?;
+            transaction
+                .commit()
+                .map_err(|_| JournalError::TransactionFailed)?;
+        }
         return Ok(settlement_response(&input, disposition));
     }
     let table = call_table(input.kind);
@@ -945,15 +951,16 @@ fn terminal_duplicate(
     input: &SettleAttemptInput,
 ) -> Result<Option<&'static str>> {
     let table = call_table(input.kind);
-    let query =
-        format!("SELECT status,output_digest FROM {table} WHERE call_id=?1 AND action_id=?2");
-    let row: Option<(String, Option<String>)> = connection
+    let query = format!(
+        "SELECT status,output_digest,error_code FROM {table} WHERE call_id=?1 AND action_id=?2"
+    );
+    let row: Option<(String, Option<String>, Option<String>)> = connection
         .query_row(&query, params![input.call_id, input.action_id], |row| {
-            Ok((row.get(0)?, row.get(1)?))
+            Ok((row.get(0)?, row.get(1)?, row.get(2)?))
         })
         .optional()
         .map_err(|_| JournalError::TransactionFailed)?;
-    let Some((status, digest)) = row else {
+    let Some((status, digest, error_code)) = row else {
         return Ok(None);
     };
     if status == "allocated" {
@@ -966,6 +973,9 @@ fn terminal_duplicate(
     };
     if status == expected_status && digest.as_deref() == Some(input.output_digest.as_str()) {
         return Ok(Some("duplicate"));
+    }
+    if error_code.as_deref() == Some("ACTION_CANCELLED") {
+        return Ok(Some("stale"));
     }
     Err(JournalError::IdentityConflict)
 }
@@ -1587,6 +1597,88 @@ mod tests {
         assert_eq!(
             projection["providerAction"]["call"]["terminalEvent"]["body"]["text"],
             "done"
+        );
+        verify_integrity(&connection).unwrap();
+    }
+
+    #[test]
+    fn cancelled_provider_quarantines_a_late_terminal_receipt() {
+        let action_id = "action-provider-cancelled";
+        let (catalog, mut connection, input_digest) = setup("provider-cancelled", action_id);
+        insert_waiting_provider_run(&connection, action_id);
+        let run_id = format!("run-{action_id}");
+        let execution_id = format!("execution-{action_id}");
+        let source = source_for_execution(&connection, &execution_id).unwrap();
+        let started = KernelEvent {
+            body: json!({"instanceId": run_id, "schemaVersion": 1}),
+            context: event_context(
+                &source,
+                &execution_id,
+                "workflow-generalist",
+                "1",
+                &execution_id,
+            ),
+            event_type: "workflow.started".into(),
+            stream_id: run_id.clone(),
+        };
+        append_kernel_events(
+            &connection,
+            &catalog,
+            "workflow-plugin",
+            "2026-08-29T12:00:00.500Z",
+            &format!("workflow-start:{run_id}"),
+            &sha256("workflow-start"),
+            "workflow-generalist",
+            "1",
+            vec![started],
+        )
+        .unwrap();
+        arm_dispatch(
+            &mut connection,
+            &catalog,
+            provider_allocate(action_id, &input_digest, &catalog),
+            FaultPoint::None,
+        )
+        .unwrap();
+        arm_dispatch(
+            &mut connection,
+            &catalog,
+            authorize(action_id),
+            FaultPoint::None,
+        )
+        .unwrap();
+        crate::agent_journal::cancel_run(
+            &mut connection,
+            &catalog,
+            &run_id,
+            "2026-08-29T12:00:02.500Z",
+        )
+        .unwrap();
+
+        let late = settle_attempt(
+            &mut connection,
+            &catalog,
+            settlement(action_id),
+            FaultPoint::None,
+        )
+        .unwrap();
+        assert_eq!(late.disposition, "stale");
+        assert_eq!(
+            connection
+                .query_row("SELECT count(*) FROM quarantined_receipts", [], |record| {
+                    record.get::<_, i64>(0)
+                })
+                .unwrap(),
+            1
+        );
+        assert_eq!(
+            status(
+                &connection,
+                "workflow_instances",
+                "instance_id",
+                &format!("run-{action_id}")
+            ),
+            "cancelled"
         );
         verify_integrity(&connection).unwrap();
     }

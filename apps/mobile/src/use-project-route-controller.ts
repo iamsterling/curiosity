@@ -1,5 +1,5 @@
-import { useLocalSearchParams, usePathname } from "expo-router";
-import { useCallback, useState, type SetStateAction } from "react";
+import { useGlobalSearchParams, usePathname } from "expo-router";
+import { useCallback, useEffect, useState, type SetStateAction } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAppShell } from "./app-shell-context";
 import { useCuriosityWorkspaceContext } from "./curiosity-workspace-context";
@@ -8,17 +8,27 @@ import { useProjectCommandController } from "./use-project-command-controller";
 import { useProjectNavigationController } from "./use-project-navigation-controller";
 import { useProjectPaneLayout } from "./use-project-pane-layout";
 import { useWorkspaceCatalog } from "./workspace-catalog-context";
-import { collectionForPath } from "./workspace-routes";
+import {
+  collectionForPath,
+  projectIdForRouteParam,
+  routeIdForParam,
+} from "./workspace-routes";
 
 export const useProjectRouteController = () => {
   const pathname = usePathname();
-  const { projectId = "curiosity" } =
-    useLocalSearchParams<{ projectId?: string }>();
+  const { projectId: routeProjectId, sessionId: routeSessionId } =
+    useGlobalSearchParams<{
+      projectId?: string | string[];
+      sessionId?: string | string[];
+    }>();
+  const projectId = projectIdForRouteParam(routeProjectId);
+  const sessionId = routeIdForParam(routeSessionId);
   const insets = useSafeAreaInsets();
   const appShell = useAppShell();
   const catalog = useWorkspaceCatalog();
   const sessions = useProjectSessionIndex();
   const workspace = useCuriosityWorkspaceContext();
+  const { loadSession } = workspace;
   const [drafts, setDrafts] = useState<Readonly<Record<string, string>>>({});
   const draft = drafts[projectId] ?? "";
   const setDraft = useCallback(
@@ -46,6 +56,16 @@ export const useProjectRouteController = () => {
     projectId,
     workspace.state.threads,
   );
+
+  useEffect(() => {
+    if (!project || project.organizationId === catalog.activeOrganizationId) return;
+    catalog.selectOrganization(project.organizationId);
+  }, [catalog, project]);
+
+  useEffect(() => {
+    if (!sessionId || projectState.activeThreadId === sessionId) return;
+    void loadSession(projectId, sessionId);
+  }, [loadSession, projectId, projectState.activeThreadId, sessionId]);
 
   const sendDraft = useCallback(async () => {
     const threadId = await workspace.send(projectId, "overview", draft);

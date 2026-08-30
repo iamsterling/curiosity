@@ -1,6 +1,5 @@
 import {
   decodeProviderCatalogSnapshot,
-  onDeviceAppleGenerationSelection,
   PortableAuthorityError,
   type GenerationPort,
   type GenerationRequest,
@@ -14,10 +13,11 @@ export const createMobileGenerationSelection = (
 ): GenerationSelectionPort =>
   Object.freeze({
     select: async ({ purpose }: GenerationSelectionRequest) => {
-      if (purpose !== "turn.answer")
+      if (purpose !== "agent.step" && purpose !== "turn.answer")
         throw new PortableAuthorityError("GENERATION_SELECTION_INVALID");
       const modelId = await connectedFrontierModel(native);
-      if (!modelId) return onDeviceAppleGenerationSelection;
+      if (!modelId)
+        throw new PortableAuthorityError("PROVIDER_ROUTE_UNAVAILABLE");
       return Object.freeze({
         adapterVersion: "codex-direct-native-v1",
         locality: "frontier" as const,

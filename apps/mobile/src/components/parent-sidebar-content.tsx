@@ -6,13 +6,17 @@ import type {
 import { palette } from "../theme";
 import {
   AppSidebarNavigationBody,
+  AppSidebarNavigationDetail,
   AppSidebarNavigationFooter,
+  AppSidebarNavigationGroupLabel,
   AppSidebarNavigationHeader,
-  AppSidebarNavigationLabel,
   AppSidebarNavigationRoot,
   AppSidebarNavigationRow,
+  AppSidebarNavigationRowCopy,
   AppSidebarNavigationSection,
+  AppSidebarNavigationSectionMeta,
   AppSidebarNavigationSectionTitle,
+  AppSidebarNavigationTitle,
   appSidebarNavigationStyles as styles,
 } from "./app-sidebar-navigation-primitives";
 import { OrganizationSelector } from "./organization-selector";
@@ -51,10 +55,37 @@ const ProjectRow = ({
 }) => (
   <AppSidebarNavigationRow onPress={() => onOpen(project.id)}>
     <FolderGlyph />
-    <AppSidebarNavigationLabel numberOfLines={1}>
-      {project.name}
-    </AppSidebarNavigationLabel>
+    <AppSidebarNavigationRowCopy>
+      <AppSidebarNavigationTitle numberOfLines={1}>
+        {project.name}
+      </AppSidebarNavigationTitle>
+      <AppSidebarNavigationDetail>Project · 4 collections</AppSidebarNavigationDetail>
+    </AppSidebarNavigationRowCopy>
     <Text accessibilityElementsHidden style={styles.disclosure}>›</Text>
+  </AppSidebarNavigationRow>
+);
+
+const OrganizationDestination = ({
+  color,
+  detail,
+  onPress,
+  selected,
+  symbol,
+  title,
+}: {
+  readonly color: typeof palette.recentAccent;
+  readonly detail: string;
+  readonly onPress: () => void;
+  readonly selected: boolean;
+  readonly symbol: string;
+  readonly title: string;
+}) => (
+  <AppSidebarNavigationRow selected={selected} onPress={onPress}>
+    <SmartGlyph color={color} symbol={symbol} />
+    <AppSidebarNavigationRowCopy>
+      <AppSidebarNavigationTitle>{title}</AppSidebarNavigationTitle>
+      <AppSidebarNavigationDetail>{detail}</AppSidebarNavigationDetail>
+    </AppSidebarNavigationRowCopy>
   </AppSidebarNavigationRow>
 );
 
@@ -82,31 +113,49 @@ export const ParentSidebarContent = ({
     accessibilityRole="menu"
   >
     <AppSidebarNavigationHeader style={{ paddingTop: topInset }}>
-      <OrganizationSelector
-        activeOrganizationId={activeOrganizationId}
-        onAddOrganization={onAddOrganization}
-        onSelectOrganization={onSelectOrganization}
-        organizations={organizations}
-      />
+      <View style={styles.organizationContext}>
+        <Text style={styles.organizationEyebrow}>ORGANIZATION</Text>
+        <OrganizationSelector
+          activeOrganizationId={activeOrganizationId}
+          onAddOrganization={onAddOrganization}
+          onSelectOrganization={onSelectOrganization}
+          organizations={organizations}
+        />
+      </View>
       <View style={styles.headerSpacer} />
       <NotesHeaderButton label="Close sidebar" onPress={onClose} symbol="×" />
     </AppSidebarNavigationHeader>
 
     <AppSidebarNavigationBody>
-      <AppSidebarNavigationRow selected={recentActive} onPress={onOpenRecent}>
-        <SmartGlyph color={palette.recentAccent} symbol="◷" />
-        <AppSidebarNavigationLabel>Recent</AppSidebarNavigationLabel>
+      <AppSidebarNavigationGroupLabel>ORGANIZATION OVERVIEW</AppSidebarNavigationGroupLabel>
+      <OrganizationDestination
+        color={palette.recentAccent}
+        detail="Sessions across every project"
+        onPress={onOpenRecent}
+        selected={recentActive}
+        symbol="◷"
+        title="Recent"
+      />
+      <OrganizationDestination
+        color={palette.agentsAccent}
+        detail="Runs and agent activity"
+        onPress={onOpenAgents}
+        selected={agentsActive}
+        symbol="◎"
+        title="Activity"
+      />
+      <View style={styles.organizationCount}>
+        <Text style={styles.organizationCountLabel}>RECENT SESSIONS</Text>
         <Text style={styles.count}>{threadCount}</Text>
-      </AppSidebarNavigationRow>
-      <AppSidebarNavigationRow selected={agentsActive} onPress={onOpenAgents}>
-        <SmartGlyph color={palette.agentsAccent} symbol="◎" />
-        <AppSidebarNavigationLabel>Agents</AppSidebarNavigationLabel>
-      </AppSidebarNavigationRow>
+      </View>
 
       <AppSidebarNavigationSection>
         <AppSidebarNavigationSectionTitle>
           Projects
         </AppSidebarNavigationSectionTitle>
+        <AppSidebarNavigationSectionMeta>
+          {projects.length} {projects.length === 1 ? "PROJECT" : "PROJECTS"}
+        </AppSidebarNavigationSectionMeta>
         <Pressable
           accessibilityLabel="New project"
           accessibilityRole="button"
@@ -132,7 +181,12 @@ export const ParentSidebarContent = ({
     >
       <AppSidebarNavigationRow selected={settingsActive} onPress={onSettings}>
         <SmartGlyph color={palette.textMuted} symbol="⚙︎" />
-        <AppSidebarNavigationLabel>Settings</AppSidebarNavigationLabel>
+        <AppSidebarNavigationRowCopy>
+          <AppSidebarNavigationTitle>Settings</AppSidebarNavigationTitle>
+          <AppSidebarNavigationDetail>
+            Providers and workspace preferences
+          </AppSidebarNavigationDetail>
+        </AppSidebarNavigationRowCopy>
       </AppSidebarNavigationRow>
     </AppSidebarNavigationFooter>
   </AppSidebarNavigationRoot>

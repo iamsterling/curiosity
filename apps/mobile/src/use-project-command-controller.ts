@@ -5,6 +5,8 @@ import { workstationCommandIds } from "./commands/workstation-commands";
 import { collectionView, type SidebarCollectionId } from "./components/notes-shell-model";
 import { useCuriosityWorkspaceContext } from "./curiosity-workspace-context";
 import type { ProjectNavigationController } from "./use-project-navigation-controller";
+import { useWorkspaceCatalog } from "./workspace-catalog-context";
+import { organizationAgentsRoute } from "./workspace-routes";
 
 export const useProjectCommandController = (
   projectId: string,
@@ -13,8 +15,11 @@ export const useProjectCommandController = (
   setDraft: Dispatch<SetStateAction<string>>,
 ) => {
   const router = useRouter();
+  const catalog = useWorkspaceCatalog();
   const { loadSession, projectState } = useCuriosityWorkspaceContext();
   const state = projectState(projectId);
+  const organizationId =
+    catalog.project(projectId)?.organizationId ?? catalog.activeOrganizationId;
   const refreshSession = useCallback(() => {
     if (state.activeThreadId) void loadSession(projectId, state.activeThreadId);
   }, [loadSession, projectId, state.activeThreadId]);
@@ -30,14 +35,14 @@ export const useProjectCommandController = (
       newChat: navigation.newThread,
       preparePrompt,
       refreshSession,
-      showAgents: () => router.push("/agents"),
+      showAgents: () => router.push(organizationAgentsRoute(organizationId)),
       showAudio: () => navigation.selectCollection("audio"),
       showChat: () => navigation.selectCollection("sessions"),
       showCraft: () => navigation.selectCollection("craft"),
       showMemory: () => navigation.selectCollection("memory"),
       showProviders: () => router.push("/settings/providers"),
     }),
-    [navigation, preparePrompt, refreshSession, router],
+    [navigation, organizationId, preparePrompt, refreshSession, router],
   );
   const commands = useWorkstationCommands(
     {

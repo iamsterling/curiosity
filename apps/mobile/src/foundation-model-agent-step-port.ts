@@ -4,6 +4,7 @@ import {
   canonicalJson,
   decodeAgentStepProposal,
   PortableAuthorityError,
+  validateAgentStepProposalAuthority,
   type AgentStepPort,
   type AgentStepRequest,
   type AgentStepResult,
@@ -98,36 +99,6 @@ const validateIdentity = (
     throw new PortableAuthorityError("AGENT_STEP_RESULT_STALE");
 };
 
-const validateProposalAuthority = (
-  result: AgentStepResult,
-  request: AgentStepRequest,
-): void => {
-  const { proposal } = result;
-  if (request.finalizationOnly && proposal.kind === "actions")
-    throw new PortableAuthorityError("AGENT_STEP_PROPOSAL_INVALID");
-  if (proposal.kind === "actions") {
-    const tools = new Map(
-      request.availableTools.map((tool) => [tool.toolId, tool.version]),
-    );
-    if (
-      proposal.actions.some(
-        (action) => tools.get(action.toolId) !== action.toolVersion,
-      )
-    )
-      throw new PortableAuthorityError("AGENT_STEP_PROPOSAL_INVALID");
-  }
-  if (proposal.kind === "final") {
-    const sources = new Set(
-      request.contextPlan.blocks.flatMap((block) => [
-        block.blockId,
-        ...block.sourceEventIds,
-      ]),
-    );
-    if (proposal.citations.some(({ sourceId }) => !sources.has(sourceId)))
-      throw new PortableAuthorityError("AGENT_STEP_PROPOSAL_INVALID");
-  }
-};
-
 export const createFoundationModelAgentStep = (
   native: AgentStepNativePort,
 ): AgentStepPort => ({
@@ -148,9 +119,11 @@ export const createFoundationModelAgentStep = (
       validateIdentity(nativeResult, request);
       const result: AgentStepResult = {
         ...nativeResult,
-        proposal: decodeAgentStepProposal(nativeResult.proposal),
+        proposal: validateAgentStepProposalAuthority(
+          decodeAgentStepProposal(nativeResult.proposal),
+          request,
+        ),
       };
-      validateProposalAuthority(result, request);
       return result;
     } catch (error) {
       if (request.signal.aborted)

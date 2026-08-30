@@ -12,6 +12,13 @@ TypeScript running on Hermes. Swift and Rust provide bounded platform
 primitives. Models produce typed step proposals. Neither Foundation Models,
 Vercel AI SDK, React, nor a native tool owns the loop.
 
+**2026-08-30 primary/sidecar correction:** Apple Intelligence is a bounded local
+sidecar only. It may classify intent, formulate retrieval queries, rerank bounded
+memory candidates, curate memory proposals, summarize bounded material, and
+generate titles. It is not the primary answer provider and must not be injected
+as the production `AgentKernel` step port. Primary agent steps require an exact
+connected frontier route and fail closed when none is available.
+
 This is a new native iPad harness, but not a semantic rewrite from zero. The
 project already owns the right desktop concepts: workflow transitions, action
 allocation, capability ceilings, gates, provider attempts, tool-loop budgets,
@@ -31,7 +38,7 @@ AgentKernel in Hermes (one serialized semantic authority)
 commands · graph scheduler · policy · context · routes · projections
        |                      |                        |
 AgentJournalPort       AgentStepGateway       CapabilityGateway
-Rust/SQLite ABI v2     exact model route      exact action grant
+Rust/SQLite ABI v3     exact model route      exact action grant
        |               |        |        |          |
 canonical events   Apple     Apple PCC  broker    Swift/Rust
 + operational      on-device  candidate  AI SDK   typed tools
@@ -359,7 +366,7 @@ The projection distinguishes:
 No state named `running` is sufficient by itself for user presentation; the UI
 must show what the run is waiting on and whether interruption is safe.
 
-## Native journal ABI v2
+## Native journal ABI v3
 
 The existing v1 ABI exposes only generic event admission/read. Full agent logic
 requires coarse operational transactions without exposing SQL:
@@ -373,6 +380,9 @@ requires coarse operational transactions without exposing SQL:
 - `runnableRuns` — return bounded ordered runnable snapshots;
 - `reconcileInterrupted` — classify interrupted attempts as not-dispatched,
   cancelled, resumable, or delivery-unknown; and
+- `cancelRun` — atomically fence one run and generation, project cancellation,
+  and return only exact dispatched provider/tool call identities for physical
+  abort; and
 - `readRunProjection` — return bounded graph/attempt/gate status.
 
 Rust validates ABI version, bounds, digests, state revisions, and transaction
@@ -384,7 +394,7 @@ operational tables are atomic scheduler indexes and attempt records.
 
 All routes implement one `AgentStepPort` and return the same receipt shape.
 
-### `apple.on-device`
+### `apple.on-device` sidecar
 
 - `SystemLanguageModel.default` in a dedicated Swift actor;
 - total input-plus-output envelope treated as 4,096 tokens;
@@ -393,9 +403,10 @@ All routes implement one `AgentStepPort` and return the same receipt shape.
 - no Foundation Models tools;
 - default greedy/low-variance sampling for planning, still treated as
   nondeterministic across model/OS versions;
-- intended for memory, query formulation, classification, short private answers,
-  and small read-only loops; and
-- initial maximum: three model steps, four tool proposals, no child delegation.
+- intended for memory curation/reranking, query formulation, classification,
+  bounded summaries, and title generation;
+- never eligible for `turn.answer` or the production primary `agent.step`; and
+- each hook is one bounded proposal call with no native tools or child delegation.
 
 ### `apple.private-cloud` candidate
 
@@ -549,7 +560,7 @@ packages/curiosity-authority/src/
 
 apps/mobile/src/
   local-agent-runtime.ts    singleton composition and lifecycle
-  native-agent-journal.ts   validated ABI v2 adapter
+  native-agent-journal.ts   validated ABI v3 adapter
   agent-step-gateway.ts     exact route dispatch
   native-capability-host.ts validated action-grant adapter
 
@@ -564,6 +575,95 @@ apps/mobile/modules/curiosity-runtime/native/
   journal/                  canonical schema and integrity
   query/                    bounded document/memory retrieval
 ```
+
+## Current composition audit — 2026-08-30
+
+The repository now wires the durable provider-step substrate into the iPad
+product. `local-curiosity-runtime.ts` admits turns through the portable chat
+semantics, starts deterministic native runs, and delegates execution to the
+serialized durable scheduler. The legacy one-shot client remains only as an
+injectable test/profile implementation.
+
+| Boundary        | Current                                                                                                                                | Missing before product wiring                                  |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Primary route   | Exact connected frontier answer/agent step or explicit unavailability; strict frontier step adapter                                    | Live provider fixture qualification                            |
+| Agent kernel    | Provider/action allocation, settlement, proposal admission, serialized drain coordinator, chat/run admission, terminal chat projection | Exact cancellation and live provider fixture qualification     |
+| Context         | Static eight-role/read-tool catalog; bounded conversation, workflow, read-receipt, and project-scoped ordinary-memory planner          | Apple retrieval rerank and compaction                          |
+| Tool actions    | Bounded runnable query, exact read-only grant/dispatcher, native document port, receipt event                                          | Gates and mutation dispatchers                                 |
+| Questions/gates | Durable tables                                                                                                                         | List/answer/decide ports and authenticated UI commands         |
+| Memory          | Proposal decoder, policy, projection, Apple curator host, project-scoped active-memory context query                                   | Durable sidecar dispatcher, reranker, review/retire UI         |
+| Lifecycle       | AppState-owned wake service outside React state; interrupted attempts recover before orphan turn admission and draining                | Exact per-run cancel and physical stale-callback qualification |
+
+Implementation must follow this dependency order:
+
+1. **B0 — Primary/sidecar fence:** primary turns never select Apple; kernel
+   composition receives an explicit `AgentStepPort`. **Implemented in source.**
+2. **B1 — Operational journal closure:** add bounded runnable-action,
+   question/gate, terminal-reconciliation, and active-memory query operations.
+   **Runnable read-only actions, terminal chat reconciliation, and bounded
+   project-scoped active-memory projection are implemented; question and gate
+   operations remain.**
+3. **B2 — Frontier step probe:** convert one native frontier response into the
+   exact `AgentStepResult` envelope with one physical request, no fallback, no
+   hidden retry, and retained delivery ambiguity. The current undocumented
+   consumer backend cannot inherit public Responses API qualification. **The
+   strict one-call adapter is implemented; live provider qualification remains.**
+4. **B3 — Mobile static catalog and planner:** freeze agent/tool/policy versions;
+   assemble provenance-labelled context from conversation, state, receipts, and
+   bounded memory candidates. **Implemented for the static eight-role catalog,
+   three read-only document tools, and project-scoped ordinary memory.**
+5. **B4 — Serialized scheduler and client bridge:** chat admission starts one
+   durable run; lifecycle wakes drain provider, action, question, and terminal
+   queues outside React state. **Implemented for chat admission, recovery,
+   provider/read-tool drains, atomic terminal chat projection, and AppState
+   foreground/background wakes. Question draining remains.**
+6. **B5 — Read-only vertical slice:** one frontier-led task performs a governed
+   native document read, consumes its untrusted receipt, finalizes, relaunches,
+   and produces the same projection without duplicate effects.
+7. **B6 — Apple sidecar hooks:** add intent classification, retrieval query/
+   rerank, memory curation, bounded summary, and title jobs. Hook failure may
+   reduce enrichment but cannot silently become or replace the primary route.
+8. **B7 — Gates, mutations, children, and wider lifecycle qualification:** only
+   after the read-only loop and sidecar provenance pass physical crash tests.
+
+### B0 acceptance evidence
+
+- Primary route selection fails `PROVIDER_ROUTE_UNAVAILABLE` without a qualified
+  connected frontier model.
+- `local-curiosity-runtime.ts` does not import the Foundation Models free-text
+  generation port as its primary `GenerationPort`.
+- `mobile-agent-kernel.ts` accepts an injected `AgentStepPort` and does not
+  hard-code `createFoundationModelAgentStep`.
+- Foundation Models agent-step and curator hosts remain bounded adapters and are
+  not production scheduler composition.
+
+### B1/B2/B4 implementation evidence
+
+- Native ABI v3 exposes `runnableToolActions` only for ungated, non-provider,
+  non-question actions on live uncancelled runs; Rust tests prove ordering and
+  exclusion.
+- `AgentReadToolKernel` performs one durable allocation, creates one digest-bound
+  grant, invokes one read-only native tool, and settles one bounded receipt or
+  failure event with no retry.
+- `reconcileTerminalRuns` changes eligible `completion-requested` runs exactly
+  once and atomically appends the typed workflow terminal plus the corresponding
+  assistant/turn completion or turn failure projection.
+- `createFrontierAgentStep` accepts only an exact frontier `agent.step` route,
+  one transport attempt, zero transport retries, strict JSON, known tools, and
+  known citation sources. Cancellation targets the deterministic step identity.
+- `DurableAgentLoop` drains one unit in terminal → tool → agent order and runs
+  interrupted-attempt recovery before terminal reconciliation.
+- `DurableAgentAdmission` deterministically maps each pending `turn.requested`
+  source event to one idempotent native run, including relaunch reconciliation.
+- `DurableAgentScheduler` owns serialization, recovery, bounded drain budgets,
+  and AppState cancellation outside React state; concurrent wake requests do not
+  create concurrent drains.
+- Provider route/planning and physical generation failures commit a typed
+  terminal transition without hidden retry or a permanently blocked run.
+- `cancelRun` atomically fences the exact execution generation, projects
+  `execution.cancelled` plus `turn.failed(ACTION_CANCELLED)`, and returns exact
+  dispatched provider/tool call IDs. Replayed cancellation retries only those
+  idempotent native aborts; late terminal receipts are quarantined as stale.
 
 ## Implementation tranches
 
@@ -604,7 +704,7 @@ settlement acknowledgement, dispatched-call ambiguity, and relaunch
 reconciliation. Full H0 desktop/mobile golden execution parity remains open, so
 the H1 exit is not met.
 
-### H2 — Native journal ABI v2
+### H2 — Native journal ABI v3
 
 Implement coarse run/transition/action/attempt/gate operations in mobile Rust;
 add migration and crash injection before linking production scheduling.
@@ -613,12 +713,14 @@ add migration and crash injection before linking production scheduling.
 duplicate effects or fabricated terminal success; ambiguous delivery remains
 explicit.
 
-**Implementation point, 2026-08-29:** coarse ABI-v2 operations, compatibility,
-revision fencing, interrupted-attempt reconciliation, and deterministic
-transaction rollback tests are implemented. Native projection now exposes the
-exact provider action/call generation and its atomic terminal event without
-exposing SQL, and native allocation rebinds model, prompt digest, purpose, source
-revision, and `provider.generate` capability to the stored action input.
+**Implementation point, 2026-08-30:** ABI v3 retains v1/v2 schema-v15 open
+compatibility and extends the coarse operations with exact run cancellation.
+Revision fencing, interrupted-attempt reconciliation, deterministic transaction
+rollback, cancellation replay, and late-receipt quarantine tests are
+implemented. Native projection exposes the exact provider action/call generation
+and its atomic terminal event without exposing SQL, and native allocation
+rebinds model, prompt digest, purpose, source revision, and `provider.generate`
+capability to the stored action input.
 Physical VFS/WAL, hard-reset, device-lock, storage-pressure, backup/restore, and
 forward/failing migration qualification remain H11 work; H2 is not
 release-qualified.
@@ -769,7 +871,7 @@ Point evidence: [portable AgentKernel and mobile composition,
   was not readable in this research environment and web search was rate-limited.
 - Whether full Hermes startup is reliable inside each selected background task
   class; no architecture depends on it until proven.
-- Rust/SQLite ABI v2 crash, VFS, WAL, migration, lock, storage pressure, backup,
+- Rust/SQLite ABI v3 crash, VFS, WAL, migration, lock, storage pressure, backup,
   and restore behavior.
 - Sustained Expo event throughput, memory, stale listener behavior, and whether
   any measured path warrants a lower-level JSI/TurboModule optimization.

@@ -9,7 +9,7 @@ use std::path::Path;
 mod agent_journal;
 mod attempt_journal;
 
-const ABI_VERSION: u32 = 2;
+const ABI_VERSION: u32 = 3;
 const MIN_ABI_VERSION: u32 = 1;
 const SCHEMA_VERSION: i64 = 15;
 const EMPTY_HASH: &str = "0000000000000000000000000000000000000000000000000000000000000000";
@@ -86,7 +86,28 @@ enum Request {
         database_path: String,
         transition: agent_journal::CommitTransitionInput,
     },
+    CancelRun {
+        #[serde(rename = "abiVersion")]
+        abi_version: u32,
+        #[serde(rename = "cancelledAt")]
+        cancelled_at: String,
+        #[serde(rename = "catalogDigest")]
+        catalog_digest: String,
+        #[serde(rename = "databasePath")]
+        database_path: String,
+        #[serde(rename = "runId")]
+        run_id: String,
+    },
     RunnableRuns {
+        #[serde(rename = "abiVersion")]
+        abi_version: u32,
+        #[serde(rename = "catalogDigest")]
+        catalog_digest: String,
+        #[serde(rename = "databasePath")]
+        database_path: String,
+        limit: u32,
+    },
+    RunnableToolActions {
         #[serde(rename = "abiVersion")]
         abi_version: u32,
         #[serde(rename = "catalogDigest")]
@@ -141,6 +162,17 @@ enum Request {
         database_path: String,
         #[serde(rename = "reconciledAt")]
         reconciled_at: String,
+    },
+    ReconcileTerminalRuns {
+        #[serde(rename = "abiVersion")]
+        abi_version: u32,
+        #[serde(rename = "catalogDigest")]
+        catalog_digest: String,
+        #[serde(rename = "databasePath")]
+        database_path: String,
+        #[serde(rename = "reconciledAt")]
+        reconciled_at: String,
+        limit: u32,
     },
 }
 
@@ -366,6 +398,22 @@ fn execute(request: Request) -> Result<Vec<u8>> {
                 agent_journal::FaultPoint::None,
             )?)
         }
+        Request::CancelRun {
+            abi_version,
+            cancelled_at,
+            catalog_digest,
+            database_path,
+            run_id,
+        } => {
+            validate_agent_common(abi_version, &database_path, &catalog_digest)?;
+            let mut connection = open_ready_database(&database_path, &catalog_digest)?;
+            encode(&agent_journal::cancel_run(
+                &mut connection,
+                &catalog_digest,
+                &run_id,
+                &cancelled_at,
+            )?)
+        }
         Request::RunnableRuns {
             abi_version,
             catalog_digest,
@@ -378,6 +426,19 @@ fn execute(request: Request) -> Result<Vec<u8>> {
             }
             let connection = open_ready_database(&database_path, &catalog_digest)?;
             encode(&agent_journal::runnable_runs(&connection, limit)?)
+        }
+        Request::RunnableToolActions {
+            abi_version,
+            catalog_digest,
+            database_path,
+            limit,
+        } => {
+            validate_agent_common(abi_version, &database_path, &catalog_digest)?;
+            if limit == 0 || limit > MAX_READ_PAGE {
+                return Err(JournalError::RequestInvalid);
+            }
+            let connection = open_ready_database(&database_path, &catalog_digest)?;
+            encode(&agent_journal::runnable_tool_actions(&connection, limit)?)
         }
         Request::ListRunProjections {
             abi_version,
@@ -449,6 +510,25 @@ fn execute(request: Request) -> Result<Vec<u8>> {
             encode(&attempt_journal::reconcile_interrupted(
                 &mut connection,
                 &reconciled_at,
+            )?)
+        }
+        Request::ReconcileTerminalRuns {
+            abi_version,
+            catalog_digest,
+            database_path,
+            reconciled_at,
+            limit,
+        } => {
+            validate_agent_common(abi_version, &database_path, &catalog_digest)?;
+            if !bounded(&reconciled_at, 128) || limit == 0 || limit > MAX_READ_PAGE {
+                return Err(JournalError::RequestInvalid);
+            }
+            let mut connection = open_ready_database(&database_path, &catalog_digest)?;
+            encode(&agent_journal::reconcile_terminal_runs(
+                &mut connection,
+                &catalog_digest,
+                &reconciled_at,
+                limit,
             )?)
         }
     }

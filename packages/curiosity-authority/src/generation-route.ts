@@ -3,6 +3,7 @@ import { PortableAuthorityError, type Sha256 } from "./domain.js";
 
 export const generationPurposes = [
   "agent.step",
+  "intent.classify",
   "turn.answer",
   "memory.curate",
   "memory.rerank",

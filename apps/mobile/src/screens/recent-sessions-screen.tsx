@@ -4,22 +4,24 @@ import { SystemScreenShell } from "../components/system-screen-shell";
 import { useCuriosityWorkspaceContext } from "../curiosity-workspace-context";
 import { useProjectSessionIndex } from "../project-session-index-context";
 import { palette } from "../theme";
+import { useOrganizationRoute } from "../use-organization-route";
 import { useWorkspaceCatalog } from "../workspace-catalog-context";
-import { projectCollectionRoute } from "../workspace-routes";
+import { projectSessionRoute } from "../workspace-routes";
 
 export const RecentSessionsScreen = () => {
   const router = useRouter();
   const workspace = useCuriosityWorkspaceContext();
   const catalog = useWorkspaceCatalog();
   const sessions = useProjectSessionIndex();
+  const organization = useOrganizationRoute();
   const threads = sessions.threadsForProjects(
-    catalog.activeOrganization?.projects.map(({ id }) => id) ?? [],
+    organization.projectIds,
     workspace.state.threads,
   );
   return (
     <SystemScreenShell
       showsBackButton={false}
-      subtitle="Recent sessions across every project in the active organization"
+      subtitle={`Recent sessions across ${organization.organization?.name ?? "this organization"}`}
       title="Recent"
     >
       <ScrollView contentContainerStyle={styles.content}>
@@ -30,7 +32,7 @@ export const RecentSessionsScreen = () => {
             onPress={() => {
               const projectId = sessions.projectIdForThread(thread.threadId);
               void workspace.loadSession(projectId, thread.threadId);
-              router.push(projectCollectionRoute(projectId, "sessions"));
+              router.push(projectSessionRoute(projectId, thread.threadId));
             }}
             style={({ pressed }) => [styles.row, pressed && styles.pressed]}
           >

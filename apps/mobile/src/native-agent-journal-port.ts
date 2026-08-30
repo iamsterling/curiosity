@@ -1,13 +1,19 @@
 import {
   PortableAuthorityError,
+  type AgentCancellationJournalPort,
+  type AgentJournalCancelRunResult,
   type AgentJournalDispatchResult,
   type AgentJournalMutationResult,
   type AgentJournalPort,
   type AgentJournalProviderActionProjection,
   type AgentJournalProviderCallProjection,
   type AgentJournalReconciledAttempt,
+  type AgentJournalRunnableToolAction,
   type AgentJournalSettlementResult,
+  type AgentJournalTerminalRun,
   type AgentRunProjection,
+  type AgentTerminalJournalPort,
+  type AgentToolJournalPort,
 } from "@curiosity/authority";
 
 export interface NativeAgentJournalModule {
@@ -249,6 +255,36 @@ const projection = (value: unknown): AgentRunProjection => {
   };
 };
 
+const runnableToolAction = (value: unknown): AgentJournalRunnableToolAction => {
+  const item = object(value);
+  const deadlineClass = string(item.deadlineClass);
+  const gateClass = string(item.gateClass);
+  if (
+    !["background", "interactive"].includes(deadlineClass) ||
+    gateClass !== "none-requested"
+  )
+    throw new PortableAuthorityError("NATIVE_JOURNAL_RESPONSE_INVALID");
+  return {
+    actionId: string(item.actionId),
+    actionSchemaVersion: integer(item.actionSchemaVersion),
+    actionType: string(item.actionType),
+    createdAt: string(item.createdAt),
+    deadlineClass:
+      deadlineClass as AgentJournalRunnableToolAction["deadlineClass"],
+    executionGeneration: integer(item.executionGeneration),
+    executionId: string(item.executionId),
+    gateClass: "none-requested",
+    input: item.input,
+    inputDigest: string(item.inputDigest),
+    pluginId: string(item.pluginId),
+    reactorId: string(item.reactorId),
+    requestedCapabilities: strings(item.requestedCapabilities),
+    resource: string(item.resource),
+    runId: string(item.runId),
+    sourceEventId: string(item.sourceEventId),
+  };
+};
+
 const dispatch = (value: unknown): AgentJournalDispatchResult => {
   const item = object(value);
   const disposition = string(item.disposition);
@@ -325,14 +361,73 @@ const reconciled = (value: unknown): AgentJournalReconciledAttempt => {
   };
 };
 
+const terminalRun = (value: unknown): AgentJournalTerminalRun => {
+  const item = object(value);
+  if (
+    item.status !== "cancelled" &&
+    item.status !== "completed" &&
+    item.status !== "failed"
+  )
+    throw new PortableAuthorityError("NATIVE_JOURNAL_RESPONSE_INVALID");
+  return {
+    runId: string(item.runId),
+    status: item.status,
+  } as AgentJournalTerminalRun;
+};
+
+const cancelledRun = (value: unknown): AgentJournalCancelRunResult => {
+  const item = object(value);
+  const disposition = string(item.disposition);
+  const status = string(item.status);
+  if (
+    !["accepted", "duplicate"].includes(disposition) ||
+    !["cancelled", "completed", "failed"].includes(status) ||
+    !Array.isArray(item.physicalCalls)
+  )
+    throw new PortableAuthorityError("NATIVE_JOURNAL_RESPONSE_INVALID");
+  const physicalCalls = item.physicalCalls.map((value) => {
+    const call = object(value);
+    const kind = string(call.kind);
+    if (kind !== "provider" && kind !== "tool")
+      throw new PortableAuthorityError("NATIVE_JOURNAL_RESPONSE_INVALID");
+    return {
+      callId: string(call.callId),
+      kind: kind as "provider" | "tool",
+    };
+  });
+  if (
+    new Set(physicalCalls.map(({ callId, kind }) => `${kind}:${callId}`))
+      .size !== physicalCalls.length
+  )
+    throw new PortableAuthorityError("NATIVE_JOURNAL_RESPONSE_INVALID");
+  return {
+    disposition: disposition as AgentJournalCancelRunResult["disposition"],
+    physicalCalls,
+    runId: string(item.runId),
+    status: status as AgentJournalCancelRunResult["status"],
+  };
+};
+
 export const createNativeAgentJournal = (
   native: NativeAgentJournalModule,
-): AgentJournalPort & AgentActivityPort => ({
+): AgentJournalPort &
+  AgentCancellationJournalPort &
+  AgentActivityPort &
+  AgentToolJournalPort &
+  AgentTerminalJournalPort => ({
   armDispatch: async (input) => {
     const result = dispatch(
       await call(native, { dispatch: input, operation: "armDispatch" }),
     );
     sameAttempt(input, result);
+    return result;
+  },
+  cancelRun: async (runId, cancelledAt) => {
+    const result = cancelledRun(
+      await call(native, { cancelledAt, operation: "cancelRun", runId }),
+    );
+    if (result.runId !== runId)
+      throw new PortableAuthorityError("NATIVE_AGENT_REVISION_FENCED");
     return result;
   },
   commitTransition: async (input) => {
@@ -350,7 +445,10 @@ export const createNativeAgentJournal = (
     return result;
   },
   listRunProjections: async (limit) => {
-    const value = await call(native, { limit, operation: "listRunProjections" });
+    const value = await call(native, {
+      limit,
+      operation: "listRunProjections",
+    });
     if (!Array.isArray(value))
       throw new PortableAuthorityError("NATIVE_JOURNAL_RESPONSE_INVALID");
     return value.map(projection);
@@ -371,11 +469,30 @@ export const createNativeAgentJournal = (
       throw new PortableAuthorityError("NATIVE_JOURNAL_RESPONSE_INVALID");
     return value.map(reconciled);
   },
+  reconcileTerminalRuns: async (reconciledAt, limit) => {
+    const value = await call(native, {
+      limit,
+      operation: "reconcileTerminalRuns",
+      reconciledAt,
+    });
+    if (!Array.isArray(value))
+      throw new PortableAuthorityError("NATIVE_JOURNAL_RESPONSE_INVALID");
+    return value.map(terminalRun);
+  },
   runnableRuns: async (limit) => {
     const value = await call(native, { limit, operation: "runnableRuns" });
     if (!Array.isArray(value))
       throw new PortableAuthorityError("NATIVE_JOURNAL_RESPONSE_INVALID");
     return value.map(projection);
+  },
+  runnableToolActions: async (limit) => {
+    const value = await call(native, {
+      limit,
+      operation: "runnableToolActions",
+    });
+    if (!Array.isArray(value))
+      throw new PortableAuthorityError("NATIVE_JOURNAL_RESPONSE_INVALID");
+    return value.map(runnableToolAction);
   },
   settleAttempt: async (input) => {
     const result = settlement(

@@ -62,18 +62,31 @@ test("connected provider-api discovery selects one explicit frontier route", asy
   });
 });
 
-test("unqualified or unauthenticated catalogs stay on device", async () => {
+test("connected provider discovery selects the frontier for primary agent steps", async () => {
+  const selection = await createMobileGenerationSelection(
+    native(providerCatalog()),
+  ).select({
+    contextPlanId: "b".repeat(64),
+    purpose: "agent.step",
+    turnId: "run-1",
+  });
+  assert.equal(selection.locality, "frontier");
+  assert.equal(selection.purpose, "agent.step");
+});
+
+test("unqualified or unauthenticated catalogs never promote Apple to primary", async () => {
   for (const module of [
     native(providerCatalog("models.dev")),
     native(providerCatalog(), false),
   ]) {
-    const selection = await createMobileGenerationSelection(module).select({
-      contextPlanId: "b".repeat(64),
-      purpose: "turn.answer",
-      turnId: "turn-1",
-    });
-    assert.equal(selection.locality, "device");
-    assert.equal(selection.modelId, "apple:system-language-model");
+    await assert.rejects(
+      createMobileGenerationSelection(module).select({
+        contextPlanId: "b".repeat(64),
+        purpose: "turn.answer",
+        turnId: "turn-1",
+      }),
+      ({ code }) => code === "PROVIDER_ROUTE_UNAVAILABLE",
+    );
   }
 });
 

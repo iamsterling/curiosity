@@ -17,7 +17,7 @@ enum NativeJournalFailure: String, Error {
 }
 
 actor NativeJournalHost {
-  private static let agentABIVersion: UInt32 = 2
+  private static let agentABIVersion: UInt32 = 3
   private static let eventABIVersion: UInt32 = 1
   private static let maximumResponseBytes = 16 * 1_024 * 1_024
   private static let maximumRequestBytes = 1_024 * 1_024
@@ -95,11 +95,14 @@ actor NativeJournalHost {
       let operation = input["operation"] as? String,
       [
         "armDispatch",
+        "cancelRun",
         "commitTransition",
         "listRunProjections",
         "readRunProjection",
         "reconcileInterrupted",
+        "reconcileTerminalRuns",
         "runnableRuns",
+        "runnableToolActions",
         "settleAttempt",
         "startRun",
       ].contains(operation),

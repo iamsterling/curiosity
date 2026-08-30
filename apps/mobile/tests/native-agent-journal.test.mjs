@@ -55,6 +55,29 @@ const projection = {
   workflowName: "generalist",
 };
 
+const runnableToolAction = {
+  actionId: "action-1",
+  actionSchemaVersion: 1,
+  actionType: "document.read",
+  createdAt: "2026-08-29T12:00:01.000Z",
+  deadlineClass: "interactive",
+  executionGeneration: 0,
+  executionId: "run-1",
+  gateClass: "none-requested",
+  input: {
+    documentId: "notes.txt",
+    maxBytes: 4096,
+    rootId: "app-documents-v1",
+  },
+  inputDigest: "2".repeat(64),
+  pluginId: "generalist",
+  reactorId: "generalist-v1",
+  requestedCapabilities: ["documents.read"],
+  resource: "document:notes.txt",
+  runId: "run-1",
+  sourceEventId: "source-1",
+};
+
 test("native agent journal sends only coarse operations without storage authority", async () => {
   const requests = [];
   const journal = createNativeAgentJournal({
@@ -73,6 +96,20 @@ test("native agent journal sends only coarse operations without storage authorit
         return JSON.stringify([projection]);
       if (request.operation === "listRunProjections")
         return JSON.stringify([projection]);
+      if (request.operation === "runnableToolActions")
+        return JSON.stringify([runnableToolAction]);
+      if (request.operation === "reconcileTerminalRuns")
+        return JSON.stringify([{ runId: "run-1", status: "completed" }]);
+      if (request.operation === "cancelRun")
+        return JSON.stringify({
+          disposition: "accepted",
+          physicalCalls: [
+            { callId: "provider-call-1", kind: "provider" },
+            { callId: "tool-call-1", kind: "tool" },
+          ],
+          runId: request.runId,
+          status: "cancelled",
+        });
       throw new Error("unexpected");
     },
   });
@@ -80,6 +117,23 @@ test("native agent journal sends only coarse operations without storage authorit
   assert.equal((await journal.readRunProjection("run-1"))?.revision, 0);
   assert.equal((await journal.runnableRuns(8)).length, 1);
   assert.equal((await journal.listRunProjections(128)).length, 1);
+  assert.equal((await journal.runnableToolActions(8))[0]?.actionId, "action-1");
+  assert.deepEqual(
+    await journal.reconcileTerminalRuns("2026-08-29T12:00:02.000Z", 8),
+    [{ runId: "run-1", status: "completed" }],
+  );
+  assert.deepEqual(
+    await journal.cancelRun("run-1", "2026-08-29T12:00:03.000Z"),
+    {
+      disposition: "accepted",
+      physicalCalls: [
+        { callId: "provider-call-1", kind: "provider" },
+        { callId: "tool-call-1", kind: "tool" },
+      ],
+      runId: "run-1",
+      status: "cancelled",
+    },
+  );
   for (const request of requests) {
     assert.equal("databasePath" in request, false);
     assert.equal("catalogDigest" in request, false);
@@ -126,7 +180,7 @@ test("native agent journal rejects stale operation identities", async () => {
   );
 });
 
-test("native agent journal maps stable v2 errors and rejects malformed output", async () => {
+test("native agent journal maps stable v3 errors and rejects malformed output", async () => {
   const fenced = createNativeAgentJournal({
     agentJournalCall: async () => {
       throw Object.assign(new Error("fenced"), {

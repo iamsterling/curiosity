@@ -47,6 +47,7 @@ export interface StoredEvent extends ProposedEvent {
 export interface ChatTurnPayload {
   readonly agentId?: string | undefined;
   readonly assistantMessageId: string;
+  readonly projectId?: string | undefined;
   readonly text: string;
   readonly threadId: string;
   readonly turnId: string;

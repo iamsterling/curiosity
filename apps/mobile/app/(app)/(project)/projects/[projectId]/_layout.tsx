@@ -4,7 +4,7 @@ import {
   ProjectWorkspaceCanvas,
   ProjectWorkspaceRoot,
 } from "../../../../../src/components/project-workspace-primitives";
-import { ProjectSessionSidebar } from "../../../../../src/components/project-session-sidebar";
+import { ProjectNavigator } from "../../../../../src/components/project-navigator";
 import { ProjectRouteProvider } from "../../../../../src/project-route-context";
 import { useProjectRouteController } from "../../../../../src/use-project-route-controller";
 
@@ -16,7 +16,7 @@ const ProjectRouteLayout = () => {
     <ProjectRouteProvider value={project}>
       <ProjectWorkspaceRoot onLayout={project.onLayout}>
         {project.layout.sessions ? (
-          <ProjectSessionSidebar
+          <ProjectNavigator
             activeCollectionId={project.activeCollectionId}
             activeThreadId={project.state.activeThreadId}
             bottomInset={project.bottomInset}

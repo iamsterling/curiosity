@@ -18,6 +18,37 @@ test("the iPad product selects the local client without URL configuration", asyn
   );
 });
 
+test("Apple Intelligence remains outside the primary answer route", async () => {
+  const runtime = await readFile(
+    new URL("local-curiosity-runtime.ts", sourceRoot),
+    "utf8",
+  );
+  const routing = await readFile(
+    new URL("mobile-generation-routing.ts", sourceRoot),
+    "utf8",
+  );
+  const kernel = await readFile(
+    new URL("mobile-agent-kernel.ts", sourceRoot),
+    "utf8",
+  );
+  const nativeKernel = await readFile(
+    new URL("native-agent-kernel.ts", sourceRoot),
+    "utf8",
+  );
+  assert.match(runtime, /createNativeDurableAgentLoop/u);
+  assert.match(runtime, /createDurableCuriosityClient/u);
+  assert.doesNotMatch(
+    runtime,
+    /foundationModelGeneration|createRoutedGeneration|createFrontierGeneration|createLocalCuriosityClient/u,
+  );
+  assert.match(routing, /PROVIDER_ROUTE_UNAVAILABLE/u);
+  assert.doesNotMatch(routing, /onDeviceAppleGenerationSelection/u);
+  assert.match(kernel, /readonly agentStep: AgentStepPort/u);
+  assert.doesNotMatch(kernel, /createFoundationModelAgentStep/u);
+  assert.match(nativeKernel, /createFrontierAgentStep/u);
+  assert.doesNotMatch(nativeKernel, /createFoundationModelAgentStep/u);
+});
+
 test("UI and workspace modules depend on CuriosityClient rather than transport", async () => {
   const directories = ["components", "screens"];
   const files = ["use-curiosity-workspace.ts"];

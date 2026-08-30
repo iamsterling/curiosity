@@ -113,5 +113,5 @@ export const OrganizationSelector = ({
 };
 
 const styles = StyleSheet.create({
-  host: { height: 44, width: 160 },
+  host: { height: 44, width: 206 },
 });

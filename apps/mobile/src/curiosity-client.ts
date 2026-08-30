@@ -27,6 +27,7 @@ export interface CuriositySession {
 
 export interface CuriositySubmit {
   readonly mode: ConversationMode;
+  readonly projectId?: string;
   readonly text: string;
   readonly threadId?: string;
 }
@@ -78,6 +79,6 @@ export const runtimeStatusLabel = (status: CuriosityRuntimeStatus): string => {
   if (status.mainProvider === "available")
     return "Local runtime · Direct frontier";
   if (status.onDeviceModel === "available")
-    return "Local runtime · On-device model";
+    return "Local runtime · Apple sidecar ready · Primary unavailable";
   return "Local runtime ready · Model unavailable";
 };

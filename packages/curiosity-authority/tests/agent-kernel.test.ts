@@ -411,6 +411,7 @@ describe("serialized portable agent kernel", () => {
       "settle",
     ]);
     expect(journal.run().status).toBe("running");
+    expect(journal.run().providerAction?.call?.callId).toBe(fixture.stepIds[0]);
     const applied = await fixture
       .kernel()
       .drainOne(new AbortController().signal);
@@ -445,7 +446,7 @@ describe("serialized portable agent kernel", () => {
     expect(fixture.steps()).toBe(1);
   });
 
-  test("settles model failure once and never hides a retry", async () => {
+  test("settles model failure once and durably terminates without retry", async () => {
     const journal = await journalFixture();
     let calls = 0;
     const fixture = await kernelFixture(journal, {
@@ -469,14 +470,49 @@ describe("serialized portable agent kernel", () => {
     });
     await expect(
       failing.drainOne(new AbortController().signal),
-    ).rejects.toThrow("MODEL_FAILED");
+    ).resolves.toMatchObject({ kind: "committed", proposalKind: "no-go" });
     expect(calls).toBe(1);
-    expect(journal.run().providerAction?.status).toBe("failed");
-    expect(await failing.drainOne(new AbortController().signal)).toMatchObject({
-      kind: "provider-blocked",
-      reason: "failed",
+    expect(journal.run().status).toBe("completion-requested");
+    expect(journal.run().state).toMatchObject({
+      errorCode: "MODEL_FAILED",
+      phase: "failed",
+    });
+    expect(await failing.drainOne(new AbortController().signal)).toEqual({
+      kind: "idle",
     });
     expect(calls).toBe(1);
+  });
+
+  test("terminalizes an unavailable provider route before physical dispatch", async () => {
+    const journal = await journalFixture();
+    const fixture = await kernelFixture(journal, {
+      citations: [],
+      kind: "final",
+      text: "unused",
+    });
+    const unavailable = new AgentKernel({
+      agentStep: fixture.agentStep,
+      catalogDigest,
+      eligibleActorId: "local-ipad-owner",
+      journal: journal.journal,
+      now: () => "2026-08-29T20:00:01.000Z",
+      planner: {
+        plan: async () => {
+          throw new Error("PROVIDER_ROUTE_UNAVAILABLE");
+        },
+      },
+      sha256,
+    });
+
+    await expect(
+      unavailable.drainOne(new AbortController().signal),
+    ).resolves.toMatchObject({ kind: "committed", proposalKind: "no-go" });
+    expect(fixture.steps()).toBe(0);
+    expect(journal.run().status).toBe("completion-requested");
+    expect(journal.run().state).toMatchObject({
+      errorCode: "PROVIDER_ROUTE_UNAVAILABLE",
+      phase: "failed",
+    });
   });
 
   test("reuses durable allocation after crashes before and after its acknowledgement", async () => {

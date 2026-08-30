@@ -1,6 +1,6 @@
 # iPadOS intelligence architecture
 
-Date: 2026-08-29  
+Date: 2026-08-29; primary/sidecar boundary amended 2026-08-30
 Status: **Accepted implementation architecture; not provider deployment, memory-retention, or release qualification.**  
 Decisions: [ADR-019](decisions/ADR-019-ipados-explicit-generation-routes.md),
 [ADR-020](decisions/ADR-020-ipados-governed-memory-curation.md)
@@ -75,6 +75,8 @@ runtime route and not permission to fall back.
 
 ```ts
 type GenerationPurpose =
+  | "agent.step"
+  | "intent.classify"
   | "turn.answer"
   | "memory.curate"
   | "memory.rerank"
@@ -107,14 +109,16 @@ with a route-specific stable code; it cannot try another route.
 
 | Route | Intended work | Tools | Network |
 | --- | --- | --- | --- |
-| `on-device.apple` | short private answers and bounded helper tasks | none | no |
-| `frontier.<connection>` | long-context reasoning and provider-supported generation | proposals only through the authority loop | yes |
+| `on-device.apple` | intent classification, memory curation/reranking, query formulation, titles, and bounded summaries | none | no |
+| `frontier.<connection>` | primary agent steps and advanced generation | proposals only through the authority loop | yes |
 | `research.<connection>` | governed research workflow | governed research tools | yes |
 
-The default is `on-device.apple` for local helper purposes. Research, coding,
-large-context synthesis, and tool-bearing work are ineligible for that route.
-Selecting a frontier route is visible in the composer and in the completed-turn
-receipt.
+Apple on-device generation is never a primary answer route. A primary turn
+requires one explicit connected frontier route; when none is available the turn
+fails `PROVIDER_ROUTE_UNAVAILABLE` while deterministic local features and Apple
+sidecar hooks remain available. Research, coding, large-context synthesis, and
+tool-bearing work are ineligible for the Apple route. Selecting a frontier route
+is visible in the composer and in the completed-turn receipt.
 
 ## Frontier connection architecture
 
@@ -203,6 +207,13 @@ deterministic validation and policy
     |-- require review for elevated sensitivity
     `-- admit memory.recorded / memory.superseded
 ```
+
+The same boundary governs all Apple hooks. A hook receives one bounded,
+revision-bound snapshot and returns a typed proposal. Intent classification may
+suggest a role or workflow; deterministic policy decides. Memory retrieval first
+queries active records locally; Apple may rerank at most the returned candidate
+IDs and never scans SQLite directly. Curation may propose records; authority
+alone appends admitted memory events.
 
 The job identity is derived from the source turn and memory-policy version.
 Re-execution is idempotent. Every proposal references exact source messages and,
@@ -378,6 +389,7 @@ usage.
 ## Explicit non-goals
 
 - Apple Intelligence as the application authority or an unbounded agent loop.
+- Apple Intelligence as the primary conversational or agent-step provider.
 - Direct model writes to SQLite, Craft documents, or provider connection state.
 - Direct provider API keys or unofficial consumer-account OAuth in the app.
 - Silent local/frontier fallback in either direction.

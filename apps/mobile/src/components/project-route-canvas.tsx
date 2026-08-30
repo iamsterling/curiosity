@@ -1,6 +1,7 @@
 import { forwardRef, type ReactNode } from "react";
 import { View, type ViewProps } from "react-native";
 import { useProjectRoute } from "../project-route-context";
+import { collectionTitle } from "./notes-shell-model";
 import {
   ProjectCanvasRoot,
   ProjectCanvasSurface,
@@ -19,10 +20,13 @@ export const ProjectRouteCanvas = forwardRef<View, ProjectRouteCanvasProps>(
       <ProjectCanvasRoot ref={ref} style={style} {...props}>
         <ProjectRouteToolbar
           compact={!project.layout.sessions}
-          onNewSession={project.newThread}
+          onNewSession={
+            project.activeCollectionId === "sessions" ? project.newThread : undefined
+          }
           onSearch={project.openCommandPalette}
           onShowAppSidebar={project.openParentSidebar}
-          onShowSessions={project.showSidebar}
+          onShowProjectNavigator={project.showSidebar}
+          projectNavigationLabel={collectionTitle(project.activeCollectionId)}
           title={title}
           topInset={project.topInset}
         />

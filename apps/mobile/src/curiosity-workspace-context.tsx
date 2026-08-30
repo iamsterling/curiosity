@@ -1,10 +1,15 @@
-import { createContext, type ReactNode, useContext } from "react";
-import { localCuriosityClient } from "./local-curiosity-runtime";
+import { createContext, type ReactNode, useContext, useEffect } from "react";
+import {
+  localCuriosityClient,
+  startLocalAgentLifecycle,
+} from "./local-curiosity-runtime";
 import { useCuriosityWorkspace } from "./use-curiosity-workspace";
 
 type CuriosityWorkspace = ReturnType<typeof useCuriosityWorkspace>;
 
-const CuriosityWorkspaceContext = createContext<CuriosityWorkspace | null>(null);
+const CuriosityWorkspaceContext = createContext<CuriosityWorkspace | null>(
+  null,
+);
 
 export const CuriosityWorkspaceProvider = ({
   children,
@@ -12,6 +17,7 @@ export const CuriosityWorkspaceProvider = ({
   readonly children: ReactNode;
 }) => {
   const workspace = useCuriosityWorkspace(localCuriosityClient);
+  useEffect(() => startLocalAgentLifecycle(), []);
   return (
     <CuriosityWorkspaceContext.Provider value={workspace}>
       {children}

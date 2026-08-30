@@ -71,7 +71,7 @@ const specs: readonly CommandSpec[] = Object.freeze([
     selected: ({ view }) => view === "craft",
   },
   {
-    description: "Show agent and subagent activity across every project and session.",
+    description: "Show agent and subagent activity across the active organization.",
     destructive: false,
     id: workstationCommandIds.showAgents,
     key: "3",
@@ -79,7 +79,7 @@ const specs: readonly CommandSpec[] = Object.freeze([
     modifiers: ["command"],
     section: 0,
     symbol: "bolt.horizontal.circle",
-    title: "Agents",
+    title: "Activity",
   },
   {
     description: "Inspect evidence, beliefs, recall, and decision impact.",

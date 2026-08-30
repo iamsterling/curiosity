@@ -30,10 +30,7 @@
       "exports": null,
       "bin": null,
       "files": [],
-      "implicitConfigSubpaths": [
-        "turbo.json",
-        ".npmrc"
-      ],
+      "implicitConfigSubpaths": ["turbo.json", ".npmrc"],
       "dependencies": [
         {
           "name": "@curiosity/runtime",
@@ -41,6 +38,27 @@
           "version": "workspace:*",
           "classification": "workspace",
           "protocol": "workspace"
+        },
+        {
+          "name": "@types/node",
+          "section": "devDependencies",
+          "version": "^22.15.24",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "@types/react-dom",
+          "section": "devDependencies",
+          "version": "19.2.2",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "@types/react",
+          "section": "devDependencies",
+          "version": "19.2.2",
+          "classification": "external",
+          "protocol": "exact"
         },
         {
           "name": "ajv",
@@ -83,6 +101,13 @@
           "version": "5.9.2",
           "classification": "external",
           "protocol": "exact"
+        },
+        {
+          "name": "vitest",
+          "section": "devDependencies",
+          "version": "^3.1.4",
+          "classification": "external",
+          "protocol": "caret"
         }
       ],
       "workspaceMember": false,
@@ -387,8 +412,10 @@
         "build": "expo export --platform ios --output-dir dist",
         "lint": "expo lint",
         "check-types": "tsc --noEmit",
-        "test": "bun test tests/*.test.mjs",
-        "verify": "bun run lint && bun run check-types && bun run test && bun run build"
+        "test": "bun test tests/*.test.mjs && bun run test:crafty-web-parity",
+        "test:crafty-web-parity": "bun run --cwd ../../vendor/crafty/packages/scene-model build && bun run --cwd ../../vendor/crafty/packages/editor build:kernel && node --test tests/crafty-kernel-web-parity.mjs",
+        "verify:local-bundle": "node tools/verify-local-bundle.mjs",
+        "verify": "bun run lint && bun run check-types && bun run test && bun run build && bun run verify:local-bundle"
       },
       "exports": null,
       "bin": null,
@@ -400,6 +427,34 @@
         "tsconfig.json"
       ],
       "dependencies": [
+        {
+          "name": "@crafty/editor",
+          "section": "dependencies",
+          "version": "workspace:*",
+          "classification": "workspace",
+          "protocol": "workspace"
+        },
+        {
+          "name": "@crafty/scene-renderer",
+          "section": "dependencies",
+          "version": "workspace:*",
+          "classification": "workspace",
+          "protocol": "workspace"
+        },
+        {
+          "name": "@crafty/scene-store",
+          "section": "dependencies",
+          "version": "workspace:*",
+          "classification": "workspace",
+          "protocol": "workspace"
+        },
+        {
+          "name": "@curiosity/authority",
+          "section": "dependencies",
+          "version": "workspace:*",
+          "classification": "workspace",
+          "protocol": "workspace"
+        },
         {
           "name": "@expo/config-plugins",
           "section": "devDependencies",
@@ -436,9 +491,30 @@
           "protocol": "caret"
         },
         {
+          "name": "expo-asset",
+          "section": "dependencies",
+          "version": "~57.0.15",
+          "classification": "external",
+          "protocol": "tilde"
+        },
+        {
           "name": "expo-constants",
           "section": "dependencies",
           "version": "~57.0.16",
+          "classification": "external",
+          "protocol": "tilde"
+        },
+        {
+          "name": "expo-crypto",
+          "section": "dependencies",
+          "version": "~57.0.2",
+          "classification": "external",
+          "protocol": "tilde"
+        },
+        {
+          "name": "expo-file-system",
+          "section": "dependencies",
+          "version": "~57.0.6",
           "classification": "external",
           "protocol": "tilde"
         },
@@ -539,7 +615,7 @@
         {
           "kind": "lifecycle-script",
           "path": "scripts.test",
-          "value": "bun test tests/*.test.mjs",
+          "value": "bun test tests/*.test.mjs && bun run test:crafty-web-parity",
           "classification": "reviewed",
           "reason": "Reviewed mobile contract-test entrypoint; execution is limited to the checked-in Node test sources."
         }
@@ -716,9 +792,7 @@
       "exports": null,
       "bin": null,
       "files": [],
-      "implicitConfigSubpaths": [
-        "bun.lock"
-      ],
+      "implicitConfigSubpaths": ["bun.lock"],
       "dependencies": [
         {
           "name": "@opencode-ai/cli",
@@ -948,6 +1022,52 @@
       ]
     },
     {
+      "path": "packages/curiosity-authority",
+      "manifest": "packages/curiosity-authority/package.json",
+      "name": "@curiosity/authority",
+      "private": true,
+      "role": "starter-library",
+      "scripts": {
+        "build": "tsc -p tsconfig.build.json",
+        "check-types": "tsc --noEmit",
+        "lint": "node tools/verify-portable-imports.mjs",
+        "test": "bun test tests/*.test.ts",
+        "verify": "bun run lint && bun run check-types && bun run build && bun run test"
+      },
+      "exports": {
+        ".": "./src/index.ts"
+      },
+      "bin": null,
+      "files": [],
+      "implicitConfigSubpaths": ["tsconfig.build.json", "tsconfig.json"],
+      "dependencies": [
+        {
+          "name": "@types/bun",
+          "section": "devDependencies",
+          "version": "1.3.14",
+          "classification": "external",
+          "protocol": "exact"
+        },
+        {
+          "name": "typescript",
+          "section": "devDependencies",
+          "version": "5.9.2",
+          "classification": "external",
+          "protocol": "exact"
+        }
+      ],
+      "workspaceMember": true,
+      "executionMetadata": [
+        {
+          "kind": "lifecycle-script",
+          "path": "scripts.test",
+          "value": "bun test tests/*.test.ts",
+          "classification": "reviewed",
+          "reason": "Reviewed portable authority contract-test entrypoint; execution is limited to checked-in Bun test sources."
+        }
+      ]
+    },
+    {
       "path": "packages/eslint-config",
       "manifest": "packages/eslint-config/package.json",
       "name": "@repo/eslint-config",
@@ -1104,10 +1224,7 @@
       },
       "bin": null,
       "files": [],
-      "implicitConfigSubpaths": [
-        "eslint.config.mjs",
-        "tsconfig.json"
-      ],
+      "implicitConfigSubpaths": ["eslint.config.mjs", "tsconfig.json"],
       "dependencies": [
         {
           "name": "@repo/eslint-config",
@@ -1296,37 +1413,25 @@
           "name": "legacy_memory_parity_adapter",
           "path": "apps/runtime/native/src/bin/legacy_memory_parity_adapter.rs",
           "crateTypes": [],
-          "requiredFeatures": [
-            "legacy-memory-parity"
-          ]
+          "requiredFeatures": ["legacy-memory-parity"]
         },
         {
           "kind": "lib",
           "name": "curiosity_runtime_native",
           "path": "apps/runtime/native/src/lib.rs",
-          "crateTypes": [
-            "cdylib",
-            "rlib"
-          ],
+          "crateTypes": ["cdylib", "rlib"],
           "requiredFeatures": []
         }
       ],
       "features": {
         "admin": [],
-        "default": [
-          "admin"
-        ],
-        "legacy-memory-parity": [
-          "dep:ryu-js"
-        ],
+        "default": ["admin"],
+        "legacy-memory-parity": ["dep:ryu-js"],
         "owned-lexical-builder-qualification": [
           "owned-lexical-reader-qualification"
         ],
         "owned-lexical-reader-qualification": [],
-        "owned-web-qualification": [
-          "dep:rusqlite",
-          "dep:scraper"
-        ]
+        "owned-web-qualification": ["dep:rusqlite", "dep:scraper"]
       },
       "dependencies": [
         {
@@ -1355,10 +1460,7 @@
           "kind": "lib",
           "name": "curiosity_native_node_api_qualification",
           "path": "apps/runtime/native-node-api-qualification/src/lib.rs",
-          "crateTypes": [
-            "cdylib",
-            "rlib"
-          ],
+          "crateTypes": ["cdylib", "rlib"],
           "requiredFeatures": []
         }
       ],
@@ -1422,19 +1524,14 @@
     {
       "path": "apps/plugin/opencode2/tools/verification-profile.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
+      "profiles": ["plugin-linux", "plugin-darwin"],
       "sha256": "b2fe5a89c3aba76cf9e780b2323c106ed432417802d720084d522ed5950947c0"
     },
     {
       "path": "apps/runtime/tools/network-denied-linux.sh",
       "owner": "runtime",
       "sha256": "3a005d3ff46de8d6f0529bf6cbcc784fc4e906156cc1e6861c27b307384e1f45",
-      "profiles": [
-        "network-denied"
-      ]
+      "profiles": ["network-denied"]
     },
     {
       "path": "apps/runtime/tools/run-test-profile.mjs",
@@ -1452,27 +1549,19 @@
       "path": "apps/runtime/tools/verify-profile.mjs",
       "owner": "runtime",
       "sha256": "d02c322052b7b03254467724e977d639e81979a19d898562f568d4a038bc6320",
-      "profiles": [
-        "source",
-        "portable-linux",
-        "darwin-compatibility"
-      ]
+      "profiles": ["source", "portable-linux", "darwin-compatibility"]
     },
     {
       "path": "tools/verification/inventory-model.mjs",
       "owner": "repository",
       "sha256": "4ef0cac6ac00e9de2eb4c6beb28a8551e54cec1376eb5ca91dbaf3675027a9a2",
-      "profiles": [
-        "inventory-status"
-      ]
+      "profiles": ["inventory-status"]
     },
     {
       "path": "tools/verification/inventory.mjs",
       "owner": "repository",
       "sha256": "ce28ad0fd5941bb3f192281f4cec8185945f886daf0ce41ea799ca4bdebbd11a",
-      "profiles": [
-        "inventory-status"
-      ]
+      "profiles": ["inventory-status"]
     },
     {
       "path": "tools/verification/native-abi.mjs",
@@ -1488,28 +1577,20 @@
     {
       "path": "tools/verification/plugin-profile-contract.mjs",
       "owner": "repository",
-      "profiles": [
-        "inventory-status"
-      ],
+      "profiles": ["inventory-status"],
       "sha256": "d779865b25a06f07f14c131fdb13c027bf19bc9180ddde6914fd221d142cdf20"
     },
     {
       "path": "tools/verification/runtime-contract-evidence.mjs",
       "owner": "repository",
       "sha256": "6cb06cfe16e62e0d4f24376678e32c6962eccc52d16fb4c6e0ac646851af8c31",
-      "profiles": [
-        "inventory-status"
-      ]
+      "profiles": ["inventory-status"]
     },
     {
       "path": "tools/verification/runtime-plugin-contract.mjs",
       "owner": "repository",
       "sha256": "02aadc2140488e12c49f548f424935cf46428d7a5a8d16c0f5ec4c93b27b9575",
-      "profiles": [
-        "inventory-status",
-        "portable-linux",
-        "darwin-compatibility"
-      ]
+      "profiles": ["inventory-status", "portable-linux", "darwin-compatibility"]
     }
   ],
   "testProfiles": {
@@ -1838,9 +1919,7 @@
           "script": "test:owned-web-qualification"
         }
       ],
-      "tests": [
-        "apps/runtime/tests/owned-web-qualification.test.ts"
-      ],
+      "tests": ["apps/runtime/tests/owned-web-qualification.test.ts"],
       "reason": "Manual owned-web qualification only."
     },
     "config-load": {
@@ -1883,41 +1962,31 @@
     "legacy-orphan-bootstrap": {
       "disposition": "legacy-orphan",
       "entrypoints": [],
-      "tests": [
-        "apps/plugin/opencode2/tools/bootstrap-test.mjs"
-      ],
+      "tests": ["apps/plugin/opencode2/tools/bootstrap-test.mjs"],
       "reason": "obsolete imported bootstrap harness is retained but not wired into required verification"
     },
     "legacy-orphan-comprehensive": {
       "disposition": "legacy-orphan",
       "entrypoints": [],
-      "tests": [
-        "apps/plugin/opencode2/tools/comprehensive-test.mjs"
-      ],
+      "tests": ["apps/plugin/opencode2/tools/comprehensive-test.mjs"],
       "reason": "obsolete imported comprehensive harness is retained but not wired into required verification"
     },
     "legacy-orphan-consolidation": {
       "disposition": "legacy-orphan",
       "entrypoints": [],
-      "tests": [
-        "apps/plugin/opencode2/tools/consolidation-test.mjs"
-      ],
+      "tests": ["apps/plugin/opencode2/tools/consolidation-test.mjs"],
       "reason": "historical consolidation harness is retained but not wired into required verification"
     },
     "legacy-orphan-smoke": {
       "disposition": "legacy-orphan",
       "entrypoints": [],
-      "tests": [
-        "apps/plugin/opencode2/tools/smoke-test.mjs"
-      ],
+      "tests": ["apps/plugin/opencode2/tools/smoke-test.mjs"],
       "reason": "obsolete imported smoke harness is retained but not wired into required verification"
     },
     "legacy-orphan-identity": {
       "disposition": "legacy-orphan",
       "entrypoints": [],
-      "tests": [
-        "apps/plugin/opencode2/tools/identity-test.mjs"
-      ],
+      "tests": ["apps/plugin/opencode2/tools/identity-test.mjs"],
       "reason": "legacy identity scanner is retained but not wired into required verification"
     },
     "deferred-real-host-spec": {
@@ -2001,9 +2070,7 @@
           "script": "test:experimental-binary"
         }
       ],
-      "tests": [
-        "apps/custom-harness/tests/darwin/binary-distribution.test.ts"
-      ],
+      "tests": ["apps/custom-harness/tests/darwin/binary-distribution.test.ts"],
       "reason": "Manual Darwin arm64 qualification for the experimental embedded supervisor and Go TUI payloads plus the local installer."
     },
     "mobile-ios": {
@@ -2026,1333 +2093,698 @@
     {
       "path": "apps/custom-harness/tests/action-reaction.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/architecture.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/attempt-governance.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/authority.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/benchmark-owned-retrieval.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/bounded-http-adapter.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/chat.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/child-delegation.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/child-failure-matrix.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/child-resource-policy.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/child-restart-boundaries.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/client-lifecycle.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/compaction.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/content-tools.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/context-replay.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/darwin/binary-distribution.test.ts",
       "owner": "harness",
-      "profiles": [
-        "experimental-binary-darwin"
-      ],
-      "platforms": [
-        "darwin"
-      ]
+      "profiles": ["experimental-binary-darwin"],
+      "platforms": ["darwin"]
     },
     {
       "path": "apps/custom-harness/tests/efficiency-eval.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/git-read.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/host-independence.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/import-safety.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/intelligence-projections.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/opencode2-parity.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/plugin-catalog.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/process-execution.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/projection-rebuild-matrix.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/prompt-assembler.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/prompt-context.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/provider-routing.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/qualification-status.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/question-lifecycle.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/research-receipt.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/research-run.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/role-sink-policy.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/runtime-research-adapter.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/schema-migration.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/supervisor.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/tui-bubbletea.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/tui.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/workflow-orchestration.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/workspace-mutation.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/custom-harness/tests/workspace-read-boundaries.test.ts",
       "owner": "harness",
-      "profiles": [
-        "custom-harness"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/docs/tests/config-load.test.mjs",
       "owner": "docs",
-      "profiles": [
-        "scaffold"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["scaffold"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/mobile/tests/config.test.mjs",
       "owner": "mobile",
-      "profiles": [
-        "mobile-ios"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["mobile-ios"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/mobile/tests/curiosity-api.test.mjs",
       "owner": "mobile",
-      "profiles": [
-        "mobile-ios"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["mobile-ios"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/mobile/tests/workstation-commands.test.mjs",
       "owner": "mobile",
-      "profiles": [
-        "mobile-ios"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["mobile-ios"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/characterization/compatibility-surfaces.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/characterization/promise-tool-host-abi.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/characterization/release-manifest-dispositions.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/compile/runtime-query-contract.ts",
       "owner": "plugin",
-      "profiles": [
-        "compile-contract"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["compile-contract"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/integration/engineering-foreground.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/integration/ephemeral-container-harness.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/integration/evidence-ingest-query.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/integration/functional-container-startup.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin",
-        "registry-smoke"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin", "registry-smoke"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/integration/installer-concurrency.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/integration/installer-confinement.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/integration/optional-runtime-adapter.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/integration/plugin-setup.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/integration/readme-verification.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/integration/registry-package-contract.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/integration/release-candidate-install.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-acceptance-verifier.mjs",
       "owner": "plugin",
-      "profiles": [
-        "sdk-v2-manual"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["sdk-v2-manual"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-approved-review-set.mjs",
       "owner": "plugin",
-      "profiles": [
-        "sdk-v2-manual"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["sdk-v2-manual"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-archive-inventory-order.mjs",
       "owner": "plugin",
-      "profiles": [
-        "sdk-v2-manual"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["sdk-v2-manual"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-generated-executable-policy.mjs",
       "owner": "plugin",
-      "profiles": [
-        "sdk-v2-manual"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["sdk-v2-manual"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2-tool-policy.mjs",
       "owner": "plugin",
-      "profiles": [
-        "sdk-v2-manual"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["sdk-v2-manual"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk-v2.acceptance.ts",
       "owner": "plugin",
-      "profiles": [
-        "sdk-v2-manual"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["sdk-v2-manual"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk.test.ts",
       "owner": "plugin",
-      "profiles": [
-        "sdk-v1-manual"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["sdk-v1-manual"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/qualification/legacy-memory-node-api-sdk.ts",
       "owner": "plugin",
-      "profiles": [
-        "sdk-v1-manual"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["sdk-v1-manual"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/qualification/verify-legacy-memory-node-api-sdk-v2.mjs",
       "owner": "plugin",
-      "profiles": [
-        "sdk-v2-manual"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["sdk-v2-manual"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/qualification/verify-legacy-memory-node-api-sdk.mjs",
       "owner": "plugin",
-      "profiles": [
-        "sdk-v1-manual"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["sdk-v1-manual"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/real-host/serve-isolation.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "deferred-real-host-spec"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["deferred-real-host-spec"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/security/darwin-real-host-guard.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/security/engineering-command-security.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/security/evidence-bootstrap-security.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/security/m7-query-capability-file.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/security/release-security.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/security/search-adapter-security.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/security/workflow-pins.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/context-projection.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/engineering-command-assets.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/engineering-intent-codec.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/engineering-policy.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/event-capture.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/evidence-development.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/github-contract.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/handoff-contract.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/hook-foundation-doctor.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/hook-foundation.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/ledger-authority-archive.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/ledger-authority-domain.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/ledger-v1.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/legacy-memory-dependency-receipt.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/legacy-memory-mutant-scorer.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/legacy-memory-native-parity.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/loop-engine-v1.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/native-loop-completion.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/opencode-17595-service-compat.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/opencode-abi-pin.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/persistence-fencing.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/plugin-agent-config.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/plugin-entrypoint.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/provenance-manifest.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/provenance-resource-verification.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/real-host-suite.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/resource-hook-parity.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/web-search-timeout-child.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tests/unit/web-search.test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tools/bootstrap-test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "legacy-orphan-bootstrap"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["legacy-orphan-bootstrap"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tools/bundle-test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tools/comprehensive-test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "legacy-orphan-comprehensive"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["legacy-orphan-comprehensive"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tools/consolidation-test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "legacy-orphan-consolidation"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["legacy-orphan-consolidation"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tools/identity-test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "legacy-orphan-identity"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["legacy-orphan-identity"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tools/install-test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tools/smoke-test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "legacy-orphan-smoke"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["legacy-orphan-smoke"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/plugin/opencode2/tools/staged-release-test.mjs",
       "owner": "plugin",
-      "profiles": [
-        "plugin-linux",
-        "plugin-darwin"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["plugin-linux", "plugin-darwin"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/runtime/tests/acquisition-kernel-v3.test.ts",
       "owner": "runtime",
-      "profiles": [
-        "source",
-        "portable-linux",
-        "darwin-compatibility"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["source", "portable-linux", "darwin-compatibility"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/runtime/tests/boundaries.test.ts",
@@ -3363,36 +2795,19 @@
         "darwin-compatibility",
         "network-denied"
       ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/runtime/tests/characterization/bun-https-lookup.test.ts",
       "owner": "runtime",
-      "profiles": [
-        "source",
-        "portable-linux",
-        "darwin-compatibility"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["source", "portable-linux", "darwin-compatibility"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/runtime/tests/characterization/m6-local-tls.test.ts",
       "owner": "runtime",
-      "profiles": [
-        "source",
-        "portable-linux",
-        "darwin-compatibility"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["source", "portable-linux", "darwin-compatibility"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/runtime/tests/corpus.test.ts",
@@ -3403,50 +2818,31 @@
         "darwin-compatibility",
         "network-denied"
       ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/runtime/tests/m7-native-install-id.test.ts",
       "owner": "runtime",
-      "profiles": [
-        "m7-current-candidate"
-      ],
-      "platforms": [
-        "darwin"
-      ]
+      "profiles": ["m7-current-candidate"],
+      "platforms": ["darwin"]
     },
     {
       "path": "apps/runtime/tests/m7-release-path.test.ts",
       "owner": "runtime",
-      "profiles": [
-        "m7-current-candidate"
-      ],
-      "platforms": [
-        "darwin"
-      ]
+      "profiles": ["m7-current-candidate"],
+      "platforms": ["darwin"]
     },
     {
       "path": "apps/runtime/tests/m7-release-utilities.test.ts",
       "owner": "runtime",
-      "profiles": [
-        "m7-current-candidate"
-      ],
-      "platforms": [
-        "darwin"
-      ]
+      "profiles": ["m7-current-candidate"],
+      "platforms": ["darwin"]
     },
     {
       "path": "apps/runtime/tests/m7-release.test.ts",
       "owner": "runtime",
-      "profiles": [
-        "m7-current-candidate"
-      ],
-      "platforms": [
-        "darwin"
-      ]
+      "profiles": ["m7-current-candidate"],
+      "platforms": ["darwin"]
     },
     {
       "path": "apps/runtime/tests/owned-crawl.test.ts",
@@ -3457,34 +2853,19 @@
         "darwin-compatibility",
         "network-denied"
       ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/runtime/tests/owned-web-qualification.test.ts",
       "owner": "runtime",
-      "profiles": [
-        "owned-web-manual"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["owned-web-manual"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/runtime/tests/package-scripts.test.ts",
       "owner": "runtime",
-      "profiles": [
-        "source",
-        "portable-linux",
-        "darwin-compatibility"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["source", "portable-linux", "darwin-compatibility"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/runtime/tests/query-boundary.test.ts",
@@ -3495,10 +2876,7 @@
         "darwin-compatibility",
         "network-denied"
       ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/runtime/tests/repository-search.test.ts",
@@ -3509,62 +2887,31 @@
         "darwin-compatibility",
         "network-denied"
       ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/runtime/tests/retrieval-characterization.test.ts",
       "owner": "runtime",
-      "profiles": [
-        "source",
-        "portable-linux",
-        "darwin-compatibility"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["source", "portable-linux", "darwin-compatibility"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/runtime/tests/retrieval-contracts.test.ts",
       "owner": "runtime",
-      "profiles": [
-        "source",
-        "portable-linux",
-        "darwin-compatibility"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["source", "portable-linux", "darwin-compatibility"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/runtime/tests/retrieve-information-v3.test.ts",
       "owner": "runtime",
-      "profiles": [
-        "source",
-        "portable-linux",
-        "darwin-compatibility"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["source", "portable-linux", "darwin-compatibility"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/runtime/tests/retrieve-information.test.ts",
       "owner": "runtime",
-      "profiles": [
-        "source",
-        "portable-linux",
-        "darwin-compatibility"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["source", "portable-linux", "darwin-compatibility"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/runtime/tests/runtime.test.ts",
@@ -3575,98 +2922,55 @@
         "darwin-compatibility",
         "network-denied"
       ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/web/tests/config-load.test.mjs",
       "owner": "web",
-      "profiles": [
-        "scaffold"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["scaffold"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "apps/web/tests/thread-projection.test.mjs",
       "owner": "web",
-      "profiles": [
-        "scaffold"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["scaffold"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "packages/eslint-config/tests/exports.test.mjs",
       "owner": "eslint-config",
-      "profiles": [
-        "config-load"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["config-load"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "packages/typescript-config/tests/exports.test.mjs",
       "owner": "typescript-config",
-      "profiles": [
-        "config-load"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["config-load"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "packages/ui/tests/package-contract.test.mjs",
       "owner": "ui",
-      "profiles": [
-        "scaffold"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["scaffold"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "tools/status/status.test.mjs",
       "owner": "repository",
-      "profiles": [
-        "inventory-status"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["inventory-status"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "tools/verification/inventory.test.mjs",
       "owner": "repository",
-      "profiles": [
-        "inventory-status"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["inventory-status"],
+      "platforms": ["linux", "darwin"]
     },
     {
       "path": "tools/verification/verification.test.mjs",
       "owner": "repository",
-      "profiles": [
-        "inventory-status"
-      ],
-      "platforms": [
-        "linux",
-        "darwin"
-      ]
+      "profiles": ["inventory-status"],
+      "platforms": ["linux", "darwin"]
     }
   ],
   "workflows": [
@@ -3689,26 +2993,19 @@
         {
           "id": "inventory-status",
           "condition": "github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group'",
-          "runsOn": [
-            "ubuntu-latest"
-          ],
+          "runsOn": ["ubuntu-latest"],
           "needs": [],
           "actions": [
             "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
             "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6"
           ],
-          "commands": [
-            "bun run inventory:check",
-            "bun run status:check"
-          ],
+          "commands": ["bun run inventory:check", "bun run status:check"],
           "permissions": null
         },
         {
           "id": "workspace-verification",
           "condition": "github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group'",
-          "runsOn": [
-            "ubuntu-latest"
-          ],
+          "runsOn": ["ubuntu-latest"],
           "needs": [],
           "permissions": null,
           "actions": [
@@ -3724,41 +3021,31 @@
         {
           "id": "plugin-linux",
           "condition": "github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group'",
-          "runsOn": [
-            "ubuntu-latest"
-          ],
+          "runsOn": ["ubuntu-latest"],
           "needs": [],
           "actions": [
             "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
             "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6"
           ],
-          "commands": [
-            "bun run verify:linux"
-          ],
+          "commands": ["bun run verify:linux"],
           "permissions": null
         },
         {
           "id": "registry-smoke",
           "condition": "github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group'",
-          "runsOn": [
-            "ubuntu-latest"
-          ],
+          "runsOn": ["ubuntu-latest"],
           "needs": [],
           "actions": [
             "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
             "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6"
           ],
-          "commands": [
-            "bun run test:container:smoke"
-          ],
+          "commands": ["bun run test:container:smoke"],
           "permissions": null
         },
         {
           "id": "runtime-portable",
           "condition": "github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group'",
-          "runsOn": [
-            "ubuntu-latest"
-          ],
+          "runsOn": ["ubuntu-latest"],
           "needs": [],
           "actions": [
             "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
@@ -3773,9 +3060,7 @@
         {
           "id": "runtime-network-denied",
           "condition": "github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group'",
-          "runsOn": [
-            "ubuntu-latest"
-          ],
+          "runsOn": ["ubuntu-latest"],
           "needs": [],
           "actions": [
             "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
@@ -3791,9 +3076,7 @@
         {
           "id": "required-gate",
           "condition": "always() && (github.event_name == 'pull_request' || github.event_name == 'push' || github.event_name == 'merge_group')",
-          "runsOn": [
-            "ubuntu-latest"
-          ],
+          "runsOn": ["ubuntu-latest"],
           "needs": [
             "inventory-status",
             "workspace-verification",
@@ -3814,28 +3097,19 @@
         {
           "id": "installer-stress",
           "condition": "github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.installer_stress)",
-          "runsOn": [
-            "ubuntu-latest"
-          ],
+          "runsOn": ["ubuntu-latest"],
           "needs": [],
           "actions": [
             "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
             "oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6"
           ],
-          "commands": [
-            "bun run test:container:stress"
-          ],
+          "commands": ["bun run test:container:stress"],
           "permissions": null
         },
         {
           "id": "darwin-compatibility",
           "condition": "github.event_name == 'workflow_dispatch' && inputs.darwin_compatibility",
-          "runsOn": [
-            "self-hosted",
-            "macOS",
-            "ARM64",
-            "curiosity-darwin-arm64"
-          ],
+          "runsOn": ["self-hosted", "macOS", "ARM64", "curiosity-darwin-arm64"],
           "needs": [],
           "actions": [
             "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
@@ -3962,14 +3236,7 @@
   "taskGraph": {
     "rootTest": "node --test --test-concurrency=1 tools/status/status.test.mjs tools/verification/*.test.mjs && turbo run test",
     "rootVerify": "bun run inventory:check && bun run status:check && turbo run verify && node tools/verification/runtime-plugin-contract.mjs --no-build",
-    "turboTasks": [
-      "build",
-      "lint",
-      "check-types",
-      "test",
-      "verify",
-      "dev"
-    ],
+    "turboTasks": ["build", "lint", "check-types", "test", "verify", "dev"],
     "authoritativeWorkspaces": [
       "apps/custom-harness",
       "apps/docs",

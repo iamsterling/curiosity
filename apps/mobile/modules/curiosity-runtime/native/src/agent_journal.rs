@@ -135,6 +135,69 @@ pub(super) struct RunProjection {
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
+pub(super) struct RunnableToolAction {
+    action_id: String,
+    action_schema_version: i64,
+    action_type: String,
+    created_at: String,
+    deadline_class: String,
+    execution_generation: i64,
+    execution_id: String,
+    gate_class: String,
+    input: Value,
+    input_digest: String,
+    plugin_id: String,
+    reactor_id: String,
+    requested_capabilities: Vec<String>,
+    resource: String,
+    run_id: String,
+    source_event_id: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(super) struct TerminalRun {
+    run_id: String,
+    status: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(super) struct PhysicalCancellation {
+    call_id: String,
+    kind: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(super) struct CancelRunResponse {
+    disposition: &'static str,
+    physical_calls: Vec<PhysicalCancellation>,
+    run_id: String,
+    status: String,
+}
+
+struct RunnableToolActionRow {
+    action_id: String,
+    action_schema_version: i64,
+    action_type: String,
+    created_at: String,
+    deadline_class: String,
+    execution_generation: i64,
+    execution_id: String,
+    gate_class: String,
+    input_json: String,
+    input_digest: String,
+    plugin_id: String,
+    reactor_id: String,
+    requested_capabilities_json: String,
+    resource: String,
+    run_id: String,
+    source_event_id: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct ProviderActionProjection {
     action_id: String,
     call: Option<ProviderCallProjection>,
@@ -535,6 +598,494 @@ pub(super) fn runnable_runs(connection: &Connection, limit: u32) -> Result<Vec<R
             .and_then(|value| to_projection(connection, value))
     })
     .collect()
+}
+
+pub(super) fn runnable_tool_actions(
+    connection: &Connection,
+    limit: u32,
+) -> Result<Vec<RunnableToolAction>> {
+    let mut statement = connection
+        .prepare(
+            "SELECT actions.action_id,actions.action_schema_version,actions.action_type,actions.created_at,actions.deadline_class,executions.generation,actions.execution_id,actions.gate_class,actions.input_json,actions.input_digest,actions.plugin_id,actions.reactor_id,actions.requested_capabilities_json,actions.resource,workflow_instances.instance_id,actions.source_event_id FROM actions JOIN executions ON executions.execution_id=actions.execution_id JOIN workflow_instances ON workflow_instances.execution_id=actions.execution_id WHERE actions.status='proposed' AND actions.action_type NOT IN ('provider.generate','question.ask') AND actions.gate_class='none-requested' AND executions.status='active' AND executions.cancellation_requested=0 AND workflow_instances.status='running' ORDER BY actions.created_at,actions.action_id LIMIT ?1",
+        )
+        .map_err(|_| JournalError::TransactionFailed)?;
+    let rows = statement
+        .query_map([limit], |row| {
+            Ok(RunnableToolActionRow {
+                action_id: row.get(0)?,
+                action_schema_version: row.get(1)?,
+                action_type: row.get(2)?,
+                created_at: row.get(3)?,
+                deadline_class: row.get(4)?,
+                execution_generation: row.get(5)?,
+                execution_id: row.get(6)?,
+                gate_class: row.get(7)?,
+                input_json: row.get(8)?,
+                input_digest: row.get(9)?,
+                plugin_id: row.get(10)?,
+                reactor_id: row.get(11)?,
+                requested_capabilities_json: row.get(12)?,
+                resource: row.get(13)?,
+                run_id: row.get(14)?,
+                source_event_id: row.get(15)?,
+            })
+        })
+        .map_err(|_| JournalError::TransactionFailed)?;
+    rows.map(|row| {
+        let value = row.map_err(|_| JournalError::TransactionFailed)?;
+        Ok(RunnableToolAction {
+            action_id: value.action_id,
+            action_schema_version: value.action_schema_version,
+            action_type: value.action_type,
+            created_at: value.created_at,
+            deadline_class: value.deadline_class,
+            execution_generation: value.execution_generation,
+            execution_id: value.execution_id,
+            gate_class: value.gate_class,
+            input: parse_json(&value.input_json)?,
+            input_digest: value.input_digest,
+            plugin_id: value.plugin_id,
+            reactor_id: value.reactor_id,
+            requested_capabilities: parse_string_array(&value.requested_capabilities_json)?,
+            resource: value.resource,
+            run_id: value.run_id,
+            source_event_id: value.source_event_id,
+        })
+    })
+    .collect()
+}
+
+pub(super) fn cancel_run(
+    connection: &mut Connection,
+    catalog_digest: &str,
+    run_id: &str,
+    cancelled_at: &str,
+) -> Result<CancelRunResponse> {
+    if !bounded(run_id, 512) || !bounded(cancelled_at, 128) {
+        return Err(JournalError::RequestInvalid);
+    }
+    let transaction = connection
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .map_err(|_| JournalError::TransactionFailed)?;
+    let mut row = run_row(&transaction, run_id)?.ok_or(JournalError::RecordNotFound)?;
+    if matches!(row.status.as_str(), "cancelled" | "completed" | "failed") {
+        let physical_calls = if row.status == "cancelled" {
+            cancellation_calls(&transaction, &row.execution_id, true)?
+        } else {
+            Vec::new()
+        };
+        return Ok(CancelRunResponse {
+            disposition: "duplicate",
+            physical_calls,
+            run_id: run_id.to_owned(),
+            status: row.status,
+        });
+    }
+    if !matches!(row.status.as_str(), "running" | "completion-requested") {
+        return Err(JournalError::RevisionFenced);
+    }
+    let source = latest_run_source(&transaction, run_id)?;
+    let parent_execution_id = parent_execution(&transaction, &row)?;
+    let physical_calls = cancellation_calls(&transaction, &row.execution_id, false)?;
+    transaction
+        .execute(
+            "UPDATE provider_calls SET status=CASE dispatch_state WHEN 'dispatched' THEN 'delivery-unknown' ELSE 'failed' END,delivery_certainty=CASE dispatch_state WHEN 'dispatched' THEN 'UNKNOWN' ELSE 'NOT_DELIVERED' END,completed_at=?1,error_code='ACTION_CANCELLED' WHERE action_id IN (SELECT action_id FROM actions WHERE execution_id=?2) AND status='allocated'",
+            params![cancelled_at, row.execution_id],
+        )
+        .map_err(|_| JournalError::TransactionFailed)?;
+    transaction
+        .execute(
+            "UPDATE tool_calls SET status=CASE dispatch_state WHEN 'dispatched' THEN 'delivery-unknown' ELSE 'failed' END,delivery_certainty=CASE dispatch_state WHEN 'dispatched' THEN 'UNKNOWN' ELSE 'NOT_DELIVERED' END,completed_at=?1,error_code='ACTION_CANCELLED' WHERE action_id IN (SELECT action_id FROM actions WHERE execution_id=?2) AND status='allocated'",
+            params![cancelled_at, row.execution_id],
+        )
+        .map_err(|_| JournalError::TransactionFailed)?;
+    transaction
+        .execute(
+            "UPDATE actions SET status=CASE WHEN EXISTS (SELECT 1 FROM provider_calls WHERE provider_calls.action_id=actions.action_id AND provider_calls.dispatch_state='dispatched') OR EXISTS (SELECT 1 FROM tool_calls WHERE tool_calls.action_id=actions.action_id AND tool_calls.dispatch_state='dispatched') THEN 'delivery-unknown' ELSE 'failed' END,updated_at=?1,error_code='ACTION_CANCELLED' WHERE execution_id=?2 AND status IN ('proposed','running')",
+            params![cancelled_at, row.execution_id],
+        )
+        .map_err(|_| JournalError::TransactionFailed)?;
+    transaction
+        .execute(
+            "UPDATE attempts SET status='cancelled',updated_at=?1 WHERE execution_id=?2 AND status='running'",
+            params![cancelled_at, row.execution_id],
+        )
+        .map_err(|_| JournalError::TransactionFailed)?;
+    transaction
+        .execute(
+            "UPDATE resource_leases SET status='fenced',released_at=?1 WHERE execution_id=?2 AND status='active'",
+            params![cancelled_at, row.execution_id],
+        )
+        .map_err(|_| JournalError::TransactionFailed)?;
+    transaction
+        .execute(
+            "UPDATE gates SET status='expired',decided_at=?1,decision_command_id=?2 WHERE action_id IN (SELECT action_id FROM actions WHERE execution_id=?3) AND status='pending'",
+            params![cancelled_at, format!("workflow-cancel:{run_id}"), row.execution_id],
+        )
+        .map_err(|_| JournalError::TransactionFailed)?;
+    transaction
+        .execute(
+            "UPDATE questions SET status='cancelled',answered_at=?1,answer_command_id=?2 WHERE execution_id=?3 AND status='pending'",
+            params![cancelled_at, format!("workflow-cancel:{run_id}"), row.execution_id],
+        )
+        .map_err(|_| JournalError::TransactionFailed)?;
+    transaction
+        .execute(
+            "UPDATE executions SET status='cancelled',cancellation_requested=1,generation=generation+1,version=version+1,updated_at=?1 WHERE execution_id=?2",
+            params![cancelled_at, row.execution_id],
+        )
+        .map_err(|_| JournalError::TransactionFailed)?;
+    let cancelled_state = json!({
+        "errorCode": "ACTION_CANCELLED",
+        "phase": "cancelled",
+        "schemaVersion": 1,
+    });
+    let updated = transaction
+        .execute(
+            "UPDATE workflow_instances SET status='cancelled',state_json=?1,error_code='ACTION_CANCELLED',updated_at=?2 WHERE instance_id=?3 AND status IN ('running','completion-requested')",
+            params![canonical_json(&cancelled_state)?, cancelled_at, run_id],
+        )
+        .map_err(|_| JournalError::TransactionFailed)?;
+    if updated != 1 {
+        return Err(JournalError::RevisionFenced);
+    }
+    row.state_json = canonical_json(&cancelled_state)?;
+    let mut events = vec![KernelEvent {
+        body: json!({
+            "instanceId": run_id,
+            "schemaVersion": 1,
+            "status": "cancelled",
+            "workflowName": row.workflow_name,
+        }),
+        context: event_context(
+            &source,
+            &row.execution_id,
+            &row.contribution_id,
+            &row.contribution_version,
+            &parent_execution_id,
+        ),
+        event_type: "workflow.cancelled".to_owned(),
+        stream_id: run_id.to_owned(),
+    }];
+    if let Some(turn_id) = chat_turn_id(&row)? {
+        events.push(KernelEvent {
+            body: json!({ "executionId": turn_id, "schemaVersion": 1 }),
+            context: event_context(
+                &source,
+                &row.execution_id,
+                &row.contribution_id,
+                &row.contribution_version,
+                &parent_execution_id,
+            ),
+            event_type: "execution.cancelled".to_owned(),
+            stream_id: turn_id.to_owned(),
+        });
+    }
+    events.extend(chat_terminal_events(
+        &transaction,
+        &row,
+        &source,
+        &parent_execution_id,
+        "cancelled",
+    )?);
+    let command_id = format!("workflow-cancel:{run_id}");
+    let command_digest = kernel_events_digest(&events)?;
+    append_kernel_events(
+        &transaction,
+        catalog_digest,
+        KERNEL_PLUGIN,
+        cancelled_at,
+        &command_id,
+        &command_digest,
+        &row.contribution_id,
+        &row.contribution_version,
+        events,
+    )?;
+    transaction
+        .commit()
+        .map_err(|_| JournalError::TransactionFailed)?;
+    Ok(CancelRunResponse {
+        disposition: "accepted",
+        physical_calls,
+        run_id: run_id.to_owned(),
+        status: "cancelled".to_owned(),
+    })
+}
+
+fn cancellation_calls(
+    connection: &Connection,
+    execution_id: &str,
+    cancelled: bool,
+) -> Result<Vec<PhysicalCancellation>> {
+    let status = if cancelled {
+        "delivery-unknown"
+    } else {
+        "allocated"
+    };
+    let mut statement = connection
+        .prepare(
+            "SELECT provider_calls.call_id,'provider' FROM provider_calls JOIN actions ON actions.action_id=provider_calls.action_id WHERE actions.execution_id=?1 AND provider_calls.dispatch_state='dispatched' AND provider_calls.status=?2 AND (?3=0 OR provider_calls.error_code='ACTION_CANCELLED') UNION ALL SELECT tool_calls.call_id,'tool' FROM tool_calls JOIN actions ON actions.action_id=tool_calls.action_id WHERE actions.execution_id=?1 AND tool_calls.dispatch_state='dispatched' AND tool_calls.status=?2 AND (?3=0 OR tool_calls.error_code='ACTION_CANCELLED') ORDER BY 2,1",
+        )
+        .map_err(|_| JournalError::TransactionFailed)?;
+    statement
+        .query_map(
+            params![execution_id, status, i64::from(cancelled)],
+            |record| {
+                Ok(PhysicalCancellation {
+                    call_id: record.get(0)?,
+                    kind: record.get(1)?,
+                })
+            },
+        )
+        .map_err(|_| JournalError::TransactionFailed)?
+        .collect::<std::result::Result<Vec<_>, _>>()
+        .map_err(|_| JournalError::TransactionFailed)
+}
+
+fn chat_turn_id(row: &RunRow) -> Result<Option<String>> {
+    let input = parse_json(&row.input_json)?;
+    if input.get("kind").and_then(Value::as_str) != Some("chat.turn") {
+        return Ok(None);
+    }
+    required_chat_string(&input, "turnId").map(|value| Some(value.to_owned()))
+}
+
+fn kernel_events_digest(events: &[KernelEvent]) -> Result<String> {
+    Ok(sha256(&canonical_json(&Value::Array(
+        events
+            .iter()
+            .map(|event| {
+                json!({
+                    "body": event.body.clone(),
+                    "streamId": event.stream_id.clone(),
+                    "type": event.event_type.clone(),
+                })
+            })
+            .collect(),
+    ))?))
+}
+
+pub(super) fn reconcile_terminal_runs(
+    connection: &mut Connection,
+    catalog_digest: &str,
+    reconciled_at: &str,
+    limit: u32,
+) -> Result<Vec<TerminalRun>> {
+    let transaction = connection
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .map_err(|_| JournalError::TransactionFailed)?;
+    let run_ids = {
+        let mut statement = transaction
+            .prepare(
+                "SELECT workflow_instances.instance_id FROM workflow_instances WHERE workflow_instances.status='completion-requested' AND NOT EXISTS (SELECT 1 FROM actions WHERE actions.execution_id=workflow_instances.execution_id AND actions.status IN ('proposed','running')) AND NOT EXISTS (SELECT 1 FROM workflow_instances child WHERE child.parent_instance_id=workflow_instances.instance_id AND child.status IN ('running','completion-requested')) ORDER BY workflow_instances.depth DESC,workflow_instances.instance_id LIMIT ?1",
+            )
+            .map_err(|_| JournalError::TransactionFailed)?;
+        statement
+            .query_map([limit], |row| row.get::<_, String>(0))
+            .map_err(|_| JournalError::TransactionFailed)?
+            .collect::<std::result::Result<Vec<_>, _>>()
+            .map_err(|_| JournalError::TransactionFailed)?
+    };
+    let mut completed = Vec::with_capacity(run_ids.len());
+    for run_id in run_ids {
+        let row = run_row(&transaction, &run_id)?.ok_or(JournalError::RecordNotFound)?;
+        let source = latest_run_source(&transaction, &run_id)?;
+        let parent_execution_id = parent_execution(&transaction, &row)?;
+        let terminal_state = parse_json(&row.state_json)?;
+        let terminal_status = terminal_status(&terminal_state);
+        let terminal_error = terminal_error_code(&terminal_state);
+        let updated = transaction
+            .execute(
+                "UPDATE workflow_instances SET status=?1,error_code=?2,updated_at=?3 WHERE instance_id=?4 AND status='completion-requested'",
+                params![terminal_status, terminal_error, reconciled_at, run_id],
+            )
+            .map_err(|_| JournalError::TransactionFailed)?;
+        if updated != 1 {
+            return Err(JournalError::RevisionFenced);
+        }
+        transaction
+            .execute(
+                "UPDATE executions SET status=?1,version=version+1,updated_at=?2 WHERE execution_id=?3",
+                params![terminal_status, reconciled_at, row.execution_id],
+            )
+            .map_err(|_| JournalError::TransactionFailed)?;
+        let event_body = json!({
+            "instanceId": run_id,
+            "schemaVersion": 1,
+            "status": terminal_status,
+            "workflowName": row.workflow_name,
+        });
+        let workflow_event_type = format!("workflow.{terminal_status}");
+        let command_id = format!("workflow-terminal:{run_id}:{terminal_status}");
+        let mut events = vec![KernelEvent {
+            body: event_body,
+            context: event_context(
+                &source,
+                &row.execution_id,
+                &row.contribution_id,
+                &row.contribution_version,
+                &parent_execution_id,
+            ),
+            event_type: workflow_event_type,
+            stream_id: run_id.clone(),
+        }];
+        events.extend(chat_terminal_events(
+            &transaction,
+            &row,
+            &source,
+            &parent_execution_id,
+            terminal_status,
+        )?);
+        let command_digest = sha256(&canonical_json(&Value::Array(
+            events
+                .iter()
+                .map(|event| {
+                    json!({
+                        "body": event.body.clone(),
+                        "streamId": event.stream_id.clone(),
+                        "type": event.event_type.clone(),
+                    })
+                })
+                .collect(),
+        ))?);
+        append_kernel_events(
+            &transaction,
+            catalog_digest,
+            KERNEL_PLUGIN,
+            reconciled_at,
+            &command_id,
+            &command_digest,
+            &row.contribution_id,
+            &row.contribution_version,
+            events,
+        )?;
+        completed.push(TerminalRun {
+            run_id,
+            status: terminal_status.to_owned(),
+        });
+    }
+    transaction
+        .commit()
+        .map_err(|_| JournalError::TransactionFailed)?;
+    Ok(completed)
+}
+
+fn terminal_status(state: &Value) -> &'static str {
+    match state.get("phase").and_then(Value::as_str) {
+        Some("cancelled") => "cancelled",
+        Some("failed") | Some("no-go") => "failed",
+        _ => "completed",
+    }
+}
+
+fn terminal_error_code(state: &Value) -> Option<&str> {
+    state
+        .get("errorCode")
+        .or_else(|| state.get("reasonCode"))
+        .and_then(Value::as_str)
+}
+
+fn required_chat_string<'a>(input: &'a Value, field: &str) -> Result<&'a str> {
+    input
+        .get(field)
+        .and_then(Value::as_str)
+        .filter(|value| !value.is_empty())
+        .ok_or(JournalError::IntegrityInvalid)
+}
+
+fn latest_provider_model(connection: &Connection, execution_id: &str) -> Result<String> {
+    connection
+        .query_row(
+            "SELECT provider_calls.model_id FROM provider_calls JOIN actions ON actions.action_id=provider_calls.action_id WHERE actions.execution_id=?1 ORDER BY provider_calls.allocated_at DESC,provider_calls.call_id DESC LIMIT 1",
+            [execution_id],
+            |record| record.get(0),
+        )
+        .optional()
+        .map(|value| value.unwrap_or_default())
+        .map_err(|_| JournalError::TransactionFailed)
+}
+
+fn chat_terminal_events(
+    connection: &Connection,
+    row: &RunRow,
+    source: &SourceContext,
+    parent_execution_id: &str,
+    status: &str,
+) -> Result<Vec<KernelEvent>> {
+    let input = parse_json(&row.input_json)?;
+    if input.get("kind").and_then(Value::as_str) != Some("chat.turn") {
+        return Ok(Vec::new());
+    }
+    if input.get("schemaVersion").and_then(Value::as_i64) != Some(1) {
+        return Err(JournalError::IntegrityInvalid);
+    }
+    let assistant_message_id = required_chat_string(&input, "assistantMessageId")?;
+    let thread_id = required_chat_string(&input, "threadId")?;
+    let turn_id = required_chat_string(&input, "turnId")?;
+    let state = parse_json(&row.state_json)?;
+    let model_id = latest_provider_model(connection, &row.execution_id)?;
+    let context = || {
+        event_context(
+            source,
+            &row.execution_id,
+            &row.contribution_id,
+            &row.contribution_version,
+            parent_execution_id,
+        )
+    };
+    if status == "completed" {
+        let text = state
+            .get("final")
+            .and_then(|value| value.get("text"))
+            .and_then(Value::as_str)
+            .filter(|value| !value.is_empty())
+            .ok_or(JournalError::IntegrityInvalid)?;
+        return Ok(vec![
+            KernelEvent {
+                body: json!({
+                    "durationMs": 0,
+                    "effort": "durable-agent",
+                    "messageId": assistant_message_id,
+                    "modelId": model_id,
+                    "role": "assistant",
+                    "schemaVersion": 1,
+                    "text": text,
+                    "threadId": thread_id,
+                    "turnId": turn_id,
+                }),
+                context: context(),
+                event_type: "message.appended".to_owned(),
+                stream_id: thread_id.to_owned(),
+            },
+            KernelEvent {
+                body: json!({
+                    "assistantMessageId": assistant_message_id,
+                    "durationMs": 0,
+                    "effort": "durable-agent",
+                    "modelId": model_id,
+                    "schemaVersion": 1,
+                    "threadId": thread_id,
+                    "turnId": turn_id,
+                }),
+                context: context(),
+                event_type: "turn.completed".to_owned(),
+                stream_id: thread_id.to_owned(),
+            },
+        ]);
+    }
+    let error_code = terminal_error_code(&state).unwrap_or("AGENT_RUN_FAILED");
+    Ok(vec![KernelEvent {
+        body: json!({
+            "errorCode": error_code,
+            "modelId": model_id,
+            "schemaVersion": 1,
+            "threadId": thread_id,
+            "turnId": turn_id,
+        }),
+        context: context(),
+        event_type: "turn.failed".to_owned(),
+        stream_id: thread_id.to_owned(),
+    }])
 }
 
 pub(super) fn list_run_projections(
@@ -1068,6 +1619,19 @@ fn parse_json(value: &str) -> Result<Value> {
     serde_json::from_str(value).map_err(|_| JournalError::IntegrityInvalid)
 }
 
+fn parse_string_array(value: &str) -> Result<Vec<String>> {
+    parse_json(value)?
+        .as_array()
+        .ok_or(JournalError::IntegrityInvalid)?
+        .iter()
+        .map(|item| {
+            item.as_str()
+                .map(ToOwned::to_owned)
+                .ok_or(JournalError::IntegrityInvalid)
+        })
+        .collect()
+}
+
 fn source_context(connection: &Connection, event_id: &str) -> Result<SourceContext> {
     connection
         .query_row(
@@ -1364,6 +1928,272 @@ mod tests {
     }
 
     #[test]
+    fn runnable_tool_actions_are_bounded_to_ungated_live_run_actions() {
+        let (_, catalog, mut connection, source) = database("runnable-tools");
+        start_run(
+            &mut connection,
+            &catalog,
+            start_input(&source),
+            FaultPoint::None,
+        )
+        .unwrap();
+        let mut transition = transition_input();
+        transition.actions[0].gate_class = "none-requested".into();
+        transition.children.clear();
+        commit_transition(&mut connection, &catalog, transition, FaultPoint::None).unwrap();
+
+        let actions = runnable_tool_actions(&connection, 1).unwrap();
+        assert_eq!(actions.len(), 1);
+        assert_eq!(actions[0].action_id, "action-1");
+        assert_eq!(actions[0].action_type, "document.read");
+        assert_eq!(actions[0].execution_generation, 0);
+        assert_eq!(actions[0].run_id, "run-root");
+        assert_eq!(actions[0].requested_capabilities, ["documents.read"]);
+
+        connection
+            .execute(
+                "UPDATE actions SET gate_class='binding-human-requested' WHERE action_id='action-1'",
+                [],
+            )
+            .unwrap();
+        assert!(runnable_tool_actions(&connection, 1).unwrap().is_empty());
+    }
+
+    #[test]
+    fn terminal_reconciliation_completes_once_after_all_work_is_terminal() {
+        let (_, catalog, mut connection, source) = database("terminal-runs");
+        start_run(
+            &mut connection,
+            &catalog,
+            start_input(&source),
+            FaultPoint::None,
+        )
+        .unwrap();
+        let mut transition = transition_input();
+        transition.actions.clear();
+        transition.children.clear();
+        transition.next_state = json!({"phase": "final", "schemaVersion": 1});
+        transition.terminal_requested = true;
+        commit_transition(&mut connection, &catalog, transition, FaultPoint::None).unwrap();
+        assert_eq!(
+            read_run_projection(&connection, "run-root")
+                .unwrap()
+                .unwrap()
+                .status,
+            "completion-requested"
+        );
+
+        let completed =
+            reconcile_terminal_runs(&mut connection, &catalog, "2026-08-29T12:00:03.000Z", 8)
+                .unwrap();
+        assert_eq!(completed.len(), 1);
+        assert_eq!(completed[0].run_id, "run-root");
+        assert_eq!(completed[0].status, "completed");
+        assert_eq!(
+            read_run_projection(&connection, "run-root")
+                .unwrap()
+                .unwrap()
+                .status,
+            "completed"
+        );
+        assert!(
+            reconcile_terminal_runs(&mut connection, &catalog, "2026-08-29T12:00:04.000Z", 8,)
+                .unwrap()
+                .is_empty()
+        );
+        assert_eq!(count(&connection, "events"), 4);
+        verify_integrity(&connection).unwrap();
+    }
+
+    #[test]
+    fn terminal_chat_run_projects_final_and_failure_into_the_thread() {
+        let (_, catalog, mut connection, source) = database("terminal-chat");
+        let mut start = start_input(&source);
+        start.input = json!({
+            "agentId": "generalist",
+            "assistantMessageId": "assistant-1",
+            "kind": "chat.turn",
+            "schemaVersion": 1,
+            "text": "Answer me",
+            "threadId": "thread-1",
+            "turnId": "turn-1",
+            "userMessageId": "user-1",
+        });
+        start_run(&mut connection, &catalog, start, FaultPoint::None).unwrap();
+        let mut transition = transition_input();
+        transition.actions.clear();
+        transition.children.clear();
+        transition.next_state = json!({
+            "final": {"citations": [], "text": "Durable answer"},
+            "phase": "final",
+            "schemaVersion": 1,
+        });
+        transition.terminal_requested = true;
+        commit_transition(&mut connection, &catalog, transition, FaultPoint::None).unwrap();
+
+        let terminal =
+            reconcile_terminal_runs(&mut connection, &catalog, "2026-08-29T12:00:03.000Z", 8)
+                .unwrap();
+        assert_eq!(terminal[0].status, "completed");
+        let assistant: String = connection
+            .query_row(
+                "SELECT body_json FROM events WHERE event_type='message.appended' AND stream_id='thread-1'",
+                [],
+                |record| record.get(0),
+            )
+            .unwrap();
+        assert_eq!(parse_json(&assistant).unwrap()["text"], "Durable answer");
+        assert_eq!(
+            connection
+                .query_row(
+                    "SELECT count(*) FROM events WHERE event_type='turn.completed' AND stream_id='thread-1'",
+                    [],
+                    |record| record.get::<_, i64>(0),
+                )
+                .unwrap(),
+            1
+        );
+        verify_integrity(&connection).unwrap();
+
+        let (_, catalog, mut connection, source) = database("terminal-chat-failed");
+        let mut start = start_input(&source);
+        start.input = json!({
+            "agentId": "generalist",
+            "assistantMessageId": "assistant-2",
+            "kind": "chat.turn",
+            "schemaVersion": 1,
+            "text": "Answer me",
+            "threadId": "thread-2",
+            "turnId": "turn-2",
+            "userMessageId": "user-2",
+        });
+        start_run(&mut connection, &catalog, start, FaultPoint::None).unwrap();
+        let mut transition = transition_input();
+        transition.actions.clear();
+        transition.children.clear();
+        transition.next_state = json!({
+            "errorCode": "MODEL_FAILED",
+            "phase": "failed",
+            "schemaVersion": 1,
+        });
+        transition.terminal_requested = true;
+        commit_transition(&mut connection, &catalog, transition, FaultPoint::None).unwrap();
+
+        let terminal =
+            reconcile_terminal_runs(&mut connection, &catalog, "2026-08-29T12:00:03.000Z", 8)
+                .unwrap();
+        assert_eq!(terminal[0].status, "failed");
+        let failure: String = connection
+            .query_row(
+                "SELECT body_json FROM events WHERE event_type='turn.failed' AND stream_id='thread-2'",
+                [],
+                |record| record.get(0),
+            )
+            .unwrap();
+        assert_eq!(parse_json(&failure).unwrap()["errorCode"], "MODEL_FAILED");
+        assert_eq!(
+            read_run_projection(&connection, "run-root")
+                .unwrap()
+                .unwrap()
+                .status,
+            "failed"
+        );
+        verify_integrity(&connection).unwrap();
+    }
+
+    #[test]
+    fn cancellation_fences_one_chat_run_and_returns_its_exact_physical_call() {
+        let (_, catalog, mut connection, source) = database("cancel-chat");
+        let mut start = start_input(&source);
+        start.input = json!({
+            "agentId": "generalist",
+            "assistantMessageId": "assistant-cancel",
+            "kind": "chat.turn",
+            "schemaVersion": 1,
+            "text": "Cancel this",
+            "threadId": "thread-cancel",
+            "turnId": "turn-cancel",
+            "userMessageId": "user-cancel",
+        });
+        start_run(&mut connection, &catalog, start, FaultPoint::None).unwrap();
+        connection
+            .execute(
+                "INSERT INTO actions(action_id,source_event_id,reactor_id,plugin_id,action_type,action_schema_version,execution_id,resource,gate_class,deadline_class,input_json,input_digest,requested_capabilities_json,status,created_at,updated_at) VALUES ('action-cancel',?1,'generalist','agent-plugin','provider.generate',1,'run-root','provider:frontier','none-requested','interactive','{}',?2,'[\"provider.generate\"]','running',?3,?3)",
+                params![source, sha256("{}"), "2026-08-29T12:00:02.000Z"],
+            )
+            .unwrap();
+        connection
+            .execute(
+                "UPDATE executions SET generation=1 WHERE execution_id='run-root'",
+                [],
+            )
+            .unwrap();
+        connection
+            .execute(
+                "INSERT INTO attempts(attempt_id,action_id,execution_id,generation,owner_id,status,lease_expires_at,heartbeat_at,snapshot_digest,snapshot_json,catalog_digest,created_at,updated_at) VALUES ('attempt-cancel','action-cancel','run-root',1,'owner','running','2026-08-29T12:10:00.000Z',?1,?2,'{}',?3,?1,?1)",
+                params!["2026-08-29T12:00:02.000Z", sha256("{}"), catalog],
+            )
+            .unwrap();
+        connection
+            .execute(
+                "INSERT INTO provider_calls(call_id,action_id,attempt_id,generation,purpose,model_id,request_digest,catalog_digest,prompt_snapshot_digest,prompt_snapshot_json,source_revision,dispatch_state,dispatched_at,status,allocated_at) VALUES ('physical-step-id','action-cancel','attempt-cancel',1,'agent.step','frontier-model',?1,?2,?1,'{}',0,'dispatched',?3,'allocated',?3)",
+                params![sha256("{}"), catalog, "2026-08-29T12:00:02.000Z"],
+            )
+            .unwrap();
+
+        let cancelled = cancel_run(
+            &mut connection,
+            &catalog,
+            "run-root",
+            "2026-08-29T12:00:03.000Z",
+        )
+        .unwrap();
+        assert_eq!(cancelled.disposition, "accepted");
+        assert_eq!(cancelled.status, "cancelled");
+        assert_eq!(cancelled.physical_calls.len(), 1);
+        assert_eq!(cancelled.physical_calls[0].call_id, "physical-step-id");
+        assert_eq!(cancelled.physical_calls[0].kind, "provider");
+        assert_eq!(
+            read_run_projection(&connection, "run-root")
+                .unwrap()
+                .unwrap()
+                .status,
+            "cancelled"
+        );
+        assert_eq!(
+            connection
+                .query_row(
+                    "SELECT count(*) FROM events WHERE event_type='turn.failed' AND stream_id='thread-cancel' AND json_extract(body_json,'$.errorCode')='ACTION_CANCELLED'",
+                    [],
+                    |record| record.get::<_, i64>(0),
+                )
+                .unwrap(),
+            1
+        );
+        assert_eq!(
+            connection
+                .query_row(
+                    "SELECT count(*) FROM events WHERE event_type='turn.completed' AND stream_id='thread-cancel'",
+                    [],
+                    |record| record.get::<_, i64>(0),
+                )
+                .unwrap(),
+            0
+        );
+
+        let duplicate = cancel_run(
+            &mut connection,
+            &catalog,
+            "run-root",
+            "2026-08-29T12:00:04.000Z",
+        )
+        .unwrap();
+        assert_eq!(duplicate.disposition, "duplicate");
+        assert_eq!(duplicate.physical_calls[0].call_id, "physical-step-id");
+        verify_integrity(&connection).unwrap();
+    }
+
+    #[test]
     fn injected_transition_fault_rolls_back_events_actions_children_and_step() {
         let (_, catalog, mut connection, source) = database("transition-rollback");
         start_run(
@@ -1415,7 +2245,7 @@ mod tests {
     }
 
     #[test]
-    fn v1_database_opens_for_v2_without_schema_rewrite() {
+    fn older_abis_and_v3_open_without_schema_rewrite() {
         let (path, catalog, connection, _) = database("abi-upgrade");
         let version: String = connection
             .query_row(
@@ -1438,13 +2268,23 @@ mod tests {
         );
         let response = execute(Request::Open {
             abi_version: 2,
+            catalog_digest: catalog.clone(),
+            database_path: path.clone(),
+        })
+        .unwrap();
+        assert_eq!(
+            serde_json::from_slice::<Value>(&response).unwrap()["abiVersion"],
+            2
+        );
+        let response = execute(Request::Open {
+            abi_version: 3,
             catalog_digest: catalog,
             database_path: path,
         })
         .unwrap();
         assert_eq!(
             serde_json::from_slice::<Value>(&response).unwrap()["abiVersion"],
-            2
+            3
         );
     }
 }

@@ -7,6 +7,7 @@ import {
   createContextPlan,
   createGenerationRouteReceipt,
 } from "@curiosity/authority";
+import { createFoundationModelAgentStep } from "../src/foundation-model-agent-step-port.ts";
 import { createMobileAgentKernel } from "../src/mobile-agent-kernel.ts";
 
 const catalogDigest = "0".repeat(64);
@@ -204,6 +205,7 @@ const fixture = async ({ staleStep = false } = {}) => {
     cancelAgentStep: async () => {},
   };
   const kernel = createMobileAgentKernel({
+    agentStep: createFoundationModelAgentStep(native),
     catalogDigest,
     eligibleActorId: "local-ipad-owner",
     native,
@@ -246,18 +248,15 @@ test("mobile kernel durably settles native generation before applying it", async
   assert.equal(value.run().status, "completion-requested");
 });
 
-test("mobile kernel settles stale native identity as a terminal provider failure", async () => {
+test("mobile kernel settles stale native identity as a terminal run failure", async () => {
   const value = await fixture({ staleStep: true });
-  await assert.rejects(
-    value.kernel.drainOne(new AbortController().signal),
-    ({ code }) => code === "AGENT_STEP_RESULT_STALE",
+  assert.match(
+    (await value.kernel.drainOne(new AbortController().signal)).kind,
+    /committed/u,
   );
   assert.equal(value.nativeSteps.length, 1);
-  assert.equal(value.run().providerAction.status, "failed");
-  assert.equal(value.run().providerAction.errorCode, "AGENT_STEP_RESULT_STALE");
-  assert.equal(
-    (await value.kernel.drainOne(new AbortController().signal)).kind,
-    "provider-blocked",
-  );
+  assert.equal(value.run().status, "completion-requested");
+  assert.equal(value.run().state.errorCode, "AGENT_STEP_RESULT_STALE");
+  assert.equal(value.run().state.phase, "failed");
   assert.equal(value.nativeSteps.length, 1);
 });
