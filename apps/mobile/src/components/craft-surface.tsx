@@ -41,9 +41,7 @@ import {
   loadCraftyUiPackage,
   saveCraftyUiPackage,
 } from "../crafty/crafty-ui-persistence";
-import {
-  CraftySelectionInteraction,
-} from "../crafty/crafty-selection-interaction";
+import { CraftySelectionInteraction } from "../crafty/crafty-selection-interaction";
 import {
   CraftyCreationInteraction,
   type CraftyCreationTool,
@@ -313,9 +311,13 @@ export const CraftSurface = () => {
             <Text style={styles.historyButtonText}>↷</Text>
           </Pressable>
           <View style={styles.toolbarRule} />
-          <Text style={styles.zoom}>{Math.round(canvasViewport.zoom * 100)}%</Text>
+          <Text style={styles.zoom}>
+            {Math.round(canvasViewport.zoom * 100)}%
+          </Text>
           <View style={styles.toolbarRule} />
-          <Text style={styles.toolbarValue}>{page?.name ?? "Loading page…"}</Text>
+          <Text style={styles.toolbarValue}>
+            {page?.name ?? "Loading page…"}
+          </Text>
         </View>
         <View style={styles.saveGroup}>
           <Text style={styles.preview}>NATIVE METAL</Text>
@@ -331,7 +333,10 @@ export const CraftSurface = () => {
               pressed && styles.pressed,
             ]}
           >
-            <Text accessibilityLiveRegion="polite" style={styles.saveButtonText}>
+            <Text
+              accessibilityLiveRegion="polite"
+              style={styles.saveButtonText}
+            >
               {saveStatus === "failed"
                 ? "SAVE FAILED"
                 : saveStatus === "modified"
@@ -383,9 +388,7 @@ export const CraftSurface = () => {
                 label={node.name}
                 selected={projection?.state.selectedIds.includes(node.id)}
                 symbol={
-                  node.kind === "page-root"
-                    ? "▣"
-                    : layerSymbols[node.kind]
+                  node.kind === "page-root" ? "▣" : layerSymbols[node.kind]
                 }
               />
             ))}

@@ -8,6 +8,7 @@ public final class CuriosityRuntimeModule: Module {
   private let agentStepHost = AgentStepHost()
   private let memoryCuratorHost = MemoryCuratorHost()
   private let journalHost = NativeJournalHost()
+  private let codexHost = CodexConnectionHost()
   private lazy var documentHost = NativeDocumentHost(journalHost: journalHost)
 
   public func definition() -> ModuleDefinition {
@@ -16,26 +17,90 @@ public final class CuriosityRuntimeModule: Module {
 
     OnCreate {
       #if DEBUG
-      let arguments = ProcessInfo.processInfo.arguments
-      if arguments.contains("--curiosity-agent-step-fixtures") {
-        Task<Void, Never> {
-          await runAgentStepDiagnostics(host: self.agentStepHost)
+        let arguments = ProcessInfo.processInfo.arguments
+        if arguments.contains("--curiosity-agent-step-fixtures") {
+          Task<Void, Never> {
+            await runAgentStepDiagnostics(host: self.agentStepHost)
+          }
         }
-      }
-      if arguments.contains("--curiosity-document-tool-fixtures") {
-        Task<Void, Never> {
-          await runNativeDocumentDiagnostics(
-            journalHost: self.journalHost,
-            documentHost: self.documentHost
-          )
+        if arguments.contains("--curiosity-document-tool-fixtures") {
+          Task<Void, Never> {
+            await runNativeDocumentDiagnostics(
+              journalHost: self.journalHost,
+              documentHost: self.documentHost
+            )
+          }
         }
-      }
       #endif
     }
 
     AsyncFunction("foundationModelStatus") { (promise: Promise) in
       Task<Void, Never> {
         promise.resolve(await self.modelHost.status())
+      }
+    }
+
+    AsyncFunction("providerConnectionStatus") { (promise: Promise) in
+      Task<Void, Never> {
+        promise.resolve(await self.codexHost.status())
+      }
+    }
+
+    AsyncFunction("providerCatalogSnapshot") { (promise: Promise) in
+      Task<Void, Never> {
+        await self.resolveCodex(promise) {
+          try await self.codexHost.catalog()
+        }
+      }
+    }
+
+    AsyncFunction("authenticateProvider") { (providerId: String, promise: Promise) in
+      Task<Void, Never> {
+        await self.resolveCodex(promise) {
+          try await self.codexHost.authenticate(providerID: providerId)
+        }
+      }
+    }
+
+    AsyncFunction("disconnectProvider") { (providerId: String, promise: Promise) in
+      Task<Void, Never> {
+        await self.resolveCodex(promise) {
+          try await self.codexHost.disconnect(providerID: providerId)
+        }
+      }
+    }
+
+    AsyncFunction("generateFrontier") {
+      (input: CodexGenerationRecord, promise: Promise) in
+      Task<Void, Never> {
+        do {
+          let request = try validateCodexGenerationRecord(input)
+          let result = try await self.codexHost.generate(request)
+          promise.resolve([
+            "callId": result.callId,
+            "finishReason": result.finishReason,
+            "maxRetries": result.maxRetries,
+            "modelId": result.modelId,
+            "text": result.text,
+            "transportAttempts": result.transportAttempts,
+          ])
+        } catch let failure as CodexConnectionFailure {
+          promise.reject(failure.rawValue, failure.rawValue)
+        } catch is CancellationError {
+          promise.reject("ACTION_CANCELLED", "ACTION_CANCELLED")
+        } catch {
+          promise.reject(
+            CodexConnectionFailure.generationFailed.rawValue,
+            CodexConnectionFailure.generationFailed.rawValue
+          )
+        }
+      }
+    }
+
+    AsyncFunction("cancelFrontierGeneration") { (callId: String, promise: Promise) in
+      Task<Void, Never> {
+        await self.codexHost.cancelGeneration(callID: callId)
+        promise.resolve()
       }
     }
 
@@ -72,10 +137,12 @@ public final class CuriosityRuntimeModule: Module {
           let request = try validateFoundationModelGenerationRecord(input)
           let result = try await self.modelHost.generate(request) {
             [weak self] turnId, delta in
-            self?.sendEvent(generationDeltaEvent, [
-              "delta": delta,
-              "turnId": turnId,
-            ])
+            self?.sendEvent(
+              generationDeltaEvent,
+              [
+                "delta": delta,
+                "turnId": turnId,
+              ])
           }
           promise.resolve([
             "durationMs": result.durationMs,
@@ -211,6 +278,7 @@ public final class CuriosityRuntimeModule: Module {
     await documentHost.cancelAll()
     await modelHost.cancelAll()
     await memoryCuratorHost.cancelAll()
+    await codexHost.cancelAllGenerations()
   }
 
   private func resolveJournal<T: AnyArgument>(
@@ -225,6 +293,26 @@ public final class CuriosityRuntimeModule: Module {
       promise.reject(
         NativeJournalFailure.transactionFailed.rawValue,
         NativeJournalFailure.transactionFailed.rawValue
+      )
+    }
+  }
+
+  private func resolveCodex(
+    _ promise: Promise,
+    operation: () async throws -> CodexCatalogResult
+  ) async {
+    do {
+      let result = try await operation()
+      promise.resolve([
+        "snapshotJson": result.snapshotJSON,
+        "source": result.source,
+      ])
+    } catch let failure as CodexConnectionFailure {
+      promise.reject(failure.rawValue, failure.rawValue)
+    } catch {
+      promise.reject(
+        CodexConnectionFailure.requestFailed.rawValue,
+        CodexConnectionFailure.requestFailed.rawValue
       )
     }
   }

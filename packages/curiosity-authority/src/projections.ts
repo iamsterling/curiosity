@@ -8,6 +8,7 @@ import {
   validateGenerationRouteReceipt,
   type GenerationRouteReceipt,
 } from "./generation-route.js";
+import { validateGenerationTransportReceipt } from "./generation-transport-receipt.js";
 
 const record = (value: unknown): Record<string, unknown> | undefined =>
   value && typeof value === "object" && !Array.isArray(value)
@@ -83,6 +84,10 @@ export const projectChatMessages = (
         body.routeReceipt === undefined
           ? undefined
           : validateGenerationRouteReceipt(body.routeReceipt);
+      const transportReceipt =
+        body.transportReceipt === undefined
+          ? undefined
+          : validateGenerationTransportReceipt(body.transportReceipt);
       return [
         Object.freeze({
           ...(typeof body.durationMs === "number"
@@ -95,6 +100,7 @@ export const projectChatMessages = (
             : {}),
           ...(receipt ? { researchReceipt: receipt } : {}),
           ...(routeReceipt ? { routeReceipt } : {}),
+          ...(transportReceipt ? { transportReceipt } : {}),
           role: body.role,
           sequence: event.sequence,
           text: body.text,

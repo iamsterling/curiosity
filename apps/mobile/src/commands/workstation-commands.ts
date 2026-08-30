@@ -10,6 +10,7 @@ export const workstationCommandIds = Object.freeze({
   showCraft: "curiosity.view.showCraft",
   showIssues: "curiosity.view.showIssues",
   showMemory: "curiosity.view.showMemory",
+  showProviders: "curiosity.view.showProviders",
   startBuild: "curiosity.work.startBuild",
   startResearch: "curiosity.work.startResearch",
 });
@@ -27,10 +28,7 @@ export interface WorkstationCommand extends NativeCommandDefinition {
   readonly id: WorkstationCommandId;
 }
 
-type CommandSpec = Omit<
-  WorkstationCommand,
-  "enabled" | "selected"
-> & {
+type CommandSpec = Omit<WorkstationCommand, "enabled" | "selected"> & {
   readonly enabled?: (context: WorkstationCommandContext) => boolean;
   readonly selected?: (context: WorkstationCommandContext) => boolean;
 };
@@ -97,10 +95,22 @@ const specs: readonly CommandSpec[] = Object.freeze([
     selected: ({ view }) => view === "memory",
   },
   {
+    description: "Manage iPad-custodied frontier provider connections.",
+    destructive: false,
+    id: workstationCommandIds.showProviders,
+    key: "5",
+    menu: "view",
+    modifiers: ["command"],
+    section: 0,
+    symbol: "network",
+    title: "Providers",
+    selected: ({ view }) => view === "providers",
+  },
+  {
     description: "Show the future audio timeline surface.",
     destructive: false,
     id: workstationCommandIds.showAudio,
-    key: "5",
+    key: "6",
     menu: "view",
     modifiers: ["command"],
     section: 0,

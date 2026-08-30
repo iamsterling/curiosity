@@ -76,13 +76,17 @@ export const createFoundationModelGeneration = (
           if (event.turnId === turnId) onDelta?.(event.delta);
         },
       );
-      let rejectCancellation: ((error: PortableAuthorityError) => void) | undefined;
+      let rejectCancellation:
+        ((error: PortableAuthorityError) => void) | undefined;
       const cancellation = new Promise<never>((_resolve, reject) => {
         rejectCancellation = reject;
       });
       const cancel = () => {
         void nativeModule.cancelGeneration(turnId).then(
-          () => rejectCancellation?.(new PortableAuthorityError("ACTION_CANCELLED")),
+          () =>
+            rejectCancellation?.(
+              new PortableAuthorityError("ACTION_CANCELLED"),
+            ),
           (error: unknown) =>
             rejectCancellation?.(new PortableAuthorityError(errorCode(error))),
         );

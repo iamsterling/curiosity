@@ -12,7 +12,7 @@ Pod::Spec.new do |s|
   s.static_framework = true
 
   s.dependency 'ExpoModulesCore'
-  s.frameworks = 'Foundation', 'FoundationModels'
+  s.frameworks = 'AuthenticationServices', 'CryptoKit', 'Foundation', 'FoundationModels', 'Network', 'Security'
   s.public_header_files = 'CuriosityJournalNativeBridge.h'
 
   s.script_phase = {

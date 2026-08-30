@@ -115,9 +115,7 @@ export const createHttpCuriosityClient = (
 
   return {
     session: async (threadId?: string): Promise<CuriositySession> => {
-      const query = threadId
-        ? `?threadId=${encodeURIComponent(threadId)}`
-        : "";
+      const query = threadId ? `?threadId=${encodeURIComponent(threadId)}` : "";
       const body = await readCuriosityResponse(
         await request(endpoint(baseUrl, `/api/curiosity/session${query}`), {
           headers: { accept: "application/json" },
@@ -133,20 +131,17 @@ export const createHttpCuriosityClient = (
       readonly text: string;
       readonly threadId?: string;
     }): Promise<CuriosityTurn> => {
-      const response = await request(
-        endpoint(baseUrl, "/api/curiosity/chat"),
-        {
-          body: JSON.stringify({
-            text: commandText(input.mode, input.text),
-            ...(input.threadId ? { threadId: input.threadId } : {}),
-          }),
-          headers: {
-            accept: "application/json",
-            "content-type": "application/json",
-          },
-          method: "POST",
+      const response = await request(endpoint(baseUrl, "/api/curiosity/chat"), {
+        body: JSON.stringify({
+          text: commandText(input.mode, input.text),
+          ...(input.threadId ? { threadId: input.threadId } : {}),
+        }),
+        headers: {
+          accept: "application/json",
+          "content-type": "application/json",
         },
-      );
+        method: "POST",
+      });
       const body = await readCuriosityResponse(response);
       if (
         typeof body.assistantMessageId !== "string" ||

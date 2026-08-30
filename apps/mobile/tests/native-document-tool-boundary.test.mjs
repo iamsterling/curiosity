@@ -42,10 +42,16 @@ test("native document effects require journal authorization and bounded app root
   assert.match(store, /standardizedFileURL\.path\.hasPrefix\(rootPath\)/u);
   assert.match(store, /NSFileCoordinator\(\)\.coordinate/u);
   assert.doesNotMatch(store, /URL\(string:/u);
-  assert.match(records, /nativeSHA256\(canonicalInput\) == grant\.inputDigest/u);
+  assert.match(
+    records,
+    /nativeSHA256\(canonicalInput\) == grant\.inputDigest/u,
+  );
   assert.match(records, /nativeSHA256\(requestJSON\) == grant\.requestDigest/u);
   assert.match(module, /OnAppEntersBackground[\s\S]*cancelAllGenerations/u);
-  assert.match(module, /cancelAllGenerations[\s\S]*documentHost\.cancelAll\(\)/u);
+  assert.match(
+    module,
+    /cancelAllGenerations[\s\S]*documentHost\.cancelAll\(\)/u,
+  );
 });
 
 test("native document tools remain outside the production local client", async () => {

@@ -1,10 +1,7 @@
 import { runCraftyKernelPortabilityGate } from "./crafty-kernel-portability";
 import { loadCraftyKernelPortabilityFixture } from "./crafty-ui-fixture";
 
-export type CraftyKernelPortabilityStatus =
-  | "checking"
-  | "failed"
-  | "verified";
+export type CraftyKernelPortabilityStatus = "checking" | "failed" | "verified";
 
 let status: CraftyKernelPortabilityStatus = "checking";
 const listeners = new Set<() => void>();

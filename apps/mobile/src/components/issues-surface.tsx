@@ -64,7 +64,10 @@ const PriorityMark = ({ priority }: { readonly priority: IssuePriority }) => (
   <View
     accessibilityElementsHidden
     importantForAccessibility="no-hide-descendants"
-    style={[styles.priorityIndicator, { backgroundColor: priorityColor(priority) }]}
+    style={[
+      styles.priorityIndicator,
+      { backgroundColor: priorityColor(priority) },
+    ]}
   />
 );
 
@@ -126,9 +129,7 @@ export const IssuesSurface = ({
   const showsInspector = width >= 1_150;
   const visible = useMemo(
     () =>
-      filterOn
-        ? issues.filter((issue) => issue.priority !== "P2")
-        : issues,
+      filterOn ? issues.filter((issue) => issue.priority !== "P2") : issues,
     [filterOn],
   );
 
@@ -144,7 +145,10 @@ export const IssuesSurface = ({
         <Pressable
           accessibilityLabel="More issue options"
           accessibilityRole="button"
-          style={({ pressed }) => [styles.headerAction, pressed && styles.pressed]}
+          style={({ pressed }) => [
+            styles.headerAction,
+            pressed && styles.pressed,
+          ]}
         >
           <Text style={styles.headerActionGlyph}>…</Text>
         </Pressable>
@@ -288,7 +292,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: 44,
   },
-  headerActionGlyph: { color: palette.textSecondary, fontSize: 22, lineHeight: 24 },
+  headerActionGlyph: {
+    color: palette.textSecondary,
+    fontSize: 22,
+    lineHeight: 24,
+  },
   headerCopy: { flexShrink: 1 },
   inspector: {
     backgroundColor: palette.surfaceQuiet,

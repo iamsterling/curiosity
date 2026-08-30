@@ -1,335 +1,398 @@
-# Cross-product DAW architecture synthesis
+# ARM64 Apple-platform DAW architecture synthesis
 
-> Research synthesis, not implementation, procurement, security-acceptance, or
-> legal authority. Product behavior may be clean-room adapted only at the level
-> of abstract mechanisms. Evidence cutoff: 2026-08-29 UTC.
+> Corrected research synthesis for a native ARM64 product spanning
+> Apple-silicon macOS, iPadOS, and iOS on iPhone. This is not implementation,
+> procurement, security-acceptance, App Store, or legal authority. Evidence
+> cutoff: 2026-08-29 UTC.
 
-## 0. Decision and evidence state
+## 0. Corrected decision boundary
 
-The governed corpus contains 81 structurally complete product-family dossiers.
-This synthesis answers the decision in [`DECISION-FRAME.md`](DECISION-FRAME.md):
-what architecture a new cross-platform DAW should use, which recurring patterns
-should be adapted or rejected, and which unknowns require bounded prototypes.
+The 81-dossier corpus remains useful because it covers workflow, engine,
+persistence, failure, and interoperability patterns broadly. The product target
+is now narrower:
 
-Labels used below:
+- native ARM64 only;
+- Apple-silicon macOS, iPadOS, and iPhone;
+- one project model across all product surfaces;
+- AUv3 as the only initial third-party DSP format that can span every surface;
+- AUv2 and VST3 as macOS-only compatibility formats; and
+- no initial Intel build, Rosetta host mode, architecture bridge, Windows,
+  Linux, Android, or browser product.
 
-- **DOCUMENTED CORPUS PATTERN** — supported by cited dossier claims across more
-  than one product family. It documents public behavior, not shared internals.
-- **ARCHITECTURE RECOMMENDATION** — a clean-room design inference from those
-  patterns; alternatives remain possible.
-- **UNKNOWN / PROTOTYPE REQUIRED** — documentary evidence cannot establish the
-  required runtime or legal result.
+CLAP, LV2, AAX, LADSPA, DSSI, JSFX, DirectX/DXi, and Rack Extension remain
+research context, not initial host commitments. VST2 remains a conditional
+macOS-only goal: preserve its adapter seam, but do not implement or ship it
+until an entity-specific legal/provenance gate approves the work.
+
+Labels:
+
+- **DOCUMENTED CORPUS PATTERN** — public behavior supported by cited dossier
+  claims; it does not prove shared internals.
+- **ARCHITECTURE RECOMMENDATION** — a clean-room inference for this product.
+- **UNKNOWN / PROTOTYPE REQUIRED** — the corpus cannot establish runtime or
+  legal correctness.
 
 ## 1. Executive decision
 
-Build a **local-first, versioned project system over one typed signal graph**.
-Expose that graph through synchronized timeline, launcher, mixer, and optional
-modular/notation views rather than implementing separate engines. Compile graph
-edits off the audio thread into immutable processing snapshots. Schedule normal
-paths across a real-time worker pool while treating armed/monitored paths as an
-explicit low-latency critical path.
+Build one **local-first, versioned DAW domain and audio engine** with adaptive
+macOS, iPad, and iPhone shells. Timeline, launcher, mixer, touch controls, and
+optional modular or score editors should be synchronized projections over the
+same project and typed signal graph—not separate product files or engines.
 
-Treat third-party plug-ins as **untrusted, replaceable dependencies**:
+Compile graph mutations away from the realtime callback into immutable
+processing snapshots. Use capability profiles to adapt screen layout, available
+I/O, memory/CPU budgets, and plug-in availability without deleting unsupported
+objects. A project opened on a less-capable device must retain unavailable
+tracks, routes, plug-in state, automation, and assets while using a rendered
+fallback where possible.
 
-1. scan and validate outside the DAW process;
-2. preserve stable identity, opaque state, I/O shape, automation, and a rendered
-   fallback even when a plug-in is unavailable;
-3. default third-party runtime to isolated workers, with explicit compatibility
-   modes rather than one hidden execution policy; and
-4. qualify format support through separate acceptance, scan, instantiate,
-   realtime, offline, state, migration, and fault-containment gates.
+Treat Audio Units and macOS VST3 plug-ins as untrusted dependencies:
 
-For a desktop-first product, prioritize **VST3 on Windows/macOS/Linux** and
-**AUv2 on macOS**. Add **AUv3** when the macOS ecosystem or an iOS product is in
-scope, and **CLAP** as the next portable desktop adapter. Keep VST2 behind an
-entity-specific legal/provenance gate; do not promise it merely because legacy
-hosts still load it. Treat LV2 as a later Linux/open-ecosystem adapter. Do not
-plan AAX, Rack Extension, JSFX, DirectX/DXi, LADSPA, or DSSI as initial general
-host formats.
+1. discover and validate them outside the main DAW process where the platform
+   permits;
+2. preserve identity, opaque state, I/O shape, automation, and rendered fallback;
+3. use isolated runtime workers by default on macOS and platform extension
+   containment on iPadOS/iOS;
+4. never auto-substitute AUv2, AUv3, and VST3 solely because names/vendors match;
+   and
+5. qualify every OS/format pair independently.
 
-## 2. Cross-product findings
+The implementation order is **AUv3 vertical slice first**, then macOS AUv2, then
+macOS VST3, followed by a legally gated macOS VST2 decision. This maximizes
+shared behavior across Mac, iPad, and iPhone before adding desktop-only
+compatibility paths.
 
-### 2.1 Workflow and user model
+## 2. Product and workflow architecture
 
-**DOCUMENTED CORPUS PATTERN.** Linear arrangement remains the common backbone,
-but successful products add alternate projections: Live shares tracks/mixer
-between Arrangement and Session clips; Bitwig has separate Arranger/Launcher
-data with per-track arbitration; Logic combines regions, Live Loops, pattern,
-score, and comping; Reason links track panels to rack routing; energyXT exposes
-graph, sequencer, and mixer projections. ([Ableton C-004](dossiers/ableton-live.md#21-claims-register),
+### 2.1 One domain, adaptive surfaces
+
+**DOCUMENTED CORPUS PATTERN.** Live and Bitwig share track/mixer state across
+linear and launcher workflows; Logic combines linear regions, Live Loops,
+patterns, score, comping, and touch-oriented iPad workflows; Loopy Pro combines
+clips, arranger, mixer, AU hosting, actions, and customizable touch controls.
+([Ableton C-004](dossiers/ableton-live.md#21-claims-register),
 [Bitwig C-005](dossiers/bitwig-studio.md#21-claims-register),
 [Logic C-003](dossiers/apple-logic-pro.md#21-claims-register),
-[Reason C-009](dossiers/reason-studios-reason.md#21-claims-register),
-[energyXT C-028](dossiers/energyxt.md#21-claims-register))
+[Loopy Pro C-004–C-009](dossiers/loopy-pro.md#21-claims-register))
 
-**ARCHITECTURE RECOMMENDATION.** Keep one durable object model and permit
-multiple projections. Core objects should be `Project`, `Timeline`, `Track`,
-`Clip`, `MediaAsset`, `SignalNode`, `Port`, `Route`, `AutomationLane`,
-`PluginInstance`, `RenderArtifact`, and `Snapshot`. A view must not own hidden
-signal state that another view cannot persist or diagnose.
+**ARCHITECTURE RECOMMENDATION.** Core durable objects should include `Project`,
+`Timeline`, `Track`, `Clip`, `MediaAsset`, `SignalNode`, `Port`, `Route`,
+`AutomationLane`, `PluginDependency`, `PluginInstance`, `RenderArtifact`, and
+`Snapshot`. Every object has a stable ID independent of view, device, or plug-in
+format.
 
-### 2.2 Audio graph, scheduling, and latency
+Surface profiles:
 
-**DOCUMENTED CORPUS PATTERN.** Public/open evidence supports typed dependency
-graphs, explicit routing stages, and deadline-sensitive parallel work. Ardour
-schedules dependency-ready route nodes across real-time workers; LMMS queues
-ready acyclic mixer channels; Logic documents a serial live path that can
-bottleneck one thread; Live exposes buffer-deadline and per-track load behavior.
-([Ardour C-005](dossiers/ardour.md#21-claims-register),
-[LMMS C-006](dossiers/lmms.md#21-claims-register),
-[Logic C-034](dossiers/apple-logic-pro.md#21-claims-register),
-[Ableton C-006](dossiers/ableton-live.md#21-claims-register))
+| Surface | Product profile |
+| --- | --- |
+| Apple-silicon Mac | Full editing/mixing, multiwindow workflows, broad hardware I/O, AUv3/AUv2/VST3 hosting, conditional VST2, and offline/batch rendering. |
+| iPad | Full project fidelity with touch-first arrangement/mixing, AUv3 hosting, hardware audio/MIDI, adaptive multiwindow/external-display behavior where supported. |
+| iPhone | Same project schema and audio engine semantics, compact performance/capture/edit surfaces, AUv3 hosting subject to device resources. |
 
-**ARCHITECTURE RECOMMENDATION.** Use a control-plane graph compiler and an
-immutable real-time snapshot. Schedule topologically, expose the longest serial
-critical path, and distinguish:
+Feature presentation may differ; persistence semantics may not. Logic's partial
+Mac/iPad roundtrip and disabled incompatible plug-ins show why capability
+differences must be explicit rather than inferred from a common file extension.
+([Logic C-028, C-031](dossiers/apple-logic-pro.md#21-claims-register))
 
-- monitored/armed low-latency work;
-- safely buffered playback work;
-- disk read/write workers;
-- offline render workers; and
-- plug-in IPC workers.
+### 2.2 Touch, keyboard, pointer, and accessibility
 
-PDC must cover tracks, buses, sends/returns, sidechains, and bypass state. A
-user-visible reduced-latency mode may trade alignment for monitoring latency,
-but the trade must be explicit. ([Ableton C-022](dossiers/ableton-live.md#21-claims-register),
-[Logic C-024](dossiers/apple-logic-pro.md#21-claims-register),
+**ARCHITECTURE RECOMMENDATION.** Commands must be input-modality independent.
+Gestures, keyboard shortcuts, pointer actions, MIDI mappings, and accessibility
+actions should invoke the same undoable command layer. iPhone must not receive a
+scaled-down Mac UI; it needs compact navigation, performance, capture, and
+focused editing projections over the same objects.
+
+Host controls and generated plug-in parameter editors must expose labels,
+values, grouping, focus order, and actions through Apple accessibility APIs.
+Third-party custom UI accessibility is a separate boundary and cannot be
+promised by the host. Live and Logic document both accessibility work and gaps,
+supporting an explicit host/custom-UI distinction. ([Ableton C-031](dossiers/ableton-live.md#21-claims-register),
+[Logic C-035](dossiers/apple-logic-pro.md#21-claims-register))
+
+## 3. Audio engine and realtime model
+
+### 3.1 Typed graph and immutable snapshots
+
+**DOCUMENTED CORPUS PATTERN.** Ardour publicly exposes dependency-ready graph
+scheduling, explicit audio/MIDI routing, sidechains, latency propagation, and
+dynamic configurations. Logic documents that a live track and dependent signal
+path can form a single-thread critical path. ([Ardour C-005, C-007–C-008,
+C-015](dossiers/ardour.md#21-claims-register),
+[Logic C-034](dossiers/apple-logic-pro.md#21-claims-register))
+
+**ARCHITECTURE RECOMMENDATION.** Keep mutable project/control state off the
+audio callback. Validate and compile changes into an immutable graph snapshot,
+then publish it atomically at a render boundary. Ports are typed for audio,
+events, sidechain, parameter, clock, and control. The engine must reject illegal
+cycles/layouts before publication.
+
+### 3.2 Scheduling profiles
+
+Use one scheduling model with platform-specific resource budgets:
+
+- monitored/armed paths receive the smallest supported device quantum;
+- playback-only paths may use safe lookahead/buffering;
+- disk, waveform, analysis, and project serialization run off the realtime path;
+- offline render is a distinct execution profile over the same graph semantics;
+- plug-in IPC/extension lifecycle never blocks the audio callback; and
+- diagnostics expose the longest serial path, deadline load, xruns, worker
+  state, disk pressure, and memory pressure.
+
+Smaller iPhone/iPad budgets may cap simultaneous live nodes or choose rendered
+fallbacks, but cannot silently alter routing, automation, latency, or saved
+state.
+
+### 3.3 Latency, tails, and rendering
+
+PDC must cover tracks, buses, sends/returns, sidechains, bypass state, and
+dynamic latency changes. A low-latency monitoring mode may trade global
+alignment for responsiveness only with a visible state and deterministic bounce
+behavior. Live, Logic, and Ardour document full-path compensation concerns,
+while their remaining tail/dynamic details reinforce the need for fixtures.
+([Ableton C-022, C-025](dossiers/ableton-live.md#21-claims-register),
+[Logic C-024, C-040](dossiers/apple-logic-pro.md#21-claims-register),
 [Ardour C-008](dossiers/ardour.md#21-claims-register))
 
-### 2.3 Editing, clips, automation, and rendering
+Freeze/bounce artifacts require source/dependency fingerprints, plug-in version
+and format, latency, tail policy, render settings, and visible stale state.
 
-**DOCUMENTED CORPUS PATTERN.** Reference-based clips, takes/comping, linked or
-aliased material, typed automation, freeze, and offline render recur, but exact
-tail and automation semantics vary. Live explicitly differentiates Session and
-Arrangement freeze behavior; Audition distinguishes destructive waveform
-operations from nondestructive multitrack edits; Rosegarden retains performance
-timing separately from notation quantization. ([Ableton C-005](dossiers/ableton-live.md#21-claims-register),
-[Audition C-004](dossiers/adobe-audition.md#21-claims-register),
-[Rosegarden C-004](dossiers/rosegarden.md#21-claims-register))
+### 3.4 Mobile lifecycle
 
-**ARCHITECTURE RECOMMENDATION.** Model edits as operations over durable object
-IDs and source ranges. Destructive media transforms must create a new version or
-require an explicit destructive command. Freeze/bounce artifacts need provenance,
-dependency fingerprints, tail policy, and deterministic invalidation.
+**UNKNOWN / PROTOTYPE REQUIRED.** Documentary evidence does not select the
+correct handling for every iPad/iPhone interruption, route change, sample-rate
+change, memory warning, extension termination, background transition, or device
+loss.
 
-### 2.4 MIDI, expression, notation, and synchronization
+**ARCHITECTURE RECOMMENDATION.** Platform events enter a non-realtime lifecycle
+coordinator that can quiesce, rebuild, checkpoint, and resume the graph. The
+project journal and latest valid render snapshot must survive host or AUv3
+extension termination.
 
-**DOCUMENTED CORPUS PATTERN.** MIDI sequencing is common, while notation,
-MPE/per-note expression, MIDI 2.0, SysEx, and event fidelity are uneven. Logic
-and Rosegarden demonstrate that score/pattern/performance representations need
-more structure than a flattened MIDI file; Bitwig demonstrates per-note
-expression and polyphonic modulation at device boundaries. ([Logic C-008](dossiers/apple-logic-pro.md#21-claims-register),
-[Rosegarden C-003–C-004](dossiers/rosegarden.md#21-claims-register),
-[Bitwig C-023](dossiers/bitwig-studio.md#21-claims-register))
+## 4. Plug-in architecture corrected for Apple ARM64
 
-**ARCHITECTURE RECOMMENDATION.** Use timestamped typed events with stable note
-identity and extensible expression payloads. Keep notation semantics and
-performance timing as related but distinct data. Convert to MIDI 1, MIDI 2/UMP,
-or format-specific events only at adapters.
+### 4.1 Format strategy
 
-### 2.5 Routing, mixing, delivery, and interchange
+| Format | macOS ARM64 | iPadOS | iPhone | Initial disposition |
+| --- | --- | --- | --- | --- |
+| AUv3 | **MUST** | **MUST** | **MUST** | Primary cross-device plug-in format and first vertical slice. |
+| AUv2 | **MUST for compatibility** | Not applicable | Not applicable | macOS-only adapter; native ARM64 components only. |
+| VST3 | **SHOULD** | Not applicable | Not applicable | macOS-only compatibility adapter after AU paths. |
+| VST2 | **CONDITIONAL** | Not applicable | Not applicable | macOS-only compatibility goal after entity-specific legal/provenance approval; native ARM64 only. |
+| CLAP | Later decision | Not applicable | Not applicable | Technically relevant on macOS but adds no cross-device reach. |
+| Other surveyed formats | No | No | No | Preserve architectural seams; no initial product commitment. |
 
-**DOCUMENTED CORPUS PATTERN.** Mature products expose route taps, sidechains,
-multi-output instruments, buses, sends, control protocols, stems, and bounded
-interchange. Format exchange is routinely lossy: Cubase documents DAWproject
-object mappings, Logic documents bounded AAF/FCPXML/ADM exchange, and Audition
-documents OMF/FCP XML/archive behavior. ([Ableton C-012](dossiers/ableton-live.md#21-claims-register),
-[Cubase C-022–C-023](dossiers/steinberg-cubase.md#21-claims-register),
-[Logic C-031](dossiers/apple-logic-pro.md#21-claims-register),
-[Audition C-025–C-026](dossiers/adobe-audition.md#21-claims-register))
+Logic documents AUv2/AUv3 on Mac and AUv3 on iPad; Live documents AUv2/AUv3
+on Mac; Loopy Pro documents AUv3 instrument/effect/MIDI hosting on iOS.
+([Logic C-012, C-021–C-022](dossiers/apple-logic-pro.md#21-claims-register),
+[Ableton C-014](dossiers/ableton-live.md#21-claims-register),
+[Loopy Pro C-019–C-021](dossiers/loopy-pro.md#21-claims-register))
 
-**ARCHITECTURE RECOMMENDATION.** Represent channel layouts, main/aux/event
-ports, sidechains, and route taps explicitly. Interchange adapters must produce
-a machine-readable loss report and rendered fallbacks; no external format
-should become the internal project model.
+VST3 remains valuable for Mac session compatibility and vendor coverage, but it
+cannot be the cross-device canonical dependency. LUNA explicitly recommends
+VST3 over AU for its Windows/macOS portability; in this corrected Apple-only
+target, the analogous portability priority is AUv3 across Mac/mobile.
+([LUNA C-014–C-015, C-022](dossiers/universal-audio-luna.md#21-claims-register))
 
-### 2.6 Plug-in lifecycle and reliability
+VST2 remains materially relevant to the requested legacy ecosystem, but current
+hosts increasingly treat it as disabled, translated, or legacy compatibility.
+The architecture should reserve a format adapter and placeholder identity while
+the qualification plan's G0 review decides whether this entity may build and
+distribute a native ARM64 host. ([Cubase C-003–C-004, C-026–C-027](dossiers/steinberg-cubase.md#21-claims-register),
+[Ardour C-024](dossiers/ardour.md#21-claims-register))
 
-**DOCUMENTED CORPUS PATTERN.** Mature hosts expose scan databases, rescan/reset,
-failure states, diagnostics, and recovery, yet accepted format support does not
-prove full runtime conformance. Live suppresses repeated scan crashes; Studio
-One uses an external VST scanner and recovery UI; Ardour uses helper scanners,
-caches, blacklists, logs, and timeouts; Logic exposes compatibility and quit
-counts. ([Ableton C-016–C-017](dossiers/ableton-live.md#21-claims-register),
-[Studio One C-016–C-018](dossiers/presonus-studio-one.md#21-claims-register),
-[Ardour C-012](dossiers/ardour.md#21-claims-register),
-[Logic C-015](dossiers/apple-logic-pro.md#21-claims-register))
+### 4.2 Native ARM64 policy
 
-**DOCUMENTED CORPUS PATTERN.** Runtime policies range from native/in-process to
-shared or dedicated workers. Bitwig exposes five hosting modes, REAPER exposes
-native/shared/dedicated/bridge modes, and Apple documents Logic containment of
-AU failures on Apple silicon. ([Bitwig C-015–C-016](dossiers/bitwig-studio.md#21-claims-register),
-[REAPER C-019](dossiers/cockos-reaper.md#21-claims-register),
-[Logic C-017](dossiers/apple-logic-pro.md#21-claims-register))
+- Ship only native ARM64 application, engine, scanner, workers, and plug-in
+  adapters.
+- On macOS, reject Intel-only AU/VST bundles with a stable diagnostic and render
+  fallback; do not launch the DAW under Rosetta.
+- Do not build a 32-bit or x86_64 bridge.
+- Record plug-in architecture in dependency identity and support bundles.
 
-**ARCHITECTURE RECOMMENDATION.** Always isolate scanning. Default third-party
-DSP to a separate worker with shared-memory audio/event transport. Offer
-per-instance isolation for unknown/faulting plug-ins, grouped workers for proven
-compatibility/performance, and in-process execution only for trusted built-ins
-or an explicit compatibility override. Worker failure must never remove the
-project node or its opaque state.
+Logic demonstrates that Rosetta and ARA modes can create product capability
+cliffs, while Bitwig documents architecture-specific host complexity. Avoiding
+translation is an intentional product constraint, not an assumption that all
+Mac plug-ins are already native. ([Logic C-019–C-020, C-039](dossiers/apple-logic-pro.md#21-claims-register),
+[Bitwig C-019–C-020](dossiers/bitwig-studio.md#21-claims-register))
 
-### 2.7 Project durability and portability
+### 4.3 Discovery and execution boundaries
 
-**DOCUMENTED CORPUS PATTERN.** Durable products separate project metadata from
-media and plug-in binaries, retain backups, and preserve unavailable dependencies.
-Ardour uses a versioned bundle, snapshots, backup plus temporary-file rename,
-and missing-plug-in placeholders; REAPER exposes text projects, backup/version
-saves, relative paths, and media collection; Reason preserves missing VST state;
-Rosegarden demonstrates both atomic replacement and the danger of resaving when
-audio/plugins are unavailable. ([Ardour C-018–C-021](dossiers/ardour.md#21-claims-register),
+**macOS:** scan AUv2, AUv3, VST3, and any approved VST2 adapter in disposable
+helper processes with timeouts, cancellation, cache versioning, duplicate
+detection, crash attribution, and reset/rescan UX. Run third-party DSP in
+isolated ARM64 workers by default. AUv2, VST3, and approved VST2 require
+host-designed worker containment; AUv3 process semantics still require
+qualification rather than inference from framework defaults.
+
+**iPad/iPhone:** discover installed AUv3 App Extensions through platform APIs;
+there is no arbitrary VST/AUv2 folder scan. Treat extension launch, suspension,
+termination, memory limits, and UI availability as explicit lifecycle states.
+
+Logic documents AU failure containment on Apple silicon but leaves exact
+process/IPC choices unknown. That is evidence for the outcome, not an
+implementation blueprint. ([Logic C-017–C-018, C-040](dossiers/apple-logic-pro.md#21-claims-register))
+
+### 4.4 Identity and cross-device dependency rules
+
+`PluginDependency` stores:
+
+- format and platform scope;
+- manufacturer/type/subtype or format-native stable component ID;
+- bundle/package identifier and code architecture;
+- version and display metadata;
+- instrument/effect/MIDI role;
+- declared I/O and parameter metadata;
+- opaque state and external-asset references;
+- automation and routing; and
+- latest validated render fallback.
+
+Do not infer equivalence between AUv2, AUv3, VST3, and VST2 variants.
+Cross-format replacement is a user-authorized migration that must pass state and
+audible-equivalence fixtures. Matching AUv3 identities across Mac, iPad, and
+iPhone may enable direct recall only after the vendor pair passes the
+qualification plan.
+
+### 4.5 Missing and unavailable plug-ins
+
+If a Mac project uses AUv2, VST3, or an approved VST2 adapter that is unavailable
+on mobile, the mobile surface must:
+
+1. preserve the complete placeholder and source automation/routing;
+2. play the most recent validated rendered fallback if available;
+3. mark the track as non-live/non-editable at that dependency;
+4. permit unrelated edits without deleting opaque state; and
+5. restore live processing when reopened on a capable Mac.
+
+Logic's iPad behavior and bounce guidance demonstrate this product problem;
+Ardour and Reason demonstrate durable placeholder mechanisms. ([Logic C-028–C-029](dossiers/apple-logic-pro.md#21-claims-register),
+[Ardour C-018–C-019](dossiers/ardour.md#21-claims-register),
+[Reason C-020](dossiers/reason-studios-reason.md#21-claims-register))
+
+## 5. Project durability and cross-device portability
+
+Use one versioned package schema across Mac, iPad, and iPhone. The package
+contains a manifest, project object records, automation, opaque plug-in state,
+media references or collected media, render artifacts, migrations, and an
+append-only recovery journal.
+
+Requirements:
+
+- stable IDs must not depend on filesystem paths or UI indexes;
+- save through validated temporary output, `fsync`, and atomic replacement;
+- retain automatic snapshots and a last-known-good manifest;
+- classify assets as embedded, package-relative, external-authorized, cloud
+  mirrored, or missing;
+- preserve external-file authorization metadata without making it the only
+  locator;
+- support collect/consolidate before transfer;
+- maintain a capability manifest and structured portability report; and
+- cloud/iCloud sync must be optional over a complete local journal.
+
+Ardour and REAPER document versioned projects, backups, relative media, and
+collection; Loopy Pro documents project bundles, continuously saved workspace,
+save points, Files-visible backup, and AU-store export constraints.
+([Ardour C-018–C-021](dossiers/ardour.md#21-claims-register),
 [REAPER C-035–C-037](dossiers/cockos-reaper.md#21-claims-register),
-[Reason C-020](dossiers/reason-studios-reason.md#21-claims-register),
-[Rosegarden C-022–C-023, C-033](dossiers/rosegarden.md#21-claims-register))
+[Loopy Pro C-029–C-030](dossiers/loopy-pro.md#21-claims-register))
 
-**ARCHITECTURE RECOMMENDATION.** Use a versioned manifest with stable IDs,
-content-addressed or checksummed media references, opaque plug-in state, and
-append-only recovery metadata. Save through validated temporary output,
-`fsync`, atomic replacement, and retained snapshots. A missing dependency must
-round-trip without discarding identity, state, automation, I/O shape, or assets.
+## 6. Extension and integration boundary
 
-### 2.8 Extension and control boundaries
+Binary audio plug-ins, automation/control scripts, hardware control, and project
+interchange are separate extension planes.
 
-**DOCUMENTED CORPUS PATTERN.** Strong products separate realtime binary plug-ins
-from scripting/control extensions: Max for Live exposes a bounded object model;
-REAPER separates ReaScript, JSFX, and native extensions; Ardour separates Lua
-actions/hooks/DSP contexts; Pro Tools exposes an external certificate-validated
-scripting SDK. ([Ableton C-026](dossiers/ableton-live.md#21-claims-register),
+- Audio DSP: AUv3 across surfaces; AUv2/VST3 and conditionally VST2 on Mac.
+- Commands/control: versioned capability-scoped object API, undo transactions,
+  subscriptions, and no realtime execution by default.
+- Hardware: MIDI/MPE, controller mappings, clock/sync, and surface feedback.
+- Interchange: adapter-based audio/MIDI/DAWproject/AAF-style import/export only
+  where product requirements justify it, always with a loss report.
+
+Max for Live, ReaScript, Ardour Lua, and Pro Tools scripting demonstrate the
+value of separating product automation from binary DSP formats.
+([Ableton C-026](dossiers/ableton-live.md#21-claims-register),
 [REAPER C-027–C-031](dossiers/cockos-reaper.md#21-claims-register),
 [Ardour C-020](dossiers/ardour.md#21-claims-register),
 [Pro Tools C-021](dossiers/avid-pro-tools.md#21-claims-register))
 
-**ARCHITECTURE RECOMMENDATION.** Provide a versioned command/object API with
-capabilities, stable IDs, subscriptions, undo transactions, and explicit
-threading rules. Scripts must not run on the audio thread by default. Native DSP
-authoring is a distinct ABI and should not be exposed until its compatibility
-and security model is sustainable.
+## 7. Apple-target architecture requirements
 
-### 2.9 Accessibility, observability, and security
-
-**DOCUMENTED CORPUS PATTERN.** Host accessibility and third-party editor
-accessibility are separate boundaries. Live documents screen-reader support and
-known gaps; Audition publishes platform accessibility reports; Logic documents
-ongoing VoiceOver work. Resource meters and per-plug-in diagnostics recur in
-Live, LUNA, Ardour, and REAPER. ([Ableton C-031](dossiers/ableton-live.md#21-claims-register),
-[Audition C-031](dossiers/adobe-audition.md#21-claims-register),
-[Logic C-035](dossiers/apple-logic-pro.md#21-claims-register),
-[LUNA C-025](dossiers/universal-audio-luna.md#21-claims-register),
-[Ardour C-028](dossiers/ardour.md#21-claims-register))
-
-**ARCHITECTURE RECOMMENDATION.** Make the entire host operable by keyboard and
-platform accessibility APIs. Supply an accessible generated parameter editor
-when a custom plug-in UI is unusable. Expose graph critical path, deadline load,
-disk load, plug-in worker health, latency, xruns, scan status, and recovery logs.
-
-### 2.10 Collaboration and local/cloud state
-
-**DOCUMENTED CORPUS PATTERN.** BandLab demonstrates revisions, invitations,
-forks, and recovery, but also documents device-local takes, cookie-local MIDI
-mappings, internet-dependent saves, and manual reconstruction after sync failure.
-([BandLab C-005–C-008, C-021–C-023, C-030](dossiers/bandlab-studio.md#21-claims-register))
-
-**ARCHITECTURE RECOMMENDATION.** Keep a complete local journal and make cloud
-sync optional. Classify every state object as project-durable, user-profile,
-device-local cache, or ephemeral. Never leave takes, mappings, or plug-in state
-implicitly local without export/recovery UX.
-
-## 3. Architecture requirements
-
-| ID | Requirement | Acceptance signal |
+| ID | Requirement | Binary acceptance signal |
 | --- | --- | --- |
-| AR-001 | One versioned domain model shall back timeline, launcher, mixer, and graph views. | An edit in any view round-trips identically through all others. |
-| AR-002 | Signal nodes and ports shall be typed for audio, events, parameters, sidechains, and control. | Invalid routes fail before publication to the audio thread. |
-| AR-003 | Graph mutation shall compile off-thread to an immutable realtime snapshot. | Structural edits during playback neither lock nor allocate on the callback. |
-| AR-004 | Scheduling shall expose monitored and buffered paths plus the graph critical path. | Diagnostics identify the serial bottleneck under a reproducible overload. |
-| AR-005 | PDC shall include tracks, buses, sends/returns, sidechains, bypass, and latency changes. | Impulse fixtures align for realtime and offline paths. |
-| AR-006 | Freeze/render artifacts shall record dependencies, latency, tails, and invalidation state. | A changed dependency visibly invalidates and safely rebuilds the artifact. |
-| AR-007 | Plug-in scanning shall run outside the DAW process with timeout, cancellation, cache versioning, and failure attribution. | Crash/hang/malformed fixtures cannot crash or indefinitely block the DAW. |
-| AR-008 | Runtime workers shall support isolated, grouped, and explicit compatibility modes. | A worker crash removes no project state and can be restarted or bypassed. |
-| AR-009 | Plug-in identity shall retain format, vendor, stable component ID, architecture, version, role, and I/O/state metadata. | Duplicates and upgrades resolve deterministically with an auditable decision. |
-| AR-010 | Missing plug-ins shall remain durable placeholders. | Remove, open, edit, resave, restore, and recover identical state/automation/routes. |
-| AR-011 | Project saves shall be versioned, atomic, recoverable, and independent of installed plug-in binaries. | Fault injection at every save boundary leaves a valid prior or new snapshot. |
-| AR-012 | Media shall use stable IDs plus relink, collect, checksum, and rendered-fallback workflows. | Moved/missing/restored media survives project round trips without silent substitution. |
-| AR-013 | Interchange shall be adapter-based and emit a structured loss report. | Unsupported objects are rendered, mapped, or explicitly reported—never silently dropped. |
-| AR-014 | Script/control APIs shall be versioned, capability-scoped, undo-aware, and non-realtime by default. | Extensions cannot block the callback or access undeclared capabilities. |
-| AR-015 | Host controls and generated plug-in parameter UIs shall meet keyboard and accessibility-API requirements. | Automated accessibility audit covers the host and generic editor. |
-| AR-016 | Cloud features shall preserve a complete local journal and explicit state-class boundaries. | Offline edits recover and later reconcile without losing takes, mappings, or plug-in state. |
-| AR-017 | Format claims shall be gated separately for accept, scan, instantiate, process, render, state, migration, and failure recovery. | Release metadata names only the gates that pass the qualification corpus. |
-| AR-018 | Third-party code shall be treated as untrusted at scan, UI, DSP, and state-load boundaries. | Security tests exercise malformed metadata/state and worker fault containment. |
-| AR-019 | Built-in devices shall use a private, versioned internal interface distinct from public plug-in adapters. | Internal ABI changes do not alter project-level device identity or state migration. |
-| AR-020 | Format/SDK/trademark/distribution decisions shall have a provenance and legal gate. | No adapter ships without pinned terms, counsel/owner decision, and artifact provenance. |
+| AAR-001 | One project schema shall round-trip across Mac, iPad, and iPhone. | A capability-limited device can open/edit/save without deleting unsupported objects. |
+| AAR-002 | All shipped executables and plug-in workers shall be native ARM64. | Intel/32-bit fixtures are rejected without Rosetta or state loss. |
+| AAR-003 | One typed graph/domain shall back all surface-specific views. | Equivalent commands produce identical persisted graph state on every surface. |
+| AAR-004 | Graph changes shall compile off-thread to immutable realtime snapshots. | Playback edits allocate/lock neither callback nor extension render path. |
+| AAR-005 | Device/session interruptions shall be coordinated and recoverable. | Route, sample-rate, foreground, interruption, and extension-loss fixtures resume or checkpoint deterministically. |
+| AAR-006 | PDC shall include buses, sends, sidechains, bypass, and dynamic latency. | Impulse fixtures align across realtime, monitored, freeze, and offline paths. |
+| AAR-007 | AUv3 shall be qualified separately on macOS, iPadOS, and iPhone. | Every applicable OS/device matrix passes all lifecycle gates. |
+| AAR-008 | AUv2, VST3, and any approved VST2 adapter shall remain macOS-only dependency types. | Mobile roundtrip preserves placeholders and fallback renders without substitution. |
+| AAR-009 | AUv2/AUv3/VST3/VST2 variants shall never auto-substitute by name. | Migration requires a validated mapping and explicit user action. |
+| AAR-010 | macOS scanning shall occur outside the main DAW process. | Scan crash/hang/malformed fixtures cannot crash or block the DAW. |
+| AAR-011 | Third-party runtime failure shall preserve graph and project state. | Extension/worker crash restarts, bypasses, or falls back without deleting the node. |
+| AAR-012 | Missing plug-ins shall be durable placeholders. | Remove/open/edit/resave/restore reproduces original state, automation, and routes. |
+| AAR-013 | Every unavailable live dependency should have a provenance-tracked render fallback. | A mobile device plays the validated fallback and reports staleness. |
+| AAR-014 | Project saves shall be atomic, versioned, and locally recoverable. | Fault injection leaves a valid old or new snapshot on every surface. |
+| AAR-015 | Plug-in and project external assets shall survive authorized move/relink workflows. | Moved/missing/restored asset fixtures retain identity and user intent. |
+| AAR-016 | Host and generated parameter UI shall support keyboard, touch, and Apple accessibility APIs. | Automated and manual accessibility gates pass on all surfaces. |
+| AAR-017 | Resource policy shall adapt without changing project semantics. | Low-memory/thermal fixtures reduce live capacity visibly and preserve saved state. |
+| AAR-018 | Format support shall be gated separately for discovery, instantiate, process, render, state, migration, UI, and recovery. | Release metadata claims only the gates passed per OS. |
+| AAR-019 | Extension APIs shall be versioned, capability-scoped, and non-realtime by default. | An extension cannot block audio or access undeclared capabilities. |
+| AAR-020 | SDK, signing, entitlement, App Store, trademark, and distribution decisions shall be pinned. | No adapter ships without an approved provenance/terms record. |
 
-## 4. Plug-in format roadmap
+## 8. Rejected and conditional patterns
 
-Assumption: first release is a 64-bit desktop DAW for Windows, macOS, and Linux.
-If iOS becomes a release target, AUv3 becomes mandatory for that product and the
-desktop matrix must not be projected onto it.
+- **Reject Intel/Rosetta compatibility as an initial requirement.** It multiplies
+  host modes and defeats the native ARM64 boundary.
+- **Reject an unconditional VST2 commitment.** It is macOS-only in this product,
+  cannot reach iPad/iPhone, and has unresolved entity-specific rights. Preserve
+  the seam and run the legal/provenance gate before implementation. ([Cubase C-003–C-004,
+  C-026–C-027](dossiers/steinberg-cubase.md#21-claims-register),
+  [Ardour C-024](dossiers/ardour.md#21-claims-register))
+- **Reject VST3 as the canonical project dependency.** It is a Mac adapter, not
+  a mobile format.
+- **Reject assumed AUv2↔AUv3 state equivalence.** The formats and process models
+  require separate fixtures.
+- **Reject silent object deletion on a capability-limited device.** Preserve
+  placeholders and fallbacks.
+- **Reject cloud-only saves.** Local projects and recovery must work without an
+  account or network.
+- **Reject one giant shared third-party process.** A single fault must not remove
+  unrelated plug-ins or the host.
+- **Conditional:** AUv2/VST3 and approved VST2 isolated workers add IPC cost but
+  are preferred if deadline and state-replay prototypes pass.
+- **Conditional:** CLAP on macOS can be revisited after AU/VST3 quality and
+  ecosystem demand are measured.
 
-| Format | Initial disposition | Rationale |
-| --- | --- | --- |
-| VST3 | **MUST / first adapter** | Cross-platform current host evidence; rich typed buses/events/state; current SDK repository is MIT. Product conformance still requires fixtures. ([Cubase C-012, C-015–C-017, C-025](dossiers/steinberg-cubase.md#21-claims-register)) |
-| AUv2 | **MUST on macOS** | Material installed ecosystem and documented current hosting in Logic, Live, Ardour, and LUNA. ([Logic C-012](dossiers/apple-logic-pro.md#21-claims-register), [Ableton C-014](dossiers/ableton-live.md#21-claims-register), [Ardour C-011](dossiers/ardour.md#21-claims-register)) |
-| AUv3 | **SHOULD on macOS; MUST on iOS** | Current Logic/Live support and mandatory extension model for modern iOS hosts; process/state semantics differ from AUv2 and need separate qualification. ([Logic C-012, C-040](dossiers/apple-logic-pro.md#21-claims-register), [Ableton C-014](dossiers/ableton-live.md#21-claims-register)) |
-| CLAP | **SHOULD / second portable adapter** | Current cross-platform adoption and polyphonic modulation evidence in Bitwig and REAPER; still smaller than VST3/AU coverage in this corpus. ([Bitwig C-010, C-023](dossiers/bitwig-studio.md#21-claims-register), [REAPER C-017](dossiers/cockos-reaper.md#21-claims-register)) |
-| VST2 | **CONDITIONAL, legal gate before engineering commitment** | Still loaded by major hosts, often as legacy/disabled/translated compatibility, while format-owner terms and redistribution rights are constrained. ([Cubase C-003–C-004, C-026–C-027](dossiers/steinberg-cubase.md#21-claims-register), [Ardour C-024](dossiers/ardour.md#21-claims-register), [LMMS C-033](dossiers/lmms.md#21-claims-register)) |
-| LV2 | **CONDITIONAL Linux/open-ecosystem phase** | Strong open-host evidence in Ardour/Rosegarden, but host-contract breadth and packaging vary. ([Ardour C-011–C-013](dossiers/ardour.md#21-claims-register), [Rosegarden C-011–C-017](dossiers/rosegarden.md#21-claims-register)) |
-| AAX | **DO NOT HOST initially** | AAX is the Pro Tools host boundary with program, signing, and iLok obligations, not a general cross-DAW requirement. ([Pro Tools C-012–C-013, C-024](dossiers/avid-pro-tools.md#21-claims-register)) |
-| LADSPA/DSSI | **DO NOT HOST initially** | Legacy Linux value does not justify first-release lifecycle/state/UI complexity; preserve adapter seams. |
-| DirectX/DXi | **DO NOT HOST** | Legacy Windows-specific path with weak portability and modern ecosystem value. |
-| JSFX | **DO NOT HOST as a compatibility claim** | REAPER-specific processor/script ecosystem; create an independent native DSP script only if product requirements justify it. ([REAPER C-031](dossiers/cockos-reaper.md#21-claims-register)) |
-| Rack Extension | **DO NOT HOST** | Proprietary Reason ecosystem and distribution model. ([Reason C-023–C-030](dossiers/reason-studios-reason.md#21-claims-register)) |
+## 9. Prototype handoff
 
-## 5. Rejected and conditional patterns
+Highest-value prototypes are now Apple-specific:
 
-- **Reject one in-process trust domain for arbitrary third-party code.** It gives
-  low IPC cost but unacceptable crash/security blast radius.
-- **Reject “supports format X” as an interoperability acceptance criterion.**
-  Scan, instantiate, render, state, migration, UI, latency, and recovery are
-  separate gates. ([Logic C-042](dossiers/apple-logic-pro.md#21-claims-register),
-  [REAPER C-056](dossiers/cockos-reaper.md#21-claims-register))
-- **Reject silent deletion of unavailable dependencies.** Preserve placeholders
-  and rendered fallbacks.
-- **Reject direct overwrite before validating a new project file.** Traverso's
-  public path writes the live file before making its backup, exposing a failure
-  window. ([Traverso C-026](dossiers/traverso-daw.md#21-claims-register))
-- **Reject cloud-only durability.** A network or account failure must not make
-  local work unsaveable.
-- **Reject VST2 implementation by historical popularity alone.** Require an
-  entity-specific rights decision; this document is not legal advice.
-- **Conditional:** per-plug-in processes improve containment but need realtime
-  IPC, state replay, UI hosting, latency, and resource prototypes.
-- **Conditional:** a public native-device SDK can deepen an ecosystem but creates
-  a long-lived ABI, security, compatibility, and support obligation.
+1. AUv3 effect/instrument/state/UI vertical slice on Mac, iPad, and iPhone;
+2. AUv3 extension termination, state replay, and mobile interruption recovery;
+3. macOS AUv2 and VST3 isolated ARM64 worker with shared-memory realtime IPC;
+4. Mac-only plug-in placeholder/render fallback roundtrip through iPad/iPhone;
+5. sample-accurate automation, PDC, tails, and offline equivalence;
+6. atomic package save under process/filesystem interruption; and
+7. accessible generated plug-in UI across Mac, iPad, and iPhone; and
+8. entity-specific VST2 G0 review, followed by a native ARM64 Mac slice only if
+   approved.
 
-## 6. Prototype handoff and remaining unknowns
+The executable plan is [`PLUGIN-QUALIFICATION-PLAN.md`](PLUGIN-QUALIFICATION-PLAN.md).
 
-Documentary research cannot select the final IPC topology, worker granularity,
-automation timing implementation, state replay protocol, or VST2 legal path.
-Those decisions move to [`PLUGIN-QUALIFICATION-PLAN.md`](PLUGIN-QUALIFICATION-PLAN.md).
-
-Highest-value unresolved prototypes:
-
-1. shared-memory realtime plug-in worker with crash/hang recovery;
-2. VST3 and AUv2/AUv3 bus/event/state/latency/tail conformance;
-3. missing-plug-in save/resave/restore durability;
-4. sample-accurate automation and dynamic-latency changes across buffer sizes;
-5. atomic project save with injected process/filesystem failures; and
-6. accessible generic plug-in editor plus custom-editor focus/scaling boundary.
-
-## 7. Curiosity pass and stop decision
+## 10. Curiosity pass and stop decision
 
 | Thread | Relevance | Value | Novelty | Cost | Decision |
 | --- | ---: | ---: | ---: | ---: | --- |
-| Runtime plug-in worker topology | 4/4 | 4/4 | 4/4 | 4/4 | **Pursue as prototype**, not more documentary search. |
-| VST3/AU contract edge cases | 4/4 | 4/4 | 3/4 | 3/4 | **Pursue with owned fixtures.** |
-| VST2 rights for the implementing entity | 4/4 | 4/4 | 2/4 | 4/4 | **Route to counsel/format owner before code.** |
-| Exhaustive additional DAW census | 1/4 | 1/4 | 1/4 | 4/4 | `CURIOSITY_NO_GO`; 81 families cover every decision dimension. |
-| More vendor architecture inference | 2/4 | 1/4 | 1/4 | 4/4 | `CURIOSITY_NO_GO`; proprietary internals remain unknown. |
-| Copy project schemas or protected UI expression | 0/4 | 0/4 | 0/4 | 4/4 | `CURIOSITY_NO_GO`; outside clean-room authority. |
+| AUv3 cross-device lifecycle | 4/4 | 4/4 | 4/4 | 3/4 | **Pursue with owned fixtures.** |
+| macOS isolated AUv2/VST3 worker | 4/4 | 4/4 | 4/4 | 4/4 | **Pursue as bounded prototype.** |
+| Intel/Rosetta bridge | 1/4 | 1/4 | 2/4 | 4/4 | `CURIOSITY_NO_GO`; outside corrected target. |
+| VST2 implementation before G0 | 3/4 | 1/4 | 1/4 | 4/4 | `CURIOSITY_NO_GO`; run entity-specific legal/provenance gate first. |
+| Windows/Linux/Android/browser parity | 0/4 | 0/4 | 1/4 | 4/4 | `CURIOSITY_NO_GO`; not target platforms. |
+| Additional broad DAW census | 1/4 | 1/4 | 1/4 | 4/4 | `CURIOSITY_NO_GO`; corpus coverage is sufficient. |
 
-**Stop decision:** `STOP_DOCUMENTARY_COVERAGE_AND_SATURATION`. All 81 roster
-targets satisfy the dossier contract, recurring architecture patterns are
-represented across mainstream, open-source, post, tracker/modular, cloud,
-mobile, and historical families, and remaining decision-critical uncertainty is
-runtime/legal rather than documentary. Further broad searching has nonpositive
-marginal value.
+**Stop decision:** `STOP_CORRECTED_DOCUMENTARY_COVERAGE_AND_SATURATION`. The
+corpus sufficiently supports an ARM64 Apple-platform architecture decision.
+Remaining uncertainty concerns AU runtime behavior, device lifecycle, resource
+limits, project roundtrip, Apple distribution constraints, and VST2 authority;
+these require owned fixtures, platform prototypes, and authorized legal review
+rather than more broad documentary searching.

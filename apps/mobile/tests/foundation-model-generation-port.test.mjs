@@ -119,19 +119,14 @@ test("generation emits deltas only for its matching turn", async () => {
 
 test("generation fails closed when an active turn is aborted", async () => {
   const controller = new AbortController();
-  const fixture = nativeFixture(
-    () => new Promise(() => {}),
-  );
+  const fixture = nativeFixture(() => new Promise(() => {}));
   const generation = createFoundationModelGeneration(fixture.module).generate(
     request(controller.signal),
   );
 
   controller.abort();
 
-  await assert.rejects(
-    generation,
-    ({ code }) => code === "ACTION_CANCELLED",
-  );
+  await assert.rejects(generation, ({ code }) => code === "ACTION_CANCELLED");
   assert.deepEqual(fixture.cancelled, ["turn-1"]);
   assert.equal(fixture.removed(), true);
 });

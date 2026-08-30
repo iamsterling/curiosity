@@ -105,9 +105,7 @@ export const useCuriosityWorkspace = (client: CuriosityClient) => {
         const turn = await client.submit({
           mode,
           text: prompt,
-          ...(state.activeThreadId
-            ? { threadId: state.activeThreadId }
-            : {}),
+          ...(state.activeThreadId ? { threadId: state.activeThreadId } : {}),
         });
         setState((current) => ({
           ...current,
@@ -119,6 +117,9 @@ export const useCuriosityWorkspace = (client: CuriosityClient) => {
               messageId: turn.assistantMessageId,
               role: "assistant",
               text: turn.text,
+              ...(turn.transportReceipt
+                ? { transportReceipt: turn.transportReceipt }
+                : {}),
             },
           ],
           threads: turn.threads,

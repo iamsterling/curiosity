@@ -1,3 +1,4 @@
+import type { GenerationTransportReceipt } from "@curiosity/authority";
 import type { ConversationMode } from "./workspace-types.ts";
 
 export const commandText = (mode: ConversationMode, text: string): string => {
@@ -16,6 +17,7 @@ export interface CuriosityMessage {
   readonly messageId: string;
   readonly role: "assistant" | "user";
   readonly text: string;
+  readonly transportReceipt?: GenerationTransportReceipt;
 }
 
 export interface CuriositySession {
@@ -34,6 +36,7 @@ export interface CuriosityTurn {
   readonly text: string;
   readonly threadId: string;
   readonly threads: readonly CuriosityThread[];
+  readonly transportReceipt?: GenerationTransportReceipt;
   readonly turnId?: string;
 }
 
@@ -72,6 +75,8 @@ export const runtimeStatusLabel = (status: CuriosityRuntimeStatus): string => {
   if (status.profile === "remote") return "Explicit remote adapter";
   if (status.localRuntime === "starting") return "Local runtime starting";
   if (status.localRuntime !== "available") return "Local runtime unavailable";
+  if (status.mainProvider === "available")
+    return "Local runtime · Direct frontier";
   if (status.onDeviceModel === "available")
     return "Local runtime · On-device model";
   return "Local runtime ready · Model unavailable";

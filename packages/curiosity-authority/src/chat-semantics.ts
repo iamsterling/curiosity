@@ -7,6 +7,7 @@ import {
   type StoredEvent,
 } from "./domain.js";
 import type { GenerationRouteReceipt } from "./generation-route.js";
+import type { GenerationTransportReceipt } from "./generation-transport-receipt.js";
 
 const maximumIdentifierBytes = 256;
 const maximumMessageBytes = 64 * 1_024;
@@ -135,6 +136,7 @@ export interface ChatCompletion {
   readonly modelId: string;
   readonly researchReceipt?: ChatResearchReceipt;
   readonly routeReceipt?: GenerationRouteReceipt;
+  readonly transportReceipt?: GenerationTransportReceipt;
   readonly text: string;
   readonly threadId: string;
   readonly turnId: string;
@@ -156,6 +158,9 @@ export const completeChatTurn = (
         ...(completion.routeReceipt
           ? { routeReceipt: completion.routeReceipt }
           : {}),
+        ...(completion.transportReceipt
+          ? { transportReceipt: completion.transportReceipt }
+          : {}),
         role: "assistant",
         schemaVersion: 1,
         text: completion.text,
@@ -173,6 +178,9 @@ export const completeChatTurn = (
         modelId: completion.modelId,
         ...(completion.routeReceipt
           ? { routeReceipt: completion.routeReceipt }
+          : {}),
+        ...(completion.transportReceipt
+          ? { transportReceipt: completion.transportReceipt }
           : {}),
         schemaVersion: 1,
         threadId: completion.threadId,

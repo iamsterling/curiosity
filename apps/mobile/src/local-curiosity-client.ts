@@ -3,6 +3,8 @@ import {
   onDeviceAppleGenerationSelection,
   PortableAuthority,
   type GenerationPort,
+  type GenerationSelection,
+  type GenerationSelectionPort,
   type AuthorityJournal,
   type Sha256,
 } from "@curiosity/authority";
@@ -27,10 +29,9 @@ const localCatalogIdentity = Object.freeze({
 export interface LocalCuriosityClientConfig {
   readonly createId: () => string;
   readonly generation?: GenerationPort;
+  readonly generationSelection?: GenerationSelection | GenerationSelectionPort;
   readonly now: () => string;
-  readonly openJournal?: (
-    catalogDigest: string,
-  ) => Promise<AuthorityJournal>;
+  readonly openJournal?: (catalogDigest: string) => Promise<AuthorityJournal>;
   readonly sha256: Sha256;
   readonly status?:
     | Partial<CuriosityRuntimeStatus>
@@ -62,7 +63,10 @@ export const createLocalCuriosityClient = (
         createId: config.createId,
         ...(config.generation ? { generation: config.generation } : {}),
         ...(config.generation
-          ? { generationSelection: onDeviceAppleGenerationSelection }
+          ? {
+              generationSelection:
+                config.generationSelection ?? onDeviceAppleGenerationSelection,
+            }
           : {}),
         ...(config.openJournal
           ? { journal: await config.openJournal(catalogDigest) }
@@ -83,8 +87,13 @@ export const createLocalCuriosityClient = (
     return Object.freeze({
       messages: runtime
         .messages(threadId)
-        .map(({ messageId, role, text }) =>
-          Object.freeze({ messageId, role, text }),
+        .map(({ messageId, role, text, transportReceipt }) =>
+          Object.freeze({
+            messageId,
+            role,
+            text,
+            ...(transportReceipt ? { transportReceipt } : {}),
+          }),
         ),
       threads: runtime
         .threads()
@@ -121,6 +130,9 @@ export const createLocalCuriosityClient = (
       text: completion.text,
       threadId,
       threads: (await session()).threads,
+      ...(completion.transportReceipt
+        ? { transportReceipt: completion.transportReceipt }
+        : {}),
       turnId,
     });
   };

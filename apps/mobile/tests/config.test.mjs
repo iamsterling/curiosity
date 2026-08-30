@@ -14,6 +14,7 @@ test("mobile package is an iPhone and multitasking iPad Expo target", async () =
   assert.deepEqual(app.platforms, ["ios"]);
   assert.equal(app.ios.supportsTablet, true);
   assert.equal(app.ios.requireFullScreen, false);
+  assert.equal(app.ios.infoPlist?.CuriosityBrokerOrigin, undefined);
   assert.equal(app.ios.infoPlist?.NSLocalNetworkUsageDescription, undefined);
   assert.equal(
     app.ios.infoPlist?.NSAppTransportSecurity?.NSAllowsLocalNetworking,
@@ -30,8 +31,14 @@ test("mobile package is an iPhone and multitasking iPad Expo target", async () =
   assert.equal(packageJson.dependencies["@crafty/editor"], "workspace:*");
   assert.equal(packageJson.dependencies["expo-router"], "~57.0.17");
   assert.equal(packageJson.dependencies["expo-crypto"], "~57.0.2");
-  assert.equal(packageJson.dependencies["react-native-drawer-layout"], "4.2.10");
-  assert.equal(packageJson.dependencies["react-native-gesture-handler"], "~2.32.0");
+  assert.equal(
+    packageJson.dependencies["react-native-drawer-layout"],
+    "4.2.10",
+  );
+  assert.equal(
+    packageJson.dependencies["react-native-gesture-handler"],
+    "~2.32.0",
+  );
   assert.equal(packageJson.dependencies["react-native-reanimated"], "4.5.1");
 });
 
@@ -99,13 +106,17 @@ test("native controls cross the SwiftUI host boundary explicitly", async () => {
   assert.match(surfaceSwitcher, /Chat/u);
   assert.match(surfaceSwitcher, /Craft/u);
   assert.match(surfaceSwitcher, /Memory/u);
+  assert.match(surfaceSwitcher, /Providers/u);
   assert.match(surfaceSwitcher, /Audio/u);
   assert.match(composer, /@expo\/ui\/swift-ui/u);
   assert.match(composer, /<Host/u);
   assert.match(composer, /<GlassEffectContainer/u);
   assert.match(composer, /<TextField/u);
   assert.doesNotMatch(composer, /TextInput/u);
-  assert.match(composer, /<HStack[\s\S]*glassEffect[\s\S]*<TextField[\s\S]*<Button/u);
+  assert.match(
+    composer,
+    /<HStack[\s\S]*glassEffect[\s\S]*<TextField[\s\S]*<Button/u,
+  );
   assert.match(composer, /buttonStyle\("plain"\)/u);
   assert.match(glassPanel, /glassEffect/u);
   assert.match(glassPanel, /variant: "regular"/u);
@@ -120,9 +131,15 @@ test("native controls cross the SwiftUI host boundary explicitly", async () => {
   assert.match(surfaceSwitcher, /pickerStyle\("segmented"\)/u);
   assert.match(surfaceSwitcher, /buttonStyle\("glass"\)/u);
   assert.match(surfaceSwitcher, /runtimeStatusLabel/u);
-  assert.doesNotMatch(surfaceSwitcher, /Session connected|Session offline|serverUrl/u);
+  assert.doesNotMatch(
+    surfaceSwitcher,
+    /Session connected|Session offline|serverUrl/u,
+  );
   assert.doesNotMatch(workspace, /<Drawer|WorkspaceSidebar|toggleSidebar/u);
-  assert.doesNotMatch(theme, /atmosphereBlue|atmosphereGreen|atmosphereViolet/u);
+  assert.doesNotMatch(
+    theme,
+    /atmosphereBlue|atmosphereGreen|atmosphereViolet/u,
+  );
 });
 
 test("iOS prebuild adopts the required single-scene lifecycle", () => {
@@ -150,7 +167,10 @@ test("iOS prebuild adopts the required single-scene lifecycle", () => {
 class ReactNativeDelegate {}`;
   const patched = sceneLifecyclePlugin.patchAppDelegate(source);
 
-  assert.match(patched, /class SceneDelegate: UIResponder, UIWindowSceneDelegate/u);
+  assert.match(
+    patched,
+    /class SceneDelegate: UIResponder, UIWindowSceneDelegate/u,
+  );
   assert.doesNotMatch(patched, /UIWindow\(frame: UIScreen\.main\.bounds\)/u);
   assert.equal(sceneLifecyclePlugin.patchAppDelegate(patched), patched);
   assert.equal(
@@ -191,7 +211,10 @@ test("iPad workstation commands use a prebuild-safe native menu bridge", async (
   assert.deepEqual(moduleConfig.apple.appDelegateSubscribers, [
     "CuriosityCommandsAppDelegateSubscriber",
   ]);
-  assert.match(nativeModule, /UIMainMenuSystem\.shared\.setBuildConfiguration/u);
+  assert.match(
+    nativeModule,
+    /UIMainMenuSystem\.shared\.setBuildConfiguration/u,
+  );
   assert.match(nativeModule, /UIKeyCommand/u);
   assert.match(nativeModule, /curiosityPerformCommand/u);
   assert.match(nativeModule, /Events\(commandEvent\)/u);
@@ -262,10 +285,7 @@ test("Craft uses an Expo-native Metal canvas", async () => {
 
 test("Craft feature work is gated by the canonical Crafty translation matrix", async () => {
   const matrix = await readFile(
-    new URL(
-      "../design/CRAFT-IPAD-FEATURE-TRANSLATION.md",
-      import.meta.url,
-    ),
+    new URL("../design/CRAFT-IPAD-FEATURE-TRANSLATION.md", import.meta.url),
     "utf8",
   );
   const standards = await readFile(

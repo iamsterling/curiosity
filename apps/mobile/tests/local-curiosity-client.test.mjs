@@ -112,3 +112,56 @@ test("local client restores projections from an injected durable journal", async
   );
   assert.equal((await relaunched.status()).storage, "durable");
 });
+
+test("local client persists a dynamically selected frontier receipt", async () => {
+  let id = 0;
+  let selected = 0;
+  const client = createLocalCuriosityClient({
+    createId: () => `frontier-${++id}`,
+    generation: {
+      generate: async (request) => ({
+        durationMs: 8,
+        effort: "frontier",
+        modelId: request.route.modelId,
+        text: "Durable frontier answer",
+        transportReceipt: {
+          callId: request.turnId,
+          maxRetries: 0,
+          transportAttempts: 1,
+        },
+      }),
+    },
+    generationSelection: {
+      select: async () => {
+        selected += 1;
+        return {
+          adapterVersion: "codex-direct-native-v1",
+          locality: "frontier",
+          modelId: "gpt-5.4-mini",
+          providerId: "openai-oauth",
+          purpose: "turn.answer",
+          requestedRouteId: "frontier.openai-oauth",
+          routeId: "frontier.openai-oauth",
+          selectionPolicyId: "ipados-frontier-connected-v1",
+        };
+      },
+    },
+    now: () => "2026-08-29T12:00:00.000Z",
+    sha256,
+  });
+
+  const turn = await client.submit({ mode: "ask", text: "Use frontier" });
+  assert.equal(turn.text, "Durable frontier answer");
+  assert.deepEqual(turn.transportReceipt, {
+    callId: turn.turnId,
+    maxRetries: 0,
+    transportAttempts: 1,
+  });
+  const persisted = await client.session(turn.threadId);
+  assert.deepEqual(persisted.messages.at(-1)?.transportReceipt, {
+    callId: turn.turnId,
+    maxRetries: 0,
+    transportAttempts: 1,
+  });
+  assert.equal(selected, 1);
+});

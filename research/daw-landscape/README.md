@@ -2,8 +2,9 @@
 
 This directory contains a clean-room, evidence-cited survey of digital audio
 workstations (DAWs) and closely related production environments. The research
-supports a later architecture decision for a new DAW, with special emphasis on
-third-party audio-plugin interoperability.
+supports an architecture decision for a native ARM64 DAW spanning Apple-silicon
+macOS, iPadOS, and iPhone, with special emphasis on AUv3 plus macOS AUv2/VST3
+and legally gated VST2 interoperability.
 
 This is research, not permission to copy proprietary implementation, bypass
 access controls, redistribute SDK material, or claim compatibility that has not

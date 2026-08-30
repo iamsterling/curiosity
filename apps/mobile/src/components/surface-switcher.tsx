@@ -38,6 +38,7 @@ const surfaces: readonly {
   { label: "Chat", view: "chat" },
   { label: "Craft", view: "craft" },
   { label: "Memory", view: "memory" },
+  { label: "Providers", view: "providers" },
   { label: "Audio", view: "audio" },
 ]);
 
@@ -134,7 +135,11 @@ export const SurfaceSwitcher = ({
                 axLabel(
                   `${thread.title}. Session ${thread.sequence}. Open in Chat.`,
                 ),
-                font({ size: 13, weight: thread.threadId === activeThreadId ? "semibold" : "regular" }),
+                font({
+                  size: 13,
+                  weight:
+                    thread.threadId === activeThreadId ? "semibold" : "regular",
+                }),
               ]}
               onPress={() => onOpenThread(thread.threadId)}
             >
@@ -155,14 +160,17 @@ export const SurfaceSwitcher = ({
           ))}
           {threads.length === 0 ? (
             <Button modifiers={[disabled(true)]}>
-              <Text modifiers={[font({ size: 13 })]}>
-                No conversations yet
-              </Text>
+              <Text modifiers={[font({ size: 13 })]}>No conversations yet</Text>
             </Button>
           ) : null}
           <Divider />
           <Button modifiers={[disabled(true)]}>
-            <Text modifiers={[font({ size: 12 }), foregroundStyle(palette.textSecondary)]}>
+            <Text
+              modifiers={[
+                font({ size: 12 }),
+                foregroundStyle(palette.textSecondary),
+              ]}
+            >
               {runtimeStatusLabel}
             </Text>
           </Button>
@@ -191,7 +199,11 @@ export const SurfaceSwitcher = ({
           ]}
           onPress={onSearch}
         >
-          <Image size={18} systemName="magnifyingglass" color={palette.textPrimary} />
+          <Image
+            size={18}
+            systemName="magnifyingglass"
+            color={palette.textPrimary}
+          />
         </Button>
 
         {!compact ? (
@@ -234,10 +246,7 @@ export const SurfaceSwitcher = ({
           <HStack
             alignment="center"
             spacing={4}
-            modifiers={[
-              axLabel(collaboratorNames),
-              padding({ horizontal: 6 }),
-            ]}
+            modifiers={[axLabel(collaboratorNames), padding({ horizontal: 6 })]}
           >
             <Image
               size={24}

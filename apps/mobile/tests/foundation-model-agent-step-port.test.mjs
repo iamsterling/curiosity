@@ -176,7 +176,13 @@ test("agent step forwards cancellation by exact step identity", async () => {
   fixtureValue = await fixture(native);
   const pending = fixtureValue.port.step(fixtureValue.request);
   fixtureValue.controller.abort();
-  resolve(result(fixtureValue.request, { citations: [], kind: "final", text: "Done" }));
+  resolve(
+    result(fixtureValue.request, {
+      citations: [],
+      kind: "final",
+      text: "Done",
+    }),
+  );
   await assert.rejects(pending, ({ code }) => code === "ACTION_CANCELLED");
   assert.deepEqual(cancelled, ["step-1"]);
 });

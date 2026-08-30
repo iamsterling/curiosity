@@ -10,10 +10,11 @@ const readAsset = async (assetModule: number): Promise<string> => {
   return new File(asset.localUri ?? asset.uri).text();
 };
 
-export const loadCraftyKernelPortabilityFixture = async (): Promise<CraftyUiPackageBytes> => {
-  const [manifest, documentEntry] = await Promise.all([
-    readAsset(manifestAsset),
-    readAsset(documentEntryAsset),
-  ]);
-  return { documentEntry, manifest };
-};
+export const loadCraftyKernelPortabilityFixture =
+  async (): Promise<CraftyUiPackageBytes> => {
+    const [manifest, documentEntry] = await Promise.all([
+      readAsset(manifestAsset),
+      readAsset(documentEntryAsset),
+    ]);
+    return { documentEntry, manifest };
+  };

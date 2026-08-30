@@ -1,9 +1,4 @@
-import {
-  GlassEffectContainer,
-  Host,
-  Spacer,
-  VStack,
-} from "@expo/ui/swift-ui";
+import { GlassEffectContainer, Host, Spacer, VStack } from "@expo/ui/swift-ui";
 import { frame, glassEffect } from "@expo/ui/swift-ui/modifiers";
 import type { ReactNode } from "react";
 import {

@@ -152,7 +152,12 @@ export const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
   statusVerified: { color: palette.success },
-  tool: { alignItems: "center", height: 42, justifyContent: "center", width: 42 },
+  tool: {
+    alignItems: "center",
+    height: 42,
+    justifyContent: "center",
+    width: 42,
+  },
   toolbar: {
     alignItems: "center",
     borderBottomColor: palette.line,

@@ -63,7 +63,10 @@ test("physical fixtures are explicit debug-only launch diagnostics", async () =>
   assert.match(diagnostics, /kind=overflow status=PASS/u);
   assert.match(diagnostics, /kind=cancel status=PASS/u);
   assert.match(module, /OnAppEntersBackground[\s\S]*cancelAllGenerations/u);
-  assert.match(module, /cancelAllGenerations[\s\S]*agentStepHost\.cancelAll\(\)/u);
+  assert.match(
+    module,
+    /cancelAllGenerations[\s\S]*agentStepHost\.cancelAll\(\)/u,
+  );
 });
 
 test("structured step and memory curation stay disconnected from production auto-capture", async () => {

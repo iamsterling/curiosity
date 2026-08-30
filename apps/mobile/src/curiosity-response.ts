@@ -39,7 +39,9 @@ export const readCuriosityResponse = async (
     raw = await response.text();
   } catch {
     throw new CuriosityApiError(
-      response.ok ? "MOBILE_RESPONSE_INVALID" : `MOBILE_HTTP_${response.status}`,
+      response.ok
+        ? "MOBILE_RESPONSE_INVALID"
+        : `MOBILE_HTTP_${response.status}`,
       response.status,
     );
   }
@@ -51,7 +53,9 @@ export const readCuriosityResponse = async (
     body = JSON.parse(raw) as unknown;
   } catch {
     throw new CuriosityApiError(
-      response.ok ? "MOBILE_RESPONSE_INVALID" : `MOBILE_HTTP_${response.status}`,
+      response.ok
+        ? "MOBILE_RESPONSE_INVALID"
+        : `MOBILE_HTTP_${response.status}`,
       response.status,
     );
   }
@@ -68,14 +72,23 @@ export const readCuriosityResponse = async (
 
 const errorCopy: Readonly<Record<string, string>> = Object.freeze({
   ACTION_CANCELLED: "The turn was cancelled.",
-  MOBILE_CANCEL_UNAVAILABLE: "Cancellation is unavailable for this remote adapter.",
+  CODEX_DELIVERY_UNKNOWN:
+    "The frontier call was dispatched but its outcome is not known. It was not sent again.",
+  CODEX_GENERATION_FAILED:
+    "The frontier provider could not complete this turn.",
+  CODEX_GENERATION_ROUTE_UNAVAILABLE:
+    "The connected frontier model is no longer qualified. Refresh Providers.",
+  CODEX_SESSION_REQUIRED: "Reconnect the frontier provider in Providers.",
+  MOBILE_CANCEL_UNAVAILABLE:
+    "Cancellation is unavailable for this remote adapter.",
   MOBILE_RESPONSE_INVALID: "The server returned an invalid response.",
   MOBILE_RESPONSE_TOO_LARGE: "The server response was too large.",
   MOBILE_NETWORK_UNAVAILABLE: "The Curiosity server is unreachable.",
   MOBILE_REQUEST_TIMEOUT: "The Curiosity server did not respond in time.",
   MOBILE_SERVER_URL_INVALID: "The Curiosity server URL is invalid.",
   PROVIDER_ROUTE_UNAVAILABLE: "No local generation route is available yet.",
-  OPENAI_OAUTH_AUTHENTICATION_REQUIRED: "Connect the configured OpenAI account.",
+  OPENAI_OAUTH_AUTHENTICATION_REQUIRED:
+    "Connect the configured OpenAI account.",
   PROMPT_COMMAND_UNKNOWN: "That Curiosity command is not available.",
 });
 

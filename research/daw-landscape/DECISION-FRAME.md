@@ -4,9 +4,9 @@
 > procurement, release, or security-acceptance authority.
 
 **Decision:** What product, audio-engine, editing, persistence, extension, and
-plugin-hosting architecture should a new cross-platform DAW use, and which
-observed DAW patterns should be clean-room adapted, rejected, or investigated
-with prototypes?
+plug-in-hosting architecture should a native ARM64 Apple-platform DAW spanning
+macOS, iPadOS, and iPhone use, and which observed DAW patterns should be
+clean-room adapted, rejected, or investigated with prototypes?
 
 **Evidence cutoff:** 2026-08-29 UTC.
 
@@ -16,9 +16,10 @@ with prototypes?
    modular, notation, post-production, mobile, and browser DAWs?
 2. How do products expose audio/MIDI graphs, tracks, clips, buses, routing,
    automation, latency compensation, offline rendering, freeze, and recovery?
-3. Which plugin formats are hosted on each OS and edition: VST2, VST3, Audio
-   Unit v2, AUv3, AAX, CLAP, LV2, LADSPA, DSSI, JSFX, DirectX/DXi, Rack
-   Extension, and product-specific formats?
+3. Which plug-in formats fit the target surfaces: AUv3 across macOS/iPadOS/iOS,
+   AUv2/VST3 compatibility on macOS, and conditionally VST2 on macOS? Which
+   evidence and legal/provenance constraints gate VST2 and rule out other
+   non-Apple/non-mobile formats for the initial product?
 4. How are plugins discovered, scanned, validated, cached, quarantined,
    sandboxed, bridged across architectures, instantiated, rendered, automated,
    persisted, restored, and diagnosed after failure?
@@ -30,9 +31,24 @@ with prototypes?
    are documented?
 7. What can be learned from public/open implementations, and which proprietary
    internals must remain explicitly unknown?
-8. What legal, SDK, trademark, redistribution, signing, notarization, platform,
-   and certification constraints affect plugin support—especially discontinued
-   VST2 licensing, VST3 licensing, Apple Audio Units, and Avid AAX?
+8. What Apple SDK, sandbox, App Extension, signing, notarization, App Store,
+   trademark, redistribution, and entitlement constraints affect AUv2/AUv3 and
+   macOS VST3 support, especially given discontinued VST2 licensing?
+
+## Corrected target constraints
+
+- Native ARM64 only. No Intel/x86_64 product build, Rosetta host mode, or
+  third-party architecture bridge is an initial requirement.
+- Product surfaces are macOS on Apple silicon, iPadOS, and iOS on iPhone.
+- AUv3 is the only initial third-party DSP format that can span all three
+  product surfaces.
+- AUv2 and VST3 are macOS-only compatibility formats.
+- VST2 is a conditional macOS-only goal: preserve an adapter seam, but do not
+  implement or ship it until an entity-specific legal/provenance gate approves
+  the work.
+- Windows, Linux, Android, browser, AAX, CLAP, LV2, LADSPA, DSSI, JSFX,
+  DirectX/DXi, and Rack Extension remain comparison evidence, not initial target
+  platforms or host commitments.
 
 ## Depth budget
 
@@ -79,11 +95,13 @@ Later synthesis will compare products on:
 3. editing, arrangement, clips, takes, comping, and automation;
 4. MIDI, note expression, notation, controllers, and synchronization;
 5. routing, mixing, latency, rendering, and delivery;
-6. plugin-format breadth and interoperability fidelity;
+6. AUv3 cross-device fidelity plus macOS AUv2/VST3 and conditional VST2
+   compatibility;
 7. scanning, validation, isolation, crash recovery, and diagnosability;
 8. project durability, migration, portability, collaboration, and interchange;
 9. extension APIs, scripting, remotes, and ecosystem boundaries;
-10. performance, security, accessibility, platform, and licensing constraints.
+10. ARM64 Apple performance, sandboxing, accessibility, platform, and licensing
+    constraints.
 
 ## Curiosity and stop rule
 

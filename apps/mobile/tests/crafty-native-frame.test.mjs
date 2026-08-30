@@ -446,9 +446,8 @@ test("native modifier payload drives additive selection and multi-selection chro
     }),
   );
   assert.deepEqual(
-    frame.commands.find(
-      (command) => command.nodeId === "selection-outline-top",
-    ).bounds,
+    frame.commands.find((command) => command.nodeId === "selection-outline-top")
+      .bounds,
     {
       x: 62.5,
       y: 82.5,

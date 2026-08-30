@@ -69,6 +69,12 @@ export const ConversationView = ({
               <Text selectable style={styles.body}>
                 {item.text}
               </Text>
+              {item.transportReceipt ? (
+                <Text style={styles.transportReceipt}>
+                  DIRECT NATIVE · {item.transportReceipt.transportAttempts}{" "}
+                  ATTEMPT · {item.transportReceipt.maxRetries} RETRIES
+                </Text>
+              ) : null}
             </View>
           </View>
         );
@@ -117,6 +123,12 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
   },
   root: { flex: 1 },
+  transportReceipt: {
+    color: palette.textMuted,
+    fontSize: 10,
+    fontWeight: "700",
+    letterSpacing: 0.8,
+  },
   userMessage: {
     backgroundColor: palette.surface,
     borderColor: palette.glassLine,

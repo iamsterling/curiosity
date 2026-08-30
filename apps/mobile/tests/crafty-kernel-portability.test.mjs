@@ -1,10 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import {
-  createEditorKernel,
-  parseDocument,
-} from "@crafty/editor/kernel";
+import { createEditorKernel, parseDocument } from "@crafty/editor/kernel";
 import { runCraftyKernelPortabilityGate } from "../src/crafty/crafty-kernel-portability.ts";
 import { createCraftyKernelFromUiPackage } from "../src/crafty/crafty-kernel-portability.ts";
 import {
@@ -30,7 +27,9 @@ test("Expo adapter runs the Crafty transaction gate with exact web byte parity",
   ]);
 
   const mobile = runCraftyKernelPortabilityGate({ documentEntry, manifest });
-  const expectedBytes = createEditorKernel(documentFromEntry(expectedEntry)).serialize();
+  const expectedBytes = createEditorKernel(
+    documentFromEntry(expectedEntry),
+  ).serialize();
 
   assert.equal(
     documentEntry.trimEnd(),

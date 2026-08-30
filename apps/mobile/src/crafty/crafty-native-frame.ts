@@ -41,13 +41,14 @@ export const serializeCraftyNativeFrame = (
     },
     selectedId,
   );
-  const selectionBox = selectedIds.length > 0
-    ? projectSelectionBox(
-        projection.resolvedDocument,
-        projection.state.currentPageId,
-        selectedIds,
-      )
-    : undefined;
+  const selectionBox =
+    selectedIds.length > 0
+      ? projectSelectionBox(
+          projection.resolvedDocument,
+          projection.state.currentPageId,
+          selectedIds,
+        )
+      : undefined;
   const draft = projection.state.interaction.draftBounds;
   const draftStart = draft
     ? screenToWorld({ x: draft.x, y: draft.y }, projection.state.viewport)
@@ -69,9 +70,7 @@ export const serializeCraftyNativeFrame = (
       : undefined;
   return JSON.stringify(
     composeRenderFrame(frame, {
-      glassSurfaces: projectDocumentGlassSurfaces(
-        projection.resolvedDocument,
-      ),
+      glassSurfaces: projectDocumentGlassSurfaces(projection.resolvedDocument),
       pathCommands: projectDocumentDrawCommands(
         projection.resolvedDocument,
         projection.state.currentPageId,

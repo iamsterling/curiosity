@@ -6,9 +6,7 @@ const PACKAGE_DIRECTORY = "crafty-portability.ui";
 const readIfPresent = async (file: File): Promise<string | undefined> =>
   file.exists ? file.text() : undefined;
 
-export class ExpoCraftyUiPackageStore
-  implements CraftyUiPackagePublicationStore
-{
+export class ExpoCraftyUiPackageStore implements CraftyUiPackagePublicationStore {
   private readonly directory = new Directory(Paths.document, PACKAGE_DIRECTORY);
 
   public readDocumentEntry = (path: string): Promise<string | undefined> =>

@@ -51,10 +51,7 @@ export const saveCraftyUiPackage = async (
     throw new Error("DOCUMENT_REVISION_STALE");
   }
   const nextRevision = expectedRevision + 1;
-  const publication = serializeUiPackageRevision(
-    document,
-    nextRevision,
-  );
+  const publication = serializeUiPackageRevision(document, nextRevision);
   await store.writeImmutableDocument(
     publication.documentPath,
     publication.documentEntry,

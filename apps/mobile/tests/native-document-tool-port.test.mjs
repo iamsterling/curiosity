@@ -151,7 +151,11 @@ test("document tool forwards cancellation by exact call identity", async () => {
   };
   const controller = new AbortController();
   const port = createNativeDocumentTool(native, sha256, () => now);
-  const pending = port.execute({ grant: value, input, signal: controller.signal });
+  const pending = port.execute({
+    grant: value,
+    input,
+    signal: controller.signal,
+  });
   await enteredNative;
   controller.abort();
   resolve(await receipt(value));

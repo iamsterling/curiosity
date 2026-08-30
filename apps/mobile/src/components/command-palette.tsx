@@ -69,10 +69,7 @@ export const CommandPalette = ({
           onPress={close}
           style={styles.dismissTarget}
         />
-        <View
-          accessibilityViewIsModal
-          style={styles.panel}
-        >
+        <View accessibilityViewIsModal style={styles.panel}>
           <TextInput
             autoCapitalize="none"
             autoCorrect={false}

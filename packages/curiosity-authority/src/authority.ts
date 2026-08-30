@@ -24,8 +24,13 @@ import {
   type GenerationRouteReceipt,
   type GenerationSelection,
 } from "./generation-route.js";
+import {
+  validateGenerationTransportReceipt,
+  type GenerationTransportReceipt,
+} from "./generation-transport-receipt.js";
 import { InMemoryJournal } from "./in-memory-journal.js";
 import type { AuthorityJournal } from "./journal-port.js";
+import type { Awaitable } from "./workflow-domain.js";
 import {
   createMemoryCurationJob,
   decodeMemoryCurationResult,
@@ -72,6 +77,7 @@ export interface GenerationResult {
   readonly effort: string;
   readonly modelId: string;
   readonly text: string;
+  readonly transportReceipt?: GenerationTransportReceipt;
 }
 
 export interface GenerationPort {
@@ -81,6 +87,18 @@ export interface GenerationPort {
   ) => Promise<GenerationResult>;
 }
 
+export interface GenerationSelectionRequest {
+  readonly contextPlanId: string;
+  readonly purpose: "turn.answer";
+  readonly turnId: string;
+}
+
+export interface GenerationSelectionPort {
+  readonly select: (
+    request: GenerationSelectionRequest,
+  ) => Awaitable<GenerationSelection>;
+}
+
 export interface PortableAuthorityConfig {
   readonly actorId: string;
   readonly catalogDigest: string;
@@ -88,7 +106,7 @@ export interface PortableAuthorityConfig {
   readonly defaultPrimaryRole?: string;
   readonly enabledPrimaryRoles?: readonly string[];
   readonly generation?: GenerationPort;
-  readonly generationSelection?: GenerationSelection;
+  readonly generationSelection?: GenerationSelection | GenerationSelectionPort;
   readonly journal?: AuthorityJournal;
   readonly memoryPolicy?: MemoryAdmissionPolicy;
   readonly now: () => string;
@@ -159,7 +177,7 @@ export class PortableAuthority {
   readonly #defaultPrimaryRole: string;
   readonly #enabledPrimaryRoles: ReadonlySet<string>;
   readonly #generation: GenerationPort | undefined;
-  readonly #generationSelection: GenerationSelection | undefined;
+  readonly #generationSelection: GenerationSelectionPort | undefined;
   readonly #journal: AuthorityJournal;
   readonly #memoryPolicy: MemoryAdmissionPolicy | undefined;
   readonly #now: () => string;
@@ -175,7 +193,12 @@ export class PortableAuthority {
     );
     this.#generation = config.generation;
     this.#generationSelection = config.generationSelection
-      ? validateGenerationSelection(config.generationSelection)
+      ? "select" in config.generationSelection
+        ? config.generationSelection
+        : {
+            select: () =>
+              validateGenerationSelection(config.generationSelection),
+          }
       : undefined;
     if (this.#generation && !this.#generationSelection)
       throw new PortableAuthorityError("GENERATION_ROUTE_SELECTION_REQUIRED");
@@ -211,7 +234,9 @@ export class PortableAuthority {
     const messages = this.events().flatMap((event) => {
       if (event.type !== "message.appended") return [];
       const body =
-        event.body && typeof event.body === "object" && !Array.isArray(event.body)
+        event.body &&
+        typeof event.body === "object" &&
+        !Array.isArray(event.body)
           ? (event.body as Record<string, unknown>)
           : undefined;
       if (
@@ -269,8 +294,7 @@ export class PortableAuthority {
     if (typeof envelope?.jobId !== "string")
       throw new PortableAuthorityError("MEMORY_CURATION_RESULT_INVALID");
     const job = projectMemoryCurationJob(this.events(), envelope.jobId);
-    if (!job)
-      throw new PortableAuthorityError("MEMORY_CURATION_JOB_NOT_FOUND");
+    if (!job) throw new PortableAuthorityError("MEMORY_CURATION_JOB_NOT_FOUND");
     if (job.policyId !== this.#memoryPolicy.policyId)
       throw new PortableAuthorityError("MEMORY_POLICY_VERSION_CHANGED");
     const result = decodeMemoryCurationResult(value, job);
@@ -365,6 +389,9 @@ export class PortableAuthority {
         ...(existing.routeReceipt
           ? { routeReceipt: existing.routeReceipt }
           : {}),
+        ...(existing.transportReceipt
+          ? { transportReceipt: existing.transportReceipt }
+          : {}),
         text: existing.text,
         threadId: existing.threadId,
         turnId: existing.turnId,
@@ -416,10 +443,18 @@ export class PortableAuthority {
         throw new PortableAuthorityError("ACTION_CANCELLED");
       if (result.modelId !== routeReceipt.modelId)
         throw new PortableAuthorityError("GENERATION_ROUTE_MISMATCH");
+      const transportReceipt = result.transportReceipt
+        ? validateGenerationTransportReceipt(result.transportReceipt)
+        : undefined;
+      if (transportReceipt && transportReceipt.callId !== payload.turnId)
+        throw new PortableAuthorityError(
+          "GENERATION_TRANSPORT_RECEIPT_INVALID",
+        );
       const completion: ChatCompletion = {
         ...payload,
         ...result,
         routeReceipt,
+        ...(transportReceipt ? { transportReceipt } : {}),
       };
       await this.#serialize(async () => {
         active.settled = true;
@@ -500,19 +535,24 @@ export class PortableAuthority {
   ): Promise<GenerationRouteReceipt> {
     if (!this.#generationSelection)
       throw new PortableAuthorityError("PROVIDER_ROUTE_UNAVAILABLE");
+    const existing = projectGenerationRoute(this.events(), turnId);
+    if (existing) {
+      active.routeReceipt = existing;
+      return existing;
+    }
+    const selection = validateGenerationSelection(
+      await this.#generationSelection.select({
+        contextPlanId,
+        purpose: "turn.answer",
+        turnId,
+      }),
+    );
     const receipt = await createGenerationRouteReceipt(
-      this.#generationSelection,
+      selection,
       turnId,
       contextPlanId,
       this.#sha256,
     );
-    const existing = projectGenerationRoute(this.events(), turnId);
-    if (existing) {
-      if (existing.selectionId !== receipt.selectionId)
-        throw new PortableAuthorityError("GENERATION_ROUTE_SELECTION_CONFLICT");
-      active.routeReceipt = existing;
-      return existing;
-    }
     active.routeReceipt = receipt;
     await this.#serialize(async () => {
       await this.#admit(
@@ -542,13 +582,12 @@ export class PortableAuthority {
     for (const event of this.events()) {
       if (event.type !== "message.appended") continue;
       const body =
-        event.body && typeof event.body === "object" && !Array.isArray(event.body)
+        event.body &&
+        typeof event.body === "object" &&
+        !Array.isArray(event.body)
           ? (event.body as Record<string, unknown>)
           : undefined;
-      if (
-        body?.threadId === threadId &&
-        typeof body.messageId === "string"
-      )
+      if (body?.threadId === threadId && typeof body.messageId === "string")
         sourceEventIds.set(body.messageId, event.eventId);
     }
     return createContextPlan(

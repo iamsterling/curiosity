@@ -1,4 +1,5 @@
 import type { GenerationRouteReceipt } from "./generation-route.js";
+import type { GenerationTransportReceipt } from "./generation-transport-receipt.js";
 
 export interface CommandInput {
   readonly id: string;
@@ -58,6 +59,7 @@ export interface ChatMessageProjection {
   readonly messageId: string;
   readonly modelId?: string;
   readonly routeReceipt?: GenerationRouteReceipt;
+  readonly transportReceipt?: GenerationTransportReceipt;
   readonly researchReceipt?: ChatResearchReceipt;
   readonly role: "assistant" | "user";
   readonly sequence: number;

@@ -3,6 +3,16 @@ export interface NativeGenerationMessage {
   readonly role: "assistant" | "user";
 }
 
+export interface NativeProviderConnectionStatus {
+  readonly hasSession: boolean;
+  readonly lastDiagnostic?: string;
+}
+
+export interface NativeProviderCatalogResult {
+  readonly snapshotJson: string;
+  readonly source: "provider-api" | "cache";
+}
+
 export interface NativeGenerationRequest {
   readonly maximumResponseTokens: number;
   readonly messages: readonly NativeGenerationMessage[];
@@ -15,6 +25,23 @@ export interface NativeGenerationResult {
   readonly effort: string;
   readonly modelId: string;
   readonly text: string;
+}
+
+export interface NativeFrontierGenerationRequest {
+  readonly callId: string;
+  readonly maximumOutputTokens: number;
+  readonly modelId: string;
+  readonly prompt: string;
+  readonly providerId: "openai-oauth";
+}
+
+export interface NativeFrontierGenerationResult {
+  readonly callId: string;
+  readonly finishReason: string;
+  readonly maxRetries: 0;
+  readonly modelId: string;
+  readonly text: string;
+  readonly transportAttempts: 1;
 }
 
 export interface NativeAgentStepContextBlock {

@@ -1,286 +1,386 @@
-# Bounded plug-in qualification plan
+# ARM64 Apple plug-in qualification plan
 
-> Test-plan handoff only. It does not authorize third-party binary execution,
-> SDK use, VST2 implementation, security acceptance, or a compatibility claim.
-> Use only owned fixtures in disposable environments until separate authority is
-> granted.
+> Bounded test-plan handoff for Apple-silicon macOS, iPadOS, and iPhone. It does
+> not authorize arbitrary third-party binary execution, SDK/program terms,
+> security acceptance, App Store submission, or a compatibility claim. Use only
+> owned fixtures in disposable environments until separate authority is granted.
 
-## 0. Decision and scope
+## 0. Corrected scope
 
-**Decision:** determine whether each planned adapter and host execution mode is
-safe and correct enough to advance from prototype to a release claim.
+**Decision:** determine whether native ARM64 plug-in adapters and execution modes
+are correct and resilient enough to advance from prototype to a release claim.
 
-**Initial formats:** VST3, AUv2, AUv3, and CLAP. VST2 uses the same behavioral
-suite only after a provenance/legal gate confirms that the implementing entity
-may build and distribute the required host path. LV2 is a later Linux phase.
+Initial and conditional format scope:
 
-**Sufficient coverage:** every applicable format/OS/architecture cell passes
-discovery, instantiation, realtime, offline, state, migration, UI, failure, and
-project-durability gates with retained logs and deterministic artifacts.
+| Format | macOS ARM64 | iPadOS | iPhone | Plan status |
+| --- | --- | --- | --- | --- |
+| AUv3 | Required | Required | Required | First vertical slice and cross-device baseline. |
+| AUv2 | Required compatibility path | Not applicable | Not applicable | Second adapter, native ARM64 only. |
+| VST3 | Planned compatibility path | Not applicable | Not applicable | Third adapter, native ARM64 only. |
+| VST2 | Conditional compatibility path | Not applicable | Not applicable | Native ARM64 only; fixture and adapter work begin only after G0 approval. |
+| CLAP and other surveyed formats | Deferred/unsupported | Not applicable | Not applicable | Outside initial Apple product. |
 
-The gate separation is mandatory because public DAW evidence repeatedly shows
-that format acceptance, scanning, instantiation, rendering, and full host
-contract behavior differ. ([Logic C-042](dossiers/apple-logic-pro.md#21-claims-register),
+No x86_64, 32-bit, Rosetta host mode, or architecture bridge is in scope.
+Intel/32-bit fixture packages are rejection tests only and must never execute
+inside the shipping host.
+
+**Sufficient coverage:** every applicable format/OS/device cell passes
+discovery, instantiation, realtime, offline, state, migration, UI, lifecycle,
+failure, and project-durability gates with retained evidence.
+
+Gate separation is mandatory because format acceptance, scanning,
+instantiation, rendering, and full contract behavior are distinct. ([Logic
+C-042](dossiers/apple-logic-pro.md#21-claims-register),
 [REAPER C-056](dossiers/cockos-reaper.md#21-claims-register))
 
-## 1. Safety and authority boundary
+## 1. Safety, provenance, and Apple authority boundary
 
-- Run only source-controlled, locally built qualification plug-ins whose code
-  and dependencies are owned or explicitly approved.
-- Sign/notarize fixtures where the target platform requires it; retain hashes,
-  toolchain, SDK version, license/provenance record, and build logs.
-- Use disposable VMs, simulator/device test accounts, or dedicated lab hosts.
-- Never run unknown marketplace/community plug-ins in CI or on developer hosts.
-- Crash, hang, malformed-state, memory-pressure, and path-permission tests require
-  process isolation plus restorable environment snapshots.
-- Keep audio inputs muted/synthetic and block network access unless a named test
-  explicitly requires a local endpoint.
-- Do not accept click-through SDK/program terms or fetch gated materials without
+- Run only source-controlled qualification plug-ins owned by or explicitly
+  approved for the project.
+- Pin Xcode, Apple SDKs, deployment targets, AU/VST SDK revisions, compiler,
+  entitlements, signing identities, package hashes, and dependency licenses.
+- Use dedicated test signing identities, test App IDs, and disposable Mac/iPad/
+  iPhone devices or simulator environments as appropriate.
+- Do not accept gated/click-through terms or enroll in a vendor program without
   authorized human approval.
-- A passing fixture suite proves the tested host/fixture matrix only; it does not
-  certify the ecosystem or grant trademark/redistribution rights.
+- Do not run marketplace/community plug-ins in CI or on developer workstations.
+- Block network access unless a named test uses a controlled local endpoint.
+- Crash, hang, malformed-state, resource-pressure, interruption, and worker
+  tests require restorable environments and synthetic audio.
+- Do not infer App Store acceptance, notarization, sandbox safety, or ecosystem
+  compatibility from fixture success.
+- A pass applies only to the recorded app/OS/device/format matrix.
 
-## 2. Qualification fixtures
+## 2. Fixture package family
 
-Each logical fixture should be implemented in every target format from one
-behavioral specification. Format limitations must be recorded, not hidden by
-changing expected behavior.
+Implement one behavior specification with platform-format wrappers:
+
+- `ProbeAUv3`: macOS AUv3 plus iPadOS/iOS AUv3 App Extensions;
+- `ProbeAUv2`: macOS ARM64 Audio Unit v2 component;
+- `ProbeVST3`: macOS ARM64 VST3 bundle;
+- `ProbeVST2`: macOS ARM64 VST2 bundle, created only after G0 approval;
+- `ProbeIntelRejected`: Intel-only macOS metadata/package used only to verify
+  deterministic rejection; and
+- versioned v1/v2/v3 packages for identity and migration tests.
+
+Where technically possible, AUv3 builds share state semantics and DSP vectors
+across Mac/iPad/iPhone so the host—not fixture drift—is under test. Platform
+differences must be explicit in fixture metadata and expectations.
 
 ### QF-01 Deterministic effect
 
-- mono, stereo, and surround-capable main buses where the format permits;
+- mono and stereo main buses;
 - optional mono/stereo sidechain;
-- deterministic gain, polarity, channel-tag, and impulse output;
-- switchable latency: 0, 17, 257, and 2048 samples;
-- switchable tail: 0, 250 ms, and 2 s;
-- latency changes both stopped and during playback;
+- deterministic gain, polarity, channel tag, impulse, and silence output;
+- switchable latency of 0, 17, 257, and 2048 samples;
+- switchable tail of 0, 250 ms, and 2 seconds;
+- latency changes while stopped and during playback;
+- bypass, reset, suspend, render-resource allocation, and deallocation probes;
 - silence, denormal, `NaN`, infinity, and clipped-input handling; and
-- realtime and offline output signatures.
+- realtime/offline output signatures.
 
-### QF-02 Multi-output instrument
+### QF-02 Multi-output instrument and MIDI processor
 
 - timestamped note input and deterministic oscillator;
 - stereo main plus two auxiliary outputs;
-- MIDI/event output where the format supports it;
+- event/MIDI output where the exact format role supports it;
 - note ID, pressure, timbre, pitch, release velocity, sustain, and per-note
   expression probes;
-- deterministic voice stealing and all-notes-off; and
-- optional bus activation/deactivation while stopped and during playback.
+- deterministic voice stealing/all-notes-off; and
+- bus activation/deactivation before and during playback.
+
+AUv3 instrument, effect, music-effect, and MIDI-processor roles must remain
+separate fixture components. Loopy Pro documents distinct AUv3 roles and MIDI
+paths, demonstrating that a generic “AUv3 supported” result is insufficient.
+([Loopy Pro C-019, C-026](dossiers/loopy-pro.md#21-claims-register))
 
 ### QF-03 Parameter and automation probe
 
 - stable IDs independent of display order;
 - boolean, integer, enum, linear, logarithmic, bipolar, read-only, hidden, and
   non-automatable parameters;
-- UTF-8 names/units and long/duplicate display names;
+- UTF-8 names/units, long names, and duplicate display names;
 - value-to-text/text-to-value boundaries;
 - begin/change/end gestures;
-- multiple points within one audio block; and
-- version 2 with reordered parameters but preserved stable IDs.
+- multiple timestamped points within one render quantum; and
+- v2/v3 with reordered/added/removed parameters but stable surviving IDs.
 
-### QF-04 State and external-asset probe
+### QF-04 State, preset, and external-asset probe
 
-- opaque binary state with checksum and schema version;
+- opaque state with checksum and fixture schema version;
 - empty, large, truncated, corrupt, and unknown-future state;
-- relative and external asset references;
-- moved/missing/restored asset workflows;
-- preset/program/bank paths where supported; and
-- deterministic v1→v2 migration plus intentional migration failure.
+- factory/user preset paths where supported;
+- package-relative and authorized external assets;
+- moved, missing, revoked, and restored file access;
+- deterministic v1→v2 migration and intentional migration failure; and
+- identical AUv3 logical state tests across Mac, iPad, and iPhone.
 
-### QF-05 UI probe
+### QF-05 UI and accessibility probe
 
 - custom and generated parameter UI;
 - resizable, fixed-size, and no-custom-UI variants;
-- multiple windows/instances, detach/reattach, focus and keyboard capture;
-- 100/125/150/200% scaling and mixed-DPI displays;
-- screen-reader/accessibility-tree inspection;
-- UI close while processing and project close while UI is open; and
-- headless/offline render without a display server.
+- compact iPhone, regular iPad, Mac window, split view, rotation, and size change;
+- multiple instances, focus, keyboard capture, touch, pointer, and hardware
+  keyboard input;
+- Mac display scaling and mobile display scale;
+- VoiceOver/accessibility-tree inspection;
+- UI destruction while DSP continues; and
+- no-UI/offline rendering.
 
-### QF-06 Fault and adversarial probe
+### QF-06 Fault and lifecycle probe
 
-Controlled modes for crash, abort, exception, deadlock, infinite scan,
-infinite process callback, excessive CPU, memory growth, invalid bus metadata,
-malformed parameter/state data, UI hang, and delayed shutdown. Every mode must
-identify its phase so the host can attribute failure.
+Controlled modes for:
 
-### QF-07 Identity and duplicate probe
+- crash/abort during discovery, instantiate, render-resource allocation,
+  process, UI, state save/load, and shutdown;
+- deadlock, callback overrun, memory growth, invalid bus/parameter metadata, and
+  malformed state;
+- AUv3 extension termination and relaunch;
+- app background/foreground, interruption begin/end, route removal/addition,
+  sample-rate change, device loss, and media-services reset;
+- memory warning/resource pressure and simulated low-storage save; and
+- delayed or failed teardown.
 
-- two paths to the same component;
-- same display name with different stable IDs/vendors;
-- same stable ID with different architecture/version;
-- VST2/VST3/AUv2/AUv3 siblings representing one product;
-- native and translated architecture variants; and
-- removed, reinstalled, downgraded, and upgraded versions.
+Every fault mode identifies its phase so the host can attribute failure without
+parsing a generic crash message.
 
-### QF-08 Realtime-safety probe
+### QF-07 Identity and format-sibling probe
+
+- two package paths to the same macOS component;
+- same display name with different manufacturer/component IDs;
+- same ID with different version or architecture;
+- AUv2, AUv3, VST3, and conditionally VST2 siblings representing one marketed
+  product;
+- matching AUv3 component identity across Mac/iPad/iPhone;
+- removed, reinstalled, upgraded, and downgraded versions; and
+- Intel-only/invalidly signed packages that must be rejected.
+
+### QF-08 Realtime-context probe
 
 Instrumented optional allocation, lock, sleep, file, network, and logging calls
-from scan, initialize, UI, realtime, and offline contexts. This fixture detects
-host call context and containment; it does not authorize unsafe production code.
+from discovery, initialize, UI, realtime, and offline contexts. This fixture
+detects host call context and containment; it does not authorize unsafe
+production behavior.
 
-## 3. Test matrix
+## 3. Apple test matrix
 
-Run applicable combinations; record `NOT_APPLICABLE:<reason>` rather than
-silently omitting cells.
+Record `NOT_APPLICABLE:<reason>` instead of omitting cells.
 
 | Dimension | Required values |
 | --- | --- |
-| Format | VST3; AUv2; AUv3; CLAP; VST2 only after legal gate; later LV2 |
-| OS | Current minimum and latest supported Windows, macOS, Linux; iOS if scoped |
-| CPU architecture | x86_64; arm64; translated/emulated mode where officially supported; explicit rejected 32-bit fixture |
-| Host execution mode | isolated instance; grouped worker; explicit in-process compatibility mode |
-| Processing | realtime playback; monitored/live path; offline faster-than-realtime; freeze/bounce; headless |
-| Sample rate | 44.1, 48, 96, 192 kHz where supported |
-| Block size | 16, 32, 64, 128, 257, 512, 1024, and host-variable blocks |
-| Channel layout | mono; stereo; sidechain; multi-output; 5.1/7.1.4 where product scope requires |
-| Transport | stopped; preroll; play; loop boundary; seek; tempo/meter change; record; tail drain |
-| Lifecycle | first scan; cached scan; rescan; update; disable; remove; reinstall; project reopen; worker restart |
-| State | default; edited; automated; large; corrupt; missing asset; future version; downgrade |
-| UI | custom; generic; absent; mixed DPI; accessibility; headless |
+| Product surface | Apple-silicon Mac; iPad; iPhone |
+| OS | Product minimum, latest stable, and next-version beta only in a non-release lane |
+| CPU architecture | Native ARM64; Intel/x86_64 and 32-bit rejection fixtures on Mac |
+| Format | AUv3 all surfaces; AUv2/VST3 Mac; VST2 Mac only after G0 approval |
+| Device class | At least low/median/high supported resource tiers; physical mobile hardware required before release |
+| Host execution | AUv3 platform extension mode; isolated Mac worker; grouped Mac worker only if offered; no in-process compatibility mode unless separately approved |
+| Processing | Realtime playback; monitored path; offline; freeze/bounce; no-custom-UI |
+| Sample rate | 44.1, 48, 96 kHz; 192 kHz only where product/device profile supports it |
+| Render quantum | 16, 32, 64, 128, 257, 512, 1024, plus platform-variable values |
+| Layout | Mono; stereo; sidechain; multi-output; wider layouts only if product requirements include them |
+| Transport | Stop; preroll; play; loop boundary; seek; tempo/meter change; record; tail drain |
+| Lifecycle | First discovery; cached discovery; rescan/reinstall; app relaunch; extension/worker restart; project reopen |
+| Mobile lifecycle | Background/foreground; interruption; route change; sample-rate change; memory pressure; extension termination |
+| State | Default; edited; automated; large; corrupt; missing asset; future version; downgrade |
+| UI | Custom; generic; absent; iPhone compact; iPad split/regular; Mac scaling; VoiceOver |
+| Project transfer | Mac→iPad→iPhone→Mac with AUv3; Mac-only AUv2/VST3 and approved VST2 placeholder/fallback roundtrip |
 
 ## 4. Qualification gates
 
-### G0 — Provenance and legal readiness
+### G0 — Provenance, SDK, signing, and distribution readiness
 
-**Pass only if:** source, SDK/toolchain, licenses, hashes, signing identity,
-trademark usage, and distribution authority have an approved record. VST2 stops
-here unless entity-specific rights are resolved. Public dossier evidence warns
-that current hosts may retain VST2 while new distribution/header rights remain
-restricted. ([Cubase C-026–C-027](dossiers/steinberg-cubase.md#21-claims-register),
+**Pass only if:** source, dependencies, Apple/VST SDKs, licenses, deployment
+targets, bundle/component identifiers, entitlements, signing, notarization, App
+Extension packaging, and intended distribution path have an approved record.
+
+VST2 stops at this gate unless authorized reviewers record that this entity may
+build and distribute the native ARM64 host path. Current hosts may retain VST2,
+but the corpus records restricted onboarding/header/distribution conditions and
+weak fit with Apple mobile. ([Cubase C-026–C-027](dossiers/steinberg-cubase.md#21-claims-register),
 [Ardour C-024](dossiers/ardour.md#21-claims-register),
 [LMMS C-033](dossiers/lmms.md#21-claims-register))
 
-### G1 — Discovery and scan safety
+### G1 — Discovery and architecture rejection
 
-**Pass only if:** paths, package discovery, duplicate identity, architecture,
-cache invalidation, rescan, timeout, cancellation, logs, and blacklist states
-are deterministic. Scan crash/hang/malformed fixtures cannot crash or block the
-DAW. Recovery names the exact component and reason. Existing hosts demonstrate
-the need for external scanners and visible suppression/recovery. ([Ableton C-016–C-017](dossiers/ableton-live.md#21-claims-register),
-[Studio One C-016–C-018](dossiers/presonus-studio-one.md#21-claims-register),
-[Ardour C-012](dossiers/ardour.md#21-claims-register))
+**macOS pass:** AUv2/AUv3/VST3 and any approved VST2 discovery, duplicate
+identity, cache invalidation, rescan, timeout, cancellation, logs, signing
+result, and native ARM64 architecture are deterministic. Scan crash/hang cannot
+crash or block the DAW. Intel/32-bit fixtures are rejected without Rosetta.
 
-### G2 — Instantiation and lifecycle
+**iPad/iPhone pass:** installed AUv3 extensions are discovered through platform
+APIs with stable identity and enable/disable status. No arbitrary filesystem scan
+or desktop format appears.
 
-**Pass only if:** role, buses, sample rate, block policy, activation, UI, and
-shutdown succeed in every applicable mode. Unsupported architectures/layouts
-fail with a stable diagnostic and do not mutate the project.
+Mature hosts document external scan helpers and visible recovery, but those
+behaviors do not prove this implementation. ([Studio One C-016–C-018](dossiers/presonus-studio-one.md#21-claims-register),
+[Ardour C-012](dossiers/ardour.md#21-claims-register),
+[Logic C-015](dossiers/apple-logic-pro.md#21-claims-register))
 
-### G3 — Realtime processing
+### G2 — Instantiate and lifecycle
 
-**Pass only if:** audio/event output matches the deterministic oracle; no callback
-deadline, allocation/lock policy, channel, event-order, sidechain, multi-output,
-bypass, suspend, or dynamic-I/O check fails. Worker crash/hang is contained and
-the engine continues with defined silence/bypass behavior.
+**Pass only if:** role, buses, sample rate, render quantum, resource allocation,
+UI, state initialization, and teardown work in every applicable cell.
+Unsupported roles/layouts fail with a stable diagnostic and do not mutate the
+project.
 
-### G4 — Timing and offline fidelity
+### G3 — Realtime audio, events, and containment
 
-**Pass only if:** latency impulses align sample-for-sample across graph paths and
-after dynamic latency changes; automation/event offsets meet the declared
-tolerance; tails are neither truncated nor resurrected; offline/freeze/headless
-results match the declared realtime-equivalence policy. These details remain
-unknown even in many mature hosts and cannot be inferred from a format badge.
-([Ableton C-025](dossiers/ableton-live.md#21-claims-register),
-[Logic C-040](dossiers/apple-logic-pro.md#21-claims-register),
-[Studio One C-022](dossiers/presonus-studio-one.md#21-claims-register))
+**Pass only if:** deterministic audio/event output, channel maps, sidechains,
+multi-output, bypass, suspend, parameter timestamps, and dynamic changes meet
+the declared contract. Worker/extension crash or hang must not terminate the
+DAW or delete the graph node. Recovery is defined silence, bypass, restart, or
+render fallback—not undefined stale audio.
 
-### G5 — State, presets, migration, and project durability
+Logic documents containment of AU failures on Apple silicon while leaving exact
+topology unknown; that is the target outcome, not proof for this host.
+([Logic C-017–C-018, C-040](dossiers/apple-logic-pro.md#21-claims-register))
+
+### G4 — Timing, tails, and offline fidelity
+
+**Pass only if:** latency impulses align across tracks, buses, sends, sidechains,
+bypass, and dynamic latency changes; automation/event offsets meet declared
+tolerance; tails are neither truncated nor resurrected; and offline/freeze
+results meet the declared equivalence policy. Test every supported render
+quantum and sample rate. ([Ableton C-025](dossiers/ableton-live.md#21-claims-register),
+[Logic C-023–C-024, C-040](dossiers/apple-logic-pro.md#21-claims-register))
+
+### G5 — State, migration, and format siblings
 
 **Pass only if:** save/open reproduces sound, parameters, automation, I/O,
-sidechain, presets, assets, and worker mode. Remove the plug-in, open, edit,
-resave, restore it, and recover the original behavior. State corruption or a
-future version must preserve the last valid project snapshot. Ardour and Reason
-document durable placeholders; products that skip unavailable nodes demonstrate
-the failure risk. ([Ardour C-018–C-019](dossiers/ardour.md#21-claims-register),
+sidechain, presets, assets, and execution mode.
+
+- AUv3 state must round-trip independently on each surface.
+- Cross-device AUv3 state transfer must pass only for an explicitly qualified
+  component/version family.
+- Cross-format AUv2/AUv3/VST3/VST2 sibling pairs are not migrations by default.
+- A validated migration requires stable mapping, version policy, audible/state
+  fixtures, rollback, and explicit user action.
+
+### G6 — Missing dependency and project portability
+
+Test these mandatory scenarios:
+
+1. Create an AUv3 project on Mac; open/edit/save on iPad and iPhone; return to
+   Mac and reproduce state/automation/routes.
+2. Create a Mac AUv2 project; transfer to iPad/iPhone; play fallback, edit
+   unrelated material, resave; return to Mac and restore the live AUv2 instance.
+3. Repeat scenario 2 for VST3.
+4. If G0 approved VST2, repeat scenario 2 for VST2.
+5. Remove an AUv3 from one device; open/resave/reinstall; restore state.
+6. Revoke/move external assets; relink without changing component identity.
+7. Upgrade and downgrade fixture versions across devices.
+
+**Pass only if:** unavailable plug-ins preserve complete placeholders and a
+staleness-marked render fallback. Ardour and Reason document placeholder
+preservation; Logic documents the cross-device incompatibility problem but not
+universal state survival. ([Ardour C-018–C-019](dossiers/ardour.md#21-claims-register),
 [Reason C-020](dossiers/reason-studios-reason.md#21-claims-register),
-[Traverso C-022](dossiers/traverso-daw.md#21-claims-register))
+[Logic C-028–C-029](dossiers/apple-logic-pro.md#21-claims-register))
 
-### G6 — UI, accessibility, and diagnostics
+### G7 — UI and accessibility
 
-**Pass only if:** custom UI, generic UI, focus, scaling, multiple windows,
-headless operation, and teardown pass. The generated host UI must expose all
-public parameters through keyboard and platform accessibility APIs. Logs must
-correlate scan, worker, state, UI, latency, and crash events without leaking
-project content or credentials.
+**Pass only if:** custom and generic UI, focus, touch/pointer/keyboard input,
+size changes, multiple instances, VoiceOver, teardown, and no-UI rendering pass
+for every applicable surface. The generated host UI must expose every public
+parameter through Apple accessibility APIs even when the custom UI does not.
 
-### G7 — Recovery and soak
+### G8 — Mobile interruption and resource recovery
 
-**Pass only if:** repeated scan/open/play/save/close cycles, worker restarts,
-sample-rate/device changes, sleep/wake, memory pressure, and long sessions show
+**Pass only if:** interruption, route/sample-rate changes, app transitions,
+AUv3 extension termination, memory pressure, device loss, and low-storage save
+produce a valid checkpoint and deterministic resume/fallback. Project state must
+remain recoverable after forced app termination at each lifecycle boundary.
+
+### G9 — Soak and atomic project recovery
+
+**Pass only if:** repeated discover/open/play/record/save/close cycles, worker or
+extension restarts, device changes, screen transitions, and long sessions show
 no unbounded resource growth, stale cache, state loss, or nondeterministic audio.
-Fault injection leaves the previous or new project snapshot valid.
+Fault injection during save leaves a valid old or new package snapshot.
 
 ## 5. Binary acceptance checks
 
-For each release-claimed format/platform cell:
+For every release-claimed surface/format cell:
 
-- [ ] Main application survives every scan fault and attributes the component.
-- [ ] Unsupported architecture/package is rejected with a stable remediation.
-- [ ] Instrument/effect roles, buses, sidechains, and multi-output match metadata.
-- [ ] Audio and event timestamps pass at every required block size/sample rate.
-- [ ] PDC passes through tracks, buses, sends, sidechains, bypass, and latency changes.
+- [ ] All executing code is native ARM64; Intel/32-bit packages are rejected.
+- [ ] Main app survives discovery/scan faults and names the component/phase.
+- [ ] AU role, buses, sidechains, and multi-output match declared metadata.
+- [ ] Audio, MIDI/events, and automation timestamps pass required quantums/rates.
+- [ ] PDC passes through tracks, buses, sends, sidechains, bypass, and changes.
 - [ ] Tail, stop, seek, loop, freeze, and offline behavior match policy.
 - [ ] Custom, generic, inaccessible, and absent UI paths remain operable.
-- [ ] Save/open reproduces sound, state, automation, routes, and assets.
-- [ ] Missing/resave/restore preserves the complete dependency placeholder.
-- [ ] Upgrade/downgrade and parameter reorder use stable identity and migration.
-- [ ] Worker crash/hang is contained; restart/bypass is deterministic.
-- [ ] Logs, crash artifacts, and support bundle identify phase and component.
-- [ ] Legal/provenance/signing records are pinned to the shipped adapter.
+- [ ] VoiceOver and input-modality checks pass for host-generated UI.
+- [ ] Save/open reproduces state, sound, automation, routes, presets, and assets.
+- [ ] Missing/resave/restore preserves the dependency placeholder.
+- [ ] Mac-only plug-ins survive mobile roundtrip through fallback/placeholder.
+- [ ] AUv3 cross-device state passes only for explicitly qualified identities.
+- [ ] No automatic AUv2/AUv3/VST3/VST2 substitution occurs without a migration.
+- [ ] Extension/worker crash or hang is contained and recovery is deterministic.
+- [ ] Mobile interruption/resource lifecycle tests leave a recoverable project.
+- [ ] Logs/support bundles identify OS, device, format, identity, and fault phase.
+- [ ] SDK/license/signing/entitlement/distribution records match shipped artifacts.
 
-Any unchecked item blocks a broad “supports <format>” claim. A narrower claim
-may name the exact passed gates, version, OS, architecture, and limitations.
+Any unchecked item blocks a broad “supports <format>” claim. A narrower release
+claim must name the exact surface, OS, architecture, format, gates, and limits.
 
-## 6. Required evidence artifacts
+## 6. Evidence artifacts
 
-Each run stores:
+Each run retains:
 
-- host, OS, CPU, format SDK, compiler, fixture, and adapter revisions;
-- plug-in package hash/signature and provenance record;
-- scan database transition and normalized identity record;
-- process/worker topology and crash/hang attribution;
-- audio files plus deterministic hashes or numeric tolerances;
-- timestamped event/automation traces;
-- latency/tail measurements and graph-alignment report;
-- project snapshots before/after save, missing dependency, migration, and fault;
-- UI screenshots/accessibility snapshots where authorized;
-- resource/soak metrics; and
-- machine-readable gate result with human-readable failure diagnostics.
+- app, engine, adapter, fixture, Xcode/SDK, OS, device, and CPU revisions;
+- plug-in bundle hash, signature, entitlements, identifiers, architecture, and
+  provenance record;
+- discovery/cache transition and normalized identity decision;
+- process/extension topology and fault attribution;
+- audio files plus deterministic hash or numeric comparison;
+- timestamped MIDI/event/automation traces;
+- latency/tail/critical-path report;
+- lifecycle sequence and checkpoint/restart result;
+- project packages before/after save, transfer, missing dependency, migration,
+  and injected fault;
+- authorized UI/accessibility snapshots;
+- CPU, memory, thermal, disk, and soak metrics; and
+- machine-readable gate results plus human-readable diagnostics.
 
-Do not compare opaque state bytes as the sole correctness oracle; compare
-declared migration result and reproduced behavior.
+Do not use opaque state-byte equality as the sole oracle; compare declared
+migration status and reproduced behavior.
 
-## 7. Phased execution and stop rule
+## 7. Phased execution
 
-1. **Harness:** implement the format-neutral oracle, artifact schema, project
-   round-trip, process monitor, and fault controller.
-2. **VST3 vertical slice:** QF-01/QF-03/QF-04/QF-06 through G0–G7 on one OS,
-   then expand OS/architecture.
-3. **AUv2/AUv3 slice:** reuse the same oracle but keep discovery, process, state,
-   and UI results separate by AU generation and OS.
-4. **CLAP slice:** qualify portable adapter and polyphonic modulation/event paths.
-5. **VST2 decision:** proceed only after G0; otherwise retain an adapter seam and
-   a documented unsupported result.
-6. **LV2 decision:** run only if Linux/open-ecosystem requirements justify it.
+1. **Harness foundation:** format-neutral oracle, artifact schema, atomic project
+   roundtrip, lifecycle controller, audio/event comparator, and fault controller.
+2. **AUv3 on Mac:** QF-01/QF-03/QF-04/QF-06 through G0–G9.
+3. **AUv3 on iPad:** repeat contract plus touch, interruption, route, memory, and
+   extension lifecycle.
+4. **AUv3 on iPhone:** compact UI and constrained-device matrix.
+5. **Cross-device AUv3:** Mac→iPad→iPhone→Mac project/state roundtrip.
+6. **AUv2 on Mac:** native ARM64 scanner/worker, state/UI, placeholder, and
+   mobile fallback roundtrip.
+7. **VST3 on Mac:** native ARM64 scanner/worker and the same Mac/mobile project
+   fallback gates.
+8. **VST2 gate and optional slice:** run G0 first; if approved, build only a
+   native ARM64 macOS fixture/adapter and apply the Mac plus mobile-placeholder
+   gates. If denied, retain the placeholder identity and unsupported diagnostic.
+9. **Ecosystem decision:** only after owned fixtures pass may a separately
+   authorized, bounded third-party compatibility corpus be proposed.
 
-**Stop a format phase** when all applicable cells pass, a blocking defect is
-reproduced with retained evidence, or authority/provenance is absent. Do not
-broaden into arbitrary third-party compatibility testing until owned fixtures
-pass and a separate ecosystem-qualification budget is approved.
+Rosetta is not a dormant phase in this plan. VST2 is conditional on the explicit
+G0 decision above and cannot silently enter implementation.
 
-## 8. Curiosity decisions
+## 8. Curiosity decisions and stop rule
 
-- `CURIOSITY_NO_GO` — random commercial/free plug-in census before fixture gates;
-  failures would be unsafe, anecdotal, and hard to attribute.
-- `CURIOSITY_NO_GO` — reverse engineering proprietary state or project schemas;
-  use behavior and public APIs only.
-- `CURIOSITY_NO_GO` — infer AUv2/AUv3 or VST2/VST3 equivalence from branding;
-  qualify each adapter separately.
-- `CURIOSITY_NO_GO` — claim sandboxing from a process name alone; verify crash,
-  hang, memory, state replay, and IPC behavior.
-- `CURIOSITY_NO_GO` — pursue VST2 implementation before the legal/provenance gate.
+- `CURIOSITY_NO_GO` — Intel/Rosetta bridge; outside native ARM64 product scope.
+- `CURIOSITY_NO_GO` — VST2 fixture/adapter work before G0; no approved
+  legal/provenance decision.
+- `CURIOSITY_NO_GO` — random commercial/free plug-in census before owned fixture
+  gates; unsafe, anecdotal, and hard to attribute.
+- `CURIOSITY_NO_GO` — infer AUv2/AUv3 or AU/VST3 equivalence from branding.
+- `CURIOSITY_NO_GO` — claim containment from process names; verify crash, hang,
+  state replay, memory, and audio continuity.
+- `CURIOSITY_NO_GO` — reverse engineer proprietary state/project schemas.
+- `CURIOSITY_NO_GO` — Windows/Linux/Android/browser matrix expansion.
 
-**Stop decision:** this plan is sufficiently bounded when its fixtures, matrix,
-gates, artifacts, and authority limits are accepted. The next step is the VST3
-vertical-slice prototype, not additional broad documentary research.
+**Stop each format phase** when all applicable cells pass, a blocking defect is
+reproduced with retained evidence, or authority/provenance is absent. The next
+action is the AUv3-on-Mac vertical slice, followed by iPad and iPhone—not more
+broad documentary research.

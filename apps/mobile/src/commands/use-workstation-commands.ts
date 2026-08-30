@@ -20,6 +20,7 @@ export const useWorkstationCommands = (
     readonly showCraft: () => void;
     readonly showIssues: () => void;
     readonly showMemory: () => void;
+    readonly showProviders: () => void;
   },
 ) => {
   const [paletteVisible, setPaletteVisible] = useState(false);
@@ -56,6 +57,9 @@ export const useWorkstationCommands = (
         case workstationCommandIds.showMemory:
           actions.showMemory();
           return;
+        case workstationCommandIds.showProviders:
+          actions.showProviders();
+          return;
         case workstationCommandIds.showAudio:
           actions.showAudio();
           return;
@@ -72,9 +76,8 @@ export const useWorkstationCommands = (
 
   useEffect(() => {
     if (!CuriosityCommands) return;
-    const subscription = CuriosityCommands.addListener(
-      "onCommand",
-      ({ id }) => execute(id),
+    const subscription = CuriosityCommands.addListener("onCommand", ({ id }) =>
+      execute(id),
     );
     return () => subscription.remove();
   }, [execute]);

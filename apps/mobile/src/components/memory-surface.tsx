@@ -96,23 +96,27 @@ export const MemorySurface = () => {
       </View>
 
       <View style={styles.tabs}>
-        {(["Decision impact", "Evidence", "Projection"] as const).map((item) => (
-          <Pressable
-            accessibilityRole="tab"
-            accessibilityState={{ selected: tab === item }}
-            key={item}
-            onPress={() => setTab(item)}
-            style={({ pressed }) => [
-              styles.tab,
-              tab === item && styles.tabSelected,
-              pressed && styles.pressed,
-            ]}
-          >
-            <Text style={[styles.tabText, tab === item && styles.tabTextSelected]}>
-              {item}
-            </Text>
-          </Pressable>
-        ))}
+        {(["Decision impact", "Evidence", "Projection"] as const).map(
+          (item) => (
+            <Pressable
+              accessibilityRole="tab"
+              accessibilityState={{ selected: tab === item }}
+              key={item}
+              onPress={() => setTab(item)}
+              style={({ pressed }) => [
+                styles.tab,
+                tab === item && styles.tabSelected,
+                pressed && styles.pressed,
+              ]}
+            >
+              <Text
+                style={[styles.tabText, tab === item && styles.tabTextSelected]}
+              >
+                {item}
+              </Text>
+            </Pressable>
+          ),
+        )}
       </View>
 
       <View style={styles.body}>
@@ -165,7 +169,10 @@ export const MemorySurface = () => {
 
               <Relationship label="supports" style={styles.edgeOne} />
               <Relationship label="contradicts" style={styles.edgeTwo} />
-              <Relationship label="decision_based_on" style={styles.edgeThree} />
+              <Relationship
+                label="decision_based_on"
+                style={styles.edgeThree}
+              />
               <Relationship label="retrieved" style={styles.edgeFour} />
 
               <MemoryNode
@@ -217,7 +224,9 @@ export const MemorySurface = () => {
               <View style={styles.projectionNode}>
                 <Text style={styles.nodeKind}>PROJECTION</Text>
                 <Text style={styles.nodeLabel}>hybrid recall hit</Text>
-                <Text style={styles.projectionNodeState}>REBUILDABLE · rank 2</Text>
+                <Text style={styles.projectionNodeState}>
+                  REBUILDABLE · rank 2
+                </Text>
               </View>
             </View>
           </ScrollView>
@@ -277,10 +286,12 @@ export const MemorySurface = () => {
             <View style={styles.rule} />
             <Text style={styles.rowLabel}>EVIDENCE SET</Text>
             <Text style={styles.hash}>set:91f0…a72c</Text>
-            <Text style={styles.sourceCount}>2 exact spans · 1 contradiction</Text>
+            <Text style={styles.sourceCount}>
+              2 exact spans · 1 contradiction
+            </Text>
             <Text style={styles.inspectorNote}>
-              Selection is a visual model only. No memory record is active in the
-              current runtime.
+              Selection is a visual model only. No memory record is active in
+              the current runtime.
             </Text>
           </View>
         ) : null}
@@ -294,7 +305,15 @@ const styles = StyleSheet.create({
   beliefNode: { borderRadius: 52 },
   beliefPosition: { left: 270, position: "absolute", top: 100 },
   body: { flex: 1, flexDirection: "row" },
-  canonicalLabel: { color: palette.textMuted, fontSize: 7, fontWeight: "800", left: 14, letterSpacing: 1, position: "absolute", top: 8 },
+  canonicalLabel: {
+    color: palette.textMuted,
+    fontSize: 7,
+    fontWeight: "800",
+    left: 14,
+    letterSpacing: 1,
+    position: "absolute",
+    top: 8,
+  },
   captureNode: { left: 32, position: "absolute", top: 70 },
   content: { padding: 18, paddingBottom: 30 },
   counterNode: { left: 32, position: "absolute", top: 220 },
@@ -302,68 +321,322 @@ const styles = StyleSheet.create({
   decisionPosition: { left: 500, position: "absolute", top: 96 },
   designStatus: { alignItems: "center", flexDirection: "row", gap: 8 },
   designStatusDetail: { color: palette.textMuted, fontSize: 9, marginTop: 2 },
-  designStatusLabel: { color: palette.warning, fontSize: 8, fontWeight: "800", letterSpacing: 1 },
+  designStatusLabel: {
+    color: palette.warning,
+    fontSize: 8,
+    fontWeight: "800",
+    letterSpacing: 1,
+  },
   disputed: { color: palette.danger },
   disputeNode: { left: 270, position: "absolute", top: 244 },
-  edgeFour: { left: 606, top: 261, transform: [{ rotate: "55deg" }], width: 104 },
-  edgeOne: { left: 174, top: 135, transform: [{ rotate: "-2deg" }], width: 112 },
-  edgeThree: { left: 410, top: 137, transform: [{ rotate: "-1deg" }], width: 105 },
+  edgeFour: {
+    left: 606,
+    top: 261,
+    transform: [{ rotate: "55deg" }],
+    width: 104,
+  },
+  edgeOne: {
+    left: 174,
+    top: 135,
+    transform: [{ rotate: "-2deg" }],
+    width: 112,
+  },
+  edgeThree: {
+    left: 410,
+    top: 137,
+    transform: [{ rotate: "-1deg" }],
+    width: 105,
+  },
   edgeTwo: { left: 168, top: 260, transform: [{ rotate: "2deg" }], width: 112 },
-  eyebrow: { color: palette.textMuted, fontSize: 8, fontWeight: "800", letterSpacing: 1.2 },
+  eyebrow: {
+    color: palette.textMuted,
+    fontSize: 8,
+    fontWeight: "800",
+    letterSpacing: 1.2,
+  },
   evidenceNode: { borderRadius: 4 },
-  focusRail: { backgroundColor: palette.focus, height: 34, left: 0, position: "absolute", top: 20, width: 2 },
-  graph: { backgroundColor: palette.surfaceQuiet, borderColor: palette.line, borderWidth: StyleSheet.hairlineWidth, height: 390, position: "relative", width: 760 },
-  graphEyebrow: { color: palette.textMuted, fontSize: 8, fontWeight: "800", letterSpacing: 1.1 },
-  graphHeader: { alignItems: "flex-end", flexDirection: "row", justifyContent: "space-between", marginBottom: 12, marginTop: 24 },
+  focusRail: {
+    backgroundColor: palette.focus,
+    height: 34,
+    left: 0,
+    position: "absolute",
+    top: 20,
+    width: 2,
+  },
+  graph: {
+    backgroundColor: palette.surfaceQuiet,
+    borderColor: palette.line,
+    borderWidth: StyleSheet.hairlineWidth,
+    height: 390,
+    position: "relative",
+    width: 760,
+  },
+  graphEyebrow: {
+    color: palette.textMuted,
+    fontSize: 8,
+    fontWeight: "800",
+    letterSpacing: 1.1,
+  },
+  graphHeader: {
+    alignItems: "flex-end",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 12,
+    marginTop: 24,
+  },
   graphSnapshot: { color: palette.textMuted, fontSize: 8, letterSpacing: 0.8 },
-  graphTitle: { color: palette.textPrimary, fontSize: 17, fontWeight: "700", marginTop: 4 },
-  hash: { color: palette.textPrimary, fontFamily: "Menlo", fontSize: 10, marginTop: 10 },
-  header: { alignItems: "center", borderBottomColor: palette.line, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: "row", justifyContent: "space-between", minHeight: 68, paddingHorizontal: 18 },
+  graphTitle: {
+    color: palette.textPrimary,
+    fontSize: 17,
+    fontWeight: "700",
+    marginTop: 4,
+  },
+  hash: {
+    color: palette.textPrimary,
+    fontFamily: "Menlo",
+    fontSize: 10,
+    marginTop: 10,
+  },
+  header: {
+    alignItems: "center",
+    borderBottomColor: palette.line,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    minHeight: 68,
+    paddingHorizontal: 18,
+  },
   impactActive: { color: palette.focus, fontWeight: "800" },
-  impactLabel: { color: palette.textMuted, fontSize: 8, fontWeight: "800", letterSpacing: 1, marginRight: 12 },
+  impactLabel: {
+    color: palette.textMuted,
+    fontSize: 8,
+    fontWeight: "800",
+    letterSpacing: 1,
+    marginRight: 12,
+  },
   impactRule: { backgroundColor: palette.line, height: 1, minWidth: 15 },
   impactStep: { color: palette.textSecondary, fontSize: 9 },
-  impactStrip: { alignItems: "center", borderBottomColor: palette.line, borderBottomWidth: StyleSheet.hairlineWidth, borderTopColor: palette.line, borderTopWidth: StyleSheet.hairlineWidth, flexDirection: "row", gap: 8, marginTop: 16, minHeight: 42, paddingHorizontal: 12 },
-  inspector: { backgroundColor: palette.surfaceQuiet, borderLeftColor: palette.line, borderLeftWidth: StyleSheet.hairlineWidth, padding: 20, width: 258 },
-  inspectorEyebrow: { color: palette.focus, fontSize: 8, fontWeight: "800", letterSpacing: 1 },
-  inspectorNote: { color: palette.warning, fontSize: 9, lineHeight: 14, marginTop: 22 },
-  inspectorRow: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", marginBottom: 12 },
-  inspectorTitle: { color: palette.textPrimary, fontSize: 16, fontWeight: "700", lineHeight: 22, marginTop: 8 },
-  legendText: { color: palette.textSecondary, fontSize: 8, fontWeight: "700", letterSpacing: 0.8 },
-  node: { backgroundColor: palette.surface, borderColor: palette.line, borderWidth: 1, height: 102, justifyContent: "center", padding: 12, width: 150, zIndex: 2 },
-  nodeKind: { color: palette.textMuted, fontSize: 7, fontWeight: "800", letterSpacing: 1 },
-  nodeLabel: { color: palette.textPrimary, fontSize: 11, fontWeight: "700", lineHeight: 15, marginTop: 6 },
+  impactStrip: {
+    alignItems: "center",
+    borderBottomColor: palette.line,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderTopColor: palette.line,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    gap: 8,
+    marginTop: 16,
+    minHeight: 42,
+    paddingHorizontal: 12,
+  },
+  inspector: {
+    backgroundColor: palette.surfaceQuiet,
+    borderLeftColor: palette.line,
+    borderLeftWidth: StyleSheet.hairlineWidth,
+    padding: 20,
+    width: 258,
+  },
+  inspectorEyebrow: {
+    color: palette.focus,
+    fontSize: 8,
+    fontWeight: "800",
+    letterSpacing: 1,
+  },
+  inspectorNote: {
+    color: palette.warning,
+    fontSize: 9,
+    lineHeight: 14,
+    marginTop: 22,
+  },
+  inspectorRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  inspectorTitle: {
+    color: palette.textPrimary,
+    fontSize: 16,
+    fontWeight: "700",
+    lineHeight: 22,
+    marginTop: 8,
+  },
+  legendText: {
+    color: palette.textSecondary,
+    fontSize: 8,
+    fontWeight: "700",
+    letterSpacing: 0.8,
+  },
+  node: {
+    backgroundColor: palette.surface,
+    borderColor: palette.line,
+    borderWidth: 1,
+    height: 102,
+    justifyContent: "center",
+    padding: 12,
+    width: 150,
+    zIndex: 2,
+  },
+  nodeKind: {
+    color: palette.textMuted,
+    fontSize: 7,
+    fontWeight: "800",
+    letterSpacing: 1,
+  },
+  nodeLabel: {
+    color: palette.textPrimary,
+    fontSize: 11,
+    fontWeight: "700",
+    lineHeight: 15,
+    marginTop: 6,
+  },
   nodeSelected: { borderColor: palette.focus, borderWidth: 2 },
-  nodeState: { color: palette.success, fontSize: 7, fontWeight: "800", letterSpacing: 0.6, marginTop: 7 },
+  nodeState: {
+    color: palette.success,
+    fontSize: 7,
+    fontWeight: "800",
+    letterSpacing: 0.6,
+    marginTop: 7,
+  },
   pipeline: { alignItems: "center", flexDirection: "row" },
-  pipelineCaption: { color: palette.textMuted, fontSize: 9, marginLeft: "auto" },
-  pipelineLegend: { alignItems: "center", borderBottomColor: palette.line, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: "row", gap: 13, minHeight: 34 },
-  planeBoundary: { backgroundColor: palette.line, bottom: 112, height: StyleSheet.hairlineWidth, left: 0, position: "absolute", right: 0 },
+  pipelineCaption: {
+    color: palette.textMuted,
+    fontSize: 9,
+    marginLeft: "auto",
+  },
+  pipelineLegend: {
+    alignItems: "center",
+    borderBottomColor: palette.line,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    gap: 13,
+    minHeight: 34,
+  },
+  planeBoundary: {
+    backgroundColor: palette.line,
+    bottom: 112,
+    height: StyleSheet.hairlineWidth,
+    left: 0,
+    position: "absolute",
+    right: 0,
+  },
   pressed: { opacity: 0.6 },
-  projectionLabel: { bottom: 95, color: palette.textMuted, fontSize: 7, fontWeight: "800", left: 14, letterSpacing: 1, position: "absolute" },
-  projectionNode: { backgroundColor: palette.focusQuiet, borderColor: palette.focus, borderRadius: 52, borderStyle: "dashed", borderWidth: 1, bottom: 16, height: 82, justifyContent: "center", left: 606, padding: 12, position: "absolute", width: 132 },
-  projectionNodeState: { color: palette.focus, fontSize: 7, fontWeight: "800", letterSpacing: 0.5, marginTop: 6 },
-  relationship: { borderTopColor: palette.line, borderTopWidth: 1, height: 20, position: "absolute", zIndex: 1 },
-  relationshipLabel: { backgroundColor: palette.surfaceQuiet, color: palette.textMuted, fontSize: 7, left: 25, paddingHorizontal: 4, position: "absolute", top: -9 },
+  projectionLabel: {
+    bottom: 95,
+    color: palette.textMuted,
+    fontSize: 7,
+    fontWeight: "800",
+    left: 14,
+    letterSpacing: 1,
+    position: "absolute",
+  },
+  projectionNode: {
+    backgroundColor: palette.focusQuiet,
+    borderColor: palette.focus,
+    borderRadius: 52,
+    borderStyle: "dashed",
+    borderWidth: 1,
+    bottom: 16,
+    height: 82,
+    justifyContent: "center",
+    left: 606,
+    padding: 12,
+    position: "absolute",
+    width: 132,
+  },
+  projectionNodeState: {
+    color: palette.focus,
+    fontSize: 7,
+    fontWeight: "800",
+    letterSpacing: 0.5,
+    marginTop: 6,
+  },
+  relationship: {
+    borderTopColor: palette.line,
+    borderTopWidth: 1,
+    height: 20,
+    position: "absolute",
+    zIndex: 1,
+  },
+  relationshipLabel: {
+    backgroundColor: palette.surfaceQuiet,
+    color: palette.textMuted,
+    fontSize: 7,
+    left: 25,
+    paddingHorizontal: 4,
+    position: "absolute",
+    top: -9,
+  },
   root: { backgroundColor: palette.canvas, flex: 1 },
-  rowLabel: { color: palette.textMuted, fontSize: 8, fontWeight: "800", letterSpacing: 0.9 },
+  rowLabel: {
+    color: palette.textMuted,
+    fontSize: 8,
+    fontWeight: "800",
+    letterSpacing: 0.9,
+  },
   rowValue: { color: palette.textPrimary, fontSize: 10, fontWeight: "600" },
-  rule: { backgroundColor: palette.line, height: StyleSheet.hairlineWidth, marginVertical: 17 },
+  rule: {
+    backgroundColor: palette.line,
+    height: StyleSheet.hairlineWidth,
+    marginVertical: 17,
+  },
   scroll: { flex: 1 },
   sourceCount: { color: palette.textMuted, fontSize: 9, marginTop: 6 },
   stage: { minWidth: 88, paddingVertical: 12 },
-  stageConnector: { backgroundColor: palette.line, height: 1, marginHorizontal: 6, width: 18 },
-  stageCount: { color: palette.textPrimary, fontSize: 12, fontVariant: ["tabular-nums"], fontWeight: "700", marginTop: 5 },
+  stageConnector: {
+    backgroundColor: palette.line,
+    height: 1,
+    marginHorizontal: 6,
+    width: 18,
+  },
+  stageCount: {
+    color: palette.textPrimary,
+    fontSize: 12,
+    fontVariant: ["tabular-nums"],
+    fontWeight: "700",
+    marginTop: 5,
+  },
   stageGroup: { alignItems: "center", flexDirection: "row", flex: 1 },
-  stageLabel: { color: palette.textMuted, fontSize: 7, fontWeight: "800", letterSpacing: 0.8 },
-  statusMark: { borderColor: palette.warning, borderRadius: 5, borderWidth: 1, height: 10, width: 10 },
-  tab: { borderBottomColor: "transparent", borderBottomWidth: 2, justifyContent: "center", minHeight: 42, paddingHorizontal: 16 },
+  stageLabel: {
+    color: palette.textMuted,
+    fontSize: 7,
+    fontWeight: "800",
+    letterSpacing: 0.8,
+  },
+  statusMark: {
+    borderColor: palette.warning,
+    borderRadius: 5,
+    borderWidth: 1,
+    height: 10,
+    width: 10,
+  },
+  tab: {
+    borderBottomColor: "transparent",
+    borderBottomWidth: 2,
+    justifyContent: "center",
+    minHeight: 42,
+    paddingHorizontal: 16,
+  },
   tabSelected: { borderBottomColor: palette.focus },
   tabText: { color: palette.textMuted, fontSize: 10, fontWeight: "700" },
   tabTextSelected: { color: palette.textPrimary },
-  tabs: { borderBottomColor: palette.line, borderBottomWidth: StyleSheet.hairlineWidth, flexDirection: "row", paddingHorizontal: 4 },
+  tabs: {
+    borderBottomColor: palette.line,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    paddingHorizontal: 4,
+  },
   timeLabel: { color: palette.textMuted, fontSize: 8, width: 45 },
   timeRow: { flexDirection: "row", marginTop: 10 },
-  timeValue: { color: palette.textPrimary, fontSize: 9, fontVariant: ["tabular-nums"] },
-  title: { color: palette.textPrimary, fontSize: 21, fontWeight: "700", letterSpacing: -0.3, marginTop: 3 },
+  timeValue: {
+    color: palette.textPrimary,
+    fontSize: 9,
+    fontVariant: ["tabular-nums"],
+  },
+  title: {
+    color: palette.textPrimary,
+    fontSize: 21,
+    fontWeight: "700",
+    letterSpacing: -0.3,
+    marginTop: 3,
+  },
 });

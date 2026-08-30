@@ -35,6 +35,10 @@ test("workstation registry keeps stable unique commands and shortcuts", () => {
   );
   assert.equal(
     commands.find(({ id }) => id === workstationCommandIds.showAudio)?.key,
+    "6",
+  );
+  assert.equal(
+    commands.find(({ id }) => id === workstationCommandIds.showProviders)?.key,
     "5",
   );
 });
