@@ -67,8 +67,12 @@ test("native controls cross the SwiftUI host boundary explicitly", async () => {
     new URL("../src/components/audio-surface.tsx", import.meta.url),
     "utf8",
   );
-  const surfaceSwitcher = await readFile(
-    new URL("../src/components/surface-switcher.tsx", import.meta.url),
+  const nestedSidebar = await readFile(
+    new URL("../src/components/nested-sidebar.tsx", import.meta.url),
+    "utf8",
+  );
+  const workspaceToolbar = await readFile(
+    new URL("../src/components/workspace-toolbar.tsx", import.meta.url),
     "utf8",
   );
   const composer = await readFile(
@@ -102,12 +106,12 @@ test("native controls cross the SwiftUI host boundary explicitly", async () => {
   assert.match(memory, /decision_based_on/u);
   assert.match(audio, /BAR · BEAT · TICK/u);
   assert.match(audio, /AUDIO ENGINE NOT IMPLEMENTED/u);
-  assert.match(surfaceSwitcher, /Issues/u);
-  assert.match(surfaceSwitcher, /Chat/u);
-  assert.match(surfaceSwitcher, /Craft/u);
-  assert.match(surfaceSwitcher, /Memory/u);
-  assert.match(surfaceSwitcher, /Providers/u);
-  assert.match(surfaceSwitcher, /Audio/u);
+  assert.match(nestedSidebar, /Organizations/u);
+  assert.match(nestedSidebar, /Sessions/u);
+  assert.match(nestedSidebar, /onSelectOrganization/u);
+  assert.match(nestedSidebar, /onOpenThread/u);
+  assert.match(nestedSidebar, /accessibilityState=\{\{ selected/u);
+  assert.match(workspaceToolbar, /Show sessions/u);
   assert.match(composer, /@expo\/ui\/swift-ui/u);
   assert.match(composer, /<Host/u);
   assert.match(composer, /<GlassEffectContainer/u);
@@ -125,17 +129,17 @@ test("native controls cross the SwiftUI host boundary explicitly", async () => {
   assert.match(workspace, /headerShown: true/u);
   assert.match(workspace, /title: ""/u);
   assert.match(workspace, /style=\{styles\.composerOverlay\}/u);
-  assert.match(workspace, /useState<WorkspaceView>\("issues"\)/u);
+  assert.match(workspace, /useState<WorkspaceView>\("chat"\)/u);
   assert.doesNotMatch(workspace, /AtmosphericBackdrop|ModeSelector|appModes/u);
-  assert.match(surfaceSwitcher, /<Menu/u);
-  assert.match(surfaceSwitcher, /pickerStyle\("segmented"\)/u);
-  assert.match(surfaceSwitcher, /buttonStyle\("glass"\)/u);
-  assert.match(surfaceSwitcher, /runtimeStatusLabel/u);
+  assert.match(workspace, /<NestedSidebar/u);
+  assert.doesNotMatch(workspace, /SurfaceSwitcher/u);
+  assert.match(workspaceToolbar, /buttonStyle\("glass"\)/u);
+  assert.match(nestedSidebar, /runtimeStatusLabel/u);
+  assert.doesNotMatch(workspaceToolbar, /<Picker|pickerStyle\("segmented"\)/u);
   assert.doesNotMatch(
-    surfaceSwitcher,
+    nestedSidebar,
     /Session connected|Session offline|serverUrl/u,
   );
-  assert.doesNotMatch(workspace, /<Drawer|WorkspaceSidebar|toggleSidebar/u);
   assert.doesNotMatch(
     theme,
     /atmosphereBlue|atmosphereGreen|atmosphereViolet/u,

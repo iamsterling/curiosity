@@ -126,10 +126,10 @@ Do not encode a fixed glass opacity, blur radius, refraction, shadow, or light/d
 
 ## Native implementation notes (current build)
 
-- The current build renders five surfaces as a native segmented picker. This entire top-level surface switcher is superseded product behavior and must be removed, not reduced to four tabs.
-- Project menu, search, filter, add, and share are **native SwiftUI `Button`s** (`buttonStyle("glass")` / `"glassProminent"`) with SF Symbols; the share action uses the system share sheet.
-- The current project menu is insufficient for the target hierarchy. It must evolve into progressive source and artifact-list navigation while preserving content-only as the default.
-- The current functional bar is the Expo Router custom header. Its replacement must preserve system inset/window-control behavior while making the leading navigation reveal, artifact identity, and contextual actions authoritative.
+- The current build removes the superseded top-level segmented picker. A parent organization sidebar and child session sidebar are both pinned in wide windows, the session sidebar is pinned in regular windows, and compact windows progressively replace content with sessions and then organizations.
+- Only the local Curiosity organization is currently backed by runtime data. The organization projection is an explicit shell boundary, not a claim that server-owned organization identity or cross-organization session loading exists.
+- The functional bar remains the Expo Router custom header and uses **native SwiftUI `Button`s** (`buttonStyle("glass")` / `"glassProminent"`) with SF Symbols for session reveal, search, contextual filtering, and new session. It preserves the system window-control inset while removing project/session selection from a menu.
+- The sidebars use accessible React Native list projections with 44 pt controls, selected state beyond color, and the source → session → content reading order. Native split-view behavior and physical VoiceOver validation remain subsequent implementation gates.
 - Craft's current center viewport is an **Expo native view hosting `MTKView`**,
   but its Swift rectangles, colors, selection and camera are a disposable
   renderer proof. Production Craft must consume the existing Crafty kernel's

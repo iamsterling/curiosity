@@ -19,8 +19,13 @@ import { ConversationView } from "../components/conversation-view";
 import { CraftSurface } from "../components/craft-surface";
 import { IssuesSurface } from "../components/issues-surface";
 import { MemorySurface } from "../components/memory-surface";
+import {
+  NestedSidebar,
+  type SidebarOrganization,
+} from "../components/nested-sidebar";
+import type { SidebarNavigationLevel } from "../components/nested-sidebar-layout";
 import { ProviderSurface } from "../components/provider-surface";
-import { SurfaceSwitcher } from "../components/surface-switcher";
+import { WorkspaceToolbar } from "../components/workspace-toolbar";
 import { runtimeStatusLabel } from "../curiosity-client";
 import { localCuriosityClient } from "../local-curiosity-runtime";
 import { palette } from "../theme";
@@ -28,11 +33,33 @@ import { useCuriosityWorkspace } from "../use-curiosity-workspace";
 import type { WorkspaceView } from "../workspace-types";
 import { styles } from "./workspace-screen.styles";
 
+const organizations: readonly SidebarOrganization[] = Object.freeze([
+  {
+    detail: "Local workspace",
+    id: "curiosity",
+    name: "Curiosity",
+  },
+]);
+
+const viewTitles: Readonly<Record<WorkspaceView, string>> = Object.freeze({
+  audio: "Audio",
+  chat: "New Session",
+  craft: "Craft",
+  issues: "Issues",
+  memory: "Memory",
+  providers: "Providers",
+});
+
 export const WorkspaceScreen = () => {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const split = width >= 760;
-  const [view, setView] = useState<WorkspaceView>("issues");
+  const contentWidth =
+    width >= 1_180 ? width - 530 : width >= 760 ? width - 300 : width;
+  const split = contentWidth >= 600;
+  const [view, setView] = useState<WorkspaceView>("chat");
+  const [activeOrganizationId, setActiveOrganizationId] = useState("curiosity");
+  const [navigationLevel, setNavigationLevel] =
+    useState<SidebarNavigationLevel>("content");
   const [showHighOnly, setShowHighOnly] = useState(false);
   const [draft, setDraft] = useState("");
   const workspace = useCuriosityWorkspace(localCuriosityClient);
@@ -42,6 +69,11 @@ export const WorkspaceScreen = () => {
     send: sendMessage,
     state,
   } = workspace;
+  const activeThreadTitle = state.threads.find(
+    ({ threadId }) => threadId === state.activeThreadId,
+  )?.title;
+  const workspaceTitle =
+    view === "chat" ? (activeThreadTitle ?? viewTitles.chat) : viewTitles[view];
 
   const selectView = useCallback((nextView: WorkspaceView) => {
     setView(nextView);
@@ -161,23 +193,19 @@ export const WorkspaceScreen = () => {
           headerTintColor: palette.controlTint,
           headerTitle: () => (
             <View style={[styles.headerTitle, { width }]}>
-              <SurfaceSwitcher
-                activeThreadId={state.activeThreadId}
-                compact={!split}
+              <WorkspaceToolbar
+                compact={width < 760}
                 filterOn={showHighOnly}
-                onAdd={newThread}
                 onFilter={() => setShowHighOnly((current) => !current)}
-                onNewThread={newThread}
-                onOpenThread={openThread}
+                onNewSession={newThread}
                 onSearch={() =>
                   workstationCommands.execute(
                     workstationCommandIds.commandPalette,
                   )
                 }
-                onSelect={selectView}
-                runtimeStatusLabel={runtimeStatusLabel(state.runtimeStatus)}
-                threads={state.threads}
-                view={view}
+                onShowSessions={() => setNavigationLevel("sessions")}
+                showFilter={view === "issues"}
+                title={workspaceTitle}
               />
             </View>
           ),
@@ -185,7 +213,21 @@ export const WorkspaceScreen = () => {
         }}
       />
       <SafeAreaView edges={["left", "right", "bottom"]} style={styles.safe}>
-        {workspaceContent}
+        <NestedSidebar
+          activeOrganizationId={activeOrganizationId}
+          activeThreadId={state.activeThreadId}
+          navigationLevel={navigationLevel}
+          onNavigationLevelChange={setNavigationLevel}
+          onNewThread={newThread}
+          onOpenThread={openThread}
+          onSelectOrganization={setActiveOrganizationId}
+          organizations={organizations}
+          runtimeStatusLabel={runtimeStatusLabel(state.runtimeStatus)}
+          threads={state.threads}
+          width={width}
+        >
+          {workspaceContent}
+        </NestedSidebar>
       </SafeAreaView>
       <CommandPalette
         commands={workstationCommands.commands}
