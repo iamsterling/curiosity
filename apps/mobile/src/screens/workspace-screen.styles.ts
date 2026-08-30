@@ -9,7 +9,6 @@ export const styles = StyleSheet.create({
     right: 0,
     zIndex: 10,
   },
-  headerTitle: { alignItems: "stretch", justifyContent: "center" },
   keyboard: { backgroundColor: palette.canvas, flex: 1 },
   safe: { backgroundColor: palette.canvas, flex: 1 },
   surface: { flex: 1 },

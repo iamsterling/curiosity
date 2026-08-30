@@ -19,27 +19,22 @@ import { ConversationView } from "../components/conversation-view";
 import { CraftSurface } from "../components/craft-surface";
 import { IssuesSurface } from "../components/issues-surface";
 import { MemorySurface } from "../components/memory-surface";
+import { NestedSidebar } from "../components/nested-sidebar";
 import {
-  NestedSidebar,
-  type SidebarOrganization,
-} from "../components/nested-sidebar";
-import type { SidebarNavigationLevel } from "../components/nested-sidebar-layout";
+  resolveNestedSidebarColumnWidths,
+  resolveNestedSidebarLayout,
+  type SidebarNavigationLevel,
+} from "../components/nested-sidebar-layout";
+import {
+  collectionView,
+  type SidebarCollectionId,
+} from "../components/notes-shell-model";
 import { ProviderSurface } from "../components/provider-surface";
 import { WorkspaceToolbar } from "../components/workspace-toolbar";
-import { runtimeStatusLabel } from "../curiosity-client";
 import { localCuriosityClient } from "../local-curiosity-runtime";
-import { palette } from "../theme";
 import { useCuriosityWorkspace } from "../use-curiosity-workspace";
 import type { WorkspaceView } from "../workspace-types";
 import { styles } from "./workspace-screen.styles";
-
-const organizations: readonly SidebarOrganization[] = Object.freeze([
-  {
-    detail: "Local workspace",
-    id: "curiosity",
-    name: "Curiosity",
-  },
-]);
 
 const viewTitles: Readonly<Record<WorkspaceView, string>> = Object.freeze({
   audio: "Audio",
@@ -50,18 +45,35 @@ const viewTitles: Readonly<Record<WorkspaceView, string>> = Object.freeze({
   providers: "Providers",
 });
 
+const viewCollections: Readonly<Record<WorkspaceView, SidebarCollectionId>> =
+  Object.freeze({
+    audio: "audio",
+    chat: "sessions",
+    craft: "craft",
+    issues: "issues",
+    memory: "memory",
+    providers: "providers",
+  });
+
 export const WorkspaceScreen = () => {
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const contentWidth =
-    width >= 1_180 ? width - 530 : width >= 760 ? width - 300 : width;
-  const split = contentWidth >= 600;
   const [view, setView] = useState<WorkspaceView>("chat");
-  const [activeOrganizationId, setActiveOrganizationId] = useState("curiosity");
+  const [activeCollectionId, setActiveCollectionId] =
+    useState<SidebarCollectionId>("sessions");
   const [navigationLevel, setNavigationLevel] =
     useState<SidebarNavigationLevel>("content");
   const [showHighOnly, setShowHighOnly] = useState(false);
   const [draft, setDraft] = useState("");
+  const layout = resolveNestedSidebarLayout(width, navigationLevel);
+  const columnWidths = resolveNestedSidebarColumnWidths(width);
+  const contentWidth = Math.max(
+    0,
+    width -
+      (layout.source ? columnWidths.source : 0) -
+      (layout.artifacts ? columnWidths.artifacts : 0),
+  );
+  const split = contentWidth >= 600;
   const workspace = useCuriosityWorkspace(localCuriosityClient);
   const {
     loadSession,
@@ -77,16 +89,24 @@ export const WorkspaceScreen = () => {
 
   const selectView = useCallback((nextView: WorkspaceView) => {
     setView(nextView);
+    setActiveCollectionId(viewCollections[nextView]);
+  }, []);
+
+  const selectCollection = useCallback((collectionId: SidebarCollectionId) => {
+    setActiveCollectionId(collectionId);
+    setView(collectionView(collectionId));
   }, []);
 
   const newThread = useCallback(() => {
     setView("chat");
+    setActiveCollectionId("sessions");
     resetThread();
   }, [resetThread]);
 
   const openThread = useCallback(
     (threadId: string) => {
       setView("chat");
+      setActiveCollectionId("sessions");
       void loadSession(threadId);
     },
     [loadSession],
@@ -94,6 +114,7 @@ export const WorkspaceScreen = () => {
 
   const preparePrompt = useCallback((prefix: string) => {
     setView("chat");
+    setActiveCollectionId("sessions");
     setDraft(prefix);
   }, []);
 
@@ -116,10 +137,7 @@ export const WorkspaceScreen = () => {
     [newThread, preparePrompt, refreshSession, selectView],
   );
   const workstationCommands = useWorkstationCommands(
-    {
-      busy: state.busy,
-      view,
-    },
+    { busy: state.busy, view },
     commandActions,
   );
 
@@ -132,6 +150,19 @@ export const WorkspaceScreen = () => {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       style={styles.keyboard}
     >
+      <WorkspaceToolbar
+        compact={!layout.artifacts}
+        filterOn={showHighOnly}
+        onFilter={() => setShowHighOnly((current) => !current)}
+        onNewSession={newThread}
+        onSearch={() =>
+          workstationCommands.execute(workstationCommandIds.commandPalette)
+        }
+        onShowSessions={() => setNavigationLevel("artifacts")}
+        showFilter={view === "issues"}
+        title={workspaceTitle}
+        topInset={insets.top}
+      />
       <View style={styles.surface}>
         {view === "chat" ? (
           <>
@@ -181,49 +212,25 @@ export const WorkspaceScreen = () => {
     </KeyboardAvoidingView>
   );
 
+  const manage = () =>
+    workstationCommands.execute(workstationCommandIds.commandPalette);
+
   return (
     <>
-      <Stack.Screen
-        options={{
-          headerBackVisible: false,
-          headerBackground: () => null,
-          headerShadowVisible: false,
-          headerShown: true,
-          headerStyle: { backgroundColor: "transparent" },
-          headerTintColor: palette.controlTint,
-          headerTitle: () => (
-            <View style={[styles.headerTitle, { width }]}>
-              <WorkspaceToolbar
-                compact={width < 760}
-                filterOn={showHighOnly}
-                onFilter={() => setShowHighOnly((current) => !current)}
-                onNewSession={newThread}
-                onSearch={() =>
-                  workstationCommands.execute(
-                    workstationCommandIds.commandPalette,
-                  )
-                }
-                onShowSessions={() => setNavigationLevel("sessions")}
-                showFilter={view === "issues"}
-                title={workspaceTitle}
-              />
-            </View>
-          ),
-          title: "",
-        }}
-      />
-      <SafeAreaView edges={["left", "right", "bottom"]} style={styles.safe}>
+      <Stack.Screen options={{ headerShown: false, title: "" }} />
+      <SafeAreaView edges={["left", "right"]} style={styles.safe}>
         <NestedSidebar
-          activeOrganizationId={activeOrganizationId}
+          activeCollectionId={activeCollectionId}
           activeThreadId={state.activeThreadId}
+          bottomInset={insets.bottom}
           navigationLevel={navigationLevel}
+          onManage={manage}
           onNavigationLevelChange={setNavigationLevel}
           onNewThread={newThread}
           onOpenThread={openThread}
-          onSelectOrganization={setActiveOrganizationId}
-          organizations={organizations}
-          runtimeStatusLabel={runtimeStatusLabel(state.runtimeStatus)}
+          onSelectCollection={selectCollection}
           threads={state.threads}
+          topInset={insets.top}
           width={width}
         >
           {workspaceContent}

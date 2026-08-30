@@ -126,8 +126,8 @@ Do not encode a fixed glass opacity, blur radius, refraction, shadow, or light/d
 
 ## Native implementation notes (current build)
 
-- The current build removes the superseded top-level segmented picker. A parent organization sidebar and child session sidebar are both pinned in wide windows, the session sidebar is pinned in regular windows, and compact windows progressively replace content with sessions and then organizations.
-- Only the local Curiosity organization is currently backed by runtime data. The organization projection is an explicit shell boundary, not a claim that server-owned organization identity or cross-organization session loading exists.
+- The current build removes the superseded top-level segmented picker. It mirrors the Notes shell: a source/collection sidebar, an artifact list, and the selected workspace are all pinned in wide windows; the artifact list and workspace remain visible at regular widths; compact windows progressively replace content with the artifact list and then its source sidebar.
+- The source sidebar projects local Curiosity collections (sessions, issues, Craft, Memory, Audio, and Providers). It is an explicit shell boundary, not a claim that server-owned folders, sharing, or cross-organization loading exists.
 - The functional bar remains the Expo Router custom header and uses **native SwiftUI `Button`s** (`buttonStyle("glass")` / `"glassProminent"`) with SF Symbols for session reveal, search, contextual filtering, and new session. It preserves the system window-control inset while removing project/session selection from a menu.
 - The sidebars use accessible React Native list projections with 44 pt controls, selected state beyond color, and the source → session → content reading order. Native split-view behavior and physical VoiceOver validation remain subsequent implementation gates.
 - Craft's current center viewport is an **Expo native view hosting `MTKView`**,

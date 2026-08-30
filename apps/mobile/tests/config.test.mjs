@@ -106,11 +106,11 @@ test("native controls cross the SwiftUI host boundary explicitly", async () => {
   assert.match(memory, /decision_based_on/u);
   assert.match(audio, /BAR · BEAT · TICK/u);
   assert.match(audio, /AUDIO ENGINE NOT IMPLEMENTED/u);
-  assert.match(nestedSidebar, /Organizations/u);
-  assert.match(nestedSidebar, /Sessions/u);
-  assert.match(nestedSidebar, /onSelectOrganization/u);
+  assert.match(nestedSidebar, /NotesSourceSidebar/u);
+  assert.match(nestedSidebar, /NotesArtifactList/u);
+  assert.match(nestedSidebar, /onSelectCollection/u);
   assert.match(nestedSidebar, /onOpenThread/u);
-  assert.match(nestedSidebar, /accessibilityState=\{\{ selected/u);
+  assert.match(nestedSidebar, /navigationLevel/u);
   assert.match(workspaceToolbar, /Show sessions/u);
   assert.match(composer, /@expo\/ui\/swift-ui/u);
   assert.match(composer, /<Host/u);
@@ -124,9 +124,9 @@ test("native controls cross the SwiftUI host boundary explicitly", async () => {
   assert.match(composer, /buttonStyle\("plain"\)/u);
   assert.match(glassPanel, /glassEffect/u);
   assert.match(glassPanel, /variant: "regular"/u);
-  assert.match(workspace, /headerBackground: \(\) => null/u);
-  assert.match(workspace, /headerTitle: \(\) =>/u);
-  assert.match(workspace, /headerShown: true/u);
+  assert.match(workspace, /headerShown: false/u);
+  assert.match(workspace, /edges=\{\["left", "right"\]\}/u);
+  assert.doesNotMatch(workspace, /"left", "right", "bottom"/u);
   assert.match(workspace, /title: ""/u);
   assert.match(workspace, /style=\{styles\.composerOverlay\}/u);
   assert.match(workspace, /useState<WorkspaceView>\("chat"\)/u);
@@ -134,7 +134,7 @@ test("native controls cross the SwiftUI host boundary explicitly", async () => {
   assert.match(workspace, /<NestedSidebar/u);
   assert.doesNotMatch(workspace, /SurfaceSwitcher/u);
   assert.match(workspaceToolbar, /buttonStyle\("glass"\)/u);
-  assert.match(nestedSidebar, /runtimeStatusLabel/u);
+  assert.doesNotMatch(nestedSidebar, /runtimeStatusLabel/u);
   assert.doesNotMatch(workspaceToolbar, /<Picker|pickerStyle\("segmented"\)/u);
   assert.doesNotMatch(
     nestedSidebar,

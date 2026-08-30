@@ -1,33 +1,49 @@
-export type SidebarNavigationLevel = "content" | "organizations" | "sessions";
+export type SidebarNavigationLevel = "artifacts" | "collections" | "content";
 
 export interface NestedSidebarLayout {
+  readonly artifacts: boolean;
   readonly content: boolean;
-  readonly organizations: boolean;
-  readonly sessions: boolean;
+  readonly source: boolean;
 }
 
-const regularWidth = 760;
-const wideWidth = 1_180;
+const regularWidth = 700;
+const wideWidth = 1_100;
+
+export interface NestedSidebarColumnWidths {
+  readonly artifacts: number;
+  readonly source: number;
+}
+
+export const resolveNestedSidebarColumnWidths = (
+  width: number,
+): NestedSidebarColumnWidths =>
+  width >= wideWidth
+    ? { artifacts: 400, source: 320 }
+    : { artifacts: 320, source: 300 };
 
 export const resolveNestedSidebarLayout = (
   width: number,
   level: SidebarNavigationLevel,
 ): NestedSidebarLayout => {
   if (width >= wideWidth) {
-    return { content: true, organizations: true, sessions: true };
+    return { artifacts: true, content: true, source: true };
   }
 
   if (width >= regularWidth) {
+    if (level === "collections") {
+      return { artifacts: true, content: false, source: true };
+    }
+
     return {
+      artifacts: true,
       content: true,
-      organizations: level === "organizations",
-      sessions: level !== "organizations",
+      source: false,
     };
   }
 
   return {
+    artifacts: level === "artifacts",
     content: level === "content",
-    organizations: level === "organizations",
-    sessions: level === "sessions",
+    source: level === "collections",
   };
 };

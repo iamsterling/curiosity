@@ -1,4 +1,3 @@
-import { ContentUnavailableView, Host } from "@expo/ui/swift-ui";
 import { useEffect, useRef } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import type { CuriosityMessage } from "../curiosity-api";
@@ -32,17 +31,11 @@ export const ConversationView = ({
       keyExtractor={({ messageId }) => messageId}
       ListEmptyComponent={
         <View style={styles.emptyFrame}>
-          <Host
-            seedColor={palette.focus}
-            style={styles.empty}
-            useViewportSizeMeasurement
-          >
-            <ContentUnavailableView
-              description="Curiosity keeps the objective and durable thread."
-              systemImage="sparkles"
-              title="Ready when you are"
-            />
-          </Host>
+          <Text accessibilityElementsHidden style={styles.emptySymbol}>✦</Text>
+          <Text style={styles.emptyTitle}>Ready when you are</Text>
+          <Text style={styles.emptyDetail}>
+            Curiosity keeps the objective and durable thread.
+          </Text>
         </View>
       }
       ListFooterComponent={
@@ -89,14 +82,23 @@ const styles = StyleSheet.create({
   assistantMessage: { maxWidth: 760, width: "94%" },
   assistantRole: { color: palette.focus },
   body: { color: palette.textPrimary, fontSize: 15, lineHeight: 24 },
-  empty: { flex: 1 },
+  emptyDetail: {
+    color: palette.textMuted,
+    fontSize: 14,
+    lineHeight: 20,
+    maxWidth: 300,
+    textAlign: "center",
+  },
   emptyFrame: {
     alignItems: "center",
     flex: 1,
+    gap: 5,
     justifyContent: "center",
     minHeight: 360,
     padding: 22,
   },
+  emptySymbol: { color: palette.textMuted, fontSize: 32, lineHeight: 38 },
+  emptyTitle: { color: palette.textPrimary, fontSize: 17, fontWeight: "700" },
   error: {
     alignSelf: "center",
     backgroundColor: palette.dangerGlass,

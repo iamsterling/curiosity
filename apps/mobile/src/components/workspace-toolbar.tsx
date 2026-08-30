@@ -22,6 +22,7 @@ export const WorkspaceToolbar = ({
   onShowSessions,
   showFilter,
   title,
+  topInset,
 }: {
   readonly compact: boolean;
   readonly filterOn: boolean;
@@ -31,8 +32,9 @@ export const WorkspaceToolbar = ({
   readonly onShowSessions: () => void;
   readonly showFilter: boolean;
   readonly title: string;
+  readonly topInset: number;
 }) => (
-  <View style={[styles.shell, compact && styles.compactShell]}>
+  <View style={[styles.shell, { paddingTop: topInset }]}>
     <Host
       matchContents={{ vertical: true }}
       seedColor={palette.focus}
@@ -50,32 +52,28 @@ export const WorkspaceToolbar = ({
         {compact ? (
           <Button
             modifiers={[
-              axHint(
-                "Opens the session list. Its leading control opens organizations.",
-              ),
+              axHint("Opens the artifact list. Its leading control opens collections."),
               axLabel("Show sessions"),
               buttonStyle("glass"),
               frame({ height: 44, width: 44 }),
             ]}
             onPress={onShowSessions}
           >
-            <Image
-              color={palette.textPrimary}
-              size={18}
-              systemName="sidebar.left"
-            />
+            <Image color={palette.textPrimary} size={18} systemName="sidebar.left" />
           </Button>
         ) : null}
 
-        <Text
-          modifiers={[
-            font({ size: 15, weight: "semibold" }),
-            foregroundStyle(palette.textPrimary),
-            lineLimit(1),
-          ]}
-        >
-          {title}
-        </Text>
+        {compact ? (
+          <Text
+            modifiers={[
+              font({ size: 15, weight: "semibold" }),
+              foregroundStyle(palette.textPrimary),
+              lineLimit(1),
+            ]}
+          >
+            {title}
+          </Text>
+        ) : null}
 
         <Spacer />
 
@@ -88,11 +86,7 @@ export const WorkspaceToolbar = ({
           ]}
           onPress={onSearch}
         >
-          <Image
-            color={palette.textPrimary}
-            size={18}
-            systemName="magnifyingglass"
-          />
+          <Image color={palette.textPrimary} size={18} systemName="magnifyingglass" />
         </Button>
 
         {showFilter ? (
@@ -135,8 +129,11 @@ export const WorkspaceToolbar = ({
 );
 
 const styles = StyleSheet.create({
-  compactShell: { paddingLeft: 0 },
   host: { width: "100%" },
-  // Clears the system window-control pill in resizable iPad windows.
-  shell: { alignSelf: "stretch", paddingLeft: 60 },
+  shell: {
+    alignSelf: "stretch",
+    backgroundColor: palette.canvas,
+    borderBottomColor: palette.line,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
 });
