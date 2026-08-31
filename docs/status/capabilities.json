@@ -42,6 +42,12 @@
       "private": true
     },
     {
+      "path": "packages/curiosity-authority",
+      "name": "@curiosity/authority",
+      "kind": "starter-library",
+      "private": true
+    },
+    {
       "path": "packages/ui",
       "name": "@repo/ui",
       "kind": "starter-library",
@@ -153,7 +159,7 @@
     "guardedSources": [
       {
         "path": "package.json",
-        "sha256": "d45e0fcd14dd5f373fec1e131895bca2e291abc3bfe4aef1418562ee9d5b31d5"
+        "sha256": "bcf5f3e0f3b2e622d99a17ec81e95e7d10d8833bdb86c9faf5008bc2d40d7a9b"
       },
       {
         "path": "apps/plugin/opencode2/package.json",
@@ -425,7 +431,7 @@
           },
           {
             "kind": "test",
-            "ref": "apps/custom-harness/tests/chat.test.ts#records a failed turn without fabricating an assistant message"
+            "ref": "apps/custom-harness/tests/chat.test.ts#does not leak one root tool failure into an independent healthy caller"
           },
           {
             "kind": "test",
@@ -577,7 +583,7 @@
           },
           {
             "kind": "test",
-            "ref": "apps/custom-harness/tests/chat.test.ts#keeps a non-research tool failure terminal"
+            "ref": "apps/custom-harness/tests/chat.test.ts#records a failed turn without fabricating an assistant message"
           },
           {
             "kind": "test",
@@ -768,7 +774,7 @@
         {
           "path": "apps/custom-harness/package.json",
           "mode": "exact",
-          "sha256": "064225f335a2c8130985d2021638e791d9f47d1ed043131590395c69e01b0835"
+          "sha256": "a817e6a11d4228df03b065885714525af0527927a914d36c2ad91fc6f94f44b2"
         },
         {
           "path": "apps/custom-harness/src/adapters/process.ts",
@@ -801,6 +807,11 @@
           "sha256": "4dcc0015f0be000e5cc65505505d7133638b7bc95754533ace194116d6ce276b"
         },
         {
+          "path": "apps/custom-harness/src/kernel/action-failure-policy.ts",
+          "mode": "exact",
+          "sha256": "eb96fc6f9763c68641222c27028c0ad367603a13657088f8fbe3d28abfa48d6e"
+        },
+        {
           "path": "apps/custom-harness/src/kernel/authority.ts",
           "mode": "exact",
           "sha256": "bdc7d6ee34a52ca76b780fe420b194a419ca0be691a332c480a66ffdef7e828f"
@@ -823,7 +834,7 @@
         {
           "path": "apps/custom-harness/src/kernel/prompt-assembler.ts",
           "mode": "exact",
-          "sha256": "998ca596544a97590dcbec34e3386b3ebcb2525e25d0db009f0f32269c56f90a"
+          "sha256": "ab23a68841cb9a8ed1ad6414d17bde800963002374122efe9d601abcbeb902c7"
         },
         {
           "path": "apps/custom-harness/src/kernel/provider-gateway.ts",
@@ -833,12 +844,12 @@
         {
           "path": "apps/custom-harness/src/kernel/reaction-engine.ts",
           "mode": "exact",
-          "sha256": "7ebe82a10264f1f6b5b70dc7dea2b5af17d0a54044cd0b8510bde3774940929a"
+          "sha256": "4e293dd1467114d86c239cf0b984bcfeb645b289f4e6334c415123366c44638a"
         },
         {
           "path": "apps/custom-harness/src/kernel/role-policy.ts",
           "mode": "exact",
-          "sha256": "51e3fc4576aaea15d8613803c4e809a278ebf25fc1a5997f0ef13a356232d12e"
+          "sha256": "50f38fd7d09c70917836d57ec450b717b9a5ab14e0fc8b0ebaa9b26ad213939b"
         },
         {
           "path": "apps/custom-harness/src/kernel/runtime.ts",
@@ -853,7 +864,7 @@
         {
           "path": "apps/custom-harness/src/kernel/tool-gateway.ts",
           "mode": "exact",
-          "sha256": "ba040bf5e58f62de258513eb16da372e577f5f19c4ed7c56d9e3c507434c8ac5"
+          "sha256": "74f82dc271f20ea290fbfd30d6abc2ddd86bb81403c6759e7c7d334c32a0f660"
         },
         {
           "path": "apps/custom-harness/src/plugins/agents.ts",
@@ -863,7 +874,7 @@
         {
           "path": "apps/custom-harness/src/plugins/chat.ts",
           "mode": "exact",
-          "sha256": "2c5b1f0136a9ef12eb9f15eaa1aa62e8f4163ffe02b22b0729a4da0bf94c1e08"
+          "sha256": "480b1bb0fd7cb43f4fc7e50058298af9f11f9bb0ee38023eaba3026b52614a8b"
         },
         {
           "path": "apps/custom-harness/src/plugins/compatibility-tools.ts",
@@ -873,7 +884,7 @@
         {
           "path": "apps/custom-harness/src/plugins/context.ts",
           "mode": "exact",
-          "sha256": "173f0f643dccd519861f8837d4273cf4ca92d3bbeace96f584560e2c29b467d3"
+          "sha256": "d0901dbb5966584f7e8225e29419f638c898b06a0528d914fa50e4aefd1db53f"
         },
         {
           "path": "apps/custom-harness/src/plugins/delegation.ts",
@@ -918,12 +929,12 @@
         {
           "path": "apps/custom-harness/src/projection/chat-projection.ts",
           "mode": "exact",
-          "sha256": "0487b8fd85735f89c9a0981c29c35d839b964335a5739063fd8f59c8a503f192"
+          "sha256": "1b0af671880886983015209848bc0bdc0f0d14d6da3c9365fe8abe3a214e4524"
         },
         {
           "path": "apps/custom-harness/src/providers/ai-sdk.ts",
           "mode": "exact",
-          "sha256": "8db86b09ff5a3ef9769a8cca549b9acea040740d2245a07f96abcbe1a3408707"
+          "sha256": "9f950688216a047849113a8cb44e68ee2ab16598973c19b61e0cbeaefbbbcf18"
         },
         {
           "path": "apps/custom-harness/src/research/adapter.ts",
@@ -973,7 +984,7 @@
         {
           "path": "apps/custom-harness/src/research/receipt.ts",
           "mode": "exact",
-          "sha256": "8e2ba9126d68c099cd141aed97c178fc6208149a1846068af21a61bd943afeb8"
+          "sha256": "e822430e56cec1cd317693b23e37bffc4ede79e59a793bbd9c856a398bdab7f1"
         },
         {
           "path": "apps/custom-harness/src/research/runtime-config.ts",
@@ -986,9 +997,14 @@
           "sha256": "485f4b0c864dfee43943ee37a1b11914bdcea2be5fc6980f5f490f37bcc025c3"
         },
         {
+          "path": "apps/custom-harness/src/semantics/chat-recovery.ts",
+          "mode": "exact",
+          "sha256": "1b176ade04ce916573524c3860e9ee78851bd1c5e1b5f8f3ad6bb89c54451070"
+        },
+        {
           "path": "apps/custom-harness/src/semantics/chat-tool-loop.ts",
           "mode": "exact",
-          "sha256": "dd68e31e3e3b75f5b1994be9ba55a0d4f6baa94d817f0c9160940e5396c75bd9"
+          "sha256": "e9c83d4317dbc7519248f82be27130e2f6ae79e79d608789c2ddb29b1315ea6b"
         },
         {
           "path": "apps/custom-harness/src/storage/action-journal.ts",
@@ -1063,7 +1079,7 @@
         {
           "path": "apps/custom-harness/src/tui/markdown.ts",
           "mode": "exact",
-          "sha256": "04e63bb223cdd4a1157ae8f342c9e713acccb845d30157a00e586c7eccdb6fb2"
+          "sha256": "e3f9aa24a1d84accebe7cae3c935bc663543242a1967d1fa9790efc9beac6f81"
         },
         {
           "path": "apps/custom-harness/src/tui/screen-terminal.ts",
@@ -1073,7 +1089,7 @@
         {
           "path": "apps/custom-harness/src/tui/session-turn.ts",
           "mode": "exact",
-          "sha256": "2a47cfab26b92ca6d16f5b50699645d3b2b9df101bfea7a55c2c080e11226a89"
+          "sha256": "357203a152a09583c5e32d143ee829a5655ff0b3e10d6299ce3201721efc5d0f"
         },
         {
           "path": "apps/custom-harness/src/tui/session.ts",
@@ -1088,7 +1104,7 @@
         {
           "path": "apps/custom-harness/src/tui/theme.ts",
           "mode": "exact",
-          "sha256": "8df8a855e40c8573f1b859e8f9fa03b3f80afdb71068d09665489138a12c64e3"
+          "sha256": "6ac4f02f6f51e3eb57341278ba2524b67b4acf801446ec58da9f1c1e2a64b5ed"
         },
         {
           "path": "apps/custom-harness/src/tui/transcript-view.ts",
@@ -1099,6 +1115,11 @@
           "path": "apps/custom-harness/src/types/marked-terminal.d.ts",
           "mode": "exact",
           "sha256": "f1a5e850d612676924bcf6fb36fb71ad8bfd4b55603fd6e9a76c0d9bd91769af"
+        },
+        {
+          "path": "apps/custom-harness/tests/action-failure-policy.test.ts",
+          "mode": "exact",
+          "sha256": "4249e0ea40181ae7e72bb912a476ecfc286e71236f045d2a021d0e8d8f0a8674"
         },
         {
           "path": "apps/custom-harness/tests/action-reaction.test.ts",
@@ -1133,7 +1154,7 @@
         {
           "path": "apps/custom-harness/tests/chat.test.ts",
           "mode": "exact",
-          "sha256": "3f67fda5e167096a82c8da433acbb20870793d864c87be4aeca2ade01138ac81"
+          "sha256": "b95050bc7f7acdffba7850f99fdded4b4219916bdd00b6f1acd2bd1f2e15d980"
         },
         {
           "path": "apps/custom-harness/tests/child-delegation.test.ts",
@@ -1158,7 +1179,7 @@
         {
           "path": "apps/custom-harness/tests/git-read.test.ts",
           "mode": "exact",
-          "sha256": "57df01e1e0d3b73a778b487533a2fc1713adf185395e0b2e8dd3abe683c14e34"
+          "sha256": "8aa51cd25a9272f9d42e262f1250bbbe0a3c057727284fd70e0ed77965f4b9b5"
         },
         {
           "path": "apps/custom-harness/tests/import-safety.test.ts",
@@ -1213,7 +1234,7 @@
         {
           "path": "apps/custom-harness/tests/research-receipt.test.ts",
           "mode": "exact",
-          "sha256": "3cc44892a53797719ee48d65a87a8146abca0169c28a113d1dcb1cec945165a3"
+          "sha256": "c7c98f2041ba48d307523ebfd800be3378e5c76804507c57fc259485c970a860"
         },
         {
           "path": "apps/custom-harness/tests/research-run.test.ts",
@@ -1238,7 +1259,7 @@
         {
           "path": "apps/custom-harness/tests/tui.test.ts",
           "mode": "exact",
-          "sha256": "1fa79eb14ada3e347deca1ae6397f65d40850cbc7c0fe21edad4ce5a1830f329"
+          "sha256": "267a0833b62c9116a200414a6b38948fe180455cddb48dce0f5e0e2abf6943c3"
         },
         {
           "path": "apps/custom-harness/tests/workflow-orchestration.test.ts",
@@ -1248,7 +1269,7 @@
         {
           "path": "apps/custom-harness/tests/workspace-mutation.test.ts",
           "mode": "exact",
-          "sha256": "5cbb274656f0e31b2de61435723f55666a879407eb61d4b576f275248e5e6844"
+          "sha256": "2932776d31f018c69efaa0c7eadb1a5b65b8a2e6fcd6be50d7f7e9d43e093e0c"
         },
         {
           "path": "apps/custom-harness/tools/verify-architecture.mjs",
@@ -4029,12 +4050,12 @@
         {
           "path": "turbo.json",
           "mode": "exact",
-          "sha256": "a9a64be92ab242860bc6ae2be8ce86b8fc17c2e9548a66e090235dde503905c3"
+          "sha256": "97922e666917787036229973a4836330d8d172b96771819214dfb30e93dbe112"
         },
         {
           "path": "apps/web/package.json",
           "mode": "exact",
-          "sha256": "27500a8b3b62ac2df6327b1d8b42ade82dbf287612ca40297d447a145f6e661f"
+          "sha256": "57c7f3ab1630c22764026a68b670d620674614fd040dacd49fa61d31ee540887"
         },
         {
           "path": "apps/docs/package.json",

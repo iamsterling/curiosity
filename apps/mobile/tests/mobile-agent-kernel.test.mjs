@@ -14,7 +14,10 @@ const catalogDigest = "0".repeat(64);
 const sha256 = async (value) =>
   createHash("sha256").update(value).digest("hex");
 
-const fixture = async ({ staleStep = false } = {}) => {
+const fixture = async ({
+  proposal = { citations: [], kind: "final", text: "Done" },
+  staleStep = false,
+} = {}) => {
   const state = { phase: "ready", schemaVersion: 1 };
   let run = {
     actionCount: 0,
@@ -195,7 +198,7 @@ const fixture = async ({ staleStep = false } = {}) => {
           ? request.observedRunRevision + 1
           : request.observedRunRevision,
         observedStateDigest: request.observedStateDigest,
-        proposal: { citations: [], kind: "final", text: "Done" },
+        proposal,
         runId: request.runId,
         selectionId: request.route.selectionId,
         stepId: request.stepId,
@@ -259,4 +262,27 @@ test("mobile kernel settles stale native identity as a terminal run failure", as
   assert.equal(value.run().state.errorCode, "AGENT_STEP_RESULT_STALE");
   assert.equal(value.run().state.phase, "failed");
   assert.equal(value.nativeSteps.length, 1);
+});
+
+test("mobile kernel persists a non-approval question and stops provider execution", async () => {
+  const value = await fixture({
+    proposal: {
+      kind: "question",
+      question: {
+        allowFreeText: false,
+        options: ["safe", "fast"],
+        prompt: "Which bounded mode?",
+      },
+    },
+  });
+  assert.equal(
+    (await value.kernel.drainOne(new AbortController().signal)).kind,
+    "provider-settled",
+  );
+  const result = await value.kernel.drainOne(new AbortController().signal);
+  assert.equal(result.kind, "committed");
+  assert.equal(result.proposalKind, "question");
+  assert.equal(value.run().state.phase, "waiting-question");
+  assert.equal(value.run().providerAction, null);
+  assert.equal(value.run().status, "running");
 });

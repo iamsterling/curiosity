@@ -1,4 +1,5 @@
 import type { GenerationTransportReceipt } from "@curiosity/authority";
+import type { MobilePrimaryAgentId } from "./mobile-agent-catalog.ts";
 import type { ConversationMode } from "./workspace-types.ts";
 
 export const commandText = (mode: ConversationMode, text: string): string => {
@@ -8,6 +9,7 @@ export const commandText = (mode: ConversationMode, text: string): string => {
 };
 
 export interface CuriosityThread {
+  readonly projectId?: string;
   readonly sequence: number;
   readonly threadId: string;
   readonly title: string;
@@ -26,20 +28,30 @@ export interface CuriositySession {
 }
 
 export interface CuriositySubmit {
+  readonly agentId?: MobilePrimaryAgentId;
   readonly mode: ConversationMode;
   readonly projectId?: string;
   readonly text: string;
   readonly threadId?: string;
 }
 
-export interface CuriosityTurn {
-  readonly assistantMessageId: string;
-  readonly text: string;
+interface CuriosityTurnBase {
   readonly threadId: string;
   readonly threads: readonly CuriosityThread[];
-  readonly transportReceipt?: GenerationTransportReceipt;
   readonly turnId?: string;
 }
+
+export type CuriosityTurn =
+  | (CuriosityTurnBase & {
+      readonly assistantMessageId: string;
+      readonly status: "completed";
+      readonly text: string;
+      readonly transportReceipt?: GenerationTransportReceipt;
+    })
+  | (CuriosityTurnBase & {
+      readonly runId: string;
+      readonly status: "waiting-for-input";
+    });
 
 export type CapabilityAvailability =
   "available" | "starting" | "unavailable" | "unknown";

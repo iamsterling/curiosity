@@ -2,7 +2,7 @@ import Foundation
 
 enum CodexHTTPFailure: Error {
   case response(String)
-  case status(Int)
+  case status(Int, String)
   case transport(String)
 }
 
@@ -53,7 +53,12 @@ final class CodexHTTPClient: NSObject, URLSessionTaskDelegate, @unchecked Sendab
     request.setValue("application/json", forHTTPHeaderField: "Accept")
     applyProviderHeaders(&request, session: session)
     let (data, response) = try await boundedData(request, maximumBytes: 2 * 1_024 * 1_024)
-    guard response.statusCode == 200 else { throw CodexHTTPFailure.status(response.statusCode) }
+    guard response.statusCode == 200 else {
+      throw CodexHTTPFailure.status(
+        response.statusCode,
+        responseDiagnostic(status: response.statusCode, data: data)
+      )
+    }
     guard
       let object = try JSONSerialization.jsonObject(with: data) as? [String: Any],
       let values = object["models"] as? [[String: Any]],
@@ -79,9 +84,10 @@ final class CodexHTTPClient: NSObject, URLSessionTaskDelegate, @unchecked Sendab
 
   func generate(
     _ input: CodexGenerationRequest,
-    session providerSession: CodexSession
+    session providerSession: CodexSession,
+    onDelta: @escaping @Sendable (String, String) -> Void
   ) async throws -> CodexGenerationResult {
-    let body: [String: Any] = [
+    var body: [String: Any] = [
       "include": ["reasoning.encrypted_content"],
       "input": [[
         "content": [["text": input.prompt, "type": "input_text"]],
@@ -93,6 +99,20 @@ final class CodexHTTPClient: NSObject, URLSessionTaskDelegate, @unchecked Sendab
       "store": false,
       "stream": true,
     ]
+    if let outputSchemaJSON = input.outputSchemaJSON {
+      guard
+        let data = outputSchemaJSON.data(using: .utf8),
+        let schema = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+      else { throw CodexConnectionFailure.generationInvalid }
+      body["text"] = [
+        "format": [
+          "name": "curiosity_agent_step_v1",
+          "schema": schema,
+          "strict": true,
+          "type": "json_schema",
+        ]
+      ]
+    }
     var request = URLRequest(
       url: try CodexConnectionPolicy.backendEndpoint("/backend-api/codex/responses")
     )
@@ -117,8 +137,11 @@ final class CodexHTTPClient: NSObject, URLSessionTaskDelegate, @unchecked Sendab
       responseMatches(http, expected: request.url!)
     else { throw CodexHTTPFailure.transport("response:mismatch") }
     guard http.statusCode == 200 else {
-      try await drain(bytes, maximumBytes: 64 * 1_024)
-      throw CodexHTTPFailure.status(http.statusCode)
+      let data = try await boundedBytes(bytes, maximumBytes: 64 * 1_024)
+      throw CodexHTTPFailure.status(
+        http.statusCode,
+        responseDiagnostic(status: http.statusCode, data: data)
+      )
     }
 
     var accumulator = CodexSSEAccumulator(
@@ -131,6 +154,9 @@ final class CodexHTTPClient: NSObject, URLSessionTaskDelegate, @unchecked Sendab
       for try await byte in bytes {
         try Task.checkCancellation()
         try accumulator.consume(byte: byte)
+        if let delta = accumulator.takeDelta() {
+          onDelta(input.callId, delta)
+        }
         if accumulator.completed { break }
       }
       try accumulator.finish()
@@ -178,7 +204,12 @@ final class CodexHTTPClient: NSObject, URLSessionTaskDelegate, @unchecked Sendab
     request.setValue("application/json", forHTTPHeaderField: "Accept")
     request.setValue(contentType, forHTTPHeaderField: "Content-Type")
     let (data, response) = try await boundedData(request, maximumBytes: 64 * 1_024)
-    guard response.statusCode == 200 else { throw CodexHTTPFailure.status(response.statusCode) }
+    guard response.statusCode == 200 else {
+      throw CodexHTTPFailure.status(
+        response.statusCode,
+        responseDiagnostic(status: response.statusCode, data: data)
+      )
+    }
     guard let payload = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
       throw CodexConnectionFailure.responseInvalid
     }
@@ -229,12 +260,64 @@ final class CodexHTTPClient: NSObject, URLSessionTaskDelegate, @unchecked Sendab
     return (data, http)
   }
 
-  private func drain(_ bytes: URLSession.AsyncBytes, maximumBytes: Int) async throws {
-    var count = 0
-    for try await _ in bytes {
-      count += 1
-      guard count <= maximumBytes else { throw CodexConnectionFailure.responseInvalid }
+  private func boundedBytes(
+    _ bytes: URLSession.AsyncBytes,
+    maximumBytes: Int
+  ) async throws -> Data {
+    var data = Data()
+    data.reserveCapacity(min(maximumBytes, 16 * 1_024))
+    for try await byte in bytes {
+      guard data.count < maximumBytes else {
+        throw CodexConnectionFailure.responseInvalid
+      }
+      data.append(byte)
     }
+    return data
+  }
+
+  private func responseDiagnostic(status: Int, data: Data) -> String {
+    guard
+      let value = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+    else { return "http:\(status)" }
+    let error = value["error"] as? [String: Any] ?? value
+    var fields = ["type", "code", "param", "message"].compactMap { key -> String? in
+      boundedDiagnostic(error[key]).map { "\(key)=\($0)" }
+    }
+    if fields.isEmpty, let detail = boundedDiagnostic(value["detail"]) {
+      fields.append("detail=\(detail)")
+    }
+    if fields.isEmpty,
+      let details = value["detail"] as? [[String: Any]],
+      let detail = details.first
+    {
+      fields = ["type", "msg"].compactMap { key in
+        boundedDiagnostic(detail[key]).map { "\(key)=\($0)" }
+      }
+      if let location = detail["loc"] as? [Any] {
+        let path = location.compactMap(boundedDiagnostic).joined(separator: ".")
+        if !path.isEmpty { fields.append("loc=\(path)") }
+      }
+    }
+    return (["http:\(status)"] + fields).joined(separator: ":")
+  }
+
+  private func boundedDiagnostic(_ value: Any?) -> String? {
+    let source: String
+    if let value = value as? String {
+      source = value
+    } else if let value = value as? NSNumber {
+      source = value.stringValue
+    } else {
+      return nil
+    }
+    let flattened = source
+      .replacingOccurrences(of: "\n", with: " ")
+      .replacingOccurrences(of: "\r", with: " ")
+    guard
+      !flattened.isEmpty,
+      !flattened.unicodeScalars.contains(where: { $0.value < 0x20 || $0.value == 0x7f })
+    else { return nil }
+    return String(decoding: flattened.utf8.prefix(1_024), as: UTF8.self)
   }
 
   private func responseMatches(_ response: HTTPURLResponse, expected: URL) -> Bool {

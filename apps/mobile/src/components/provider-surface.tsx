@@ -1,6 +1,11 @@
 import type { ProviderCatalogEntry } from "@curiosity/authority";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  mobileAgentPolicies,
+  type MobileAgentId,
+} from "../mobile-agent-catalog";
 import { providerConnections } from "../provider-connections";
+import type { ProviderConnectionView } from "../provider-connections-port";
 import { palette } from "../theme";
 import { useProviderConnections } from "../use-provider-connections";
 
@@ -86,6 +91,94 @@ const ProviderCard = ({
   );
 };
 
+const roleLabel = (role: MobileAgentId): string =>
+  `${role.slice(0, 1).toUpperCase()}${role.slice(1)}`;
+
+const RoleRouteSettings = ({
+  busyAgentId,
+  onSelect,
+  view,
+}: {
+  readonly busyAgentId?: MobileAgentId;
+  readonly onSelect: (
+    agentId: MobileAgentId,
+    providerId: string,
+    modelId: string,
+  ) => void;
+  readonly view: ProviderConnectionView;
+}) => {
+  const choices = view.catalog.providers.flatMap((provider) =>
+    provider.connectionState !== "connected"
+      ? []
+      : provider.models
+          .filter(({ source }) => source === "provider-api")
+          .slice(0, 8)
+          .map((model) => ({ model, provider })),
+  );
+  return (
+    <View style={styles.routePanel}>
+      <Text style={styles.statusTitle}>Exact model by agent role</Text>
+      <Text style={styles.statusDetail}>
+        Every provider call uses the configured role/model pair. Missing or
+        stale selections fail without substituting another model.
+      </Text>
+      {(Object.keys(mobileAgentPolicies) as MobileAgentId[]).map((agentId) => {
+        const selected = view.routePreferences[agentId];
+        return (
+          <View key={agentId} style={styles.routeRow}>
+            <View style={styles.routeRole}>
+              <Text style={styles.modelName}>{roleLabel(agentId)}</Text>
+              <Text style={styles.modelId}>
+                {selected?.modelId ?? "No model selected"}
+              </Text>
+            </View>
+            <View style={styles.routeChoices}>
+              {choices.map(({ model, provider }) => {
+                const active =
+                  selected?.providerId === provider.id &&
+                  selected.modelId === model.id;
+                return (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityState={{
+                      disabled: busyAgentId === agentId,
+                      selected: active,
+                    }}
+                    disabled={busyAgentId === agentId}
+                    key={`${provider.id}:${model.id}`}
+                    onPress={() => onSelect(agentId, provider.id, model.id)}
+                    style={({ pressed }) => [
+                      styles.routeChoice,
+                      active && styles.routeChoiceSelected,
+                      busyAgentId === agentId && styles.disabled,
+                      pressed && styles.pressed,
+                    ]}
+                  >
+                    <Text
+                      numberOfLines={1}
+                      style={[
+                        styles.routeChoiceText,
+                        active && styles.routeChoiceTextSelected,
+                      ]}
+                    >
+                      {model.name}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+              {choices.length === 0 ? (
+                <Text style={styles.emptyModels}>
+                  Connect a provider first.
+                </Text>
+              ) : null}
+            </View>
+          </View>
+        );
+      })}
+    </View>
+  );
+};
+
 export const ProviderSurface = () => {
   const state = useProviderConnections(providerConnections);
   const { catalog, lastDiagnostic, providerSession, source } = state.view;
@@ -120,6 +213,13 @@ export const ProviderSurface = () => {
           />
         ))}
       </View>
+      <RoleRouteSettings
+        busyAgentId={state.busyRouteAgentId}
+        onSelect={(agentId, providerId, modelId) =>
+          void state.selectRoute(agentId, providerId, modelId)
+        }
+        view={state.view}
+      />
     </ScrollView>
   );
 };
@@ -201,6 +301,40 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.72 },
   providerName: { color: palette.textPrimary, fontSize: 18, fontWeight: "700" },
   root: { backgroundColor: palette.canvas, flex: 1 },
+  routeChoice: {
+    backgroundColor: palette.canvas,
+    borderColor: palette.line,
+    borderRadius: 8,
+    borderWidth: 1,
+    maxWidth: 180,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  routeChoiceSelected: {
+    backgroundColor: palette.focusQuiet,
+    borderColor: palette.focus,
+  },
+  routeChoiceText: { color: palette.textSecondary, fontSize: 12 },
+  routeChoiceTextSelected: { color: palette.focus, fontWeight: "700" },
+  routeChoices: { flexDirection: "row", flex: 1, flexWrap: "wrap", gap: 8 },
+  routePanel: {
+    backgroundColor: palette.surface,
+    borderColor: palette.line,
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: 8,
+    padding: 18,
+  },
+  routeRole: { minWidth: 150 },
+  routeRow: {
+    alignItems: "flex-start",
+    borderTopColor: palette.line,
+    borderTopWidth: 1,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+    paddingTop: 12,
+  },
   source: { color: palette.textMuted, fontSize: 11 },
   state: {
     color: palette.textMuted,

@@ -7,6 +7,7 @@ const MAX_SETTLEMENT_EVENTS: usize = 16;
 
 #[derive(Deserialize)]
 #[serde(tag = "phase", rename_all = "camelCase", deny_unknown_fields)]
+#[allow(clippy::large_enum_variant)]
 pub(super) enum ArmDispatchInput {
     Allocate {
         #[serde(rename = "actionId")]
@@ -355,6 +356,17 @@ fn authorize(
     request_digest: String,
     fault: FaultPoint,
 ) -> Result<DispatchResponse> {
+    type AuthorizationRow = (
+        String,
+        String,
+        String,
+        String,
+        String,
+        i64,
+        i64,
+        String,
+        String,
+    );
     if !valid_identity_fields(&action_id, &attempt_id, &call_id, generation)
         || !bounded(&authorized_at, 128)
         || !is_digest(&request_digest)
@@ -368,17 +380,7 @@ fn authorize(
     let query = format!(
         "SELECT actions.status,actions.requested_capabilities_json,attempts.status,attempts.snapshot_json,attempts.lease_expires_at,executions.cancellation_requested,executions.generation,{table}.dispatch_state,{table}.request_digest FROM {table} JOIN attempts ON attempts.attempt_id={table}.attempt_id JOIN actions ON actions.action_id={table}.action_id JOIN executions ON executions.execution_id=attempts.execution_id WHERE {table}.call_id=?1 AND attempts.attempt_id=?2 AND actions.action_id=?3"
     );
-    let row: Option<(
-        String,
-        String,
-        String,
-        String,
-        String,
-        i64,
-        i64,
-        String,
-        String,
-    )> = transaction
+    let row: Option<AuthorizationRow> = transaction
         .query_row(&query, params![call_id, attempt_id, action_id], |row| {
             Ok((
                 row.get(0)?,
@@ -1419,6 +1421,12 @@ mod tests {
                 "SELECT event_id FROM events WHERE stream_id=?1 ORDER BY global_sequence LIMIT 1",
                 [action_id],
                 |row| row.get(0),
+            )
+            .unwrap();
+        connection
+            .execute(
+                "INSERT INTO execution_ancestry(ancestor_execution_id,descendant_execution_id,depth) VALUES (?1,?1,0)",
+                [format!("execution-{action_id}")],
             )
             .unwrap();
         let state = json!({

@@ -32,7 +32,7 @@ const generationRequest = (signal) => ({
     requestedRouteId: "frontier.openai-oauth",
     routeId: "frontier.openai-oauth",
     selectionId: "a".repeat(64),
-    selectionPolicyId: "ipados-frontier-connected-v1",
+    selectionPolicyId: "apple-operator-role-route-v1",
   },
   signal,
   tools: [],

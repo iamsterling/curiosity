@@ -77,6 +77,10 @@ closed rather than inheriting these claims.
 
 ## Implementation specifications
 
+- [Apple-platform harness specification](APPLE-PLATFORM-HARNESS-SPEC.md) —
+  shared-kernel/separate-host profile contract for iPhone, iPad, sandboxed
+  macOS, and workstation macOS, including fail-closed qualification and durable
+  run evidence requirements.
 - [iPadOS native runtime severance](IPADOS-NATIVE-RUNTIME-SEVERANCE.md) —
   accepted decomposition of the Mac-hosted harness into a portable authority,
   bundled Swift/Rust primitives, explicit provider routes, and no-server
@@ -127,8 +131,8 @@ closed rather than inheriting these claims.
 | [ADR-017](decisions/ADR-017-ipados-native-journal-abi.md)              | Accepted | Mobile-owned versioned Rust/SQLite journal ABI              |
 | [ADR-018](decisions/ADR-018-ipados-foundation-models-route.md)         | Accepted | Tool-free Foundation Models generation route                |
 | [ADR-019](decisions/ADR-019-ipados-explicit-generation-routes.md)      | Accepted | Exact local/frontier routes and provider credential custody |
-| [ADR-020](decisions/ADR-020-ipados-governed-memory-curation.md)        | Accepted | Authority-governed on-device memory curation                 |
-| [ADR-021](decisions/ADR-021-ipados-durable-agent-graph-kernel.md)      | Accepted | Durable portable iPad agent loops and execution graphs       |
+| [ADR-020](decisions/ADR-020-ipados-governed-memory-curation.md)        | Accepted | Authority-governed on-device memory curation                |
+| [ADR-021](decisions/ADR-021-ipados-durable-agent-graph-kernel.md)      | Accepted | Durable portable iPad agent loops and execution graphs      |
 
 ## Package-wide invariants
 

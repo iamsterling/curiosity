@@ -5,47 +5,35 @@ import {
   createRoutedGeneration,
 } from "../src/mobile-generation-routing.ts";
 
-const providerCatalog = (source = "provider-api") => ({
-  providers: [
-    {
-      authenticationMethods: ["oauth-pkce"],
-      connectionState: "connected",
-      experimental: true,
-      id: "openai-oauth",
-      models: [
-        {
-          id: "gpt-5.4-mini",
-          name: "GPT-5.4 mini",
-          reasoning: true,
-          source,
-          toolCall: true,
-        },
-      ],
-      name: "ChatGPT / Codex",
-    },
-  ],
-  revision: "native-codex:1",
-  schemaVersion: 1,
-});
-
-const native = (snapshot, hasSession = true) => ({
+const native = (selection) => ({
   authenticateProvider: async () => {
     throw new Error("unused");
   },
   disconnectProvider: async () => {
     throw new Error("unused");
   },
-  providerConnectionStatus: async () => ({ hasSession }),
-  providerCatalogSnapshot: async () => ({
-    snapshotJson: JSON.stringify(snapshot),
-    source: "provider-api",
-  }),
+  providerConnectionStatus: async () => ({ hasSession: true }),
+  providerCatalogSnapshot: async () => assert.fail("unused"),
+  providerRoutePreferences: async () => ({ preferences: [] }),
+  providerRouteSelection: async (agentId) => {
+    if (!selection) throw new Error("CODEX_GENERATION_ROUTE_UNAVAILABLE");
+    return { ...selection, agentId };
+  },
+  setProviderRoutePreference: async () => ({ preferences: [] }),
 });
 
-test("connected provider-api discovery selects one explicit frontier route", async () => {
+const configured = {
+  modelId: "gpt-5.4-mini",
+  providerId: "openai-oauth",
+  routeId: "frontier.openai-oauth",
+  selectionPolicyId: "apple-operator-role-route-v1",
+};
+
+test("operator role preference selects one exact frontier route", async () => {
   const selection = await createMobileGenerationSelection(
-    native(providerCatalog()),
+    native(configured),
   ).select({
+    agentId: "generalist",
     contextPlanId: "b".repeat(64),
     purpose: "turn.answer",
     turnId: "turn-1",
@@ -58,14 +46,15 @@ test("connected provider-api discovery selects one explicit frontier route", asy
     purpose: "turn.answer",
     requestedRouteId: "frontier.openai-oauth",
     routeId: "frontier.openai-oauth",
-    selectionPolicyId: "ipados-frontier-connected-v1",
+    selectionPolicyId: "apple-operator-role-route-v1",
   });
 });
 
-test("connected provider discovery selects the frontier for primary agent steps", async () => {
+test("each primary role resolves its configured frontier model", async () => {
   const selection = await createMobileGenerationSelection(
-    native(providerCatalog()),
+    native(configured),
   ).select({
+    agentId: "orchestrator",
     contextPlanId: "b".repeat(64),
     purpose: "agent.step",
     turnId: "run-1",
@@ -74,13 +63,14 @@ test("connected provider discovery selects the frontier for primary agent steps"
   assert.equal(selection.purpose, "agent.step");
 });
 
-test("unqualified or unauthenticated catalogs never promote Apple to primary", async () => {
+test("missing and malformed role selections never promote Apple to primary", async () => {
   for (const module of [
-    native(providerCatalog("models.dev")),
-    native(providerCatalog(), false),
+    native(undefined),
+    native({ ...configured, modelId: "wrong model" }),
   ]) {
     await assert.rejects(
       createMobileGenerationSelection(module).select({
+        agentId: "generalist",
         contextPlanId: "b".repeat(64),
         purpose: "turn.answer",
         turnId: "turn-1",
@@ -88,6 +78,24 @@ test("unqualified or unauthenticated catalogs never promote Apple to primary", a
       ({ code }) => code === "PROVIDER_ROUTE_UNAVAILABLE",
     );
   }
+});
+
+test("role selection is required before native route resolution", async () => {
+  let nativeCalls = 0;
+  const module = native(configured);
+  module.providerRouteSelection = async () => {
+    nativeCalls += 1;
+    return configured;
+  };
+  await assert.rejects(
+    createMobileGenerationSelection(module).select({
+      contextPlanId: "b".repeat(64),
+      purpose: "agent.step",
+      turnId: "run-1",
+    }),
+    ({ code }) => code === "GENERATION_SELECTION_INVALID",
+  );
+  assert.equal(nativeCalls, 0);
 });
 
 test("routed generation never falls back after frontier dispatch", async () => {

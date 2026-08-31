@@ -3,6 +3,10 @@ import {
   embeddedProviderCatalog,
   type ProviderCatalogSnapshot,
 } from "@curiosity/authority";
+import {
+  mobileAgentPolicies,
+  type MobileAgentId,
+} from "./mobile-agent-catalog.ts";
 
 export interface NativeProviderConnectionStatus {
   readonly hasSession: boolean;
@@ -14,6 +18,26 @@ export interface NativeProviderCatalogResult {
   readonly source: "provider-api" | "cache";
 }
 
+export interface ProviderRoleRoutePreference {
+  readonly agentId: MobileAgentId;
+  readonly modelId: string;
+  readonly providerId: "openai-oauth";
+  readonly routeId: "frontier.openai-oauth";
+  readonly selectionPolicyId: "apple-operator-role-route-v1";
+}
+
+export interface NativeProviderRoutePreference {
+  readonly agentId: string;
+  readonly modelId: string;
+  readonly providerId: "openai-oauth";
+  readonly routeId: "frontier.openai-oauth";
+  readonly selectionPolicyId: "apple-operator-role-route-v1";
+}
+
+export interface NativeProviderRoutePreferences {
+  readonly preferences: readonly NativeProviderRoutePreference[];
+}
+
 export interface NativeProviderConnectionModule {
   authenticateProvider(
     providerId: string,
@@ -21,12 +45,24 @@ export interface NativeProviderConnectionModule {
   disconnectProvider(providerId: string): Promise<NativeProviderCatalogResult>;
   providerConnectionStatus(): Promise<NativeProviderConnectionStatus>;
   providerCatalogSnapshot(): Promise<NativeProviderCatalogResult>;
+  providerRoutePreferences(): Promise<NativeProviderRoutePreferences>;
+  providerRouteSelection(
+    agentId: string,
+  ): Promise<NativeProviderRoutePreference>;
+  setProviderRoutePreference(
+    agentId: string,
+    providerId: string,
+    modelId: string,
+  ): Promise<NativeProviderRoutePreferences>;
 }
 
 export interface ProviderConnectionView {
   readonly providerSession: boolean;
   readonly lastDiagnostic?: string;
   readonly catalog: ProviderCatalogSnapshot;
+  readonly routePreferences: Readonly<
+    Partial<Record<MobileAgentId, ProviderRoleRoutePreference>>
+  >;
   readonly source: "provider-api" | "cache" | "embedded";
 }
 
@@ -55,11 +91,48 @@ const decodeNativeCatalog = (
   return snapshot;
 };
 
+const identifier = (value: unknown): value is string =>
+  typeof value === "string" &&
+  new TextEncoder().encode(value).byteLength <= 256 &&
+  /^[^\u0000-\u0020\u007f]+$/u.test(value);
+
+const decodeRoutePreferences = (
+  value: NativeProviderRoutePreferences,
+): ProviderConnectionView["routePreferences"] => {
+  if (!Array.isArray(value.preferences) || value.preferences.length > 8)
+    throw new Error("CODEX_RESPONSE_INVALID");
+  const preferences: Partial<
+    Record<MobileAgentId, ProviderRoleRoutePreference>
+  > = {};
+  for (const preference of value.preferences) {
+    if (
+      !preference ||
+      typeof preference.agentId !== "string" ||
+      !(preference.agentId in mobileAgentPolicies) ||
+      preferences[preference.agentId as MobileAgentId] ||
+      !identifier(preference.modelId) ||
+      preference.providerId !== "openai-oauth" ||
+      preference.routeId !== "frontier.openai-oauth" ||
+      preference.selectionPolicyId !== "apple-operator-role-route-v1"
+    )
+      throw new Error("CODEX_RESPONSE_INVALID");
+    preferences[preference.agentId as MobileAgentId] = Object.freeze({
+      ...preference,
+      agentId: preference.agentId as MobileAgentId,
+    });
+  }
+  return Object.freeze(preferences);
+};
+
 export const createNativeProviderConnections = (
   native: NativeProviderConnectionModule,
 ) => {
   const refresh = async (): Promise<ProviderConnectionView> => {
-    const status = await native.providerConnectionStatus();
+    const [status, nativePreferences] = await Promise.all([
+      native.providerConnectionStatus(),
+      native.providerRoutePreferences(),
+    ]);
+    const routePreferences = decodeRoutePreferences(nativePreferences);
     try {
       const result = await native.providerCatalogSnapshot();
       return Object.freeze({
@@ -68,6 +141,7 @@ export const createNativeProviderConnections = (
           ? { lastDiagnostic: status.lastDiagnostic }
           : {}),
         providerSession: status.hasSession,
+        routePreferences,
         source: result.source,
       });
     } catch {
@@ -77,6 +151,7 @@ export const createNativeProviderConnections = (
           ? { lastDiagnostic: status.lastDiagnostic }
           : {}),
         providerSession: status.hasSession,
+        routePreferences,
         source: "embedded" as const,
       });
     }
@@ -87,13 +162,17 @@ export const createNativeProviderConnections = (
   ): Promise<ProviderConnectionView> => {
     try {
       const result = await operation();
-      const status = await native.providerConnectionStatus();
+      const [status, nativePreferences] = await Promise.all([
+        native.providerConnectionStatus(),
+        native.providerRoutePreferences(),
+      ]);
       return Object.freeze({
         catalog: decodeNativeCatalog(result),
         ...(status.lastDiagnostic
           ? { lastDiagnostic: status.lastDiagnostic }
           : {}),
         providerSession: status.hasSession,
+        routePreferences: decodeRoutePreferences(nativePreferences),
         source: result.source,
       });
     } catch (error) {
@@ -107,6 +186,18 @@ export const createNativeProviderConnections = (
     disconnect: (providerId: string) =>
       mutate(() => native.disconnectProvider(providerId)),
     refresh,
+    selectRoute: async (
+      agentId: MobileAgentId,
+      providerId: string,
+      modelId: string,
+    ) => {
+      try {
+        await native.setProviderRoutePreference(agentId, providerId, modelId);
+        return await refresh();
+      } catch (error) {
+        throw new Error(nativeFailureCode(error), { cause: error });
+      }
+    },
   });
 };
 

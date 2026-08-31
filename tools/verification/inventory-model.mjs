@@ -581,6 +581,31 @@ const workspaceDirectories = async (repository, rootManifest) => {
   );
 };
 
+const exactWorkspacePackages = async (repository, rootManifest) => {
+  const packages = [];
+  for (const workspacePath of rootManifest.workspaces) {
+    if (workspacePath.includes("*")) continue;
+    const manifestPath = `${workspacePath}/package.json`;
+    assertRepositoryPath(manifestPath);
+    if (!(await repository.exists(manifestPath)))
+      fail("VERIFICATION_PACKAGE_WORKSPACES", `missing:${workspacePath}`);
+    const manifest = await json(
+      repository,
+      manifestPath,
+      "VERIFICATION_PACKAGE_JSON",
+    );
+    if (typeof manifest.name !== "string" || manifest.name === "")
+      fail("VERIFICATION_PACKAGE_IDENTITY", workspacePath);
+    packages.push({
+      name: manifest.name,
+      path: workspacePath,
+      scripts: manifest.scripts ?? {},
+      workspaceMember: true,
+    });
+  }
+  return packages;
+};
+
 const verifyPackages = async (inventory, repository) => {
   const rootManifest = await json(
     repository,
@@ -612,7 +637,12 @@ const verifyPackages = async (inventory, repository) => {
       .filter(({ workspaceMember }) => workspaceMember)
       .map((item) => [item.name, item.path]),
   );
-  const workspaceNames = new Set(byName.keys());
+  const workspaceNames = new Set([
+    ...byName.keys(),
+    ...(await exactWorkspacePackages(repository, rootManifest)).map(
+      ({ name }) => name,
+    ),
+  ]);
   for (const item of inventory.packages) {
     const manifest = await json(
       repository,
@@ -1086,6 +1116,13 @@ const globExpression = (pattern) => {
 const profileExecution = async (inventory, repository, profileName) => {
   const profile = inventory.testProfiles[profileName];
   const packages = new Map(inventory.packages.map((item) => [item.path, item]));
+  const rootManifest = await json(
+    repository,
+    "package.json",
+    "VERIFICATION_PACKAGE_JSON",
+  );
+  for (const item of await exactWorkspacePackages(repository, rootManifest))
+    if (!packages.has(item.path)) packages.set(item.path, item);
   const tests = new Set(inventory.tests.map(({ path: testPath }) => testPath));
   const tools = new Set(
     inventory.verificationTools.map(({ path: toolPath }) => toolPath),
@@ -1226,11 +1263,12 @@ const profileExecution = async (inventory, repository, profileName) => {
     const key = `${packagePath}#${scriptName}`;
     if (visitedScripts.has(key)) return;
     visitedScripts.add(key);
-    const manifest =
-      packages.get(packagePath) ?? fail("VERIFICATION_PROFILE_ENTRYPOINT", key);
-    const command =
-      manifest.scripts[scriptName] ??
-      fail("VERIFICATION_PROFILE_ENTRYPOINT", key);
+    const manifest = packages.get(packagePath);
+    if (!manifest)
+      fail("VERIFICATION_PROFILE_ENTRYPOINT", `${key}:package-missing`);
+    const command = manifest.scripts[scriptName];
+    if (!command)
+      fail("VERIFICATION_PROFILE_ENTRYPOINT", `${key}:script-missing`);
     const prefix = manifest.scripts[`pre${scriptName}`];
     const suffix = manifest.scripts[`post${scriptName}`];
     if (prefix) await visitScript(packagePath, `pre${scriptName}`);
@@ -1774,8 +1812,13 @@ const verifyWorkflows = async (inventory, repository) => {
   }
 };
 
-const scriptClosure = (inventory, entrypoints) => {
-  const packages = new Map(inventory.packages.map((item) => [item.path, item]));
+const scriptClosure = (inventory, entrypoints, additionalPackages = []) => {
+  const packages = new Map(
+    [...inventory.packages, ...additionalPackages].map((item) => [
+      item.path,
+      item,
+    ]),
+  );
   const visited = new Set();
   const repositoryPath = (packagePath, relative) =>
     path.posix.normalize(
@@ -1831,7 +1874,7 @@ const scriptClosure = (inventory, entrypoints) => {
   return visited;
 };
 
-const verifyPortableAggregates = (inventory) => {
+const verifyPortableAggregates = (inventory, additionalPackages) => {
   const manualEntrypoints = new Set(
     Object.values(inventory.testProfiles)
       .filter(({ disposition }) => disposition === "manual")
@@ -1849,9 +1892,13 @@ const verifyPortableAggregates = (inventory) => {
       .map(([name, { entrypoints }]) => ({ name, entrypoints })),
   ];
   for (const aggregate of aggregates) {
-    const leaked = [...scriptClosure(inventory, aggregate.entrypoints)].filter(
-      (key) => manualEntrypoints.has(key),
-    );
+    const leaked = [
+      ...scriptClosure(
+        inventory,
+        aggregate.entrypoints,
+        additionalPackages,
+      ),
+    ].filter((key) => manualEntrypoints.has(key));
     if (leaked.length > 0)
       fail(
         "VERIFICATION_MANUAL_PROFILE_LEAK",
@@ -1912,7 +1959,10 @@ const verifyTaskGraph = async (inventory, repository) => {
     (root.scripts.verify.match(/turbo run verify/gu) ?? []).length !== 1
   )
     fail("VERIFICATION_TASK_RECURSION", "root");
-  verifyPortableAggregates(inventory);
+  verifyPortableAggregates(
+    inventory,
+    await exactWorkspacePackages(repository, root),
+  );
 };
 
 const verifyRequiredRecords = (records, registry) => {

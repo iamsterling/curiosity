@@ -17,7 +17,10 @@ import {
 
 interface ProjectSessionIndex {
   readonly assignThread: (projectId: string, threadId: string) => void;
-  readonly projectIdForThread: (threadId: string) => string;
+  readonly projectIdForThread: (
+    threadId: string,
+    durableProjectId?: string,
+  ) => string;
   readonly threadsForProject: (
     projectId: string,
     threads: readonly CuriosityThread[],
@@ -37,13 +40,18 @@ export const ProjectSessionIndexProvider = ({
 }: {
   readonly children: ReactNode;
 }) => {
-  const [ownership, setOwnership] = useState<ThreadOwnership>(Object.freeze({}));
+  const [ownership, setOwnership] = useState<ThreadOwnership>(
+    Object.freeze({}),
+  );
   const projectIdForThread = useCallback(
-    (threadId: string): string => resolveProjectIdForThread(ownership, threadId),
+    (threadId: string, durableProjectId?: string): string =>
+      resolveProjectIdForThread(ownership, threadId, durableProjectId),
     [ownership],
   );
   const assignThread = useCallback((projectId: string, threadId: string) => {
-    setOwnership((current) => assignThreadToProject(current, projectId, threadId));
+    setOwnership((current) =>
+      assignThreadToProject(current, projectId, threadId),
+    );
   }, []);
   const threadsForProject = useCallback(
     (projectId: string, threads: readonly CuriosityThread[]) =>
@@ -62,12 +70,7 @@ export const ProjectSessionIndexProvider = ({
       threadsForProject,
       threadsForProjects,
     }),
-    [
-      assignThread,
-      projectIdForThread,
-      threadsForProject,
-      threadsForProjects,
-    ],
+    [assignThread, projectIdForThread, threadsForProject, threadsForProjects],
   );
 
   return (

@@ -15,6 +15,7 @@ export interface NativeDurableAgentLoopConfig {
   readonly now: () => string;
   readonly ownerId: string;
   readonly planner: AgentKernelPlanPort;
+  readonly publishDelta?: (runId: string, delta: string) => void;
   readonly sha256: Sha256;
 }
 
@@ -29,6 +30,7 @@ export const createNativeDurableAgentLoop = (
       now: config.now,
       ownerId: config.ownerId,
       planner: config.planner,
+      ...(config.publishDelta ? { publishDelta: config.publishDelta } : {}),
       sha256: config.sha256,
     }),
     journal,

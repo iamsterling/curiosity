@@ -1,32 +1,72 @@
 import {
-  decodeProviderCatalogSnapshot,
   PortableAuthorityError,
+  type Awaitable,
   type GenerationPort,
   type GenerationRequest,
+  type GenerationSelection,
   type GenerationSelectionRequest,
-  type GenerationSelectionPort,
 } from "@curiosity/authority";
+import {
+  mobilePrimaryAgentIds,
+  mobileAgentPolicies,
+} from "./mobile-agent-catalog.ts";
 import type { NativeProviderConnectionModule } from "./provider-connections-port.ts";
+
+export const mobileFrontierSelectionPolicyId =
+  "apple-operator-role-route-v1" as const;
+
+export interface MobileGenerationSelectionRequest extends GenerationSelectionRequest {
+  readonly agentId: string;
+}
+
+export interface MobileGenerationSelectionPort {
+  readonly select: (
+    request: MobileGenerationSelectionRequest,
+  ) => Awaitable<GenerationSelection>;
+}
+
+const validSelection = (
+  value: Awaited<
+    ReturnType<NativeProviderConnectionModule["providerRouteSelection"]>
+  >,
+  agentId: string,
+): boolean =>
+  value.agentId === agentId &&
+  typeof value.modelId === "string" &&
+  /^[^\u0000-\u0020\u007f]+$/u.test(value.modelId) &&
+  new TextEncoder().encode(value.modelId).byteLength <= 256 &&
+  value.providerId === "openai-oauth" &&
+  value.routeId === "frontier.openai-oauth" &&
+  value.selectionPolicyId === mobileFrontierSelectionPolicyId;
 
 export const createMobileGenerationSelection = (
   native: NativeProviderConnectionModule,
-): GenerationSelectionPort =>
+): MobileGenerationSelectionPort =>
   Object.freeze({
-    select: async ({ purpose }: GenerationSelectionRequest) => {
+    select: async ({ agentId, purpose }: MobileGenerationSelectionRequest) => {
       if (purpose !== "agent.step" && purpose !== "turn.answer")
         throw new PortableAuthorityError("GENERATION_SELECTION_INVALID");
-      const modelId = await connectedFrontierModel(native);
-      if (!modelId)
+      if (!agentId || !(agentId in mobileAgentPolicies))
+        throw new PortableAuthorityError("GENERATION_SELECTION_INVALID");
+      let selection: Awaited<
+        ReturnType<NativeProviderConnectionModule["providerRouteSelection"]>
+      >;
+      try {
+        selection = await native.providerRouteSelection(agentId);
+      } catch {
+        throw new PortableAuthorityError("PROVIDER_ROUTE_UNAVAILABLE");
+      }
+      if (!validSelection(selection, agentId))
         throw new PortableAuthorityError("PROVIDER_ROUTE_UNAVAILABLE");
       return Object.freeze({
         adapterVersion: "codex-direct-native-v1",
         locality: "frontier" as const,
-        modelId,
-        providerId: "openai-oauth",
+        modelId: selection.modelId,
+        providerId: selection.providerId,
         purpose,
-        requestedRouteId: "frontier.openai-oauth",
-        routeId: "frontier.openai-oauth",
-        selectionPolicyId: "ipados-frontier-connected-v1",
+        requestedRouteId: selection.routeId,
+        routeId: selection.routeId,
+        selectionPolicyId: selection.selectionPolicyId,
       });
     },
   });
@@ -34,21 +74,15 @@ export const createMobileGenerationSelection = (
 export const connectedFrontierModel = async (
   native: NativeProviderConnectionModule,
 ): Promise<string | undefined> => {
-  try {
-    const status = await native.providerConnectionStatus();
-    if (!status.hasSession) return undefined;
-    const result = await native.providerCatalogSnapshot();
-    const snapshot = decodeProviderCatalogSnapshot(
-      JSON.parse(result.snapshotJson) as unknown,
-    );
-    const provider = snapshot?.providers.find(
-      ({ id }) => id === "openai-oauth",
-    );
-    if (provider?.connectionState !== "connected") return undefined;
-    return provider.models.find(({ source }) => source === "provider-api")?.id;
-  } catch {
-    return undefined;
+  for (const agentId of mobilePrimaryAgentIds) {
+    try {
+      const selection = await native.providerRouteSelection(agentId);
+      if (validSelection(selection, agentId)) return selection.modelId;
+    } catch {
+      // One unconfigured primary role does not make another exact route absent.
+    }
   }
+  return undefined;
 };
 
 export const createRoutedGeneration = (

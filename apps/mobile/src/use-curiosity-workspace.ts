@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { CuriosityClient } from "./curiosity-client";
+import type { MobilePrimaryAgentId } from "./mobile-agent-catalog";
 import { presentCuriosityError } from "./curiosity-response";
 import {
   emptyProjectWorkspaceState,
@@ -61,6 +62,7 @@ export const useCuriosityWorkspace = (client: CuriosityClient) => {
           activeThreadId: threadId,
           busy: true,
           error: undefined,
+          waitingForInput: false,
         })),
       );
       try {
@@ -122,12 +124,14 @@ export const useCuriosityWorkspace = (client: CuriosityClient) => {
       projectId: string,
       mode: ConversationMode,
       text: string,
+      agentId: MobilePrimaryAgentId = "generalist",
     ): Promise<string | undefined> => {
       const prompt = text.trim();
       const project = projectWorkspaceState(sendState.current, projectId);
       if (!prompt || project.busy) return undefined;
       const revision = nextRevision(projectId);
       const pendingId = `pending:${Date.now()}`;
+      const pendingAssistantId = `${pendingId}:assistant`;
       const optimisticMessage = Object.freeze({
         messageId: pendingId,
         role: "user" as const,
@@ -136,22 +140,76 @@ export const useCuriosityWorkspace = (client: CuriosityClient) => {
       setState((current) =>
         updateProjectWorkspaceState(current, projectId, (currentProject) => ({
           ...currentProject,
-          busy: true,
-          error: undefined,
-          messages: [...currentProject.messages, optimisticMessage],
+            busy: true,
+            error: undefined,
+            messages: [...currentProject.messages, optimisticMessage],
+            waitingForInput: false,
         })),
       );
       try {
-        const turn = await client.submit({
-          mode,
-          projectId,
-          text: prompt,
-          ...(project.activeThreadId
-            ? { threadId: project.activeThreadId }
-            : {}),
-        });
+        const turn = await client.submit(
+          {
+            agentId,
+            mode,
+            projectId,
+            text: prompt,
+            ...(project.activeThreadId
+              ? { threadId: project.activeThreadId }
+              : {}),
+          },
+          (delta) => {
+            if (revision !== requestRevisions.current.get(projectId)) return;
+            setState((current) =>
+              updateProjectWorkspaceState(
+                current,
+                projectId,
+                (currentProject) => {
+                  const existing = currentProject.messages.some(
+                    ({ messageId }) => messageId === pendingAssistantId,
+                  );
+                  return {
+                    ...currentProject,
+                    messages: existing
+                      ? currentProject.messages.map((message) =>
+                          message.messageId === pendingAssistantId
+                            ? { ...message, text: `${message.text}${delta}` }
+                            : message,
+                        )
+                      : [
+                          ...currentProject.messages,
+                          {
+                            messageId: pendingAssistantId,
+                            role: "assistant" as const,
+                            text: delta,
+                          },
+                        ],
+                  };
+                },
+              ),
+            );
+          },
+        );
         if (revision !== requestRevisions.current.get(projectId))
           return undefined;
+        if (turn.status === "waiting-for-input") {
+          setState((current) => ({
+            ...updateProjectWorkspaceState(
+              current,
+              projectId,
+              (currentProject) => ({
+                ...currentProject,
+                activeThreadId: turn.threadId,
+                busy: false,
+                messages: currentProject.messages.filter(
+                  ({ messageId }) => messageId !== pendingAssistantId,
+                ),
+                waitingForInput: true,
+              }),
+            ),
+            threads: turn.threads,
+          }));
+          return turn.threadId;
+        }
         setState((current) => ({
           ...updateProjectWorkspaceState(
             current,
@@ -161,7 +219,9 @@ export const useCuriosityWorkspace = (client: CuriosityClient) => {
               activeThreadId: turn.threadId,
               busy: false,
               messages: [
-                ...currentProject.messages,
+                ...currentProject.messages.filter(
+                  ({ messageId }) => messageId !== pendingAssistantId,
+                ),
                 {
                   messageId: turn.assistantMessageId,
                   role: "assistant",
@@ -171,6 +231,7 @@ export const useCuriosityWorkspace = (client: CuriosityClient) => {
                     : {}),
                 },
               ],
+              waitingForInput: false,
             }),
           ),
           threads: turn.threads,
@@ -185,8 +246,10 @@ export const useCuriosityWorkspace = (client: CuriosityClient) => {
             busy: false,
             error: presentCuriosityError(error),
             messages: currentProject.messages.filter(
-              ({ messageId }) => messageId !== pendingId,
+              ({ messageId }) =>
+                messageId !== pendingId && messageId !== pendingAssistantId,
             ),
+            waitingForInput: false,
           })),
         );
         return undefined;

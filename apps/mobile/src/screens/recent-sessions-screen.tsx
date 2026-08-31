@@ -30,7 +30,10 @@ export const RecentSessionsScreen = () => {
             accessibilityRole="button"
             key={thread.threadId}
             onPress={() => {
-              const projectId = sessions.projectIdForThread(thread.threadId);
+              const projectId = sessions.projectIdForThread(
+                thread.threadId,
+                thread.projectId,
+              );
               void workspace.loadSession(projectId, thread.threadId);
               router.push(projectSessionRoute(projectId, thread.threadId));
             }}
@@ -39,8 +42,13 @@ export const RecentSessionsScreen = () => {
             <View style={styles.rowCopy}>
               <Text style={styles.rowTitle}>{thread.title}</Text>
               <Text style={styles.rowMeta}>
-                {catalog.project(sessions.projectIdForThread(thread.threadId))
-                  ?.name ?? "Unknown Project"} · Session {thread.sequence}
+                {catalog.project(
+                  sessions.projectIdForThread(
+                    thread.threadId,
+                    thread.projectId,
+                  ),
+                )?.name ?? "Unknown Project"}{" "}
+                · Session {thread.sequence}
               </Text>
             </View>
             <Text style={styles.chevron}>›</Text>

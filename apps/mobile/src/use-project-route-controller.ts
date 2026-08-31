@@ -8,6 +8,7 @@ import { useProjectCommandController } from "./use-project-command-controller";
 import { useProjectNavigationController } from "./use-project-navigation-controller";
 import { useProjectPaneLayout } from "./use-project-pane-layout";
 import { useWorkspaceCatalog } from "./workspace-catalog-context";
+import type { MobilePrimaryAgentId } from "./mobile-agent-catalog";
 import {
   collectionForPath,
   projectIdForRouteParam,
@@ -30,7 +31,11 @@ export const useProjectRouteController = () => {
   const workspace = useCuriosityWorkspaceContext();
   const { loadSession } = workspace;
   const [drafts, setDrafts] = useState<Readonly<Record<string, string>>>({});
+  const [agents, setAgents] = useState<
+    Readonly<Record<string, MobilePrimaryAgentId>>
+  >({});
   const draft = drafts[projectId] ?? "";
+  const agentId = agents[projectId] ?? "generalist";
   const setDraft = useCallback(
     (next: SetStateAction<string>) => {
       setDrafts((current) => {
@@ -58,7 +63,8 @@ export const useProjectRouteController = () => {
   );
 
   useEffect(() => {
-    if (!project || project.organizationId === catalog.activeOrganizationId) return;
+    if (!project || project.organizationId === catalog.activeOrganizationId)
+      return;
     catalog.selectOrganization(project.organizationId);
   }, [catalog, project]);
 
@@ -68,15 +74,33 @@ export const useProjectRouteController = () => {
   }, [loadSession, projectId, projectState.activeThreadId, sessionId]);
 
   const sendDraft = useCallback(async () => {
-    const threadId = await workspace.send(projectId, "overview", draft);
+    const threadId = await workspace.send(
+      projectId,
+      "overview",
+      draft,
+      agentId,
+    );
     if (!threadId) return false;
     sessions.assignThread(projectId, threadId);
     setDraft("");
     return true;
-  }, [draft, projectId, sessions, setDraft, workspace]);
+  }, [agentId, draft, projectId, sessions, setDraft, workspace]);
+
+  const refreshSession = useCallback(async () => {
+    if (!projectState.activeThreadId) return;
+    await loadSession(projectId, projectState.activeThreadId);
+  }, [loadSession, projectId, projectState.activeThreadId]);
+
+  const selectAgent = useCallback(
+    (nextAgentId: MobilePrimaryAgentId) => {
+      setAgents((current) => ({ ...current, [projectId]: nextAgentId }));
+    },
+    [projectId],
+  );
 
   return {
     activeCollectionId,
+    agentId,
     bottomInset: insets.bottom,
     commands: commandPalette.commands,
     contentWidth: pane.contentWidth,
@@ -89,7 +113,9 @@ export const useProjectRouteController = () => {
     openThread: navigation.openThread,
     project,
     projectId,
+    refreshSession,
     selectCollection: navigation.selectCollection,
+    selectAgent,
     sendDraft,
     setDraft,
     showSidebar: navigation.showSidebar,

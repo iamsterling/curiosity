@@ -11,20 +11,22 @@ import {
   type AgentKernelPlanPort,
   type AgentRunProjection,
   type ContextBlockInput,
-  type GenerationSelectionPort,
   type Sha256,
   type StoredEvent,
 } from "@curiosity/authority";
 import {
+  isMobilePrimaryAgentId,
   mobileAgentPolicies,
   mobileAgentToolBindings,
-  mobileAgentCatalogVersion,
+  mobileAgentPolicyVersion,
   type MobileAgentId,
 } from "./mobile-agent-catalog.ts";
+import { mobileAgentDelegationBinding } from "./mobile-agent-delegation.ts";
+import type { MobileGenerationSelectionPort } from "./mobile-generation-routing.ts";
 
 export interface MobileAgentPlannerConfig {
   readonly events: () => Promise<readonly StoredEvent[]>;
-  readonly generationSelection: GenerationSelectionPort;
+  readonly generationSelection: MobileGenerationSelectionPort;
   readonly sha256: Sha256;
 }
 
@@ -32,6 +34,8 @@ const conversationBudget = 1_200;
 const evidenceBudget = 700;
 const memoryBudget = 400;
 const stateBudget = 400;
+const childTaskBudget = 2_800;
+const childResultBudget = 3_200;
 const maximumConversationMessages = 8;
 const maximumEvidenceEvents = 4;
 
@@ -70,6 +74,135 @@ const runInput = (run: AgentRunProjection) => {
   };
 };
 
+const childTaskBlock = (run: AgentRunProjection): ContextBlockInput => {
+  const state = record(run.state);
+  const delegation = record(state?.delegation);
+  const task = record(delegation?.task);
+  if (
+    run.depth !== 1 ||
+    !run.parentRunId ||
+    !run.childKey ||
+    !state ||
+    !delegation ||
+    !task ||
+    delegation.agentId !== run.workflowName ||
+    delegation.parentRunId !== run.parentRunId ||
+    typeof delegation.description !== "string" ||
+    typeof task.objective !== "string" ||
+    typeof task.deliverable !== "string" ||
+    !Array.isArray(task.acceptanceChecks) ||
+    !Array.isArray(task.nonGoals)
+  )
+    throw new PortableAuthorityError("AGENT_PLANNER_CHILD_INPUT_INVALID");
+  return {
+    blockId: "delegated-task",
+    content: truncateUtf8(
+      [
+        "Bounded read-only child task. Return only the requested deliverable.",
+        canonicalJson({
+          acceptanceChecks: task.acceptanceChecks,
+          deliverable: task.deliverable,
+          description: delegation.description,
+          nonGoals: task.nonGoals,
+          objective: task.objective,
+        }),
+      ].join("\n"),
+      childTaskBudget,
+    ),
+    kind: "workflow",
+    provenance: "trusted-durable",
+    sourceEventIds: [run.sourceEventId],
+  };
+};
+
+const childResultsBlock = (
+  run: AgentRunProjection,
+  events: readonly StoredEvent[],
+): ContextBlockInput | undefined => {
+  const state = record(run.state);
+  if (state?.phase !== "waiting-children" || !Array.isArray(state.children))
+    return undefined;
+  const sourceEventIds: string[] = [];
+  const results = state.children.map((value, index) => {
+    const child = record(value);
+    if (
+      !child ||
+      child.ordinal !== index ||
+      typeof child.childKey !== "string" ||
+      typeof child.runId !== "string" ||
+      typeof child.workflowName !== "string"
+    )
+      throw new PortableAuthorityError("AGENT_PLANNER_CHILD_RESULT_INVALID");
+    const created = events.find((event) => {
+      const body = record(event.body);
+      return (
+        event.streamId === child.runId &&
+        event.type === "workflow.child-created" &&
+        event.parentExecutionId === run.executionId &&
+        body?.childKey === child.childKey &&
+        body?.parentInstanceId === run.runId &&
+        body?.workflowName === child.workflowName
+      );
+    });
+    const terminal = [...events]
+      .reverse()
+      .find(
+        (event) =>
+          event.streamId === child.runId &&
+          event.parentExecutionId === run.executionId &&
+          [
+            "workflow.cancelled",
+            "workflow.completed",
+            "workflow.failed",
+          ].includes(event.type),
+      );
+    const advanced = [...events]
+      .reverse()
+      .find(
+        (event) =>
+          event.streamId === child.runId &&
+          event.parentExecutionId === run.executionId &&
+          event.type === "workflow.advanced",
+      );
+    const advancedState = record(record(advanced?.body)?.state);
+    if (
+      !created ||
+      !terminal ||
+      (terminal.type !== "workflow.cancelled" && (!advanced || !advancedState))
+    )
+      throw new PortableAuthorityError("AGENT_PLANNER_CHILD_RESULT_INVALID");
+    sourceEventIds.push(created.eventId);
+    if (advanced) sourceEventIds.push(advanced.eventId);
+    sourceEventIds.push(terminal.eventId);
+    const final = record(advancedState?.final);
+    const terminalStatus = terminal.type.slice("workflow.".length);
+    const errorCode =
+      terminal.type === "workflow.cancelled"
+        ? "ACTION_CANCELLED"
+        : typeof advancedState?.errorCode === "string"
+          ? advancedState.errorCode
+          : typeof advancedState?.reasonCode === "string"
+            ? advancedState.reasonCode
+            : undefined;
+    return {
+      childKey: child.childKey,
+      ...(errorCode ? { errorCode } : {}),
+      ordinal: child.ordinal,
+      ...(typeof final?.text === "string" ? { result: final.text } : {}),
+      runId: child.runId,
+      status: terminalStatus,
+      workflowName: child.workflowName,
+    };
+  });
+  return {
+    blockId: "child-results",
+    content: truncateUtf8(canonicalJson(results), childResultBudget),
+    kind: "tool-evidence",
+    provenance: "untrusted-evidence",
+    sourceEventIds,
+  };
+};
+
 const conversationBlock = (
   events: readonly StoredEvent[],
   threadId: string,
@@ -101,6 +234,59 @@ const conversationBlock = (
   };
 };
 
+const operatorQuestionAnswerBlock = (
+  run: AgentRunProjection,
+  events: readonly StoredEvent[],
+): ContextBlockInput | undefined => {
+  const state = record(run.state);
+  if (
+    state?.phase !== "waiting-question" ||
+    typeof state.questionActionId !== "string"
+  )
+    return undefined;
+  const asked = [...events].reverse().find((event) => {
+    const body = record(event.body);
+    return (
+      event.childExecutionId === run.executionId &&
+      event.type === "question.asked" &&
+      body?.actionId === state.questionActionId &&
+      typeof body?.prompt === "string" &&
+      typeof body?.questionId === "string"
+    );
+  });
+  const askedBody = record(asked?.body);
+  const prompt = askedBody?.prompt;
+  const questionId = askedBody?.questionId;
+  if (!asked || typeof prompt !== "string" || typeof questionId !== "string")
+    return undefined;
+  const answered = [...events].reverse().find((event) => {
+    const body = record(event.body);
+    return (
+      event.sequence > asked.sequence &&
+      event.childExecutionId === run.executionId &&
+      event.type === "question.answered" &&
+      body?.provenance === "untrusted-user-answer" &&
+      body?.questionId === questionId &&
+      typeof body?.answer === "string"
+    );
+  });
+  const answeredBody = record(answered?.body);
+  const answer = answeredBody?.answer;
+  if (!answered || typeof answer !== "string") return undefined;
+  return {
+    blockId: "operator-question-answer",
+    content: canonicalJson({
+      answer: truncateUtf8(answer, 4_096),
+      prompt: truncateUtf8(prompt, 4_096),
+      relationship: "operator-answer-to-agent-question",
+      schemaVersion: 1,
+    }),
+    kind: "conversation",
+    provenance: "trusted-durable",
+    sourceEventIds: [asked.eventId, answered.eventId],
+  };
+};
+
 const evidenceBlock = (
   events: readonly StoredEvent[],
   executionId: string,
@@ -109,7 +295,8 @@ const evidenceBlock = (
     .filter(
       (event) =>
         event.childExecutionId === executionId &&
-        (event.type === "action.succeeded" || event.type === "action.failed"),
+        (event.type === "action.succeeded" || event.type === "action.failed") &&
+        record(event.body)?.actionType !== "question.ask",
     )
     .slice(-maximumEvidenceEvents);
   if (evidence.length === 0) return undefined;
@@ -185,10 +372,30 @@ const blocksFor = (
   events: readonly StoredEvent[],
   agentId: MobileAgentId,
 ): readonly ContextBlockInput[] => {
+  if (run.depth > 0)
+    return [
+      {
+        blockId: "agent-policy",
+        content: mobileAgentPolicies[agentId],
+        kind: "agent-policy",
+        provenance: "trusted-durable",
+        sourceEventIds: [],
+      },
+      childTaskBlock(run),
+      {
+        blockId: "workflow-state",
+        content: truncateUtf8(canonicalJson(run.state), stateBudget),
+        kind: "workflow",
+        provenance: "trusted-durable",
+        sourceEventIds: [run.sourceEventId],
+      },
+    ];
   const input = runInput(run);
   const conversation = conversationBlock(events, input.threadId);
   const evidence = evidenceBlock(events, run.executionId);
   const memory = memoryBlock(events, input.projectId);
+  const childResults = childResultsBlock(run, events);
+  const operatorQuestionAnswer = operatorQuestionAnswerBlock(run, events);
   return [
     {
       blockId: "agent-policy",
@@ -207,6 +414,8 @@ const blocksFor = (
       sourceEventIds: [run.sourceEventId],
     },
     ...(evidence ? [evidence] : []),
+    ...(childResults ? [childResults] : []),
+    ...(operatorQuestionAnswer ? [operatorQuestionAnswer] : []),
   ];
 };
 
@@ -230,6 +439,7 @@ export const createMobileAgentPlanner = (
       config.sha256,
     );
     const selection = await config.generationSelection.select({
+      agentId,
       contextPlanId: contextPlan.contextPlanId,
       purpose: "agent.step",
       turnId: run.runId,
@@ -241,11 +451,19 @@ export const createMobileAgentPlanner = (
       config.sha256,
     );
     const finalizationOnly = run.actionCount + 1 >= run.limits.maxActions;
-    const tools = run.capabilityCeiling.includes("documents.read")
-      ? mobileAgentToolBindings(agentId)
-      : [];
+    const tools = [
+      ...(run.depth === 0 && run.capabilityCeiling.includes("documents.read")
+        ? mobileAgentToolBindings(agentId)
+        : []),
+      ...(run.depth === 0 &&
+      isMobilePrimaryAgentId(agentId) &&
+      run.depth < run.limits.maxDelegationDepth &&
+      run.childCount < run.limits.maxChildren
+        ? [mobileAgentDelegationBinding(agentId, config.sha256)]
+        : []),
+    ];
     const estimated = estimateAgentStepInputTokens({
-      agent: { id: agentId, version: mobileAgentCatalogVersion },
+      agent: { id: agentId, version: mobileAgentPolicyVersion },
       availableTools: tools.map(({ definition }) => definition),
       contextPlan,
       finalizationOnly,
@@ -259,7 +477,7 @@ export const createMobileAgentPlanner = (
     if (estimated + agentStepMaximumResponseTokens > agentStepAllocatableTokens)
       throw new PortableAuthorityError("AGENT_PLANNER_CONTEXT_EXCEEDED");
     return {
-      agent: { id: agentId, version: mobileAgentCatalogVersion },
+      agent: { id: agentId, version: mobileAgentPolicyVersion },
       contextPlan,
       finalizationOnly,
       route,

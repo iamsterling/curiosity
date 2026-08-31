@@ -10,6 +10,7 @@ export interface CuriosityProjectWorkspaceState {
   readonly busy: boolean;
   readonly error?: string;
   readonly messages: readonly CuriosityMessage[];
+  readonly waitingForInput?: boolean;
 }
 
 export interface CuriosityWorkspaceState {

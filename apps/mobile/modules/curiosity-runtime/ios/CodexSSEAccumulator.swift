@@ -7,6 +7,7 @@ struct CodexSSEFailure: Error {
 struct CodexSSEAccumulator {
   private(set) var text = ""
   private(set) var completed = false
+  private(set) var pendingDelta: String?
   private var dataLines: [String] = []
   private var lineBytes = Data()
   private var totalBytes = 0
@@ -36,7 +37,9 @@ struct CodexSSEAccumulator {
     if !lineBytes.isEmpty { try consumeBufferedLine() }
     if !dataLines.isEmpty { try consumeEvent() }
     guard completed, !text.isEmpty else {
-      throw CodexConnectionFailure.generationFailed
+      throw CodexSSEFailure(
+        diagnostic: "stream:missing-completion:output=\(text.isEmpty ? "none" : "partial")"
+      )
     }
   }
 
@@ -83,6 +86,7 @@ struct CodexSSEAccumulator {
     let type = value["type"] as? String
     if type == "response.output_text.delta", let delta = value["delta"] as? String {
       try append(delta)
+      pendingDelta = delta
       return
     }
     if type == "response.completed" {
@@ -96,8 +100,13 @@ struct CodexSSEAccumulator {
       "error", "response.failed", "response.cancelled", "response.canceled",
       "response.incomplete",
     ].contains(type) {
-      throw CodexConnectionFailure.generationFailed
+      throw CodexSSEFailure(diagnostic: "stream:\(type ?? "unknown-terminal")")
     }
+  }
+
+  mutating func takeDelta() -> String? {
+    defer { pendingDelta = nil }
+    return pendingDelta
   }
 
   private mutating func append(_ value: String) throws {

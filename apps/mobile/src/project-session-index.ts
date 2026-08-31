@@ -12,7 +12,8 @@ export const assignThreadToProject = (
 export const projectIdForThread = (
   ownership: ThreadOwnership,
   threadId: string,
-): string => ownership[threadId] ?? defaultProjectId;
+  durableProjectId?: string,
+): string => durableProjectId ?? ownership[threadId] ?? defaultProjectId;
 
 export const threadsForProject = (
   ownership: ThreadOwnership,
@@ -20,7 +21,8 @@ export const threadsForProject = (
   threads: readonly CuriosityThread[],
 ): readonly CuriosityThread[] =>
   threads.filter(
-    ({ threadId }) => projectIdForThread(ownership, threadId) === projectId,
+    ({ projectId: durableProjectId, threadId }) =>
+      projectIdForThread(ownership, threadId, durableProjectId) === projectId,
   );
 
 export const threadsForProjects = (
@@ -29,7 +31,7 @@ export const threadsForProjects = (
   threads: readonly CuriosityThread[],
 ): readonly CuriosityThread[] => {
   const includedProjects = new Set(projectIds);
-  return threads.filter(({ threadId }) =>
-    includedProjects.has(projectIdForThread(ownership, threadId)),
+  return threads.filter(({ projectId, threadId }) =>
+    includedProjects.has(projectIdForThread(ownership, threadId, projectId)),
   );
 };

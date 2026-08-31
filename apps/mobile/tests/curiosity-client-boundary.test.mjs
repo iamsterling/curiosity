@@ -73,6 +73,9 @@ test("UI and workspace modules depend on CuriosityClient rather than transport",
     "utf8",
   );
   assert.match(workspace, /CuriosityClient/u);
+  assert.match(workspace, /client\.submit\([\s\S]*\(delta\) =>/u);
+  assert.match(workspace, /pendingAssistantId/u);
+  assert.match(workspace, /messageId !== pendingAssistantId/u);
   assert.doesNotMatch(workspace, /CuriosityApi|curiosity-api/u);
 });
 

@@ -12,6 +12,7 @@ import {
 } from "./agent-step.js";
 import type {
   AgentJournalActionAllocation,
+  AgentJournalChildAllocation,
   AgentJournalCommitTransition,
   AgentJournalMutationResult,
   AgentJournalPort,
@@ -26,8 +27,9 @@ import { PortableAuthorityError, type Sha256 } from "./domain.js";
 import type { GenerationRouteReceipt } from "./generation-route.js";
 import type { Awaitable } from "./workflow-domain.js";
 
-export interface AgentKernelToolBinding {
+export interface AgentKernelActionToolBinding {
   readonly definition: AgentToolDefinitionSnapshot;
+  readonly kind?: "action";
   readonly pluginId: string;
   readonly propose: (
     input: unknown,
@@ -39,6 +41,28 @@ export interface AgentKernelToolBinding {
   ) => Awaitable<unknown>;
   readonly reactorId: string;
 }
+
+export interface AgentKernelChildToolBinding {
+  readonly allocate: (
+    input: unknown,
+    context: {
+      readonly callKey: string;
+      readonly executionId: string;
+      readonly ordinal: number;
+      readonly parentDepth: number;
+      readonly parentRunId: string;
+      readonly sourceEventId: string;
+      readonly stepId: string;
+    },
+  ) => Awaitable<AgentJournalChildAllocation>;
+  readonly definition: AgentToolDefinitionSnapshot;
+  readonly kind: "child";
+  readonly pluginId: string;
+  readonly reactorId: string;
+}
+
+export type AgentKernelToolBinding =
+  AgentKernelActionToolBinding | AgentKernelChildToolBinding;
 
 export interface AgentKernelStepPlan {
   readonly agent: AgentIdentitySnapshot;
@@ -191,7 +215,7 @@ const assistantState = (
 
 const proposedAction = async (
   call: AgentToolCallProposal,
-  binding: AgentKernelToolBinding,
+  binding: AgentKernelActionToolBinding,
   run: AgentRunProjection,
   stepId: string,
   sha256: Sha256,
@@ -252,6 +276,64 @@ const proposedAction = async (
   };
 };
 
+const proposedChild = async (
+  call: AgentToolCallProposal,
+  binding: AgentKernelChildToolBinding,
+  run: AgentRunProjection,
+  stepId: string,
+  ordinal: number,
+): Promise<AgentJournalChildAllocation> => {
+  if (
+    binding.definition.toolId !== call.toolId ||
+    binding.definition.version !== call.toolVersion ||
+    run.depth >= run.limits.maxDelegationDepth ||
+    run.childCount + ordinal + 1 > run.limits.maxChildren
+  )
+    throw new PortableAuthorityError("AGENT_CHILD_PROPOSAL_INVALID");
+  const child = await binding.allocate(call.input, {
+    callKey: call.callKey,
+    executionId: run.executionId,
+    ordinal,
+    parentDepth: run.depth,
+    parentRunId: run.runId,
+    sourceEventId: run.sourceEventId,
+    stepId,
+  });
+  const limitValues = [
+    child.limits.maxActions,
+    child.limits.maxChildren,
+    child.limits.maxDelegationDepth,
+    child.limits.maxNoProgress,
+    child.limits.maxSteps,
+  ];
+  if (
+    !identifierPattern.test(binding.pluginId) ||
+    !identifierPattern.test(binding.reactorId) ||
+    !identifierPattern.test(child.childKey) ||
+    !identifierPattern.test(child.contributionId) ||
+    !identifierPattern.test(child.contributionVersion) ||
+    !identifierPattern.test(child.executionId) ||
+    !identifierPattern.test(child.pluginId) ||
+    !identifierPattern.test(child.runId) ||
+    !identifierPattern.test(child.workflowName) ||
+    child.capabilityCeiling.length > run.capabilityCeiling.length ||
+    child.capabilityCeiling.some(
+      (capability) => !run.capabilityCeiling.includes(capability),
+    ) ||
+    [...child.capabilityCeiling].sort().join("\u0000") !==
+      child.capabilityCeiling.join("\u0000") ||
+    new Set(child.capabilityCeiling).size !== child.capabilityCeiling.length ||
+    child.limits.maxChildren !== 0 ||
+    child.limits.maxDelegationDepth !== 0 ||
+    limitValues.some((value) => !Number.isSafeInteger(value)) ||
+    child.limits.maxActions < 1 ||
+    child.limits.maxNoProgress < 0 ||
+    child.limits.maxSteps < 1
+  )
+    throw new PortableAuthorityError("AGENT_CHILD_PROPOSAL_INVALID");
+  return child;
+};
+
 const questionAction = async (
   proposal: Extract<AgentStepProposal, { readonly kind: "question" }>,
   run: AgentRunProjection,
@@ -290,6 +372,7 @@ const transitionFor = async (
   sha256: Sha256,
 ): Promise<AgentJournalCommitTransition> => {
   let actions: readonly AgentJournalActionAllocation[] = [];
+  let children: readonly AgentJournalChildAllocation[] = [];
   let nextState: unknown;
   let terminalRequested = false;
   if (proposal.kind === "final") {
@@ -324,29 +407,73 @@ const transitionFor = async (
     const bindings = new Map(
       plan.tools.map((binding) => [binding.definition.toolId, binding]),
     );
-    actions = await Promise.all(
-      proposal.actions.map((call) => {
+    const allocations = await Promise.all(
+      proposal.actions.map(async (call, ordinal) => {
         const binding = bindings.get(call.toolId);
         if (!binding)
           throw new PortableAuthorityError("AGENT_STEP_PROPOSAL_INVALID");
-        return proposedAction(call, binding, run, stepId, sha256);
+        return binding.kind === "child"
+          ? {
+              child: await proposedChild(call, binding, run, stepId, ordinal),
+              kind: "child" as const,
+            }
+          : {
+              action: await proposedAction(call, binding, run, stepId, sha256),
+              kind: "action" as const,
+            };
       }),
     );
+    if (new Set(allocations.map(({ kind }) => kind)).size !== 1)
+      throw new PortableAuthorityError("AGENT_STEP_PROPOSAL_INVALID");
+    actions = allocations.flatMap((allocation) =>
+      allocation.kind === "action" ? [allocation.action] : [],
+    );
+    children = allocations.flatMap((allocation) =>
+      allocation.kind === "child" ? [allocation.child] : [],
+    );
+    if (
+      ["childKey", "executionId", "runId"].some(
+        (key) =>
+          new Set(
+            children.map(
+              (child) => child[key as "childKey" | "executionId" | "runId"],
+            ),
+          ).size !== children.length,
+      )
+    )
+      throw new PortableAuthorityError("AGENT_CHILD_PROPOSAL_INVALID");
     nextState = {
       ...assistantState(proposal),
-      actionIds: actions.map(({ actionId }) => actionId),
-      phase: "waiting-actions",
+      ...(actions.length > 0
+        ? { actionIds: actions.map(({ actionId }) => actionId) }
+        : {
+            children: children.map(
+              ({ childKey, runId, workflowName }, ordinal) => ({
+                childKey,
+                ordinal,
+                runId,
+                workflowName,
+              }),
+            ),
+          }),
+      phase: actions.length > 0 ? "waiting-actions" : "waiting-children",
       schemaVersion: 1,
     };
   }
   const progressKey = `agent-step:${run.revision + 1}:${proposal.kind}:${stepId}`;
   const transitionDigest = await sha256(
-    canonicalJson({ actions, nextState, progressKey, terminalRequested }),
+    canonicalJson({
+      actions,
+      children,
+      nextState,
+      progressKey,
+      terminalRequested,
+    }),
   );
   const committedTime = checkedTime(committedAt);
   return {
     actions,
-    children: [],
+    children,
     committedAt,
     expectedRevision: run.revision,
     gateEligibleActorId: eligibleActorId,
@@ -433,6 +560,7 @@ const providerTransition = async (
   const transitionDigest = await sha256(
     canonicalJson({
       actions: [action],
+      children: [],
       nextState,
       progressKey,
       terminalRequested,
@@ -477,7 +605,13 @@ const providerFailureTransition = async (
   const progressKey = `agent-provider-terminal:${run.revision + 1}:${stepId}:${errorCode}`;
   const terminalRequested = true;
   const transitionDigest = await sha256(
-    canonicalJson({ actions: [], nextState, progressKey, terminalRequested }),
+    canonicalJson({
+      actions: [],
+      children: [],
+      nextState,
+      progressKey,
+      terminalRequested,
+    }),
   );
   const time = checkedTime(committedAt);
   return {

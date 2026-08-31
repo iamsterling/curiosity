@@ -1,13 +1,11 @@
 import type { AgentRunProjection, AgentRunStatus } from "@curiosity/authority";
 import { useMemo } from "react";
+import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
 import {
-  FlatList,
-  Pressable,
-  RefreshControl,
-  Text,
-  View,
-} from "react-native";
-import { agentRunsForProjects } from "../agent-activity-scope";
+  agentOperatorRequestsForRuns,
+  agentRunsForProjects,
+} from "../agent-activity-scope";
+import { AgentControlPanel } from "../components/agent-control-panel";
 import { SystemScreenShell } from "../components/system-screen-shell";
 import { palette } from "../theme";
 import { useAgentActivity } from "../use-agent-activity";
@@ -37,12 +35,16 @@ const contextLabel = (run: AgentRunProjection): string => {
   const labels = [project, session].filter(
     (value): value is string => typeof value === "string" && value.length > 0,
   );
-  return labels.length > 0 ? labels.join(" · ") : `Execution ${run.executionId}`;
+  return labels.length > 0
+    ? labels.join(" · ")
+    : `Execution ${run.executionId}`;
 };
 
 const AgentRunRow = ({ run }: { readonly run: AgentRunProjection }) => (
   <View style={styles.run}>
-    <View style={[styles.statusDot, { backgroundColor: statusColor(run.status) }]} />
+    <View
+      style={[styles.statusDot, { backgroundColor: statusColor(run.status) }]}
+    />
     <View style={styles.runCopy}>
       <View style={styles.runHeading}>
         <Text numberOfLines={1} style={styles.runTitle}>
@@ -52,9 +54,12 @@ const AgentRunRow = ({ run }: { readonly run: AgentRunProjection }) => (
           {run.depth > 0 ? `SUBAGENT · DEPTH ${run.depth}` : "AGENT"}
         </Text>
       </View>
-      <Text numberOfLines={1} style={styles.context}>{contextLabel(run)}</Text>
+      <Text numberOfLines={1} style={styles.context}>
+        {contextLabel(run)}
+      </Text>
       <Text numberOfLines={1} style={styles.runMeta}>
-        {run.status.toUpperCase()} · revision {run.revision} · {run.actionCount} actions · {run.childCount} children
+        {run.status.toUpperCase()} · revision {run.revision} · {run.actionCount}{" "}
+        actions · {run.childCount} children
       </Text>
     </View>
     <View style={styles.timeBlock}>
@@ -64,7 +69,9 @@ const AgentRunRow = ({ run }: { readonly run: AgentRunProjection }) => (
           minute: "2-digit",
         })}
       </Text>
-      <Text numberOfLines={1} style={styles.runId}>{run.runId}</Text>
+      <Text numberOfLines={1} style={styles.runId}>
+        {run.runId}
+      </Text>
     </View>
   </View>
 );
@@ -75,6 +82,10 @@ export const AgentActivityScreen = () => {
   const runs = useMemo(
     () => agentRunsForProjects(activity.state.runs, organization.projectIds),
     [activity.state.runs, organization.projectIds],
+  );
+  const operatorRequests = useMemo(
+    () => agentOperatorRequestsForRuns(activity.state.operatorRequests, runs),
+    [activity.state.operatorRequests, runs],
   );
   const counts = useMemo(() => {
     const active = runs.filter(({ status }) =>
@@ -111,29 +122,49 @@ export const AgentActivityScreen = () => {
           <View style={styles.empty}>
             <Text style={styles.emptyGlyph}>◎</Text>
             <Text style={styles.emptyTitle}>
-              {activity.state.busy ? "Reading agent journal…" : "No agent runs yet"}
+              {activity.state.busy
+                ? "Reading agent journal…"
+                : "No agent runs yet"}
             </Text>
             <Text style={styles.emptyCopy}>
-              Agent and subagent executions will appear here as the durable native journal records them.
+              Agent and subagent executions will appear here as the durable
+              native journal records them.
             </Text>
           </View>
         }
         ListHeaderComponent={
-          <View style={styles.overview}>
-            <View style={styles.metric}>
-              <Text style={styles.metricValue}>{counts.active}</Text>
-              <Text style={styles.metricLabel}>ACTIVE</Text>
+          <View>
+            <View style={styles.overview}>
+              <View style={styles.metric}>
+                <Text style={styles.metricValue}>{counts.active}</Text>
+                <Text style={styles.metricLabel}>ACTIVE</Text>
+              </View>
+              <View style={styles.metric}>
+                <Text style={styles.metricValue}>{counts.total}</Text>
+                <Text style={styles.metricLabel}>RECORDED</Text>
+              </View>
+              <View style={styles.metric}>
+                <Text
+                  style={[
+                    styles.metricValue,
+                    counts.failed > 0 && styles.failed,
+                  ]}
+                >
+                  {counts.failed}
+                </Text>
+                <Text style={styles.metricLabel}>NEEDS ATTENTION</Text>
+              </View>
             </View>
-            <View style={styles.metric}>
-              <Text style={styles.metricValue}>{counts.total}</Text>
-              <Text style={styles.metricLabel}>RECORDED</Text>
-            </View>
-            <View style={styles.metric}>
-              <Text style={[styles.metricValue, counts.failed > 0 && styles.failed]}>
-                {counts.failed}
-              </Text>
-              <Text style={styles.metricLabel}>NEEDS ATTENTION</Text>
-            </View>
+            <AgentControlPanel
+              mutatingId={activity.state.mutatingId}
+              onAnswer={(questionId, answer) =>
+                void activity.answerQuestion(questionId, answer)
+              }
+              onDecision={(target, decision) =>
+                void activity.decideGate(target, decision)
+              }
+              requests={operatorRequests}
+            />
           </View>
         }
         refreshControl={

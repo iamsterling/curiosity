@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import type { CuriosityMessage } from "../curiosity-api";
 import { palette } from "../theme";
@@ -6,17 +6,21 @@ import { palette } from "../theme";
 export const ConversationView = ({
   contentBottomInset = 18,
   error,
+  footer,
+  footerRevision,
   messages,
 }: {
   readonly contentBottomInset?: number;
   readonly error?: string;
+  readonly footer?: ReactNode;
+  readonly footerRevision?: string;
   readonly messages: readonly CuriosityMessage[];
 }) => {
   const list = useRef<FlatList<CuriosityMessage>>(null);
 
   useEffect(() => {
     if (messages.length > 0) list.current?.scrollToEnd({ animated: true });
-  }, [messages.length]);
+  }, [footerRevision, messages.length]);
 
   return (
     <FlatList
@@ -39,9 +43,14 @@ export const ConversationView = ({
         </View>
       }
       ListFooterComponent={
-        error ? (
-          <View accessibilityLiveRegion="polite" style={styles.error}>
-            <Text style={styles.errorText}>{error}</Text>
+        footer || error ? (
+          <View>
+            {footer}
+            {error ? (
+              <View accessibilityLiveRegion="polite" style={styles.error}>
+                <Text style={styles.errorText}>{error}</Text>
+              </View>
+            ) : null}
           </View>
         ) : null
       }

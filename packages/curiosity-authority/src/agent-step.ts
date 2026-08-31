@@ -6,6 +6,7 @@ import type { GenerationRouteReceipt } from "./generation-route.js";
 export const agentStepAllocatableTokens = 3_480;
 export const agentStepMaximumResponseTokens = 768;
 export const agentStepPromptReserveTokens = 768;
+export const agentStepNoGoReasonCodes = Object.freeze(["POLICY_BLOCKED"]);
 
 export interface AgentIdentitySnapshot {
   readonly id: string;
@@ -115,10 +116,7 @@ const exactKeys = (
 const identifier = (value: unknown): value is string =>
   typeof value === "string" && identifierPattern.test(value);
 
-const boundedText = (
-  value: unknown,
-  maximumBytes: number,
-): value is string =>
+const boundedText = (value: unknown, maximumBytes: number): value is string =>
   typeof value === "string" &&
   value.trim().length > 0 &&
   utf8ByteLength(value) <= maximumBytes;
@@ -193,9 +191,7 @@ const decodeQuestion = (value: unknown): AgentQuestionProposal => {
   });
 };
 
-export const decodeAgentStepProposal = (
-  value: unknown,
-): AgentStepProposal => {
+export const decodeAgentStepProposal = (value: unknown): AgentStepProposal => {
   const proposal = record(value);
   if (!proposal || typeof proposal.kind !== "string")
     throw new PortableAuthorityError("AGENT_STEP_PROPOSAL_INVALID");
@@ -232,9 +228,7 @@ export const decodeAgentStepProposal = (
     });
   }
   if (proposal.kind === "question") {
-    if (
-      !exactKeys(proposal, ["kind", "question"], ["assistantState"])
-    )
+    if (!exactKeys(proposal, ["kind", "question"], ["assistantState"]))
       throw new PortableAuthorityError("AGENT_STEP_PROPOSAL_INVALID");
     return Object.freeze({
       ...assistantState(proposal),
@@ -245,7 +239,8 @@ export const decodeAgentStepProposal = (
   if (proposal.kind === "no-go") {
     if (
       !exactKeys(proposal, ["kind", "reasonCode"], ["assistantState"]) ||
-      !identifier(proposal.reasonCode)
+      !identifier(proposal.reasonCode) ||
+      !agentStepNoGoReasonCodes.includes(proposal.reasonCode)
     )
       throw new PortableAuthorityError("AGENT_STEP_PROPOSAL_INVALID");
     return Object.freeze({

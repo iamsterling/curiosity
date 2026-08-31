@@ -71,7 +71,8 @@ const specs: readonly CommandSpec[] = Object.freeze([
     selected: ({ view }) => view === "craft",
   },
   {
-    description: "Show agent and subagent activity across the active organization.",
+    description:
+      "Show agent and subagent activity across the active organization.",
     destructive: false,
     id: workstationCommandIds.showAgents,
     key: "3",
@@ -128,7 +129,8 @@ const specs: readonly CommandSpec[] = Object.freeze([
     title: "Command Palette…",
   },
   {
-    description: "Prepare a source-custodied research request in chat.",
+    description:
+      "Unavailable until a governed search/fetch and skill host is composed.",
     destructive: false,
     id: workstationCommandIds.startResearch,
     menu: "work",
@@ -136,10 +138,11 @@ const specs: readonly CommandSpec[] = Object.freeze([
     section: 1,
     symbol: "magnifyingglass",
     title: "Start Research in Chat",
-    enabled: ({ busy }) => !busy,
+    enabled: () => false,
   },
   {
-    description: "Prepare a bounded implementation request in chat.",
+    description:
+      "Unavailable until governed mutation, process, and skill hosts are composed.",
     destructive: false,
     id: workstationCommandIds.startBuild,
     menu: "work",
@@ -147,7 +150,7 @@ const specs: readonly CommandSpec[] = Object.freeze([
     section: 1,
     symbol: "hammer",
     title: "Start Build in Chat",
-    enabled: ({ busy }) => !busy,
+    enabled: () => false,
   },
   {
     description: "Reload the active conversation and session status.",

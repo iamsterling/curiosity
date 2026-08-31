@@ -38,8 +38,16 @@ const action = async (): Promise<AgentJournalRunnableToolAction> => {
   };
 };
 
-const fixture = async (execute: (signal: AbortSignal) => Promise<unknown>) => {
-  const runnable = await action();
+const fixture = async (
+  execute: (signal: AbortSignal, gateReceipt: unknown) => Promise<unknown>,
+  gateReceipt?: AgentJournalRunnableToolAction["gateReceipt"],
+) => {
+  const runnable = {
+    ...(await action()),
+    ...(gateReceipt
+      ? { gateClass: "binding-human-requested" as const, gateReceipt }
+      : {}),
+  };
   let allocation:
     | Extract<AgentJournalArmDispatch, { readonly phase: "allocate" }>
     | undefined;
@@ -77,7 +85,7 @@ const fixture = async (execute: (signal: AbortSignal) => Promise<unknown>) => {
     tools: [
       {
         effectClass: "read-only",
-        execute: ({ signal }) => execute(signal),
+        execute: ({ grant, signal }) => execute(signal, grant.gateReceipt),
         toolId: "document.read",
         toolVersion: "1",
       },
@@ -89,7 +97,9 @@ const fixture = async (execute: (signal: AbortSignal) => Promise<unknown>) => {
 describe("AgentReadToolKernel", () => {
   test("allocates one exact native tool attempt and settles its receipt", async () => {
     const value = await fixture(async () => ({ content: "durable evidence" }));
-    await expect(value.kernel.drainOne(new AbortController().signal)).resolves.toEqual({
+    await expect(
+      value.kernel.drainOne(new AbortController().signal),
+    ).resolves.toEqual({
       actionId: "action-1",
       kind: "succeeded",
     });
@@ -125,5 +135,39 @@ describe("AgentReadToolKernel", () => {
       errorCode: "ACTION_CANCELLED",
       status: "cancelled",
     });
+  });
+
+  test("carries the exact binding gate receipt into the native action grant", async () => {
+    const gatedAction = await action();
+    const receipt = {
+      gateId: "gate:action-1:1",
+      payloadDigest: gatedAction.inputDigest,
+      proposalRevision: 1,
+    } as const;
+    let observed: unknown;
+    const value = await fixture(async (_signal, gateReceipt) => {
+      observed = gateReceipt;
+      return { content: "approved evidence" };
+    }, receipt);
+
+    await expect(
+      value.kernel.drainOne(new AbortController().signal),
+    ).resolves.toEqual({
+      actionId: "action-1",
+      kind: "succeeded",
+    });
+    expect(observed).toEqual(receipt);
+  });
+
+  test("rejects a binding receipt for any other action payload", async () => {
+    const value = await fixture(async () => ({ content: "must not execute" }), {
+      gateId: "gate:action-1:1",
+      payloadDigest: "1".repeat(64),
+      proposalRevision: 1,
+    });
+
+    await expect(
+      value.kernel.drainOne(new AbortController().signal),
+    ).rejects.toMatchObject({ code: "AGENT_TOOL_ACTION_STALE" });
   });
 });

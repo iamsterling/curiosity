@@ -40,6 +40,7 @@ test("chat admission atomically follows the durable turn source with a run", asy
       },
     },
     now: () => "2026-08-30T12:00:01.000Z",
+    platformProfileId: "ipad",
   });
 
   const result = await admission.admit(authority(), command);
@@ -50,8 +51,12 @@ test("chat admission atomically follows the durable turn source with a run", asy
     "documents.read",
     "provider.generate",
   ]);
+  assert.equal(starts[0].contributionVersion, "2");
   assert.equal(starts[0].input.projectId, "project-1");
+  assert.equal(starts[0].input.platformProfileId, "ipad");
   assert.equal(starts[0].input.text, "Read the project note");
+  assert.equal(starts[0].limits.maxChildren, 2);
+  assert.equal(starts[0].limits.maxDelegationDepth, 1);
   assert.match(starts[0].sourceEventId, /^[a-f0-9]{64}$/u);
 });
 
@@ -71,6 +76,7 @@ test("relaunch reconciliation idempotently creates a run for an orphan turn", as
       },
     },
     now: () => "2026-08-30T12:00:01.000Z",
+    platformProfileId: "iphone",
   });
 
   assert.equal((await admission.reconcile(runtime)).length, 1);
@@ -87,5 +93,37 @@ test("relaunch reconciliation idempotently creates a run for an orphan turn", as
         sourceEventId: starts[0].sourceEventId,
       },
     ],
+  );
+  assert.deepEqual(
+    starts.map(({ capabilityCeiling, input }) => ({
+      capabilityCeiling,
+      platformProfileId: input.platformProfileId,
+    })),
+    [
+      {
+        capabilityCeiling: ["documents.read", "provider.generate"],
+        platformProfileId: "iphone",
+      },
+      {
+        capabilityCeiling: ["documents.read", "provider.generate"],
+        platformProfileId: "iphone",
+      },
+    ],
+  );
+});
+
+test("mobile admission rejects a macOS profile before journal access", () => {
+  assert.throws(
+    () =>
+      new DurableAgentAdmission({
+        journal: {
+          startRun: async () => {
+            throw new Error("must not run");
+          },
+        },
+        now: () => "2026-08-30T12:00:01.000Z",
+        platformProfileId: "macos-sandboxed",
+      }),
+    /APPLE_MOBILE_PLATFORM_UNSUPPORTED/u,
   );
 });

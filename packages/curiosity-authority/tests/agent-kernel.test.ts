@@ -7,6 +7,7 @@ import {
   createContextPlan,
   createGenerationRouteReceipt,
   type AgentJournalCommitTransition,
+  type AgentKernelChildToolBinding,
   type AgentJournalPort,
   type AgentRunProjection,
   type AgentStepPort,
@@ -32,8 +33,8 @@ const projection = async (): Promise<AgentRunProjection> => {
     input: { objective: "Read the note" },
     limits: {
       maxActions: 4,
-      maxChildren: 0,
-      maxDelegationDepth: 0,
+      maxChildren: 2,
+      maxDelegationDepth: 1,
       maxNoProgress: 2,
       maxSteps: 8,
     },
@@ -57,6 +58,7 @@ const journalFixture = async () => {
   let reconciliations = 0;
   let settleMode: "normal" | "throw-after" | "throw-before" = "normal";
   const operations: string[] = [];
+  const transitions: AgentJournalCommitTransition[] = [];
 
   const apply = async (input: AgentJournalCommitTransition) => {
     if (
@@ -66,12 +68,14 @@ const journalFixture = async () => {
     )
       throw new Error("NATIVE_AGENT_REVISION_FENCED");
     commits += 1;
+    transitions.push(input);
     const provider = input.actions.find(
       ({ actionType }) => actionType === "provider.generate",
     );
     const next: AgentRunProjection = {
       ...run,
       actionCount: run.actionCount + input.actions.length,
+      childCount: run.childCount + input.children.length,
       revision: run.revision + 1,
       state: input.nextState,
       stateDigest: await sha256(canonicalJson(input.nextState)),
@@ -291,6 +295,7 @@ const journalFixture = async () => {
     setSettleMode: (mode: typeof settleMode) => {
       settleMode = mode;
     },
+    transitions,
   };
 };
 
@@ -298,6 +303,7 @@ const kernelFixture = async (
   journalValue: Awaited<ReturnType<typeof journalFixture>>,
   proposal: unknown,
   onStep?: () => Promise<void>,
+  childBinding?: AgentKernelChildToolBinding,
 ) => {
   const contextPlan = await createContextPlan(
     [
@@ -373,6 +379,7 @@ const kernelFixture = async (
           }),
           reactorId: "generalist",
         },
+        ...(childBinding ? [childBinding] : []),
       ],
     }),
   };
@@ -444,6 +451,89 @@ describe("serialized portable agent kernel", () => {
       "waiting-actions",
     );
     expect(fixture.steps()).toBe(1);
+  });
+
+  test("commits bounded child lineage before the child can become runnable", async () => {
+    const journal = await journalFixture();
+    const childBinding: AgentKernelChildToolBinding = {
+      allocate: async (_input, context) => ({
+        capabilityCeiling: ["provider.generate"],
+        childKey: `child:${context.callKey}`,
+        contributionId: "curiosity.agent.reviewer",
+        contributionVersion: "1",
+        executionId: "child-execution-1",
+        initialState: {
+          parentRunId: context.parentRunId,
+          phase: "ready",
+          schemaVersion: 1,
+        },
+        limits: {
+          maxActions: 2,
+          maxChildren: 0,
+          maxDelegationDepth: 0,
+          maxNoProgress: 1,
+          maxSteps: 4,
+        },
+        pluginId: "curiosity.agent.runtime",
+        runId: "child-run-1",
+        workflowName: "reviewer",
+      }),
+      definition: {
+        description: "Delegate a bounded independent review.",
+        inputSchema: { type: "object" },
+        toolId: "agent.delegate",
+        version: "1",
+      },
+      kind: "child",
+      pluginId: "curiosity.stock.delegation",
+      reactorId: "generalist",
+    };
+    const fixture = await kernelFixture(
+      journal,
+      {
+        actions: [
+          {
+            callKey: "review-one",
+            input: { objective: "Review" },
+            toolId: "agent.delegate",
+            toolVersion: "1",
+          },
+        ],
+        kind: "actions",
+      },
+      undefined,
+      childBinding,
+    );
+
+    await fixture.kernel().drainOne(new AbortController().signal);
+    const result = await fixture
+      .kernel()
+      .drainOne(new AbortController().signal);
+
+    expect(result).toMatchObject({
+      kind: "committed",
+      proposalKind: "actions",
+    });
+    expect(journal.run().childCount).toBe(1);
+    expect(journal.run().state).toMatchObject({
+      children: [
+        {
+          childKey: "child:review-one",
+          ordinal: 0,
+          runId: "child-run-1",
+          workflowName: "reviewer",
+        },
+      ],
+      phase: "waiting-children",
+    });
+    expect(journal.transitions.at(-1)?.actions).toEqual([]);
+    expect(journal.transitions.at(-1)?.children).toEqual([
+      expect.objectContaining({
+        capabilityCeiling: ["provider.generate"],
+        runId: "child-run-1",
+        workflowName: "reviewer",
+      }),
+    ]);
   });
 
   test("settles model failure once and durably terminates without retry", async () => {

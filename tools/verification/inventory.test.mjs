@@ -982,6 +982,40 @@ test("required workspace verification lane covers the harness, starter, and conf
   );
 });
 
+test("required profile traversal cannot drop an exact vendored workspace", async () => {
+  const inventory = await load();
+  const repository = createFileRepository(ROOT);
+  const root = JSON.parse(await repository.read("package.json"));
+  root.workspaces = root.workspaces.filter(
+    (workspace) => workspace !== "vendor/crafty/packages/editor",
+  );
+  const changed = structuredClone(inventory);
+  const packageOverlays = {};
+  for (const packagePath of ["apps/mobile", "apps/web"]) {
+    const manifestPath = `${packagePath}/package.json`;
+    const manifest = JSON.parse(await repository.read(manifestPath));
+    manifest.dependencies["@crafty/editor"] = "0.0.0";
+    packageOverlays[manifestPath] = `${JSON.stringify(manifest)}\n`;
+    const editor = changed.packages
+      .find(({ path: itemPath }) => itemPath === packagePath)
+      .dependencies.find(({ name }) => name === "@crafty/editor");
+    editor.version = "0.0.0";
+    editor.classification = "external";
+    editor.protocol = "exact";
+  }
+  await rejects(
+    () =>
+      verifyInventory(
+        changed,
+        overlay(repository, {
+          ...packageOverlays,
+          "package.json": `${JSON.stringify(root)}\n`,
+        }),
+      ),
+    "VERIFICATION_PROFILE_ENTRYPOINT",
+  );
+});
+
 test("required profiles close over their command graph and legacy orphan surfaces make no green claim", async (context) => {
   const inventory = await load();
   const repository = createFileRepository(ROOT);

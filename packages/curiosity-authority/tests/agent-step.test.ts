@@ -43,6 +43,12 @@ describe("bounded agent steps", () => {
     expect(
       decodeAgentStepProposal({ kind: "no-go", reasonCode: "POLICY_BLOCKED" }),
     ).toEqual({ kind: "no-go", reasonCode: "POLICY_BLOCKED" });
+    expect(() =>
+      decodeAgentStepProposal({
+        kind: "no-go",
+        reasonCode: "UNSUPPORTED_REQUEST",
+      }),
+    ).toThrow("AGENT_STEP_PROPOSAL_INVALID");
   });
 
   test("rejects extra fields, duplicate action keys, and oversized envelopes", async () => {

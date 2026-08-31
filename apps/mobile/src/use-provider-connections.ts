@@ -4,10 +4,12 @@ import type {
   NativeProviderConnections,
   ProviderConnectionView,
 } from "./provider-connections-port";
+import type { MobileAgentId } from "./mobile-agent-catalog";
 
 const initialView: ProviderConnectionView = Object.freeze({
   catalog: embeddedProviderCatalog,
   providerSession: false,
+  routePreferences: Object.freeze({}),
   source: "embedded",
 });
 
@@ -19,6 +21,8 @@ const presentProviderFailure = (error: unknown): string => {
     return "Sign in with ChatGPT before managing this provider.";
   if (code === "CODEX_RESPONSE_INVALID")
     return "OpenAI returned an invalid model catalog.";
+  if (code === "CODEX_GENERATION_ROUTE_UNAVAILABLE")
+    return "That exact model is no longer available on this connection.";
   return "The provider is currently unavailable.";
 };
 
@@ -27,6 +31,7 @@ export const useProviderConnections = (
 ) => {
   const [view, setView] = useState(initialView);
   const [busyProviderId, setBusyProviderId] = useState<string>();
+  const [busyRouteAgentId, setBusyRouteAgentId] = useState<MobileAgentId>();
   const [error, setError] = useState<string>();
 
   const refresh = useCallback(async () => {
@@ -75,10 +80,26 @@ export const useProviderConnections = (
     authenticate: (providerId: string) =>
       mutate(providerId, connections.authenticate),
     busyProviderId,
+    busyRouteAgentId,
     disconnect: (providerId: string) =>
       mutate(providerId, connections.disconnect),
     error,
     refresh,
+    selectRoute: async (
+      agentId: MobileAgentId,
+      providerId: string,
+      modelId: string,
+    ) => {
+      setBusyRouteAgentId(agentId);
+      setError(undefined);
+      try {
+        setView(await connections.selectRoute(agentId, providerId, modelId));
+      } catch (cause) {
+        setError(presentProviderFailure(cause));
+      } finally {
+        setBusyRouteAgentId(undefined);
+      }
+    },
     view,
   });
 };

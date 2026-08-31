@@ -94,9 +94,12 @@ actor NativeJournalHost {
       var input = try JSONSerialization.jsonObject(with: data) as? [String: Any],
       let operation = input["operation"] as? String,
       [
+        "answerQuestion",
         "armDispatch",
         "cancelRun",
         "commitTransition",
+        "decideGate",
+        "listOperatorRequests",
         "listRunProjections",
         "readRunProjection",
         "reconcileInterrupted",

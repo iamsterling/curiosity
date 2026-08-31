@@ -128,6 +128,7 @@ export const createLocalCuriosityClient = (
     );
     return Object.freeze({
       assistantMessageId: completion.assistantMessageId,
+      status: "completed" as const,
       text: completion.text,
       threadId,
       threads: (await session()).threads,

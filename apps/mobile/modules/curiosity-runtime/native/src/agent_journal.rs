@@ -85,6 +85,28 @@ pub(super) struct CommitTransitionInput {
     transition_digest: String,
 }
 
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub(super) struct AnswerQuestionInput {
+    actor_id: String,
+    answer: String,
+    answered_at: String,
+    command_id: String,
+    question_id: String,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub(super) struct DecideGateInput {
+    actor_id: String,
+    command_id: String,
+    decided_at: String,
+    decision: String,
+    gate_id: String,
+    payload_digest: String,
+    proposal_revision: i64,
+}
+
 #[derive(Clone, Copy, PartialEq)]
 pub(super) enum FaultPoint {
     None,
@@ -100,6 +122,53 @@ pub(super) struct MutationResponse {
     disposition: &'static str,
     revision: i64,
     run_id: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(super) struct ControlMutationResponse {
+    action_id: String,
+    disposition: &'static str,
+    run_id: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(super) struct OperatorRequests {
+    gates: Vec<GateProjection>,
+    questions: Vec<QuestionProjection>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct QuestionProjection {
+    action_id: String,
+    allow_free_text: bool,
+    answer: Option<String>,
+    execution_id: String,
+    options: Vec<String>,
+    prompt: String,
+    question_id: String,
+    run_id: String,
+    status: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct GateProjection {
+    action_id: String,
+    action_type: String,
+    created_at: String,
+    eligible_actor_id: String,
+    expires_at: String,
+    gate_id: String,
+    input: Value,
+    payload_digest: String,
+    proposal_revision: i64,
+    requested_capabilities: Vec<String>,
+    resource: String,
+    run_id: String,
+    status: String,
 }
 
 #[derive(Serialize)]
@@ -144,6 +213,7 @@ pub(super) struct RunnableToolAction {
     execution_generation: i64,
     execution_id: String,
     gate_class: String,
+    gate_receipt: Option<GateReceiptProjection>,
     input: Value,
     input_digest: String,
     plugin_id: String,
@@ -152,6 +222,14 @@ pub(super) struct RunnableToolAction {
     resource: String,
     run_id: String,
     source_event_id: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct GateReceiptProjection {
+    gate_id: String,
+    payload_digest: String,
+    proposal_revision: i64,
 }
 
 #[derive(Serialize)]
@@ -186,6 +264,9 @@ struct RunnableToolActionRow {
     execution_generation: i64,
     execution_id: String,
     gate_class: String,
+    gate_id: Option<String>,
+    gate_payload_digest: Option<String>,
+    gate_proposal_revision: Option<i64>,
     input_json: String,
     input_digest: String,
     plugin_id: String,
@@ -441,6 +522,10 @@ pub(super) fn commit_transition(
         return Err(JournalError::RevisionFenced);
     }
     enforce_budgets(&row, &input)?;
+    let next_revision = row
+        .revision
+        .checked_add(1)
+        .ok_or(JournalError::RevisionFenced)?;
     let no_progress = if row.last_progress_key.as_deref() == Some(input.progress_key.as_str()) {
         row.no_progress_count + 1
     } else {
@@ -479,7 +564,7 @@ pub(super) fn commit_transition(
             "progressKey": input.progress_key,
             "schemaVersion": 1,
             "state": input.next_state,
-            "step": row.revision + 1,
+            "step": next_revision,
             "terminalRequested": input.terminal_requested,
             "workflowName": row.workflow_name,
         }),
@@ -540,8 +625,55 @@ pub(super) fn commit_transition(
             event_type: "action.proposed".to_owned(),
             stream_id: action.action_id.clone(),
         });
+        if action.action_type == "question.ask" {
+            let question = decode_question_input(&action.input)?;
+            let question_id = question_id(&action.action_id);
+            events.push(KernelEvent {
+                body: json!({
+                    "actionId": action.action_id,
+                    "allowFreeText": question.allow_free_text,
+                    "executionId": action.execution_id,
+                    "options": question.options,
+                    "prompt": question.prompt,
+                    "questionId": question_id,
+                    "schemaVersion": 1,
+                }),
+                context: event_context(
+                    &source,
+                    &action.execution_id,
+                    &action.reactor_id,
+                    "1",
+                    &row.execution_id,
+                ),
+                event_type: "question.asked".to_owned(),
+                stream_id: question_id,
+            });
+        }
+        if action.gate_class == "binding-human-requested" {
+            let gate_id = gate_id(&action.action_id);
+            events.push(KernelEvent {
+                body: json!({
+                    "actionId": action.action_id,
+                    "eligibleActorId": input.gate_eligible_actor_id,
+                    "expiresAt": input.gate_expires_at,
+                    "gateId": gate_id,
+                    "payloadDigest": action.input_digest,
+                    "proposalRevision": next_revision,
+                    "schemaVersion": 1,
+                }),
+                context: event_context(
+                    &source,
+                    &action.execution_id,
+                    &action.reactor_id,
+                    "1",
+                    &row.execution_id,
+                ),
+                event_type: "gate.requested".to_owned(),
+                stream_id: gate_id,
+            });
+        }
     }
-    let command_id = format!("workflow-step:{}:{}", input.run_id, row.revision + 1);
+    let command_id = format!("workflow-step:{}:{}", input.run_id, next_revision);
     append_kernel_events(
         &transaction,
         catalog_digest,
@@ -554,14 +686,14 @@ pub(super) fn commit_transition(
         events,
     )?;
     inject(fault, FaultPoint::AfterEventAppend)?;
-    insert_actions(&transaction, &input)?;
+    insert_actions(&transaction, &input, next_revision)?;
     insert_children(&transaction, &row, &input, &command_id)?;
     inject(fault, FaultPoint::AfterAllocations)?;
     let next_state_json = canonical_json(&input.next_state)?;
     transaction
         .execute(
             "INSERT INTO workflow_steps(instance_id,step_number,from_state_json,to_state_json,progress_key,transition_digest,committed_at) VALUES (?1,?2,?3,?4,?5,?6,?7)",
-            params![input.run_id, row.revision + 1, row.state_json, next_state_json, input.progress_key, input.transition_digest, input.committed_at],
+            params![input.run_id, next_revision, row.state_json, next_state_json, input.progress_key, input.transition_digest, input.committed_at],
         )
         .map_err(|_| JournalError::TransactionFailed)?;
     let updated = transaction
@@ -579,7 +711,7 @@ pub(super) fn commit_transition(
         .map_err(|_| JournalError::TransactionFailed)?;
     Ok(MutationResponse {
         disposition: "accepted",
-        revision: row.revision + 1,
+        revision: next_revision,
         run_id: input.run_id,
     })
 }
@@ -606,7 +738,7 @@ pub(super) fn runnable_tool_actions(
 ) -> Result<Vec<RunnableToolAction>> {
     let mut statement = connection
         .prepare(
-            "SELECT actions.action_id,actions.action_schema_version,actions.action_type,actions.created_at,actions.deadline_class,executions.generation,actions.execution_id,actions.gate_class,actions.input_json,actions.input_digest,actions.plugin_id,actions.reactor_id,actions.requested_capabilities_json,actions.resource,workflow_instances.instance_id,actions.source_event_id FROM actions JOIN executions ON executions.execution_id=actions.execution_id JOIN workflow_instances ON workflow_instances.execution_id=actions.execution_id WHERE actions.status='proposed' AND actions.action_type NOT IN ('provider.generate','question.ask') AND actions.gate_class='none-requested' AND executions.status='active' AND executions.cancellation_requested=0 AND workflow_instances.status='running' ORDER BY actions.created_at,actions.action_id LIMIT ?1",
+            "SELECT actions.action_id,actions.action_schema_version,actions.action_type,actions.created_at,actions.deadline_class,executions.generation,actions.execution_id,actions.gate_class,gates.gate_id,gates.payload_digest,gates.proposal_revision,actions.input_json,actions.input_digest,actions.plugin_id,actions.reactor_id,actions.requested_capabilities_json,actions.resource,workflow_instances.instance_id,actions.source_event_id FROM actions JOIN executions ON executions.execution_id=actions.execution_id JOIN workflow_instances ON workflow_instances.execution_id=actions.execution_id LEFT JOIN gates ON gates.action_id=actions.action_id WHERE actions.status='proposed' AND actions.action_type NOT IN ('provider.generate','question.ask') AND (actions.gate_class='none-requested' OR (actions.gate_class='binding-human-requested' AND gates.status='approved' AND gates.payload_digest=actions.input_digest)) AND executions.status='active' AND executions.cancellation_requested=0 AND workflow_instances.status='running' ORDER BY actions.created_at,actions.action_id LIMIT ?1",
         )
         .map_err(|_| JournalError::TransactionFailed)?;
     let rows = statement
@@ -620,14 +752,17 @@ pub(super) fn runnable_tool_actions(
                 execution_generation: row.get(5)?,
                 execution_id: row.get(6)?,
                 gate_class: row.get(7)?,
-                input_json: row.get(8)?,
-                input_digest: row.get(9)?,
-                plugin_id: row.get(10)?,
-                reactor_id: row.get(11)?,
-                requested_capabilities_json: row.get(12)?,
-                resource: row.get(13)?,
-                run_id: row.get(14)?,
-                source_event_id: row.get(15)?,
+                gate_id: row.get(8)?,
+                gate_payload_digest: row.get(9)?,
+                gate_proposal_revision: row.get(10)?,
+                input_json: row.get(11)?,
+                input_digest: row.get(12)?,
+                plugin_id: row.get(13)?,
+                reactor_id: row.get(14)?,
+                requested_capabilities_json: row.get(15)?,
+                resource: row.get(16)?,
+                run_id: row.get(17)?,
+                source_event_id: row.get(18)?,
             })
         })
         .map_err(|_| JournalError::TransactionFailed)?;
@@ -642,6 +777,21 @@ pub(super) fn runnable_tool_actions(
             execution_generation: value.execution_generation,
             execution_id: value.execution_id,
             gate_class: value.gate_class,
+            gate_receipt: match (
+                value.gate_id,
+                value.gate_payload_digest,
+                value.gate_proposal_revision,
+            ) {
+                (Some(gate_id), Some(payload_digest), Some(proposal_revision)) => {
+                    Some(GateReceiptProjection {
+                        gate_id,
+                        payload_digest,
+                        proposal_revision,
+                    })
+                }
+                (None, None, None) => None,
+                _ => return Err(JournalError::IntegrityInvalid),
+            },
             input: parse_json(&value.input_json)?,
             input_digest: value.input_digest,
             plugin_id: value.plugin_id,
@@ -667,10 +817,10 @@ pub(super) fn cancel_run(
     let transaction = connection
         .transaction_with_behavior(TransactionBehavior::Immediate)
         .map_err(|_| JournalError::TransactionFailed)?;
-    let mut row = run_row(&transaction, run_id)?.ok_or(JournalError::RecordNotFound)?;
-    if matches!(row.status.as_str(), "cancelled" | "completed" | "failed") {
-        let physical_calls = if row.status == "cancelled" {
-            cancellation_calls(&transaction, &row.execution_id, true)?
+    let root = run_row(&transaction, run_id)?.ok_or(JournalError::RecordNotFound)?;
+    if matches!(root.status.as_str(), "cancelled" | "completed" | "failed") {
+        let physical_calls = if root.status == "cancelled" {
+            cancellation_calls(&transaction, &root.execution_id, true)?
         } else {
             Vec::new()
         };
@@ -678,98 +828,98 @@ pub(super) fn cancel_run(
             disposition: "duplicate",
             physical_calls,
             run_id: run_id.to_owned(),
-            status: row.status,
+            status: root.status,
         });
     }
-    if !matches!(row.status.as_str(), "running" | "completion-requested") {
+    if !matches!(root.status.as_str(), "running" | "completion-requested") {
         return Err(JournalError::RevisionFenced);
     }
-    let source = latest_run_source(&transaction, run_id)?;
-    let parent_execution_id = parent_execution(&transaction, &row)?;
-    let physical_calls = cancellation_calls(&transaction, &row.execution_id, false)?;
-    transaction
-        .execute(
-            "UPDATE provider_calls SET status=CASE dispatch_state WHEN 'dispatched' THEN 'delivery-unknown' ELSE 'failed' END,delivery_certainty=CASE dispatch_state WHEN 'dispatched' THEN 'UNKNOWN' ELSE 'NOT_DELIVERED' END,completed_at=?1,error_code='ACTION_CANCELLED' WHERE action_id IN (SELECT action_id FROM actions WHERE execution_id=?2) AND status='allocated'",
-            params![cancelled_at, row.execution_id],
-        )
-        .map_err(|_| JournalError::TransactionFailed)?;
-    transaction
-        .execute(
-            "UPDATE tool_calls SET status=CASE dispatch_state WHEN 'dispatched' THEN 'delivery-unknown' ELSE 'failed' END,delivery_certainty=CASE dispatch_state WHEN 'dispatched' THEN 'UNKNOWN' ELSE 'NOT_DELIVERED' END,completed_at=?1,error_code='ACTION_CANCELLED' WHERE action_id IN (SELECT action_id FROM actions WHERE execution_id=?2) AND status='allocated'",
-            params![cancelled_at, row.execution_id],
-        )
-        .map_err(|_| JournalError::TransactionFailed)?;
-    transaction
-        .execute(
-            "UPDATE actions SET status=CASE WHEN EXISTS (SELECT 1 FROM provider_calls WHERE provider_calls.action_id=actions.action_id AND provider_calls.dispatch_state='dispatched') OR EXISTS (SELECT 1 FROM tool_calls WHERE tool_calls.action_id=actions.action_id AND tool_calls.dispatch_state='dispatched') THEN 'delivery-unknown' ELSE 'failed' END,updated_at=?1,error_code='ACTION_CANCELLED' WHERE execution_id=?2 AND status IN ('proposed','running')",
-            params![cancelled_at, row.execution_id],
-        )
-        .map_err(|_| JournalError::TransactionFailed)?;
-    transaction
-        .execute(
-            "UPDATE attempts SET status='cancelled',updated_at=?1 WHERE execution_id=?2 AND status='running'",
-            params![cancelled_at, row.execution_id],
-        )
-        .map_err(|_| JournalError::TransactionFailed)?;
-    transaction
-        .execute(
-            "UPDATE resource_leases SET status='fenced',released_at=?1 WHERE execution_id=?2 AND status='active'",
-            params![cancelled_at, row.execution_id],
-        )
-        .map_err(|_| JournalError::TransactionFailed)?;
-    transaction
-        .execute(
-            "UPDATE gates SET status='expired',decided_at=?1,decision_command_id=?2 WHERE action_id IN (SELECT action_id FROM actions WHERE execution_id=?3) AND status='pending'",
-            params![cancelled_at, format!("workflow-cancel:{run_id}"), row.execution_id],
-        )
-        .map_err(|_| JournalError::TransactionFailed)?;
-    transaction
-        .execute(
-            "UPDATE questions SET status='cancelled',answered_at=?1,answer_command_id=?2 WHERE execution_id=?3 AND status='pending'",
-            params![cancelled_at, format!("workflow-cancel:{run_id}"), row.execution_id],
-        )
-        .map_err(|_| JournalError::TransactionFailed)?;
-    transaction
-        .execute(
-            "UPDATE executions SET status='cancelled',cancellation_requested=1,generation=generation+1,version=version+1,updated_at=?1 WHERE execution_id=?2",
-            params![cancelled_at, row.execution_id],
-        )
-        .map_err(|_| JournalError::TransactionFailed)?;
+    let physical_calls = cancellation_calls(&transaction, &root.execution_id, false)?;
+    let descendant_run_ids = cancellation_run_ids(&transaction, &root.execution_id)?;
+    let command_id = format!("workflow-cancel:{run_id}");
     let cancelled_state = json!({
         "errorCode": "ACTION_CANCELLED",
         "phase": "cancelled",
         "schemaVersion": 1,
     });
-    let updated = transaction
-        .execute(
-            "UPDATE workflow_instances SET status='cancelled',state_json=?1,error_code='ACTION_CANCELLED',updated_at=?2 WHERE instance_id=?3 AND status IN ('running','completion-requested')",
-            params![canonical_json(&cancelled_state)?, cancelled_at, run_id],
-        )
-        .map_err(|_| JournalError::TransactionFailed)?;
-    if updated != 1 {
-        return Err(JournalError::RevisionFenced);
-    }
-    row.state_json = canonical_json(&cancelled_state)?;
-    let mut events = vec![KernelEvent {
-        body: json!({
-            "instanceId": run_id,
-            "schemaVersion": 1,
-            "status": "cancelled",
-            "workflowName": row.workflow_name,
-        }),
-        context: event_context(
-            &source,
-            &row.execution_id,
-            &row.contribution_id,
-            &row.contribution_version,
-            &parent_execution_id,
-        ),
-        event_type: "workflow.cancelled".to_owned(),
-        stream_id: run_id.to_owned(),
-    }];
-    if let Some(turn_id) = chat_turn_id(&row)? {
+    let cancelled_state_json = canonical_json(&cancelled_state)?;
+    let mut events = Vec::new();
+    for descendant_run_id in descendant_run_ids {
+        let mut row =
+            run_row(&transaction, &descendant_run_id)?.ok_or(JournalError::RecordNotFound)?;
+        if matches!(row.status.as_str(), "cancelled" | "completed" | "failed") {
+            continue;
+        }
+        if !matches!(row.status.as_str(), "running" | "completion-requested") {
+            return Err(JournalError::RevisionFenced);
+        }
+        let source = latest_run_source(&transaction, &descendant_run_id)?;
+        let parent_execution_id = parent_execution(&transaction, &row)?;
+        transaction
+            .execute(
+                "UPDATE provider_calls SET status=CASE dispatch_state WHEN 'dispatched' THEN 'delivery-unknown' ELSE 'failed' END,delivery_certainty=CASE dispatch_state WHEN 'dispatched' THEN 'UNKNOWN' ELSE 'NOT_DELIVERED' END,completed_at=?1,error_code='ACTION_CANCELLED' WHERE action_id IN (SELECT action_id FROM actions WHERE execution_id=?2) AND status='allocated'",
+                params![cancelled_at, row.execution_id],
+            )
+            .map_err(|_| JournalError::TransactionFailed)?;
+        transaction
+            .execute(
+                "UPDATE tool_calls SET status=CASE dispatch_state WHEN 'dispatched' THEN 'delivery-unknown' ELSE 'failed' END,delivery_certainty=CASE dispatch_state WHEN 'dispatched' THEN 'UNKNOWN' ELSE 'NOT_DELIVERED' END,completed_at=?1,error_code='ACTION_CANCELLED' WHERE action_id IN (SELECT action_id FROM actions WHERE execution_id=?2) AND status='allocated'",
+                params![cancelled_at, row.execution_id],
+            )
+            .map_err(|_| JournalError::TransactionFailed)?;
+        transaction
+            .execute(
+                "UPDATE actions SET status=CASE WHEN EXISTS (SELECT 1 FROM provider_calls WHERE provider_calls.action_id=actions.action_id AND provider_calls.dispatch_state='dispatched') OR EXISTS (SELECT 1 FROM tool_calls WHERE tool_calls.action_id=actions.action_id AND tool_calls.dispatch_state='dispatched') THEN 'delivery-unknown' ELSE 'failed' END,updated_at=?1,error_code='ACTION_CANCELLED' WHERE execution_id=?2 AND status IN ('proposed','running')",
+                params![cancelled_at, row.execution_id],
+            )
+            .map_err(|_| JournalError::TransactionFailed)?;
+        transaction
+            .execute(
+                "UPDATE attempts SET status='cancelled',updated_at=?1 WHERE execution_id=?2 AND status='running'",
+                params![cancelled_at, row.execution_id],
+            )
+            .map_err(|_| JournalError::TransactionFailed)?;
+        transaction
+            .execute(
+                "UPDATE resource_leases SET status='fenced',released_at=?1 WHERE execution_id=?2 AND status='active'",
+                params![cancelled_at, row.execution_id],
+            )
+            .map_err(|_| JournalError::TransactionFailed)?;
+        transaction
+            .execute(
+                "UPDATE gates SET status='expired',decided_at=?1,decision_command_id=?2 WHERE action_id IN (SELECT action_id FROM actions WHERE execution_id=?3) AND status='pending'",
+                params![cancelled_at, command_id, row.execution_id],
+            )
+            .map_err(|_| JournalError::TransactionFailed)?;
+        transaction
+            .execute(
+                "UPDATE questions SET status='cancelled',answered_at=?1,answer_command_id=?2 WHERE execution_id=?3 AND status='pending'",
+                params![cancelled_at, command_id, row.execution_id],
+            )
+            .map_err(|_| JournalError::TransactionFailed)?;
+        transaction
+            .execute(
+                "UPDATE executions SET status='cancelled',cancellation_requested=1,generation=generation+1,version=version+1,updated_at=?1 WHERE execution_id=?2",
+                params![cancelled_at, row.execution_id],
+            )
+            .map_err(|_| JournalError::TransactionFailed)?;
+        let updated = transaction
+            .execute(
+                "UPDATE workflow_instances SET status='cancelled',state_json=?1,error_code='ACTION_CANCELLED',updated_at=?2 WHERE instance_id=?3 AND status IN ('running','completion-requested')",
+                params![cancelled_state_json, cancelled_at, descendant_run_id],
+            )
+            .map_err(|_| JournalError::TransactionFailed)?;
+        if updated != 1 {
+            return Err(JournalError::RevisionFenced);
+        }
+        row.state_json = cancelled_state_json.clone();
         events.push(KernelEvent {
-            body: json!({ "executionId": turn_id, "schemaVersion": 1 }),
+            body: json!({
+                "instanceId": descendant_run_id,
+                "schemaVersion": 1,
+                "status": "cancelled",
+                "workflowName": row.workflow_name,
+            }),
             context: event_context(
                 &source,
                 &row.execution_id,
@@ -777,18 +927,31 @@ pub(super) fn cancel_run(
                 &row.contribution_version,
                 &parent_execution_id,
             ),
-            event_type: "execution.cancelled".to_owned(),
-            stream_id: turn_id.to_owned(),
+            event_type: "workflow.cancelled".to_owned(),
+            stream_id: descendant_run_id,
         });
+        if let Some(turn_id) = chat_turn_id(&row)? {
+            events.push(KernelEvent {
+                body: json!({ "executionId": turn_id, "schemaVersion": 1 }),
+                context: event_context(
+                    &source,
+                    &row.execution_id,
+                    &row.contribution_id,
+                    &row.contribution_version,
+                    &parent_execution_id,
+                ),
+                event_type: "execution.cancelled".to_owned(),
+                stream_id: turn_id.to_owned(),
+            });
+        }
+        events.extend(chat_terminal_events(
+            &transaction,
+            &row,
+            &source,
+            &parent_execution_id,
+            "cancelled",
+        )?);
     }
-    events.extend(chat_terminal_events(
-        &transaction,
-        &row,
-        &source,
-        &parent_execution_id,
-        "cancelled",
-    )?);
-    let command_id = format!("workflow-cancel:{run_id}");
     let command_digest = kernel_events_digest(&events)?;
     append_kernel_events(
         &transaction,
@@ -797,8 +960,8 @@ pub(super) fn cancel_run(
         cancelled_at,
         &command_id,
         &command_digest,
-        &row.contribution_id,
-        &row.contribution_version,
+        &root.contribution_id,
+        &root.contribution_version,
         events,
     )?;
     transaction
@@ -814,7 +977,7 @@ pub(super) fn cancel_run(
 
 fn cancellation_calls(
     connection: &Connection,
-    execution_id: &str,
+    ancestor_execution_id: &str,
     cancelled: bool,
 ) -> Result<Vec<PhysicalCancellation>> {
     let status = if cancelled {
@@ -824,12 +987,12 @@ fn cancellation_calls(
     };
     let mut statement = connection
         .prepare(
-            "SELECT provider_calls.call_id,'provider' FROM provider_calls JOIN actions ON actions.action_id=provider_calls.action_id WHERE actions.execution_id=?1 AND provider_calls.dispatch_state='dispatched' AND provider_calls.status=?2 AND (?3=0 OR provider_calls.error_code='ACTION_CANCELLED') UNION ALL SELECT tool_calls.call_id,'tool' FROM tool_calls JOIN actions ON actions.action_id=tool_calls.action_id WHERE actions.execution_id=?1 AND tool_calls.dispatch_state='dispatched' AND tool_calls.status=?2 AND (?3=0 OR tool_calls.error_code='ACTION_CANCELLED') ORDER BY 2,1",
+            "SELECT provider_calls.call_id,'provider' FROM provider_calls JOIN actions ON actions.action_id=provider_calls.action_id JOIN execution_ancestry ON execution_ancestry.descendant_execution_id=actions.execution_id WHERE execution_ancestry.ancestor_execution_id=?1 AND provider_calls.dispatch_state='dispatched' AND provider_calls.status=?2 AND (?3=0 OR provider_calls.error_code='ACTION_CANCELLED') UNION ALL SELECT tool_calls.call_id,'tool' FROM tool_calls JOIN actions ON actions.action_id=tool_calls.action_id JOIN execution_ancestry ON execution_ancestry.descendant_execution_id=actions.execution_id WHERE execution_ancestry.ancestor_execution_id=?1 AND tool_calls.dispatch_state='dispatched' AND tool_calls.status=?2 AND (?3=0 OR tool_calls.error_code='ACTION_CANCELLED') ORDER BY 2,1",
         )
         .map_err(|_| JournalError::TransactionFailed)?;
     statement
         .query_map(
-            params![execution_id, status, i64::from(cancelled)],
+            params![ancestor_execution_id, status, i64::from(cancelled)],
             |record| {
                 Ok(PhysicalCancellation {
                     call_id: record.get(0)?,
@@ -837,6 +1000,22 @@ fn cancellation_calls(
                 })
             },
         )
+        .map_err(|_| JournalError::TransactionFailed)?
+        .collect::<std::result::Result<Vec<_>, _>>()
+        .map_err(|_| JournalError::TransactionFailed)
+}
+
+fn cancellation_run_ids(
+    connection: &Connection,
+    ancestor_execution_id: &str,
+) -> Result<Vec<String>> {
+    let mut statement = connection
+        .prepare(
+            "SELECT workflow_instances.instance_id FROM workflow_instances JOIN execution_ancestry ON execution_ancestry.descendant_execution_id=workflow_instances.execution_id WHERE execution_ancestry.ancestor_execution_id=?1 ORDER BY execution_ancestry.depth DESC,workflow_instances.instance_id",
+        )
+        .map_err(|_| JournalError::TransactionFailed)?;
+    statement
+        .query_map([ancestor_execution_id], |record| record.get(0))
         .map_err(|_| JournalError::TransactionFailed)?
         .collect::<std::result::Result<Vec<_>, _>>()
         .map_err(|_| JournalError::TransactionFailed)
@@ -1116,6 +1295,458 @@ pub(super) fn read_run_projection(
         .transpose()
 }
 
+pub(super) fn list_operator_requests(
+    connection: &Connection,
+    limit: u32,
+) -> Result<OperatorRequests> {
+    let mut question_statement = connection
+        .prepare(
+            "SELECT questions.action_id,questions.allow_free_text,questions.answer,questions.execution_id,questions.options_json,questions.prompt,questions.question_id,workflow_instances.instance_id,questions.status FROM questions JOIN workflow_instances ON workflow_instances.execution_id=questions.execution_id ORDER BY CASE questions.status WHEN 'pending' THEN 0 ELSE 1 END,questions.asked_at,questions.question_id LIMIT ?1",
+        )
+        .map_err(|_| JournalError::TransactionFailed)?;
+    let questions = question_statement
+        .query_map([limit], |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, i64>(1)?,
+                row.get::<_, Option<String>>(2)?,
+                row.get::<_, String>(3)?,
+                row.get::<_, String>(4)?,
+                row.get::<_, String>(5)?,
+                row.get::<_, String>(6)?,
+                row.get::<_, String>(7)?,
+                row.get::<_, String>(8)?,
+            ))
+        })
+        .map_err(|_| JournalError::TransactionFailed)?
+        .map(|row| {
+            let (
+                action_id,
+                allow_free_text,
+                answer,
+                execution_id,
+                options_json,
+                prompt,
+                question_id,
+                run_id,
+                status,
+            ) = row.map_err(|_| JournalError::TransactionFailed)?;
+            Ok(QuestionProjection {
+                action_id,
+                allow_free_text: allow_free_text == 1,
+                answer,
+                execution_id,
+                options: parse_string_array(&options_json)?,
+                prompt,
+                question_id,
+                run_id,
+                status,
+            })
+        })
+        .collect::<Result<Vec<_>>>()?;
+    let mut gate_statement = connection
+        .prepare(
+            "SELECT gates.action_id,actions.action_type,gates.created_at,gates.eligible_actor_id,gates.expires_at,gates.gate_id,actions.input_json,gates.payload_digest,gates.proposal_revision,actions.requested_capabilities_json,actions.resource,workflow_instances.instance_id,gates.status FROM gates JOIN actions ON actions.action_id=gates.action_id JOIN workflow_instances ON workflow_instances.execution_id=actions.execution_id ORDER BY CASE gates.status WHEN 'pending' THEN 0 ELSE 1 END,gates.created_at,gates.gate_id LIMIT ?1",
+        )
+        .map_err(|_| JournalError::TransactionFailed)?;
+    let gates = gate_statement
+        .query_map([limit], |row| {
+            Ok((
+                row.get::<_, String>(0)?,
+                row.get::<_, String>(1)?,
+                row.get::<_, String>(2)?,
+                row.get::<_, String>(3)?,
+                row.get::<_, String>(4)?,
+                row.get::<_, String>(5)?,
+                row.get::<_, String>(6)?,
+                row.get::<_, String>(7)?,
+                row.get::<_, i64>(8)?,
+                row.get::<_, String>(9)?,
+                row.get::<_, String>(10)?,
+                row.get::<_, String>(11)?,
+                row.get::<_, String>(12)?,
+            ))
+        })
+        .map_err(|_| JournalError::TransactionFailed)?
+        .map(|row| {
+            let (
+                action_id,
+                action_type,
+                created_at,
+                eligible_actor_id,
+                expires_at,
+                gate_id,
+                input_json,
+                payload_digest,
+                proposal_revision,
+                requested_capabilities_json,
+                resource,
+                run_id,
+                status,
+            ) = row.map_err(|_| JournalError::TransactionFailed)?;
+            Ok(GateProjection {
+                action_id,
+                action_type,
+                created_at,
+                eligible_actor_id,
+                expires_at,
+                gate_id,
+                input: parse_json(&input_json)?,
+                payload_digest,
+                proposal_revision,
+                requested_capabilities: parse_string_array(&requested_capabilities_json)?,
+                resource,
+                run_id,
+                status,
+            })
+        })
+        .collect::<Result<Vec<_>>>()?;
+    Ok(OperatorRequests { gates, questions })
+}
+
+pub(super) fn answer_question(
+    connection: &mut Connection,
+    catalog_digest: &str,
+    input: AnswerQuestionInput,
+) -> Result<ControlMutationResponse> {
+    validate_answer_question(&input)?;
+    let command_digest = sha256(&canonical_json(&json!({
+        "actorId": input.actor_id,
+        "answer": input.answer,
+        "answeredAt": input.answered_at,
+        "commandId": input.command_id,
+        "operation": "answerQuestion",
+        "questionId": input.question_id,
+    }))?);
+    let transaction = connection
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .map_err(|_| JournalError::TransactionFailed)?;
+    let question = transaction
+        .query_row(
+            "SELECT questions.action_id,questions.allow_free_text,questions.eligible_actor_id,questions.execution_id,questions.options_json,questions.status,actions.reactor_id,actions.status,workflow_instances.instance_id,workflow_instances.state_json,workflow_instances.status FROM questions JOIN actions ON actions.action_id=questions.action_id JOIN workflow_instances ON workflow_instances.execution_id=questions.execution_id WHERE questions.question_id=?1",
+            [&input.question_id],
+            |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, i64>(1)?,
+                    row.get::<_, String>(2)?,
+                    row.get::<_, String>(3)?,
+                    row.get::<_, String>(4)?,
+                    row.get::<_, String>(5)?,
+                    row.get::<_, String>(6)?,
+                    row.get::<_, String>(7)?,
+                    row.get::<_, String>(8)?,
+                    row.get::<_, String>(9)?,
+                    row.get::<_, String>(10)?,
+                ))
+            },
+        )
+        .optional()
+        .map_err(|_| JournalError::TransactionFailed)?
+        .ok_or(JournalError::RecordNotFound)?;
+    if let Some(existing) = admission_row(&transaction, &input.actor_id, &input.command_id)? {
+        if existing.command_digest != command_digest {
+            return Err(JournalError::CommandDigestConflict);
+        }
+        return Ok(ControlMutationResponse {
+            action_id: question.0,
+            disposition: "duplicate",
+            run_id: question.8,
+        });
+    }
+    let state = parse_json(&question.9)?;
+    if question.5 != "pending"
+        || question.7 != "running"
+        || question.10 != "running"
+        || question.2 != input.actor_id
+        || state.get("phase").and_then(Value::as_str) != Some("waiting-question")
+        || state.get("questionActionId").and_then(Value::as_str) != Some(question.0.as_str())
+    {
+        return Err(JournalError::RevisionFenced);
+    }
+    let options = parse_string_array(&question.4)?;
+    if question.1 != 1 && !options.contains(&input.answer) {
+        return Err(JournalError::RequestInvalid);
+    }
+    let source = latest_run_source(&transaction, &question.8)?;
+    let row = run_row(&transaction, &question.8)?.ok_or(JournalError::RecordNotFound)?;
+    let parent_execution_id = parent_execution(&transaction, &row)?;
+    let output = json!({
+        "answer": input.answer,
+        "provenance": "untrusted-user-answer",
+        "questionId": input.question_id,
+        "schemaVersion": 1,
+    });
+    let output_digest = sha256(&canonical_json(&output)?);
+    let context = || {
+        event_context(
+            &source,
+            &question.3,
+            "curiosity.kernel.questions",
+            "1",
+            &parent_execution_id,
+        )
+    };
+    append_actor_events(
+        &transaction,
+        catalog_digest,
+        &input.actor_id,
+        "curiosity.kernel.control",
+        &input.answered_at,
+        &input.command_id,
+        &command_digest,
+        "curiosity.kernel.questions",
+        "1",
+        vec![
+            KernelEvent {
+                body: json!({
+                    "answer": input.answer,
+                    "provenance": "untrusted-user-answer",
+                    "questionId": input.question_id,
+                    "schemaVersion": 1,
+                }),
+                context: context(),
+                event_type: "question.answered".to_owned(),
+                stream_id: input.question_id.clone(),
+            },
+            KernelEvent {
+                body: json!({
+                    "actionId": question.0,
+                    "actionType": "question.ask",
+                    "output": output,
+                    "outputDigest": output_digest,
+                    "schemaVersion": 1,
+                }),
+                context: context(),
+                event_type: "action.succeeded".to_owned(),
+                stream_id: question.0.clone(),
+            },
+        ],
+    )?;
+    let updated_question = transaction
+        .execute(
+            "UPDATE questions SET status='answered',answer=?1,answered_at=?2,answer_command_id=?3 WHERE question_id=?4 AND status='pending'",
+            params![input.answer, input.answered_at, input.command_id, input.question_id],
+        )
+        .map_err(|_| JournalError::TransactionFailed)?;
+    let updated_action = transaction
+        .execute(
+            "UPDATE actions SET status='succeeded',updated_at=?1,output_digest=?2,error_code=NULL WHERE action_id=?3 AND status='running'",
+            params![input.answered_at, output_digest, question.0],
+        )
+        .map_err(|_| JournalError::TransactionFailed)?;
+    if updated_question != 1 || updated_action != 1 {
+        return Err(JournalError::RevisionFenced);
+    }
+    transaction
+        .execute(
+            "UPDATE workflow_instances SET updated_at=?1 WHERE instance_id=?2 AND status='running'",
+            params![input.answered_at, question.8],
+        )
+        .map_err(|_| JournalError::TransactionFailed)?;
+    transaction
+        .commit()
+        .map_err(|_| JournalError::TransactionFailed)?;
+    Ok(ControlMutationResponse {
+        action_id: question.0,
+        disposition: "accepted",
+        run_id: question.8,
+    })
+}
+
+pub(super) fn decide_gate(
+    connection: &mut Connection,
+    catalog_digest: &str,
+    input: DecideGateInput,
+) -> Result<ControlMutationResponse> {
+    validate_gate_decision(&input)?;
+    let command_digest = sha256(&canonical_json(&json!({
+        "actorId": input.actor_id,
+        "commandId": input.command_id,
+        "decidedAt": input.decided_at,
+        "decision": input.decision,
+        "gateId": input.gate_id,
+        "operation": "decideGate",
+        "payloadDigest": input.payload_digest,
+        "proposalRevision": input.proposal_revision,
+    }))?);
+    let transaction = connection
+        .transaction_with_behavior(TransactionBehavior::Immediate)
+        .map_err(|_| JournalError::TransactionFailed)?;
+    let gate = transaction
+        .query_row(
+            "SELECT gates.action_id,gates.eligible_actor_id,gates.expires_at,gates.payload_digest,gates.proposal_revision,gates.status,actions.action_type,actions.execution_id,actions.reactor_id,actions.status,workflow_instances.instance_id,workflow_instances.status FROM gates JOIN actions ON actions.action_id=gates.action_id JOIN workflow_instances ON workflow_instances.execution_id=actions.execution_id WHERE gates.gate_id=?1",
+            [&input.gate_id],
+            |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, String>(2)?,
+                    row.get::<_, String>(3)?,
+                    row.get::<_, i64>(4)?,
+                    row.get::<_, String>(5)?,
+                    row.get::<_, String>(6)?,
+                    row.get::<_, String>(7)?,
+                    row.get::<_, String>(8)?,
+                    row.get::<_, String>(9)?,
+                    row.get::<_, String>(10)?,
+                    row.get::<_, String>(11)?,
+                ))
+            },
+        )
+        .optional()
+        .map_err(|_| JournalError::TransactionFailed)?
+        .ok_or(JournalError::RecordNotFound)?;
+    if let Some(existing) = admission_row(&transaction, &input.actor_id, &input.command_id)? {
+        if existing.command_digest != command_digest {
+            return Err(JournalError::CommandDigestConflict);
+        }
+        return Ok(ControlMutationResponse {
+            action_id: gate.0,
+            disposition: "duplicate",
+            run_id: gate.10,
+        });
+    }
+    if gate.5 != "pending"
+        || gate.9 != "proposed"
+        || gate.11 != "running"
+        || gate.1 != input.actor_id
+        || gate.3 != input.payload_digest
+        || gate.4 != input.proposal_revision
+        || input.decided_at >= gate.2
+    {
+        return Err(JournalError::RevisionFenced);
+    }
+    let row = run_row(&transaction, &gate.10)?.ok_or(JournalError::RecordNotFound)?;
+    let source = latest_run_source(&transaction, &gate.10)?;
+    let parent_execution_id = parent_execution(&transaction, &row)?;
+    let context = || {
+        event_context(
+            &source,
+            &gate.7,
+            "curiosity.kernel.gates",
+            "1",
+            &parent_execution_id,
+        )
+    };
+    let mut events = vec![KernelEvent {
+        body: json!({
+            "decision": input.decision,
+            "gateId": input.gate_id,
+            "payloadDigest": input.payload_digest,
+            "proposalRevision": input.proposal_revision,
+            "schemaVersion": 1,
+        }),
+        context: context(),
+        event_type: "gate.decision-recorded".to_owned(),
+        stream_id: input.gate_id.clone(),
+    }];
+    let denied_digest = if input.decision == "denied" {
+        let body = json!({
+            "actionId": gate.0,
+            "actionType": gate.6,
+            "errorCode": "GATE_DENIED",
+            "schemaVersion": 1,
+        });
+        let digest = sha256(&canonical_json(&body)?);
+        events.push(KernelEvent {
+            body,
+            context: context(),
+            event_type: "action.failed".to_owned(),
+            stream_id: gate.0.clone(),
+        });
+        Some(digest)
+    } else {
+        None
+    };
+    append_actor_events(
+        &transaction,
+        catalog_digest,
+        &input.actor_id,
+        "curiosity.kernel.control",
+        &input.decided_at,
+        &input.command_id,
+        &command_digest,
+        "curiosity.kernel.gates",
+        "1",
+        events,
+    )?;
+    let updated_gate = transaction
+        .execute(
+            "UPDATE gates SET status=?1,decided_at=?2,decision_command_id=?3 WHERE gate_id=?4 AND status='pending'",
+            params![input.decision, input.decided_at, input.command_id, input.gate_id],
+        )
+        .map_err(|_| JournalError::TransactionFailed)?;
+    if updated_gate != 1 {
+        return Err(JournalError::RevisionFenced);
+    }
+    if let Some(output_digest) = denied_digest {
+        let updated_action = transaction
+            .execute(
+                "UPDATE actions SET status='failed',updated_at=?1,output_digest=?2,error_code='GATE_DENIED' WHERE action_id=?3 AND status='proposed'",
+                params![input.decided_at, output_digest, gate.0],
+            )
+            .map_err(|_| JournalError::TransactionFailed)?;
+        if updated_action != 1 {
+            return Err(JournalError::RevisionFenced);
+        }
+    }
+    transaction
+        .execute(
+            "UPDATE workflow_instances SET updated_at=?1 WHERE instance_id=?2 AND status='running'",
+            params![input.decided_at, gate.10],
+        )
+        .map_err(|_| JournalError::TransactionFailed)?;
+    transaction
+        .commit()
+        .map_err(|_| JournalError::TransactionFailed)?;
+    Ok(ControlMutationResponse {
+        action_id: gate.0,
+        disposition: "accepted",
+        run_id: gate.10,
+    })
+}
+
+fn validate_answer_question(input: &AnswerQuestionInput) -> Result<()> {
+    if !bounded(&input.actor_id, 512)
+        || !bounded(&input.answer, 4_096)
+        || !bounded(&input.command_id, 512)
+        || !bounded(&input.question_id, 512)
+        || !valid_control_timestamp(&input.answered_at)
+    {
+        return Err(JournalError::RequestInvalid);
+    }
+    Ok(())
+}
+
+fn validate_gate_decision(input: &DecideGateInput) -> Result<()> {
+    if !bounded(&input.actor_id, 512)
+        || !bounded(&input.command_id, 512)
+        || !valid_control_timestamp(&input.decided_at)
+        || !matches!(input.decision.as_str(), "approved" | "denied")
+        || !bounded(&input.gate_id, 512)
+        || !is_digest(&input.payload_digest)
+        || input.proposal_revision < 1
+    {
+        return Err(JournalError::RequestInvalid);
+    }
+    Ok(())
+}
+
+fn valid_control_timestamp(value: &str) -> bool {
+    value.len() == 24
+        && value.ends_with('Z')
+        && value.as_bytes().get(4) == Some(&b'-')
+        && value.as_bytes().get(7) == Some(&b'-')
+        && value.as_bytes().get(10) == Some(&b'T')
+        && value.as_bytes().get(13) == Some(&b':')
+        && value.as_bytes().get(16) == Some(&b':')
+        && value.as_bytes().get(19) == Some(&b'.')
+        && value.bytes().enumerate().all(|(index, byte)| {
+            matches!(index, 4 | 7 | 10 | 13 | 16 | 19 | 23) || byte.is_ascii_digit()
+        })
+}
+
 fn validate_start_run(input: &StartRunInput) -> Result<()> {
     if !bounded(&input.run_id, 512)
         || !bounded(&input.execution_id, 512)
@@ -1134,15 +1765,15 @@ fn validate_start_run(input: &StartRunInput) -> Result<()> {
     {
         return Err(JournalError::RequestInvalid);
     }
-    if let Some(value) = &input.parent_run_id {
-        if !bounded(value, 512) {
-            return Err(JournalError::RequestInvalid);
-        }
+    if let Some(value) = &input.parent_run_id
+        && !bounded(value, 512)
+    {
+        return Err(JournalError::RequestInvalid);
     }
-    if let Some(value) = &input.child_key {
-        if !bounded(value, 512) {
-            return Err(JournalError::RequestInvalid);
-        }
+    if let Some(value) = &input.child_key
+        && !bounded(value, 512)
+    {
+        return Err(JournalError::RequestInvalid);
     }
     Ok(())
 }
@@ -1183,6 +1814,18 @@ fn validate_transition(input: &CommitTransitionInput) -> Result<()> {
         {
             return Err(JournalError::RequestInvalid);
         }
+        if action.action_type == "question.ask"
+            && (action.gate_class != "none-requested"
+                || !action.requested_capabilities.is_empty()
+                || decode_question_input(&action.input).is_err())
+        {
+            return Err(JournalError::RequestInvalid);
+        }
+        if (action.action_type == "question.ask" || action.gate_class == "binding-human-requested")
+            && action.action_id.len() > 490
+        {
+            return Err(JournalError::RequestInvalid);
+        }
     }
     for child in &input.children {
         if !bounded(&child.run_id, 512)
@@ -1202,6 +1845,72 @@ fn validate_transition(input: &CommitTransitionInput) -> Result<()> {
     Ok(())
 }
 
+struct QuestionInput {
+    allow_free_text: bool,
+    options: Vec<String>,
+    prompt: String,
+}
+
+fn decode_question_input(value: &Value) -> Result<QuestionInput> {
+    let object = value.as_object().ok_or(JournalError::RequestInvalid)?;
+    if object.len() != 3
+        || !object.contains_key("allowFreeText")
+        || !object.contains_key("options")
+        || !object.contains_key("prompt")
+    {
+        return Err(JournalError::RequestInvalid);
+    }
+    let allow_free_text = object
+        .get("allowFreeText")
+        .and_then(Value::as_bool)
+        .ok_or(JournalError::RequestInvalid)?;
+    let prompt = object
+        .get("prompt")
+        .and_then(Value::as_str)
+        .filter(|value| bounded(value, 4_096))
+        .ok_or(JournalError::RequestInvalid)?
+        .to_owned();
+    let options = object
+        .get("options")
+        .and_then(Value::as_array)
+        .ok_or(JournalError::RequestInvalid)?;
+    if options.len() > 8 {
+        return Err(JournalError::RequestInvalid);
+    }
+    let options = options
+        .iter()
+        .map(|option| {
+            option
+                .as_str()
+                .filter(|value| bounded(value, 1_024))
+                .map(ToOwned::to_owned)
+                .ok_or(JournalError::RequestInvalid)
+        })
+        .collect::<Result<Vec<_>>>()?;
+    if (!allow_free_text && options.is_empty())
+        || options
+            .iter()
+            .collect::<std::collections::HashSet<_>>()
+            .len()
+            != options.len()
+    {
+        return Err(JournalError::RequestInvalid);
+    }
+    Ok(QuestionInput {
+        allow_free_text,
+        options,
+        prompt,
+    })
+}
+
+fn question_id(action_id: &str) -> String {
+    format!("question:{action_id}:1")
+}
+
+fn gate_id(action_id: &str) -> String {
+    format!("gate:{action_id}:1")
+}
+
 fn valid_limits(limits: &WorkflowLimits) -> bool {
     limits.max_steps > 0
         && limits.max_no_progress >= 0
@@ -1213,6 +1922,7 @@ fn valid_limits(limits: &WorkflowLimits) -> bool {
 fn valid_strings(values: &[String], maximum: usize) -> bool {
     values.len() <= maximum
         && values.iter().all(|value| bounded(value, 512))
+        && values.windows(2).all(|pair| pair[0] < pair[1])
         && values
             .iter()
             .collect::<std::collections::HashSet<_>>()
@@ -1221,6 +1931,7 @@ fn valid_strings(values: &[String], maximum: usize) -> bool {
 }
 
 fn enforce_budgets(row: &RunRow, input: &CommitTransitionInput) -> Result<()> {
+    let parent_capabilities = parse_string_array(&row.capability_ceiling_json)?;
     if row.revision >= row.max_steps
         || row.action_count + input.actions.len() as i64 > row.max_actions
         || row.child_count + input.children.len() as i64 > row.max_children
@@ -1228,6 +1939,12 @@ fn enforce_budgets(row: &RunRow, input: &CommitTransitionInput) -> Result<()> {
             .children
             .iter()
             .any(|_| row.depth >= row.max_delegation_depth)
+        || input.children.iter().any(|child| {
+            child
+                .capability_ceiling
+                .iter()
+                .any(|capability| !parent_capabilities.contains(capability))
+        })
     {
         return Err(JournalError::RevisionFenced);
     }
@@ -1244,7 +1961,11 @@ fn insert_run(connection: &Connection, input: &StartRunInput) -> Result<()> {
     Ok(())
 }
 
-fn insert_actions(connection: &Connection, input: &CommitTransitionInput) -> Result<()> {
+fn insert_actions(
+    connection: &Connection,
+    input: &CommitTransitionInput,
+    proposal_revision: i64,
+) -> Result<()> {
     for action in &input.actions {
         connection
             .execute(
@@ -1261,10 +1982,28 @@ fn insert_actions(connection: &Connection, input: &CommitTransitionInput) -> Res
         if action.gate_class == "binding-human-requested" {
             connection
                 .execute(
-                    "INSERT INTO gates(gate_id,action_id,proposal_revision,payload_digest,policy_version,eligible_actor_id,status,expires_at,created_at) VALUES (?1,?2,1,?3,'local-v1',?4,'pending',?5,?6)",
-                    params![format!("gate:{}:1", action.action_id), action.action_id, action.input_digest, input.gate_eligible_actor_id, input.gate_expires_at, input.committed_at],
+                    "INSERT INTO gates(gate_id,action_id,proposal_revision,payload_digest,policy_version,eligible_actor_id,status,expires_at,created_at) VALUES (?1,?2,?3,?4,'local-v1',?5,'pending',?6,?7)",
+                    params![gate_id(&action.action_id), action.action_id, proposal_revision, action.input_digest, input.gate_eligible_actor_id, input.gate_expires_at, input.committed_at],
                 )
                 .map_err(|_| JournalError::IdentityConflict)?;
+        }
+        if action.action_type == "question.ask" {
+            let question = decode_question_input(&action.input)?;
+            connection
+                .execute(
+                    "INSERT INTO questions(question_id,action_id,execution_id,eligible_actor_id,prompt,options_json,allow_free_text,status,asked_at) VALUES (?1,?2,?3,?4,?5,?6,?7,'pending',?8)",
+                    params![question_id(&action.action_id), action.action_id, action.execution_id, input.gate_eligible_actor_id, question.prompt, canonical_json(&serde_json::to_value(&question.options).map_err(|_| JournalError::RequestInvalid)?)?, i64::from(question.allow_free_text), input.committed_at],
+                )
+                .map_err(|_| JournalError::IdentityConflict)?;
+            let updated = connection
+                .execute(
+                    "UPDATE actions SET status='running',updated_at=?1 WHERE action_id=?2 AND status='proposed'",
+                    params![input.committed_at, action.action_id],
+                )
+                .map_err(|_| JournalError::TransactionFailed)?;
+            if updated != 1 {
+                return Err(JournalError::RevisionFenced);
+            }
         }
     }
     Ok(())
@@ -1298,6 +2037,7 @@ fn insert_children(
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(super) fn append_kernel_events(
     connection: &Connection,
     catalog_digest: &str,
@@ -1309,7 +2049,34 @@ pub(super) fn append_kernel_events(
     contribution_version: &str,
     events: Vec<KernelEvent>,
 ) -> Result<()> {
-    if let Some(existing) = admission_row(connection, KERNEL_ACTOR, command_id)? {
+    append_actor_events(
+        connection,
+        catalog_digest,
+        KERNEL_ACTOR,
+        plugin_id,
+        accepted_at,
+        command_id,
+        command_digest,
+        contribution_id,
+        contribution_version,
+        events,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn append_actor_events(
+    connection: &Connection,
+    catalog_digest: &str,
+    actor_id: &str,
+    plugin_id: &str,
+    accepted_at: &str,
+    command_id: &str,
+    command_digest: &str,
+    contribution_id: &str,
+    contribution_version: &str,
+    events: Vec<KernelEvent>,
+) -> Result<()> {
+    if let Some(existing) = admission_row(connection, actor_id, command_id)? {
         return if existing.command_digest == command_digest {
             Ok(())
         } else {
@@ -1338,7 +2105,7 @@ pub(super) fn append_kernel_events(
             )
             .map_err(|_| JournalError::TransactionFailed)?;
         let mut stored = StoredEvent {
-            actor_id: KERNEL_ACTOR.to_owned(),
+            actor_id: actor_id.to_owned(),
             aggregate_version,
             body: event.body,
             catalog_digest: catalog_digest.to_owned(),
@@ -1363,7 +2130,7 @@ pub(super) fn append_kernel_events(
         stored.event_hash = sha256(&canonical_json(&stored.envelope_value()?)?);
         stored.event_id = sha256(&format!(
             "{}:{}:{}:{}",
-            KERNEL_ACTOR, command_id, index, stored.event_hash
+            actor_id, command_id, index, stored.event_hash
         ));
         connection
             .execute(
@@ -1376,7 +2143,7 @@ pub(super) fn append_kernel_events(
     connection
         .execute(
             "INSERT INTO command_admissions(actor_id,command_id,command_digest,nonce,accepted_at,first_sequence,last_sequence,event_count) VALUES (?1,?2,?3,?3,?4,?5,?6,?7)",
-            params![KERNEL_ACTOR, command_id, command_digest, accepted_at, first_sequence, sequence, event_count],
+            params![actor_id, command_id, command_digest, accepted_at, first_sequence, sequence, event_count],
         )
         .map_err(|_| JournalError::TransactionFailed)?;
     let _ = (contribution_id, contribution_version);
@@ -1471,6 +2238,7 @@ fn provider_action_projection(
     execution_id: &str,
     state: &Value,
 ) -> Result<Option<ProviderActionProjection>> {
+    type ProviderActionRow = (String, String, String, Option<String>, Option<String>);
     let Some(action_id) = state
         .as_object()
         .filter(|value| value.get("phase").and_then(Value::as_str) == Some("waiting-provider"))
@@ -1479,7 +2247,7 @@ fn provider_action_projection(
     else {
         return Ok(None);
     };
-    let action: Option<(String, String, String, Option<String>, Option<String>)> = connection
+    let action: Option<ProviderActionRow> = connection
         .query_row(
             "SELECT input_json,input_digest,status,output_digest,error_code FROM actions WHERE action_id=?1 AND execution_id=?2 AND action_type='provider.generate'",
             params![action_id, execution_id],
@@ -1825,6 +2593,46 @@ mod tests {
         }
     }
 
+    fn question_transition() -> CommitTransitionInput {
+        let action_input = json!({
+            "allowFreeText": false,
+            "options": ["safe", "fast"],
+            "prompt": "Which bounded mode should be used?",
+        });
+        CommitTransitionInput {
+            actions: vec![ActionAllocation {
+                action_id: "question-action-1".into(),
+                action_schema_version: 1,
+                action_type: "question.ask".into(),
+                deadline_class: "interactive".into(),
+                execution_id: "run-root".into(),
+                gate_class: "none-requested".into(),
+                input_digest: sha256(&canonical_json(&action_input).unwrap()),
+                input: action_input,
+                plugin_id: "curiosity.kernel.questions".into(),
+                reactor_id: "workflow-generalist".into(),
+                requested_capabilities: Vec::new(),
+                resource: "question:run-root".into(),
+                source_event_id: "source-question-1".into(),
+            }],
+            children: Vec::new(),
+            committed_at: "2026-08-29T12:00:02.000Z".into(),
+            expected_revision: 0,
+            gate_eligible_actor_id: "local-owner".into(),
+            gate_expires_at: "2026-08-29T12:10:00.000Z".into(),
+            next_state: json!({
+                "phase": "waiting-question",
+                "questionActionId": "question-action-1",
+                "schemaVersion": 1,
+            }),
+            observed_state_digest: sha256(&canonical_json(&json!({"phase": "start"})).unwrap()),
+            progress_key: "question-allocated".into(),
+            run_id: "run-root".into(),
+            terminal_requested: false,
+            transition_digest: "6".repeat(64),
+        }
+    }
+
     fn count(connection: &Connection, table: &str) -> i64 {
         connection
             .query_row(&format!("SELECT count(*) FROM {table}"), [], |row| {
@@ -1834,7 +2642,7 @@ mod tests {
     }
 
     #[test]
-    fn v2_start_and_transition_are_idempotent_and_revision_fenced() {
+    fn v3_start_and_transition_are_idempotent_and_revision_fenced() {
         let (_, catalog, mut connection, source) = database("roundtrip");
         let started = start_run(
             &mut connection,
@@ -1863,6 +2671,13 @@ mod tests {
                 FaultPoint::None,
             ),
             Err(JournalError::RequestInvalid)
+        ));
+
+        let mut widened_child = transition_input();
+        widened_child.children[0].capability_ceiling = vec!["provider.generate".into()];
+        assert!(matches!(
+            commit_transition(&mut connection, &catalog, widened_child, FaultPoint::None,),
+            Err(JournalError::RevisionFenced)
         ));
 
         let committed = commit_transition(
@@ -1894,7 +2709,7 @@ mod tests {
         assert_eq!(projection.revision, 1);
         assert_eq!(projection.action_count, 1);
         assert_eq!(projection.child_count, 1);
-        assert_eq!(count(&connection, "events"), 5);
+        assert_eq!(count(&connection, "events"), 6);
         assert_eq!(count(&connection, "actions"), 1);
         assert_eq!(count(&connection, "gates"), 1);
         assert_eq!(count(&connection, "workflow_steps"), 1);
@@ -1928,7 +2743,7 @@ mod tests {
     }
 
     #[test]
-    fn runnable_tool_actions_are_bounded_to_ungated_live_run_actions() {
+    fn runnable_tool_actions_are_bounded_to_authorized_live_run_actions() {
         let (_, catalog, mut connection, source) = database("runnable-tools");
         start_run(
             &mut connection,
@@ -1949,6 +2764,7 @@ mod tests {
         assert_eq!(actions[0].execution_generation, 0);
         assert_eq!(actions[0].run_id, "run-root");
         assert_eq!(actions[0].requested_capabilities, ["documents.read"]);
+        assert!(actions[0].gate_receipt.is_none());
 
         connection
             .execute(
@@ -1957,6 +2773,393 @@ mod tests {
             )
             .unwrap();
         assert!(runnable_tool_actions(&connection, 1).unwrap().is_empty());
+    }
+
+    #[test]
+    fn question_answer_is_actor_bound_idempotent_and_resumes_the_exact_run() {
+        let (_, catalog, mut connection, source) = database("question-answer");
+        let mut start = start_input(&source);
+        start.input = json!({
+            "agentId": "generalist",
+            "assistantMessageId": "assistant-question-1",
+            "kind": "chat.turn",
+            "schemaVersion": 1,
+            "text": "Ask which bounded mode to use.",
+            "threadId": "thread-question-1",
+            "turnId": "turn-question-1",
+            "userMessageId": "user-question-1",
+        });
+        start_run(&mut connection, &catalog, start, FaultPoint::None).unwrap();
+        commit_transition(
+            &mut connection,
+            &catalog,
+            question_transition(),
+            FaultPoint::None,
+        )
+        .unwrap();
+        let requests = list_operator_requests(&connection, 8).unwrap();
+        assert_eq!(requests.questions.len(), 1);
+        assert_eq!(
+            requests.questions[0].question_id,
+            "question:question-action-1:1"
+        );
+        assert_eq!(requests.questions[0].status, "pending");
+        assert!(runnable_runs(&connection, 8).unwrap().is_empty());
+
+        let rejected = AnswerQuestionInput {
+            actor_id: "other-owner".into(),
+            answer: "safe".into(),
+            answered_at: "2026-08-29T12:00:03.000Z".into(),
+            command_id: "answer-wrong-actor".into(),
+            question_id: "question:question-action-1:1".into(),
+        };
+        assert!(matches!(
+            answer_question(&mut connection, &catalog, rejected),
+            Err(JournalError::RevisionFenced)
+        ));
+        let invalid = AnswerQuestionInput {
+            actor_id: "local-owner".into(),
+            answer: "approved".into(),
+            answered_at: "2026-08-29T12:00:03.000Z".into(),
+            command_id: "answer-invalid-option".into(),
+            question_id: "question:question-action-1:1".into(),
+        };
+        assert!(matches!(
+            answer_question(&mut connection, &catalog, invalid),
+            Err(JournalError::RequestInvalid)
+        ));
+
+        let answer = || AnswerQuestionInput {
+            actor_id: "local-owner".into(),
+            answer: "safe".into(),
+            answered_at: "2026-08-29T12:00:03.000Z".into(),
+            command_id: "answer-question-1".into(),
+            question_id: "question:question-action-1:1".into(),
+        };
+        let accepted = answer_question(&mut connection, &catalog, answer()).unwrap();
+        assert_eq!(accepted.disposition, "accepted");
+        assert_eq!(accepted.run_id, "run-root");
+        assert_eq!(
+            answer_question(&mut connection, &catalog, answer())
+                .unwrap()
+                .disposition,
+            "duplicate"
+        );
+        let mut conflicting = answer();
+        conflicting.answer = "fast".into();
+        assert!(matches!(
+            answer_question(&mut connection, &catalog, conflicting),
+            Err(JournalError::CommandDigestConflict)
+        ));
+        let stale = AnswerQuestionInput {
+            actor_id: "local-owner".into(),
+            answer: "safe".into(),
+            answered_at: "2026-08-29T12:00:04.000Z".into(),
+            command_id: "answer-question-stale".into(),
+            question_id: "question:question-action-1:1".into(),
+        };
+        assert!(matches!(
+            answer_question(&mut connection, &catalog, stale),
+            Err(JournalError::RevisionFenced)
+        ));
+
+        let requests = list_operator_requests(&connection, 8).unwrap();
+        assert_eq!(requests.questions[0].answer.as_deref(), Some("safe"));
+        assert_eq!(requests.questions[0].status, "answered");
+        assert_eq!(runnable_runs(&connection, 8).unwrap()[0].run_id, "run-root");
+        let evidence: (String, String) = connection
+            .query_row(
+                "SELECT actor_id,body_json FROM events WHERE event_type='action.succeeded' AND stream_id='question-action-1'",
+                [],
+                |row| Ok((row.get(0)?, row.get(1)?)),
+            )
+            .unwrap();
+        assert_eq!(evidence.0, "local-owner");
+        assert_eq!(
+            parse_json(&evidence.1).unwrap()["output"]["provenance"],
+            "untrusted-user-answer"
+        );
+        let resumed = read_run_projection(&connection, "run-root")
+            .unwrap()
+            .unwrap();
+        commit_transition(
+            &mut connection,
+            &catalog,
+            CommitTransitionInput {
+                actions: Vec::new(),
+                children: Vec::new(),
+                committed_at: "2026-08-29T12:00:05.000Z".into(),
+                expected_revision: resumed.revision,
+                gate_eligible_actor_id: "local-owner".into(),
+                gate_expires_at: "2026-08-29T12:10:00.000Z".into(),
+                next_state: json!({
+                    "final": {"citations": [], "text": "Safe mode selected."},
+                    "phase": "final",
+                    "schemaVersion": 1,
+                }),
+                observed_state_digest: resumed.state_digest,
+                progress_key: "question-answer-final".into(),
+                run_id: "run-root".into(),
+                terminal_requested: true,
+                transition_digest: "7".repeat(64),
+            },
+            FaultPoint::None,
+        )
+        .unwrap();
+        let terminal =
+            reconcile_terminal_runs(&mut connection, &catalog, "2026-08-29T12:00:06.000Z", 8)
+                .unwrap();
+        assert_eq!(terminal.len(), 1);
+        assert_eq!(terminal[0].status, "completed");
+        let assistant: String = connection
+            .query_row(
+                "SELECT body_json FROM events WHERE event_type='message.appended' AND stream_id='thread-question-1'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(
+            parse_json(&assistant).unwrap()["text"],
+            "Safe mode selected."
+        );
+        verify_integrity(&connection).unwrap();
+    }
+
+    #[test]
+    fn binding_gate_approval_carries_an_exact_receipt_and_denial_reaches_terminal_failure() {
+        let (_, catalog, mut connection, source) = database("gate-approve");
+        start_run(
+            &mut connection,
+            &catalog,
+            start_input(&source),
+            FaultPoint::None,
+        )
+        .unwrap();
+        let mut transition = transition_input();
+        transition.children.clear();
+        commit_transition(&mut connection, &catalog, transition, FaultPoint::None).unwrap();
+        let requests = list_operator_requests(&connection, 8).unwrap();
+        let gate = &requests.gates[0];
+        assert_eq!(gate.gate_id, "gate:action-1:1");
+        assert_eq!(gate.status, "pending");
+        assert!(runnable_tool_actions(&connection, 8).unwrap().is_empty());
+
+        assert!(matches!(
+            decide_gate(
+                &mut connection,
+                &catalog,
+                DecideGateInput {
+                    actor_id: "other-owner".into(),
+                    command_id: "approve-gate-wrong-actor".into(),
+                    decided_at: "2026-08-29T12:00:03.000Z".into(),
+                    decision: "approved".into(),
+                    gate_id: "gate:action-1:1".into(),
+                    payload_digest: gate.payload_digest.clone(),
+                    proposal_revision: 1,
+                },
+            ),
+            Err(JournalError::RevisionFenced)
+        ));
+
+        let approve = || DecideGateInput {
+            actor_id: "local-owner".into(),
+            command_id: "approve-gate-1".into(),
+            decided_at: "2026-08-29T12:00:03.000Z".into(),
+            decision: "approved".into(),
+            gate_id: "gate:action-1:1".into(),
+            payload_digest: gate.payload_digest.clone(),
+            proposal_revision: 1,
+        };
+        assert_eq!(
+            decide_gate(&mut connection, &catalog, approve())
+                .unwrap()
+                .disposition,
+            "accepted"
+        );
+        assert_eq!(
+            decide_gate(&mut connection, &catalog, approve())
+                .unwrap()
+                .disposition,
+            "duplicate"
+        );
+        let action = &runnable_tool_actions(&connection, 8).unwrap()[0];
+        assert_eq!(action.gate_class, "binding-human-requested");
+        let receipt = action.gate_receipt.as_ref().unwrap();
+        assert_eq!(receipt.gate_id, "gate:action-1:1");
+        assert_eq!(receipt.payload_digest, action.input_digest);
+        assert_eq!(receipt.proposal_revision, 1);
+        verify_integrity(&connection).unwrap();
+
+        let (_, denied_catalog, mut denied_connection, denied_source) = database("gate-deny");
+        start_run(
+            &mut denied_connection,
+            &denied_catalog,
+            start_input(&denied_source),
+            FaultPoint::None,
+        )
+        .unwrap();
+        let mut denied_transition = transition_input();
+        denied_transition.children.clear();
+        commit_transition(
+            &mut denied_connection,
+            &denied_catalog,
+            denied_transition,
+            FaultPoint::None,
+        )
+        .unwrap();
+        let denied_gate = list_operator_requests(&denied_connection, 8).unwrap().gates[0]
+            .payload_digest
+            .clone();
+        decide_gate(
+            &mut denied_connection,
+            &denied_catalog,
+            DecideGateInput {
+                actor_id: "local-owner".into(),
+                command_id: "deny-gate-1".into(),
+                decided_at: "2026-08-29T12:00:03.000Z".into(),
+                decision: "denied".into(),
+                gate_id: "gate:action-1:1".into(),
+                payload_digest: denied_gate,
+                proposal_revision: 1,
+            },
+        )
+        .unwrap();
+        assert!(
+            runnable_tool_actions(&denied_connection, 8)
+                .unwrap()
+                .is_empty()
+        );
+        assert_eq!(
+            runnable_runs(&denied_connection, 8).unwrap()[0].run_id,
+            "run-root"
+        );
+        let denied: (String, String) = denied_connection
+            .query_row(
+                "SELECT status,error_code FROM actions WHERE action_id='action-1'",
+                [],
+                |row| Ok((row.get(0)?, row.get(1)?)),
+            )
+            .unwrap();
+        assert_eq!(denied, ("failed".into(), "GATE_DENIED".into()));
+        assert_eq!(
+            denied_connection
+                .query_row(
+                    "SELECT count(*) FROM events WHERE event_type='gate.decision-recorded'",
+                    [],
+                    |row| row.get::<_, i64>(0),
+                )
+                .unwrap(),
+            1
+        );
+        let resumed = read_run_projection(&denied_connection, "run-root")
+            .unwrap()
+            .unwrap();
+        commit_transition(
+            &mut denied_connection,
+            &denied_catalog,
+            CommitTransitionInput {
+                actions: Vec::new(),
+                children: Vec::new(),
+                committed_at: "2026-08-29T12:00:04.000Z".into(),
+                expected_revision: resumed.revision,
+                gate_eligible_actor_id: "local-owner".into(),
+                gate_expires_at: "2026-08-29T12:10:00.000Z".into(),
+                next_state: json!({
+                    "errorCode": "GATE_DENIED",
+                    "phase": "failed",
+                    "schemaVersion": 1,
+                }),
+                observed_state_digest: resumed.state_digest,
+                progress_key: "gate-denied-final".into(),
+                run_id: "run-root".into(),
+                terminal_requested: true,
+                transition_digest: "a".repeat(64),
+            },
+            FaultPoint::None,
+        )
+        .unwrap();
+        let terminal = reconcile_terminal_runs(
+            &mut denied_connection,
+            &denied_catalog,
+            "2026-08-29T12:00:05.000Z",
+            8,
+        )
+        .unwrap();
+        assert_eq!(terminal.len(), 1);
+        assert_eq!(terminal[0].status, "failed");
+        assert_eq!(
+            read_run_projection(&denied_connection, "run-root")
+                .unwrap()
+                .unwrap()
+                .error_code
+                .as_deref(),
+            Some("GATE_DENIED")
+        );
+        verify_integrity(&denied_connection).unwrap();
+    }
+
+    #[test]
+    fn binding_gate_records_the_actual_later_proposal_revision() {
+        let (_, catalog, mut connection, source) = database("gate-later-revision");
+        start_run(
+            &mut connection,
+            &catalog,
+            start_input(&source),
+            FaultPoint::None,
+        )
+        .unwrap();
+        let mut advance = transition_input();
+        advance.actions.clear();
+        advance.children.clear();
+        advance.next_state = json!({"phase": "ready"});
+        advance.progress_key = "ready".into();
+        advance.transition_digest = "8".repeat(64);
+        commit_transition(&mut connection, &catalog, advance, FaultPoint::None).unwrap();
+
+        let current = read_run_projection(&connection, "run-root")
+            .unwrap()
+            .unwrap();
+        let mut gated = transition_input();
+        gated.children.clear();
+        gated.committed_at = "2026-08-29T12:00:03.000Z".into();
+        gated.expected_revision = current.revision;
+        gated.observed_state_digest = current.state_digest;
+        gated.transition_digest = "9".repeat(64);
+        assert_eq!(
+            commit_transition(&mut connection, &catalog, gated, FaultPoint::None)
+                .unwrap()
+                .revision,
+            2
+        );
+
+        let requests = list_operator_requests(&connection, 8).unwrap();
+        let gate = &requests.gates[0];
+        assert_eq!(gate.proposal_revision, 2);
+        let requested: String = connection
+            .query_row(
+                "SELECT body_json FROM events WHERE event_type='gate.requested'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(parse_json(&requested).unwrap()["proposalRevision"], 2);
+        assert!(matches!(
+            decide_gate(
+                &mut connection,
+                &catalog,
+                DecideGateInput {
+                    actor_id: "local-owner".into(),
+                    command_id: "stale-later-gate".into(),
+                    decided_at: "2026-08-29T12:00:04.000Z".into(),
+                    decision: "approved".into(),
+                    gate_id: gate.gate_id.clone(),
+                    payload_digest: gate.payload_digest.clone(),
+                    proposal_revision: 1,
+                },
+            ),
+            Err(JournalError::RevisionFenced)
+        ));
+        verify_integrity(&connection).unwrap();
     }
 
     #[test]
@@ -2194,6 +3397,88 @@ mod tests {
     }
 
     #[test]
+    fn root_cancellation_fences_and_returns_active_descendant_calls() {
+        let (_, catalog, mut connection, source) = database("cancel-descendants");
+        start_run(
+            &mut connection,
+            &catalog,
+            start_input(&source),
+            FaultPoint::None,
+        )
+        .unwrap();
+        let mut transition = transition_input();
+        transition.actions.clear();
+        transition.next_state = json!({"phase": "waiting-children", "schemaVersion": 1});
+        commit_transition(&mut connection, &catalog, transition, FaultPoint::None).unwrap();
+        connection
+            .execute(
+                "INSERT INTO actions(action_id,source_event_id,reactor_id,plugin_id,action_type,action_schema_version,execution_id,resource,gate_class,deadline_class,input_json,input_digest,requested_capabilities_json,status,created_at,updated_at) VALUES ('child-provider-action',?1,'reviewer','agent-plugin','provider.generate',1,'run-child','provider:child','none-requested','interactive','{}',?2,'[\"documents.read\"]','running',?3,?3)",
+                params![source, sha256("{}"), "2026-08-29T12:00:03.000Z"],
+            )
+            .unwrap();
+        connection
+            .execute(
+                "UPDATE executions SET generation=1 WHERE execution_id='run-child'",
+                [],
+            )
+            .unwrap();
+        connection
+            .execute(
+                "INSERT INTO attempts(attempt_id,action_id,execution_id,generation,owner_id,status,lease_expires_at,heartbeat_at,snapshot_digest,snapshot_json,catalog_digest,created_at,updated_at) VALUES ('child-attempt','child-provider-action','run-child',1,'owner','running','2026-08-29T12:10:00.000Z',?1,?2,'{}',?3,?1,?1)",
+                params!["2026-08-29T12:00:03.000Z", sha256("{}"), catalog],
+            )
+            .unwrap();
+        connection
+            .execute(
+                "INSERT INTO provider_calls(call_id,action_id,attempt_id,generation,purpose,model_id,request_digest,catalog_digest,prompt_snapshot_digest,prompt_snapshot_json,source_revision,dispatch_state,dispatched_at,status,allocated_at) VALUES ('child-physical-call','child-provider-action','child-attempt',1,'agent.step','frontier-model',?1,?2,?1,'{}',0,'dispatched',?3,'allocated',?3)",
+                params![sha256("{}"), catalog, "2026-08-29T12:00:03.000Z"],
+            )
+            .unwrap();
+
+        let cancelled = cancel_run(
+            &mut connection,
+            &catalog,
+            "run-root",
+            "2026-08-29T12:00:04.000Z",
+        )
+        .unwrap();
+
+        assert_eq!(cancelled.physical_calls.len(), 1);
+        assert_eq!(cancelled.physical_calls[0].call_id, "child-physical-call");
+        assert_eq!(
+            connection
+                .query_row(
+                    "SELECT count(*) FROM workflow_instances WHERE status='cancelled'",
+                    [],
+                    |record| record.get::<_, i64>(0),
+                )
+                .unwrap(),
+            2
+        );
+        assert_eq!(
+            connection
+                .query_row(
+                    "SELECT count(*) FROM events WHERE event_type='workflow.cancelled'",
+                    [],
+                    |record| record.get::<_, i64>(0),
+                )
+                .unwrap(),
+            2
+        );
+        assert_eq!(
+            connection
+                .query_row(
+                    "SELECT status FROM provider_calls WHERE call_id='child-physical-call'",
+                    [],
+                    |record| record.get::<_, String>(0),
+                )
+                .unwrap(),
+            "delivery-unknown"
+        );
+        verify_integrity(&connection).unwrap();
+    }
+
+    #[test]
     fn injected_transition_fault_rolls_back_events_actions_children_and_step() {
         let (_, catalog, mut connection, source) = database("transition-rollback");
         start_run(
@@ -2245,8 +3530,8 @@ mod tests {
     }
 
     #[test]
-    fn older_abis_and_v3_open_without_schema_rewrite() {
-        let (path, catalog, connection, _) = database("abi-upgrade");
+    fn older_abis_open_without_rewrite_but_agent_operations_require_v3() {
+        let (path, catalog, connection, source) = database("abi-upgrade");
         let version: String = connection
             .query_row(
                 "SELECT value FROM harness_metadata WHERE key='schema_version'",
@@ -2278,13 +3563,33 @@ mod tests {
         );
         let response = execute(Request::Open {
             abi_version: 3,
-            catalog_digest: catalog,
-            database_path: path,
+            catalog_digest: catalog.clone(),
+            database_path: path.clone(),
         })
         .unwrap();
         assert_eq!(
             serde_json::from_slice::<Value>(&response).unwrap()["abiVersion"],
             3
+        );
+        assert!(matches!(
+            execute(Request::StartRun {
+                abi_version: 2,
+                catalog_digest: catalog.clone(),
+                database_path: path.clone(),
+                run: start_input(&source),
+            }),
+            Err(JournalError::AbiUnsupported)
+        ));
+        let response = execute(Request::StartRun {
+            abi_version: 3,
+            catalog_digest: catalog,
+            database_path: path,
+            run: start_input(&source),
+        })
+        .unwrap();
+        assert_eq!(
+            serde_json::from_slice::<Value>(&response).unwrap()["disposition"],
+            "accepted"
         );
     }
 }

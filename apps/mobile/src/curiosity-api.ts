@@ -34,10 +34,14 @@ const parseThreads = (value: unknown): readonly CuriosityThread[] => {
     if (
       typeof thread?.sequence !== "number" ||
       typeof thread.threadId !== "string" ||
-      typeof thread.title !== "string"
+      typeof thread.title !== "string" ||
+      (thread.projectId !== undefined && typeof thread.projectId !== "string")
     )
       throw new CuriosityApiError("MOBILE_RESPONSE_INVALID");
     return Object.freeze({
+      ...(typeof thread.projectId === "string"
+        ? { projectId: thread.projectId }
+        : {}),
       sequence: thread.sequence,
       threadId: thread.threadId,
       title: thread.title,
@@ -151,6 +155,7 @@ export const createHttpCuriosityClient = (
         throw new CuriosityApiError("MOBILE_RESPONSE_INVALID", response.status);
       return Object.freeze({
         assistantMessageId: body.assistantMessageId,
+        status: "completed" as const,
         text: body.text,
         threadId: body.threadId,
         threads: parseThreads(body.threads),

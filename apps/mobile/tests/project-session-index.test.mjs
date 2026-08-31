@@ -45,3 +45,24 @@ test("organization session lists include only their projects", () => {
     ["other-thread"],
   );
 });
+
+test("durable project identity restores ownership after relaunch", () => {
+  const restored = [threads[0], { ...threads[1], projectId: "project:other" }];
+
+  assert.equal(
+    projectIdForThread({}, "other-thread", "project:other"),
+    "project:other",
+  );
+  assert.deepEqual(
+    threadsForProject({}, "project:other", restored).map(
+      ({ threadId }) => threadId,
+    ),
+    ["other-thread"],
+  );
+  assert.deepEqual(
+    threadsForProject({}, "curiosity", restored).map(
+      ({ threadId }) => threadId,
+    ),
+    ["default-thread"],
+  );
+});

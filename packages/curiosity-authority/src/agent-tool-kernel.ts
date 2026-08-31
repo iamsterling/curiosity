@@ -136,7 +136,17 @@ export class AgentReadToolKernel {
     const binding = this.#tools.get(action.actionType);
     if (!binding || !exactCapabilities(action, this.#grantedCapabilities))
       throw new PortableAuthorityError("AGENT_TOOL_UNAVAILABLE");
-    if ((await this.#config.sha256(canonicalJson(action.input))) !== action.inputDigest)
+    if (
+      (action.gateClass === "binding-human-requested" &&
+        (!action.gateReceipt ||
+          action.gateReceipt.payloadDigest !== action.inputDigest)) ||
+      (action.gateClass === "none-requested" && action.gateReceipt)
+    )
+      throw new PortableAuthorityError("AGENT_TOOL_ACTION_STALE");
+    if (
+      (await this.#config.sha256(canonicalJson(action.input))) !==
+      action.inputDigest
+    )
       throw new PortableAuthorityError("AGENT_TOOL_ACTION_STALE");
     const requestDigest = await createToolRequestDigest(
       binding.toolId,
@@ -147,15 +157,24 @@ export class AgentReadToolKernel {
     const generation = action.executionGeneration + 1;
     const [attemptId, callId] = await Promise.all([
       this.#config.sha256(
-        canonicalJson({ actionId: action.actionId, generation, kind: "tool-attempt" }),
+        canonicalJson({
+          actionId: action.actionId,
+          generation,
+          kind: "tool-attempt",
+        }),
       ),
       this.#config.sha256(
-        canonicalJson({ actionId: action.actionId, generation, kind: "tool-call" }),
+        canonicalJson({
+          actionId: action.actionId,
+          generation,
+          kind: "tool-call",
+        }),
       ),
     ]);
     const allocatedAt = this.#config.now();
     const leaseExpiresAt = new Date(
-      checkedTime(allocatedAt) + (this.#config.leaseDurationMs ?? defaultLeaseDurationMs),
+      checkedTime(allocatedAt) +
+        (this.#config.leaseDurationMs ?? defaultLeaseDurationMs),
     ).toISOString();
     const snapshot = {
       actionId: action.actionId,
@@ -199,6 +218,7 @@ export class AgentReadToolKernel {
         catalogDigest: this.#config.catalogDigest,
         deadlineAt: leaseExpiresAt,
         executionId: action.executionId,
+        ...(action.gateReceipt ? { gateReceipt: action.gateReceipt } : {}),
         generation,
         inputDigest: action.inputDigest,
         requestDigest,
@@ -234,7 +254,12 @@ export class AgentReadToolKernel {
       completedAt: this.#config.now(),
       events: [
         {
-          body: { actionId: action.actionId, outputDigest, receipt, schemaVersion: 1 },
+          body: {
+            actionId: action.actionId,
+            outputDigest,
+            receipt,
+            schemaVersion: 1,
+          },
           streamId: action.actionId,
           type: "action.succeeded",
         },
@@ -256,7 +281,9 @@ export class AgentReadToolKernel {
     generation: number,
     code: string,
   ): Promise<AgentReadToolDrainResult> {
-    const outputDigest = await this.#config.sha256(canonicalJson({ errorCode: code }));
+    const outputDigest = await this.#config.sha256(
+      canonicalJson({ errorCode: code }),
+    );
     const settlement = await this.#config.journal.settleAttempt({
       actionId,
       attemptId,

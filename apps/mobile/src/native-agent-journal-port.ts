@@ -1,16 +1,21 @@
 import {
   PortableAuthorityError,
   type AgentCancellationJournalPort,
+  type AgentControlJournalPort,
+  type AgentJournalControlMutationResult,
   type AgentJournalCancelRunResult,
   type AgentJournalDispatchResult,
+  type AgentJournalGateProjection,
   type AgentJournalMutationResult,
   type AgentJournalPort,
   type AgentJournalProviderActionProjection,
   type AgentJournalProviderCallProjection,
+  type AgentJournalQuestionProjection,
   type AgentJournalReconciledAttempt,
   type AgentJournalRunnableToolAction,
   type AgentJournalSettlementResult,
   type AgentJournalTerminalRun,
+  type AgentJournalOperatorRequests,
   type AgentRunProjection,
   type AgentTerminalJournalPort,
   type AgentToolJournalPort,
@@ -74,6 +79,12 @@ const integer = (value: unknown): number => {
   if (!Number.isSafeInteger(value))
     throw new PortableAuthorityError("NATIVE_JOURNAL_RESPONSE_INVALID");
   return value as number;
+};
+
+const boolean = (value: unknown): boolean => {
+  if (typeof value !== "boolean")
+    throw new PortableAuthorityError("NATIVE_JOURNAL_RESPONSE_INVALID");
+  return value;
 };
 
 const call = async (
@@ -261,7 +272,26 @@ const runnableToolAction = (value: unknown): AgentJournalRunnableToolAction => {
   const gateClass = string(item.gateClass);
   if (
     !["background", "interactive"].includes(deadlineClass) ||
-    gateClass !== "none-requested"
+    !["binding-human-requested", "none-requested"].includes(gateClass)
+  )
+    throw new PortableAuthorityError("NATIVE_JOURNAL_RESPONSE_INVALID");
+  const gateReceipt =
+    item.gateReceipt === null || item.gateReceipt === undefined
+      ? undefined
+      : (() => {
+          const receipt = object(item.gateReceipt);
+          return {
+            gateId: string(receipt.gateId),
+            payloadDigest: string(receipt.payloadDigest),
+            proposalRevision: integer(receipt.proposalRevision),
+          };
+        })();
+  if (
+    (gateClass === "binding-human-requested" &&
+      (!gateReceipt ||
+        gateReceipt.payloadDigest !== item.inputDigest ||
+        gateReceipt.proposalRevision < 1)) ||
+    (gateClass === "none-requested" && gateReceipt)
   )
     throw new PortableAuthorityError("NATIVE_JOURNAL_RESPONSE_INVALID");
   return {
@@ -273,7 +303,8 @@ const runnableToolAction = (value: unknown): AgentJournalRunnableToolAction => {
       deadlineClass as AgentJournalRunnableToolAction["deadlineClass"],
     executionGeneration: integer(item.executionGeneration),
     executionId: string(item.executionId),
-    gateClass: "none-requested",
+    gateClass: gateClass as AgentJournalRunnableToolAction["gateClass"],
+    ...(gateReceipt ? { gateReceipt } : {}),
     input: item.input,
     inputDigest: string(item.inputDigest),
     pluginId: string(item.pluginId),
@@ -282,6 +313,70 @@ const runnableToolAction = (value: unknown): AgentJournalRunnableToolAction => {
     resource: string(item.resource),
     runId: string(item.runId),
     sourceEventId: string(item.sourceEventId),
+  };
+};
+
+const questionProjection = (value: unknown): AgentJournalQuestionProjection => {
+  const item = object(value);
+  const status = string(item.status);
+  if (!["answered", "cancelled", "pending"].includes(status))
+    throw new PortableAuthorityError("NATIVE_JOURNAL_RESPONSE_INVALID");
+  return {
+    actionId: string(item.actionId),
+    allowFreeText: boolean(item.allowFreeText),
+    ...(optionalString(item, "answer")
+      ? { answer: optionalString(item, "answer") }
+      : {}),
+    executionId: string(item.executionId),
+    options: strings(item.options),
+    prompt: string(item.prompt),
+    questionId: string(item.questionId),
+    runId: string(item.runId),
+    status: status as AgentJournalQuestionProjection["status"],
+  };
+};
+
+const gateProjection = (value: unknown): AgentJournalGateProjection => {
+  const item = object(value);
+  const status = string(item.status);
+  if (!["approved", "denied", "expired", "pending"].includes(status))
+    throw new PortableAuthorityError("NATIVE_JOURNAL_RESPONSE_INVALID");
+  return {
+    actionId: string(item.actionId),
+    actionType: string(item.actionType),
+    createdAt: string(item.createdAt),
+    eligibleActorId: string(item.eligibleActorId),
+    expiresAt: string(item.expiresAt),
+    gateId: string(item.gateId),
+    input: item.input,
+    payloadDigest: string(item.payloadDigest),
+    proposalRevision: integer(item.proposalRevision),
+    requestedCapabilities: strings(item.requestedCapabilities),
+    resource: string(item.resource),
+    runId: string(item.runId),
+    status: status as AgentJournalGateProjection["status"],
+  };
+};
+
+const operatorRequests = (value: unknown): AgentJournalOperatorRequests => {
+  const item = object(value);
+  if (!Array.isArray(item.gates) || !Array.isArray(item.questions))
+    throw new PortableAuthorityError("NATIVE_JOURNAL_RESPONSE_INVALID");
+  return {
+    gates: item.gates.map(gateProjection),
+    questions: item.questions.map(questionProjection),
+  };
+};
+
+const controlMutation = (value: unknown): AgentJournalControlMutationResult => {
+  const item = object(value);
+  const disposition = string(item.disposition);
+  if (disposition !== "accepted" && disposition !== "duplicate")
+    throw new PortableAuthorityError("NATIVE_JOURNAL_RESPONSE_INVALID");
+  return {
+    actionId: string(item.actionId),
+    disposition,
+    runId: string(item.runId),
   };
 };
 
@@ -412,9 +507,14 @@ export const createNativeAgentJournal = (
   native: NativeAgentJournalModule,
 ): AgentJournalPort &
   AgentCancellationJournalPort &
+  AgentControlJournalPort &
   AgentActivityPort &
   AgentToolJournalPort &
   AgentTerminalJournalPort => ({
+  answerQuestion: async (input) =>
+    controlMutation(
+      await call(native, { answer: input, operation: "answerQuestion" }),
+    ),
   armDispatch: async (input) => {
     const result = dispatch(
       await call(native, { dispatch: input, operation: "armDispatch" }),
@@ -444,6 +544,14 @@ export const createNativeAgentJournal = (
       throw new PortableAuthorityError("NATIVE_AGENT_REVISION_FENCED");
     return result;
   },
+  decideGate: async (input) =>
+    controlMutation(
+      await call(native, { decision: input, operation: "decideGate" }),
+    ),
+  listOperatorRequests: async (limit) =>
+    operatorRequests(
+      await call(native, { limit, operation: "listOperatorRequests" }),
+    ),
   listRunProjections: async (limit) => {
     const value = await call(native, {
       limit,

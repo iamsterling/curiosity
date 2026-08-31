@@ -13,6 +13,20 @@ export interface NativeProviderCatalogResult {
   readonly source: "provider-api" | "cache";
 }
 
+export interface NativeProviderRoutePreference {
+  readonly agentId: string;
+  readonly modelId: string;
+  readonly providerId: "openai-oauth";
+  readonly routeId: "frontier.openai-oauth";
+  readonly selectionPolicyId: "apple-operator-role-route-v1";
+}
+
+export interface NativeProviderRoutePreferences {
+  readonly preferences: readonly NativeProviderRoutePreference[];
+}
+
+export type NativeProviderRouteSelection = NativeProviderRoutePreference;
+
 export interface NativeGenerationRequest {
   readonly maximumResponseTokens: number;
   readonly messages: readonly NativeGenerationMessage[];
@@ -31,6 +45,7 @@ export interface NativeFrontierGenerationRequest {
   readonly callId: string;
   readonly maximumOutputTokens: number;
   readonly modelId: string;
+  readonly outputSchemaJSON?: string;
   readonly prompt: string;
   readonly providerId: "openai-oauth";
 }
@@ -173,6 +188,11 @@ export interface GenerationDeltaEvent {
   readonly turnId: string;
 }
 
+export interface FrontierGenerationDeltaEvent {
+  readonly callId: string;
+  readonly delta: string;
+}
+
 export interface NativeJournalStatus {
   readonly abiVersion: number;
   readonly schemaVersion: number;
@@ -221,5 +241,6 @@ export interface NativeDocumentToolReceipt {
 }
 
 export type CuriosityRuntimeModuleEvents = {
+  onFrontierGenerationDelta: (event: FrontierGenerationDeltaEvent) => void;
   onGenerationDelta: (event: GenerationDeltaEvent) => void;
 };

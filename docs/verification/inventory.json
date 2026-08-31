@@ -162,6 +162,10 @@
         "./thread-projections/node": {
           "types": "./dist/thread-projections-node.d.ts",
           "import": "./dist/thread-projections-node.js"
+        },
+        "./dashboard/node": {
+          "types": "./dist/dashboard-runtime.d.ts",
+          "import": "./dist/dashboard-runtime.js"
         }
       },
       "bin": {
@@ -204,6 +208,13 @@
           "version": "2.0.72",
           "classification": "external",
           "protocol": "exact"
+        },
+        {
+          "name": "@curiosity/authority",
+          "section": "dependencies",
+          "version": "workspace:*",
+          "classification": "workspace",
+          "protocol": "workspace"
         },
         {
           "name": "@curiosity/runtime",
@@ -901,12 +912,12 @@
       "private": true,
       "role": "starter-app",
       "scripts": {
-        "dev": "next dev --port 3000",
+        "dev": "bun --bun next dev --hostname 0.0.0.0 --port 3000",
         "build": "next build",
-        "start": "next start",
+        "start": "bun --bun next start --hostname 0.0.0.0",
         "lint": "eslint --max-warnings 0",
         "check-types": "next typegen && tsc --noEmit",
-        "test": "node --test tests/config-load.test.mjs tests/thread-projection.test.mjs",
+        "test": "node --test tests/config-load.test.mjs tests/dashboard-route.test.mjs tests/thread-projection.test.mjs",
         "verify": "bun run lint && bun run check-types && bun run build && bun run test"
       },
       "exports": null,
@@ -919,11 +930,39 @@
       ],
       "dependencies": [
         {
+          "name": "@crafty/editor",
+          "section": "dependencies",
+          "version": "workspace:*",
+          "classification": "workspace",
+          "protocol": "workspace"
+        },
+        {
+          "name": "@crafty/scene-renderer",
+          "section": "dependencies",
+          "version": "workspace:*",
+          "classification": "workspace",
+          "protocol": "workspace"
+        },
+        {
+          "name": "@crafty/scene-store",
+          "section": "dependencies",
+          "version": "workspace:*",
+          "classification": "workspace",
+          "protocol": "workspace"
+        },
+        {
           "name": "@curiosity/custom-harness",
           "section": "dependencies",
           "version": "workspace:*",
           "classification": "workspace",
           "protocol": "workspace"
+        },
+        {
+          "name": "@tailwindcss/postcss",
+          "section": "devDependencies",
+          "version": "^4.3.3",
+          "classification": "external",
+          "protocol": "caret"
         },
         {
           "name": "@repo/eslint-config",
@@ -975,11 +1014,25 @@
           "protocol": "caret"
         },
         {
+          "name": "lucide-react",
+          "section": "dependencies",
+          "version": "^0.468.0",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
           "name": "next",
           "section": "dependencies",
           "version": "16.3.0",
           "classification": "external",
           "protocol": "exact"
+        },
+        {
+          "name": "next-themes",
+          "section": "dependencies",
+          "version": "^0.4.6",
+          "classification": "external",
+          "protocol": "caret"
         },
         {
           "name": "react",
@@ -996,6 +1049,20 @@
           "protocol": "caret"
         },
         {
+          "name": "tailwindcss",
+          "section": "devDependencies",
+          "version": "^4.3.3",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
+          "name": "tw-animate-css",
+          "section": "devDependencies",
+          "version": "^1.4.0",
+          "classification": "external",
+          "protocol": "caret"
+        },
+        {
           "name": "typescript",
           "section": "devDependencies",
           "version": "5.9.2",
@@ -1008,14 +1075,14 @@
         {
           "kind": "lifecycle-script",
           "path": "scripts.start",
-          "value": "next start",
+          "value": "bun --bun next start --hostname 0.0.0.0",
           "classification": "reviewed",
           "reason": "Reviewed npm lifecycle entrypoint; execution remains limited to its classified command graph."
         },
         {
           "kind": "lifecycle-script",
           "path": "scripts.test",
-          "value": "node --test tests/config-load.test.mjs tests/thread-projection.test.mjs",
+          "value": "node --test tests/config-load.test.mjs tests/dashboard-route.test.mjs tests/thread-projection.test.mjs",
           "classification": "reviewed",
           "reason": "Reviewed npm lifecycle entrypoint; execution remains limited to its classified command graph."
         }
@@ -1035,7 +1102,11 @@
         "verify": "bun run lint && bun run check-types && bun run build && bun run test"
       },
       "exports": {
-        ".": "./src/index.ts"
+        ".": {
+          "types": "./src/index.ts",
+          "bun": "./src/index.ts",
+          "import": "./dist/index.js"
+        }
       },
       "bin": null,
       "files": [],
@@ -1311,6 +1382,12 @@
     },
     {
       "from": "apps/custom-harness",
+      "to": "packages/curiosity-authority",
+      "section": "dependencies",
+      "specifier": "workspace:*"
+    },
+    {
+      "from": "apps/custom-harness",
       "to": "apps/runtime",
       "section": "dependencies",
       "specifier": "workspace:*"
@@ -1332,6 +1409,12 @@
       "to": "packages/ui",
       "section": "dependencies",
       "specifier": "*"
+    },
+    {
+      "from": "apps/mobile",
+      "to": "packages/curiosity-authority",
+      "section": "dependencies",
+      "specifier": "workspace:*"
     },
     {
       "from": "apps/web",
@@ -1395,6 +1478,43 @@
           "name": "serde_json",
           "section": "dependencies",
           "declaration": "\"=1.0.151\""
+        },
+        {
+          "name": "sha2",
+          "section": "dependencies",
+          "declaration": "\"=0.10.9\""
+        }
+      ]
+    },
+    {
+      "path": "apps/mobile/modules/curiosity-runtime/native/Cargo.toml",
+      "name": "curiosity-journal-native",
+      "edition": "2024",
+      "targets": [
+        {
+          "kind": "lib",
+          "name": "curiosity_journal_native",
+          "path": "apps/mobile/modules/curiosity-runtime/native/src/lib.rs",
+          "crateTypes": ["rlib", "staticlib"],
+          "requiredFeatures": []
+        }
+      ],
+      "features": {},
+      "dependencies": [
+        {
+          "name": "rusqlite",
+          "section": "dependencies",
+          "declaration": "{ version = \"=0.40.2\", default-features = false, features = [\"bundled\"] }"
+        },
+        {
+          "name": "serde",
+          "section": "dependencies",
+          "declaration": "{ version = \"=1.0.228\", features = [\"derive\"] }"
+        },
+        {
+          "name": "serde_json",
+          "section": "dependencies",
+          "declaration": "\"=1.0.145\""
         },
         {
           "name": "sha2",
@@ -1554,7 +1674,7 @@
     {
       "path": "tools/verification/inventory-model.mjs",
       "owner": "repository",
-      "sha256": "4ef0cac6ac00e9de2eb4c6beb28a8551e54cec1376eb5ca91dbaf3675027a9a2",
+      "sha256": "f9572373165a3b5559c827cb173d5a555d3298957ad7c4a2282b4520aa02022c",
       "profiles": ["inventory-status"]
     },
     {
@@ -1613,6 +1733,7 @@
       "tests": [
         "apps/docs/tests/config-load.test.mjs",
         "apps/web/tests/config-load.test.mjs",
+        "apps/web/tests/dashboard-route.test.mjs",
         "apps/web/tests/thread-projection.test.mjs",
         "packages/ui/tests/package-contract.test.mjs"
       ],
@@ -2019,6 +2140,7 @@
         }
       ],
       "tests": [
+        "apps/custom-harness/tests/action-failure-policy.test.ts",
         "apps/custom-harness/tests/action-reaction.test.ts",
         "apps/custom-harness/tests/architecture.test.ts",
         "apps/custom-harness/tests/attempt-governance.test.ts",
@@ -2034,13 +2156,17 @@
         "apps/custom-harness/tests/compaction.test.ts",
         "apps/custom-harness/tests/content-tools.test.ts",
         "apps/custom-harness/tests/context-replay.test.ts",
+        "apps/custom-harness/tests/dashboard-runtime.test.ts",
         "apps/custom-harness/tests/efficiency-eval.test.ts",
         "apps/custom-harness/tests/git-read.test.ts",
         "apps/custom-harness/tests/host-independence.test.ts",
         "apps/custom-harness/tests/import-safety.test.ts",
         "apps/custom-harness/tests/intelligence-projections.test.ts",
+        "apps/custom-harness/tests/kernel-semantic-golden-inventory.test.ts",
         "apps/custom-harness/tests/opencode2-parity.test.ts",
         "apps/custom-harness/tests/plugin-catalog.test.ts",
+        "apps/custom-harness/tests/portable-authority-parity.test.ts",
+        "apps/custom-harness/tests/portable-workflow-transition-parity.test.ts",
         "apps/custom-harness/tests/process-execution.test.ts",
         "apps/custom-harness/tests/projection-rebuild-matrix.test.ts",
         "apps/custom-harness/tests/prompt-assembler.test.ts",
@@ -2082,11 +2208,74 @@
         }
       ],
       "tests": [
+        "apps/mobile/tests/agent-activity-scope.test.mjs",
+        "apps/mobile/tests/agent-control-surface.test.mjs",
+        "apps/mobile/tests/agent-step-native-boundary.test.mjs",
         "apps/mobile/tests/config.test.mjs",
+        "apps/mobile/tests/crafty-kernel-portability.test.mjs",
+        "apps/mobile/tests/crafty-kernel-web-parity.mjs",
+        "apps/mobile/tests/crafty-native-frame.test.mjs",
         "apps/mobile/tests/curiosity-api.test.mjs",
+        "apps/mobile/tests/curiosity-client-boundary.test.mjs",
+        "apps/mobile/tests/curiosity-workspace-state.test.mjs",
+        "apps/mobile/tests/durable-agent-admission.test.mjs",
+        "apps/mobile/tests/durable-agent-control.test.mjs",
+        "apps/mobile/tests/durable-agent-scheduler.test.mjs",
+        "apps/mobile/tests/durable-curiosity-client.test.mjs",
+        "apps/mobile/tests/foundation-model-agent-step-port.test.mjs",
+        "apps/mobile/tests/foundation-model-generation-port.test.mjs",
+        "apps/mobile/tests/foundation-model-memory-curator-port.test.mjs",
+        "apps/mobile/tests/frontier-agent-step-port.test.mjs",
+        "apps/mobile/tests/frontier-generation-port.test.mjs",
+        "apps/mobile/tests/local-curiosity-client.test.mjs",
+        "apps/mobile/tests/mobile-agent-cancellation.test.mjs",
+        "apps/mobile/tests/mobile-agent-kernel.test.mjs",
+        "apps/mobile/tests/mobile-agent-planner.test.mjs",
+        "apps/mobile/tests/mobile-agent-tool-kernel.test.mjs",
+        "apps/mobile/tests/mobile-generation-routing.test.mjs",
+        "apps/mobile/tests/mobile-platform-profile.test.mjs",
+        "apps/mobile/tests/native-agent-journal.test.mjs",
+        "apps/mobile/tests/native-document-tool-boundary.test.mjs",
+        "apps/mobile/tests/native-document-tool-port.test.mjs",
+        "apps/mobile/tests/native-journal-schema.test.mjs",
+        "apps/mobile/tests/nested-sidebar.test.mjs",
+        "apps/mobile/tests/project-navigation-model.test.mjs",
+        "apps/mobile/tests/project-session-index.test.mjs",
+        "apps/mobile/tests/provider-connections-port.test.mjs",
+        "apps/mobile/tests/provider-native-boundary.test.mjs",
+        "apps/mobile/tests/workspace-catalog.test.mjs",
         "apps/mobile/tests/workstation-commands.test.mjs"
       ],
       "reason": "Required iOS/iPadOS Expo configuration, API contract, static analysis, and iOS bundle verification."
+    },
+    "portable-authority": {
+      "disposition": "required",
+      "entrypoints": [
+        {
+          "package": "packages/curiosity-authority",
+          "script": "verify"
+        }
+      ],
+      "tests": [
+        "packages/curiosity-authority/tests/action-grant.test.ts",
+        "packages/curiosity-authority/tests/agent-kernel.test.ts",
+        "packages/curiosity-authority/tests/agent-loop.test.ts",
+        "packages/curiosity-authority/tests/agent-step.test.ts",
+        "packages/curiosity-authority/tests/agent-tool-kernel.test.ts",
+        "packages/curiosity-authority/tests/apple-platform-capability-profile.test.ts",
+        "packages/curiosity-authority/tests/context-plan.test.ts",
+        "packages/curiosity-authority/tests/document-tool.test.ts",
+        "packages/curiosity-authority/tests/generation-route.test.ts",
+        "packages/curiosity-authority/tests/kernel-semantic-goldens.test.ts",
+        "packages/curiosity-authority/tests/memory-curation.test.ts",
+        "packages/curiosity-authority/tests/memory-policy.test.ts",
+        "packages/curiosity-authority/tests/portable-authority.test.ts",
+        "packages/curiosity-authority/tests/portable-policy.test.ts",
+        "packages/curiosity-authority/tests/portable-workflow-engine.test.ts",
+        "packages/curiosity-authority/tests/provider-catalog.test.ts",
+        "packages/curiosity-authority/tests/workflow-transition.test.ts"
+      ],
+      "reason": "Required portable semantic authority, platform policy, workflow, provider, tool, memory, and durable agent-kernel verification."
     }
   },
   "tests": [
@@ -2971,6 +3160,348 @@
       "owner": "repository",
       "profiles": ["inventory-status"],
       "platforms": ["linux", "darwin"]
+    },
+    {
+      "path": "apps/custom-harness/tests/action-failure-policy.test.ts",
+      "owner": "harness",
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
+    },
+    {
+      "path": "apps/custom-harness/tests/dashboard-runtime.test.ts",
+      "owner": "harness",
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
+    },
+    {
+      "path": "apps/custom-harness/tests/kernel-semantic-golden-inventory.test.ts",
+      "owner": "harness",
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
+    },
+    {
+      "path": "apps/custom-harness/tests/portable-authority-parity.test.ts",
+      "owner": "harness",
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
+    },
+    {
+      "path": "apps/custom-harness/tests/portable-workflow-transition-parity.test.ts",
+      "owner": "harness",
+      "profiles": ["custom-harness"],
+      "platforms": ["linux", "darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/agent-activity-scope.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/agent-control-surface.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/agent-step-native-boundary.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/crafty-kernel-portability.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/crafty-kernel-web-parity.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/crafty-native-frame.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/curiosity-client-boundary.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/curiosity-workspace-state.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/durable-agent-admission.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/durable-agent-control.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/durable-agent-scheduler.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/durable-curiosity-client.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/foundation-model-agent-step-port.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/foundation-model-generation-port.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/foundation-model-memory-curator-port.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/frontier-agent-step-port.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/frontier-generation-port.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/local-curiosity-client.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/mobile-agent-cancellation.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/mobile-agent-kernel.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/mobile-agent-planner.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/mobile-agent-tool-kernel.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/mobile-generation-routing.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/mobile-platform-profile.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/native-agent-journal.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/native-document-tool-boundary.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/native-document-tool-port.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/native-journal-schema.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/nested-sidebar.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/project-navigation-model.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/project-session-index.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/provider-connections-port.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/provider-native-boundary.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "apps/mobile/tests/workspace-catalog.test.mjs",
+      "owner": "mobile",
+      "profiles": ["mobile-ios"],
+      "platforms": ["darwin"]
+    },
+    {
+      "path": "packages/curiosity-authority/tests/action-grant.test.ts",
+      "owner": "harness",
+      "profiles": ["portable-authority"],
+      "platforms": ["linux", "darwin"]
+    },
+    {
+      "path": "packages/curiosity-authority/tests/agent-kernel.test.ts",
+      "owner": "harness",
+      "profiles": ["portable-authority"],
+      "platforms": ["linux", "darwin"]
+    },
+    {
+      "path": "packages/curiosity-authority/tests/agent-loop.test.ts",
+      "owner": "harness",
+      "profiles": ["portable-authority"],
+      "platforms": ["linux", "darwin"]
+    },
+    {
+      "path": "packages/curiosity-authority/tests/agent-step.test.ts",
+      "owner": "harness",
+      "profiles": ["portable-authority"],
+      "platforms": ["linux", "darwin"]
+    },
+    {
+      "path": "packages/curiosity-authority/tests/agent-tool-kernel.test.ts",
+      "owner": "harness",
+      "profiles": ["portable-authority"],
+      "platforms": ["linux", "darwin"]
+    },
+    {
+      "path": "packages/curiosity-authority/tests/apple-platform-capability-profile.test.ts",
+      "owner": "harness",
+      "profiles": ["portable-authority"],
+      "platforms": ["linux", "darwin"]
+    },
+    {
+      "path": "packages/curiosity-authority/tests/context-plan.test.ts",
+      "owner": "harness",
+      "profiles": ["portable-authority"],
+      "platforms": ["linux", "darwin"]
+    },
+    {
+      "path": "packages/curiosity-authority/tests/document-tool.test.ts",
+      "owner": "harness",
+      "profiles": ["portable-authority"],
+      "platforms": ["linux", "darwin"]
+    },
+    {
+      "path": "packages/curiosity-authority/tests/generation-route.test.ts",
+      "owner": "harness",
+      "profiles": ["portable-authority"],
+      "platforms": ["linux", "darwin"]
+    },
+    {
+      "path": "packages/curiosity-authority/tests/kernel-semantic-goldens.test.ts",
+      "owner": "harness",
+      "profiles": ["portable-authority"],
+      "platforms": ["linux", "darwin"]
+    },
+    {
+      "path": "packages/curiosity-authority/tests/memory-curation.test.ts",
+      "owner": "harness",
+      "profiles": ["portable-authority"],
+      "platforms": ["linux", "darwin"]
+    },
+    {
+      "path": "packages/curiosity-authority/tests/memory-policy.test.ts",
+      "owner": "harness",
+      "profiles": ["portable-authority"],
+      "platforms": ["linux", "darwin"]
+    },
+    {
+      "path": "packages/curiosity-authority/tests/portable-authority.test.ts",
+      "owner": "harness",
+      "profiles": ["portable-authority"],
+      "platforms": ["linux", "darwin"]
+    },
+    {
+      "path": "packages/curiosity-authority/tests/portable-policy.test.ts",
+      "owner": "harness",
+      "profiles": ["portable-authority"],
+      "platforms": ["linux", "darwin"]
+    },
+    {
+      "path": "packages/curiosity-authority/tests/portable-workflow-engine.test.ts",
+      "owner": "harness",
+      "profiles": ["portable-authority"],
+      "platforms": ["linux", "darwin"]
+    },
+    {
+      "path": "packages/curiosity-authority/tests/provider-catalog.test.ts",
+      "owner": "harness",
+      "profiles": ["portable-authority"],
+      "platforms": ["linux", "darwin"]
+    },
+    {
+      "path": "packages/curiosity-authority/tests/workflow-transition.test.ts",
+      "owner": "harness",
+      "profiles": ["portable-authority"],
+      "platforms": ["linux", "darwin"]
+    },
+    {
+      "path": "apps/web/tests/dashboard-route.test.mjs",
+      "owner": "web",
+      "profiles": ["scaffold"],
+      "platforms": ["linux", "darwin"]
     }
   ],
   "workflows": [
@@ -3244,6 +3775,7 @@
       "apps/plugin/opencode2",
       "apps/runtime",
       "apps/web",
+      "packages/curiosity-authority",
       "packages/eslint-config",
       "packages/typescript-config",
       "packages/ui"

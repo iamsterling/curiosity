@@ -180,8 +180,7 @@ type AgentStepProposal =
     }
   | {
       readonly kind: "no-go";
-      readonly code: string;
-      readonly missingEvidence: readonly string[];
+      readonly reasonCode: "POLICY_BLOCKED";
     };
 ```
 
@@ -205,6 +204,17 @@ The kernel rejects the entire proposal when any structural invariant fails:
 Schema-valid output is still only a proposal. Foundation Models constrained
 decoding prevents structural mistakes; it does not establish truth,
 authorization, freshness, or completion.
+
+`final` is the default for ordinary informational, creative, conversational,
+brief, and ambiguous-but-answerable requests. `question` is valid only when a
+specific missing operator input prevents useful progress. Although the portable
+proposal type reserves `no-go` for trusted deterministic adapters, the frontier
+structured-output schema excludes it: a model cannot author policy or terminal
+error identity. Trusted Curiosity policy may produce the closed internal
+`POLICY_BLOCKED` transition; provider, route, tool, budget, and recovery failures
+remain kernel-owned terminal codes. After a correlated question answer, the
+frontier schema excludes both `question` and `no-go`, leaving only `final` when
+no supported actions are available.
 
 ## Kernel-driven tool loop
 
@@ -308,6 +318,23 @@ The run inspector and later declarative authoring layer use these node kinds:
 
 The graph view is derived from canonical events and operational attempt state.
 It is never an independently mutable React graph.
+
+### Question presentation and gate separation
+
+`question.asked` remains a durable control event and is projected into the
+conversation with the ordinary assistant-message treatment. While the exact
+question is pending, the normal composer enters answer mode: role and route
+selectors are disabled, send calls `answerQuestion(questionId, answer)`, and the
+answer retains `untrusted-user-answer` provenance. The answer is not appended to
+the original immutable user message and cannot approve an action, widen a
+capability, or change authority. Both `question.asked` and `question.answered`
+are projected by durable event sequence, so the question and answer remain in
+the transcript after resume and terminal refresh.
+
+Binding gates remain explicit approval cards. Their action, resource,
+capabilities, payload digest, proposal revision, expiry, and approve/deny
+controls must stay visible; ordinary chat text and question answers can never
+satisfy them.
 
 ### Future declarative graphs
 
@@ -714,13 +741,17 @@ duplicate effects or fabricated terminal success; ambiguous delivery remains
 explicit.
 
 **Implementation point, 2026-08-30:** ABI v3 retains v1/v2 schema-v15 open
-compatibility and extends the coarse operations with exact run cancellation.
+compatibility and extends the coarse operations with exact run cancellation,
+question answer, binding-gate decision, and pending operator-request projection.
 Revision fencing, interrupted-attempt reconciliation, deterministic transaction
 rollback, cancellation replay, and late-receipt quarantine tests are
-implemented. Native projection exposes the exact provider action/call generation
-and its atomic terminal event without exposing SQL, and native allocation
-rebinds model, prompt digest, purpose, source revision, and `provider.generate`
-capability to the stored action input.
+implemented. Question answers are eligible-actor-bound, remain untrusted input,
+cannot approve a gate, and have a durable command-to-terminal fixture. Gate
+approval is bound to payload digest and proposal revision, and the exact receipt
+is carried into tool dispatch. Native projection exposes these requests plus the
+exact provider action/call generation and its atomic terminal event without
+exposing SQL, and native allocation rebinds model, prompt digest, purpose, source
+revision, and `provider.generate` capability to the stored action input.
 Physical VFS/WAL, hard-reset, device-lock, storage-pressure, backup/restore, and
 forward/failing migration qualification remain H11 work; H2 is not
 release-qualified.
@@ -803,6 +834,16 @@ adapter, provider usage, and disclosure receipts.
 
 **Exit:** no credential enters Hermes/events/logs; exact-route and no-fallback
 tests pass; all observed physical calls have prior durable allocation.
+
+**Implementation point, 2026-08-30:** native OAuth/Keychain custody, authenticated
+model discovery, all-role route preferences, provider settings, the selected
+primary-role composer control, exact route snapshots, and no-fallback dispatch
+are implemented. Deterministic route, provider-boundary, planner, type, lint,
+bundle, and repository verification pass. A Release simulator build installed
+and launched and exposed the model selector. No credential-backed provider call
+or automated selector interaction was available, so the H10 exit and live D01
+qualification remain open; no physical-device, lifecycle, or distribution claim
+is made.
 
 ### H11 — Lifecycle and release qualification
 

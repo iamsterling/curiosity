@@ -6,6 +6,7 @@ export * from "./agent-kernel.js";
 export * from "./agent-loop.js";
 export * from "./agent-step.js";
 export * from "./agent-tool-kernel.js";
+export * from "./apple-platform-capability-profile.js";
 export * from "./authority.js";
 export * from "./canonical-json.js";
 export * from "./chat-semantics.js";

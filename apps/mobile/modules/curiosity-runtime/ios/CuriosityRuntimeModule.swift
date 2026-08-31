@@ -2,6 +2,7 @@ import ExpoModulesCore
 import Foundation
 
 private let generationDeltaEvent = "onGenerationDelta"
+private let frontierGenerationDeltaEvent = "onFrontierGenerationDelta"
 
 public final class CuriosityRuntimeModule: Module {
   private let modelHost = FoundationModelHost()
@@ -13,7 +14,7 @@ public final class CuriosityRuntimeModule: Module {
 
   public func definition() -> ModuleDefinition {
     Name("CuriosityRuntime")
-    Events(generationDeltaEvent)
+    Events(generationDeltaEvent, frontierGenerationDeltaEvent)
 
     OnCreate {
       #if DEBUG
@@ -70,12 +71,74 @@ public final class CuriosityRuntimeModule: Module {
       }
     }
 
+    AsyncFunction("providerRoutePreferences") { (promise: Promise) in
+      Task<Void, Never> {
+        do {
+          let preferences = try await self.codexHost.configuredRoutes()
+          promise.resolve(["preferences": preferences.map(\.record)])
+        } catch let failure as CodexConnectionFailure {
+          promise.reject(failure.rawValue, failure.rawValue)
+        } catch {
+          promise.reject(
+            CodexConnectionFailure.requestFailed.rawValue,
+            CodexConnectionFailure.requestFailed.rawValue
+          )
+        }
+      }
+    }
+
+    AsyncFunction("providerRouteSelection") { (agentId: String, promise: Promise) in
+      Task<Void, Never> {
+        do {
+          let preference = try await self.codexHost.selectRoute(agentID: agentId)
+          promise.resolve(preference.record)
+        } catch let failure as CodexConnectionFailure {
+          promise.reject(failure.rawValue, failure.rawValue)
+        } catch {
+          promise.reject(
+            CodexConnectionFailure.requestFailed.rawValue,
+            CodexConnectionFailure.requestFailed.rawValue
+          )
+        }
+      }
+    }
+
+    AsyncFunction("setProviderRoutePreference") {
+      (agentId: String, providerId: String, modelId: String, promise: Promise) in
+      Task<Void, Never> {
+        do {
+          try await self.codexHost.setRoute(
+            agentID: agentId,
+            providerID: providerId,
+            modelID: modelId
+          )
+          let preferences = try await self.codexHost.configuredRoutes()
+          promise.resolve(["preferences": preferences.map(\.record)])
+        } catch let failure as CodexConnectionFailure {
+          promise.reject(failure.rawValue, failure.rawValue)
+        } catch {
+          promise.reject(
+            CodexConnectionFailure.requestFailed.rawValue,
+            CodexConnectionFailure.requestFailed.rawValue
+          )
+        }
+      }
+    }
+
     AsyncFunction("generateFrontier") {
       (input: CodexGenerationRecord, promise: Promise) in
       Task<Void, Never> {
         do {
           let request = try validateCodexGenerationRecord(input)
-          let result = try await self.codexHost.generate(request)
+          let result = try await self.codexHost.generate(request) {
+            [weak self] callId, delta in
+            self?.sendEvent(
+              frontierGenerationDeltaEvent,
+              [
+                "callId": callId,
+                "delta": delta,
+              ])
+          }
           promise.resolve([
             "callId": result.callId,
             "finishReason": result.finishReason,

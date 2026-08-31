@@ -94,5 +94,7 @@ const errorCopy: Readonly<Record<string, string>> = Object.freeze({
 
 export const presentCuriosityError = (error: unknown): string => {
   const code = error instanceof Error ? error.message : "MOBILE_REQUEST_FAILED";
+  if (code.startsWith("PROMPT_COMMAND_UNAVAILABLE:"))
+    return `That command is visible but its required Apple capability host is unavailable. · ${code}`;
   return errorCopy[code] ? `${errorCopy[code]} · ${code}` : code;
 };

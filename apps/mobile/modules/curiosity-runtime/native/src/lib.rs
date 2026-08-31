@@ -86,6 +86,24 @@ enum Request {
         database_path: String,
         transition: agent_journal::CommitTransitionInput,
     },
+    AnswerQuestion {
+        #[serde(rename = "abiVersion")]
+        abi_version: u32,
+        answer: agent_journal::AnswerQuestionInput,
+        #[serde(rename = "catalogDigest")]
+        catalog_digest: String,
+        #[serde(rename = "databasePath")]
+        database_path: String,
+    },
+    DecideGate {
+        #[serde(rename = "abiVersion")]
+        abi_version: u32,
+        #[serde(rename = "catalogDigest")]
+        catalog_digest: String,
+        #[serde(rename = "databasePath")]
+        database_path: String,
+        decision: agent_journal::DecideGateInput,
+    },
     CancelRun {
         #[serde(rename = "abiVersion")]
         abi_version: u32,
@@ -117,6 +135,15 @@ enum Request {
         limit: u32,
     },
     ListRunProjections {
+        #[serde(rename = "abiVersion")]
+        abi_version: u32,
+        #[serde(rename = "catalogDigest")]
+        catalog_digest: String,
+        #[serde(rename = "databasePath")]
+        database_path: String,
+        limit: u32,
+    },
+    ListOperatorRequests {
         #[serde(rename = "abiVersion")]
         abi_version: u32,
         #[serde(rename = "catalogDigest")]
@@ -398,6 +425,34 @@ fn execute(request: Request) -> Result<Vec<u8>> {
                 agent_journal::FaultPoint::None,
             )?)
         }
+        Request::AnswerQuestion {
+            abi_version,
+            answer,
+            catalog_digest,
+            database_path,
+        } => {
+            validate_agent_common(abi_version, &database_path, &catalog_digest)?;
+            let mut connection = open_ready_database(&database_path, &catalog_digest)?;
+            encode(&agent_journal::answer_question(
+                &mut connection,
+                &catalog_digest,
+                answer,
+            )?)
+        }
+        Request::DecideGate {
+            abi_version,
+            catalog_digest,
+            database_path,
+            decision,
+        } => {
+            validate_agent_common(abi_version, &database_path, &catalog_digest)?;
+            let mut connection = open_ready_database(&database_path, &catalog_digest)?;
+            encode(&agent_journal::decide_gate(
+                &mut connection,
+                &catalog_digest,
+                decision,
+            )?)
+        }
         Request::CancelRun {
             abi_version,
             cancelled_at,
@@ -452,6 +507,19 @@ fn execute(request: Request) -> Result<Vec<u8>> {
             }
             let connection = open_ready_database(&database_path, &catalog_digest)?;
             encode(&agent_journal::list_run_projections(&connection, limit)?)
+        }
+        Request::ListOperatorRequests {
+            abi_version,
+            catalog_digest,
+            database_path,
+            limit,
+        } => {
+            validate_agent_common(abi_version, &database_path, &catalog_digest)?;
+            if limit == 0 || limit > MAX_READ_PAGE {
+                return Err(JournalError::RequestInvalid);
+            }
+            let connection = open_ready_database(&database_path, &catalog_digest)?;
+            encode(&agent_journal::list_operator_requests(&connection, limit)?)
         }
         Request::ReadRunProjection {
             abi_version,
@@ -554,7 +622,7 @@ fn validate_common(abi_version: u32, path: &str, catalog_digest: &str) -> Result
 
 fn validate_agent_common(abi_version: u32, path: &str, catalog_digest: &str) -> Result<()> {
     validate_common(abi_version, path, catalog_digest)?;
-    if abi_version != 2 {
+    if abi_version != ABI_VERSION {
         return Err(JournalError::AbiUnsupported);
     }
     Ok(())

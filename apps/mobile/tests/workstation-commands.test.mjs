@@ -41,6 +41,15 @@ test("workstation registry keeps stable unique commands and shortcuts", () => {
     commands.find(({ id }) => id === workstationCommandIds.showProviders)?.key,
     "5",
   );
+  assert.equal(
+    commands.find(({ id }) => id === workstationCommandIds.startBuild)?.enabled,
+    false,
+  );
+  assert.equal(
+    commands.find(({ id }) => id === workstationCommandIds.startResearch)
+      ?.enabled,
+    false,
+  );
 });
 
 test("workstation command state follows active work and navigation", () => {

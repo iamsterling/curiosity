@@ -64,7 +64,7 @@ const routeMatches = (request: GenerationRequest): boolean =>
   request.route.purpose === "turn.answer" &&
   request.route.requestedRouteId === "frontier.openai-oauth" &&
   request.route.routeId === "frontier.openai-oauth" &&
-  request.route.selectionPolicyId === "ipados-frontier-connected-v1";
+  request.route.selectionPolicyId === "apple-operator-role-route-v1";
 
 export const createFrontierGeneration = (
   native: FrontierGenerationNativePort,

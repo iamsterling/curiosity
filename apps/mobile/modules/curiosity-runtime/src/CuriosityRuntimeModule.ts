@@ -15,6 +15,8 @@ import type {
   NativeMemoryCurationResult,
   NativeProviderConnectionStatus,
   NativeProviderCatalogResult,
+  NativeProviderRoutePreferences,
+  NativeProviderRouteSelection,
 } from "./CuriosityRuntime.types";
 
 declare class CuriosityRuntimeModule extends NativeModule<CuriosityRuntimeModuleEvents> {
@@ -45,6 +47,15 @@ declare class CuriosityRuntimeModule extends NativeModule<CuriosityRuntimeModule
   journalRead(afterSequence: number, limit: number): Promise<string>;
   providerConnectionStatus(): Promise<NativeProviderConnectionStatus>;
   providerCatalogSnapshot(): Promise<NativeProviderCatalogResult>;
+  providerRoutePreferences(): Promise<NativeProviderRoutePreferences>;
+  providerRouteSelection(
+    agentId: string,
+  ): Promise<NativeProviderRouteSelection>;
+  setProviderRoutePreference(
+    agentId: string,
+    providerId: string,
+    modelId: string,
+  ): Promise<NativeProviderRoutePreferences>;
 }
 
 export default requireNativeModule<CuriosityRuntimeModule>("CuriosityRuntime");

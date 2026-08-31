@@ -7,16 +7,17 @@ import {
 } from "@curiosity/authority";
 
 export const mobileAgentCatalogVersion = "1";
+export const mobileAgentPolicyVersion = "2";
 
 export const mobileAgentPolicies = Object.freeze({
   analyst:
     "Analyze bounded evidence economically. Distinguish facts, inferences, and unknowns. Do not mutate resources.",
   generalist:
-    "Execute ordinary work directly. Use a document tool only when durable context is insufficient. Never claim an effect that is absent from tool evidence.",
+    "Execute ordinary work directly. Delegate only when the operator explicitly requests independent work or one bounded subtask has exclusive ownership and acceptance checks. Use a document tool only when durable context is insufficient. Never claim an effect that is absent from tool or child evidence.",
   implementer:
     "Own one bounded implementation unit and require explicit evidence. Mutation and process capabilities are unavailable in this profile.",
   orchestrator:
-    "Coordinate bounded work with explicit ownership and stop conditions. Delegation is unavailable in this profile.",
+    "Coordinate rather than implement. Delegate only bounded read-only work with explicit ownership, acceptance checks, and stop conditions, then synthesize the durable child results.",
   researcher:
     "Research within supplied durable evidence. Network access is unavailable in this profile.",
   reviewer:
@@ -28,6 +29,77 @@ export const mobileAgentPolicies = Object.freeze({
 } as const);
 
 export type MobileAgentId = keyof typeof mobileAgentPolicies;
+
+export const mobilePrimaryAgentIds = Object.freeze([
+  "generalist",
+  "orchestrator",
+] as const satisfies readonly MobileAgentId[]);
+export type MobilePrimaryAgentId = (typeof mobilePrimaryAgentIds)[number];
+
+export const mobileSubagentIds = Object.freeze([
+  "analyst",
+  "implementer",
+  "researcher",
+  "reviewer",
+  "strategist",
+  "worker",
+] as const satisfies readonly MobileAgentId[]);
+export type MobileSubagentId = (typeof mobileSubagentIds)[number];
+
+const childAllowlist = Object.freeze({
+  generalist: mobileSubagentIds,
+  orchestrator: mobileSubagentIds,
+} as const satisfies Record<MobilePrimaryAgentId, readonly MobileSubagentId[]>);
+
+export const mobileAgentAllowsChild = (
+  parentAgentId: MobileAgentId,
+  childAgentId: MobileAgentId,
+): childAgentId is MobileSubagentId =>
+  parentAgentId in childAllowlist &&
+  (
+    childAllowlist[parentAgentId as MobilePrimaryAgentId] as readonly string[]
+  ).includes(childAgentId);
+
+export const isMobilePrimaryAgentId = (
+  value: string,
+): value is MobilePrimaryAgentId =>
+  (mobilePrimaryAgentIds as readonly string[]).includes(value);
+
+export const mobileDelegationToolDefinition = Object.freeze({
+  description:
+    "Delegate one bounded read-only task to an independent qualified child agent.",
+  inputSchema: {
+    additionalProperties: false,
+    properties: {
+      agentId: { enum: mobileSubagentIds, type: "string" },
+      description: { maxLength: 256, minLength: 1, type: "string" },
+      task: {
+        additionalProperties: false,
+        properties: {
+          acceptanceChecks: {
+            items: { maxLength: 512, minLength: 1, type: "string" },
+            maxItems: 4,
+            minItems: 1,
+            type: "array",
+          },
+          deliverable: { maxLength: 512, minLength: 1, type: "string" },
+          nonGoals: {
+            items: { maxLength: 512, minLength: 1, type: "string" },
+            maxItems: 4,
+            type: "array",
+          },
+          objective: { maxLength: 1024, minLength: 1, type: "string" },
+        },
+        required: ["acceptanceChecks", "deliverable", "nonGoals", "objective"],
+        type: "object",
+      },
+    },
+    required: ["agentId", "description", "task"],
+    type: "object",
+  },
+  toolId: "agent.delegate",
+  version: "1",
+} as const);
 
 const rootProperty = { const: nativeDocumentRootId, type: "string" } as const;
 

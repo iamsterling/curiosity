@@ -43,7 +43,69 @@ export interface AgentJournalActionAllocation {
 export interface AgentJournalRunnableToolAction extends AgentJournalActionAllocation {
   readonly createdAt: string;
   readonly executionGeneration: number;
+  readonly gateReceipt?: {
+    readonly gateId: string;
+    readonly payloadDigest: string;
+    readonly proposalRevision: number;
+  };
   readonly runId: string;
+}
+
+export interface AgentJournalQuestionProjection {
+  readonly actionId: string;
+  readonly allowFreeText: boolean;
+  readonly answer?: string;
+  readonly executionId: string;
+  readonly options: readonly string[];
+  readonly prompt: string;
+  readonly questionId: string;
+  readonly runId: string;
+  readonly status: "answered" | "cancelled" | "pending";
+}
+
+export interface AgentJournalGateProjection {
+  readonly actionId: string;
+  readonly actionType: string;
+  readonly createdAt: string;
+  readonly eligibleActorId: string;
+  readonly expiresAt: string;
+  readonly gateId: string;
+  readonly input: unknown;
+  readonly payloadDigest: string;
+  readonly proposalRevision: number;
+  readonly requestedCapabilities: readonly string[];
+  readonly resource: string;
+  readonly runId: string;
+  readonly status: "approved" | "denied" | "expired" | "pending";
+}
+
+export interface AgentJournalOperatorRequests {
+  readonly gates: readonly AgentJournalGateProjection[];
+  readonly questions: readonly AgentJournalQuestionProjection[];
+}
+
+export interface AgentJournalControlMutationResult {
+  readonly actionId: string;
+  readonly disposition: "accepted" | "duplicate";
+  readonly runId: string;
+}
+
+export interface AgentJournalAnswerQuestion {
+  readonly actorId: string;
+  readonly answer: string;
+  readonly answeredAt: string;
+  readonly commandId: string;
+  readonly questionId: string;
+}
+
+export interface AgentJournalDecideGate {
+  readonly actorId: string;
+  readonly commandId: string;
+  readonly decidedAt: string;
+  readonly decision: "approved" | "denied";
+  readonly gateId: string;
+  readonly payloadDigest: string;
+  readonly proposalRevision: number;
 }
 
 export interface AgentJournalChildAllocation {
@@ -299,4 +361,16 @@ export interface AgentCancellationJournalPort {
     runId: string,
     cancelledAt: string,
   ) => Awaitable<AgentJournalCancelRunResult>;
+}
+
+export interface AgentControlJournalPort {
+  readonly answerQuestion: (
+    input: AgentJournalAnswerQuestion,
+  ) => Awaitable<AgentJournalControlMutationResult>;
+  readonly decideGate: (
+    input: AgentJournalDecideGate,
+  ) => Awaitable<AgentJournalControlMutationResult>;
+  readonly listOperatorRequests: (
+    limit: number,
+  ) => Awaitable<AgentJournalOperatorRequests>;
 }

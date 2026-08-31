@@ -1,9 +1,12 @@
 import {
+  createApplePlatformCapabilityProfile,
   decodeChatTurnPayload,
   PortableAuthorityError,
   projectTurnStatus,
   type AgentJournalMutationResult,
   type AgentJournalPort,
+  type ApplePlatformCapabilityProfile,
+  type ApplePlatformProfileId,
   type ChatTurnPayload,
   type CommandAcknowledgement,
   type CommandInput,
@@ -11,21 +14,19 @@ import {
   type StoredEvent,
 } from "@curiosity/authority";
 
-export const durableChatWorkflowVersion = "1";
-export const durableChatCapabilities = Object.freeze([
-  "documents.read",
-  "provider.generate",
-]);
+export const durableChatWorkflowVersion = "2";
 
 export interface DurableChatRunInput extends ChatTurnPayload {
   readonly agentId: string;
   readonly kind: "chat.turn";
+  readonly platformProfileId: ApplePlatformProfileId;
   readonly schemaVersion: 1;
 }
 
 export interface DurableAgentAdmissionConfig {
   readonly journal: Pick<AgentJournalPort, "startRun">;
   readonly now: () => string;
+  readonly platformProfileId: ApplePlatformProfileId;
 }
 
 export interface DurableChatAdmissionResult {
@@ -40,10 +41,12 @@ const record = (value: unknown): Record<string, unknown> | undefined =>
     ? (value as Record<string, unknown>)
     : undefined;
 
+type DurableChatSourceInput = Omit<DurableChatRunInput, "platformProfileId">;
+
 const requestedPayload = (
   request: StoredEvent,
   events: readonly StoredEvent[],
-): DurableChatRunInput => {
+): DurableChatSourceInput => {
   const body = record(request.body);
   if (
     !body ||
@@ -101,22 +104,26 @@ const requestForCommand = (
 };
 
 const startInput = (
-  input: DurableChatRunInput,
+  input: DurableChatSourceInput,
+  platformProfile: ApplePlatformCapabilityProfile,
   sourceEventId: string,
   startedAt: string,
 ) => {
   const runId = `agent-run:${input.turnId}`;
   return {
-    capabilityCeiling: durableChatCapabilities,
+    capabilityCeiling: platformProfile.capabilityCeiling,
     contributionId: `curiosity.agent.${input.agentId}`,
     contributionVersion: durableChatWorkflowVersion,
     depth: 0,
     executionId: `agent-execution:${input.turnId}`,
-    input,
+    input: {
+      ...input,
+      platformProfileId: platformProfile.profileId,
+    } satisfies DurableChatRunInput,
     limits: {
       maxActions: 6,
-      maxChildren: 0,
-      maxDelegationDepth: 0,
+      maxChildren: 2,
+      maxDelegationDepth: 1,
       maxNoProgress: 2,
       maxSteps: 12,
     },
@@ -131,10 +138,16 @@ const startInput = (
 
 export class DurableAgentAdmission {
   readonly #config: DurableAgentAdmissionConfig;
+  readonly #platformProfile: ApplePlatformCapabilityProfile;
   #serial: Promise<void> = Promise.resolve();
 
   constructor(config: DurableAgentAdmissionConfig) {
     this.#config = config;
+    this.#platformProfile = createApplePlatformCapabilityProfile({
+      profileId: config.platformProfileId,
+    });
+    if (this.#platformProfile.runtimeFamily !== "ios")
+      throw new PortableAuthorityError("APPLE_MOBILE_PLATFORM_UNSUPPORTED");
   }
 
   admit(
@@ -189,9 +202,14 @@ export class DurableAgentAdmission {
     });
   }
 
-  #start(input: DurableChatRunInput, sourceEventId: string) {
+  #start(input: DurableChatSourceInput, sourceEventId: string) {
     return this.#config.journal.startRun(
-      startInput(input, sourceEventId, this.#config.now()),
+      startInput(
+        input,
+        this.#platformProfile,
+        sourceEventId,
+        this.#config.now(),
+      ),
     );
   }
 

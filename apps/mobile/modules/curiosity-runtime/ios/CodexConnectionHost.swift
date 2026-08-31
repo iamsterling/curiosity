@@ -5,6 +5,7 @@ actor CodexConnectionHost {
   private let http = CodexHTTPClient()
   private let keychain = CodexSessionKeychain()
   private let ledger = CodexGenerationLedger()
+  private let routePreferences = CodexRoutePreferences()
   private var authenticating = false
   private var generationTasks: [String: Task<CodexGenerationResult, Error>] = [:]
   private var lastDiagnostic: String?
@@ -60,7 +61,38 @@ actor CodexConnectionHost {
     return try disconnectedCatalog()
   }
 
-  func generate(_ request: CodexGenerationRequest) async throws -> CodexGenerationResult {
+  func configuredRoutes() throws -> [CodexRoutePreference] {
+    try routePreferences.all()
+  }
+
+  func selectRoute(agentID: String) async throws -> CodexRoutePreference {
+    guard let preference = try routePreferences.preference(agentId: agentID) else {
+      throw CodexConnectionFailure.generationRouteUnavailable
+    }
+    let session = try await activeSession()
+    let models = try await discoveredModels(session: session)
+    guard models.contains(where: { $0.id == preference.modelId }) else {
+      throw CodexConnectionFailure.generationRouteUnavailable
+    }
+    return preference
+  }
+
+  func setRoute(agentID: String, providerID: String, modelID: String) async throws {
+    guard providerID == "openai-oauth" else {
+      throw CodexConnectionFailure.generationInvalid
+    }
+    let session = try await activeSession()
+    let models = try await discoveredModels(session: session)
+    guard models.contains(where: { $0.id == modelID }) else {
+      throw CodexConnectionFailure.generationRouteUnavailable
+    }
+    try routePreferences.set(agentId: agentID, modelId: modelID)
+  }
+
+  func generate(
+    _ request: CodexGenerationRequest,
+    onDelta: @escaping @Sendable (String, String) -> Void
+  ) async throws -> CodexGenerationResult {
     guard generationTasks[request.callId] == nil else {
       throw CodexConnectionFailure.generationInvalid
     }
@@ -77,7 +109,11 @@ actor CodexConnectionHost {
     }
 
     let task = Task {
-      try await http.generate(request, session: providerSession)
+      try await http.generate(
+        request,
+        session: providerSession,
+        onDelta: onDelta
+      )
     }
     generationTasks[request.callId] = task
     defer { generationTasks.removeValue(forKey: request.callId) }
@@ -93,7 +129,8 @@ actor CodexConnectionHost {
     } catch CodexHTTPFailure.response(let diagnostic) {
       lastDiagnostic = diagnostic
       throw CodexConnectionFailure.responseInvalid
-    } catch CodexHTTPFailure.status(let status) {
+    } catch CodexHTTPFailure.status(let status, let diagnostic) {
+      lastDiagnostic = diagnostic
       if status == 401 || status == 403 { try? keychain.clear() }
       throw status == 401 || status == 403
         ? CodexConnectionFailure.sessionRequired
@@ -128,7 +165,10 @@ actor CodexConnectionHost {
     defer { refreshTask = nil }
     do {
       return try await task.value
-    } catch CodexHTTPFailure.status(let status) where status == 400 || status == 401 {
+    } catch CodexHTTPFailure.status(let status, let diagnostic)
+      where status == 400 || status == 401
+    {
+      lastDiagnostic = diagnostic
       try? keychain.clear()
       throw CodexConnectionFailure.sessionRequired
     } catch let failure as CodexConnectionFailure {
@@ -150,7 +190,8 @@ actor CodexConnectionHost {
       let models = try await http.models(session: providerSession)
       modelCache = (Date().addingTimeInterval(5 * 60), models)
       return models
-    } catch CodexHTTPFailure.status(let status) {
+    } catch CodexHTTPFailure.status(let status, let diagnostic) {
+      lastDiagnostic = diagnostic
       if status == 401 || status == 403 { try? keychain.clear() }
       throw status == 401 || status == 403
         ? CodexConnectionFailure.sessionRequired

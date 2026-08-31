@@ -15,6 +15,7 @@ test("OAuth, refresh, discovery, and generation remain native", async () => {
     http,
     ledger,
     module,
+    routes,
   ] = await Promise.all([
     readFile(new URL("CodexConnectionHost.swift", ios), "utf8"),
     readFile(new URL("CodexOAuth.swift", ios), "utf8"),
@@ -25,6 +26,7 @@ test("OAuth, refresh, discovery, and generation remain native", async () => {
     readFile(new URL("CodexHTTPClient.swift", ios), "utf8"),
     readFile(new URL("CodexGenerationLedger.swift", ios), "utf8"),
     readFile(new URL("CuriosityRuntimeModule.swift", ios), "utf8"),
+    readFile(new URL("CodexRoutePreferences.swift", ios), "utf8"),
   ]);
 
   assert.match(presenter, /ASWebAuthenticationSession/u);
@@ -40,11 +42,17 @@ test("OAuth, refresh, discovery, and generation remain native", async () => {
   assert.match(http, /\/oauth\/token/u);
   assert.match(http, /\/backend-api\/codex\/models/u);
   assert.match(http, /\/backend-api\/codex\/responses/u);
+  assert.match(http, /"type": "json_schema"/u);
+  assert.match(http, /"strict": true/u);
   assert.match(http, /if accumulator\.completed \{ break \}/u);
+  assert.match(http, /accumulator\.takeDelta\(\)/u);
+  assert.match(http, /onDelta\(input\.callId, delta\)/u);
   const sse = await readFile(new URL("CodexSSEAccumulator.swift", ios), "utf8");
   assert.match(sse, /byte == 0x0a/u);
   assert.match(sse, /lineBytes\.last == 0x0d/u);
   assert.match(sse, /whitespacesAndNewlines/u);
+  assert.match(sse, /pendingDelta = delta/u);
+  assert.match(sse, /mutating func takeDelta/u);
   assert.match(host, /keychain\.save/u);
   assert.match(host, /http\.refresh/u);
   assert.match(loopback, /\[1455, 1457\]/u);
@@ -54,6 +62,11 @@ test("OAuth, refresh, discovery, and generation remain native", async () => {
   assert.match(ledger, /state: "allocated"/u);
   assert.doesNotMatch(module, /sessionToken|accessToken|refreshToken/u);
   assert.match(module, /snapshotJson/u);
+  assert.match(module, /onFrontierGenerationDelta/u);
+  assert.match(routes, /apple-operator-role-route-v1/u);
+  assert.match(routes, /UserDefaults/u);
+  assert.doesNotMatch(routes, /accessToken|refreshToken|sessionToken/u);
+  assert.match(host, /models\.contains[\s\S]*preference\.modelId/u);
 });
 
 test("JavaScript receives no provider credential or direct network primitive", async () => {

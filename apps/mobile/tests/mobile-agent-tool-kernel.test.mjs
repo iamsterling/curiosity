@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { test } from "bun:test";
 import { canonicalJson } from "@curiosity/authority";
 import { createMobileAgentReadToolKernel } from "../src/mobile-agent-tool-kernel.ts";
+import { createMobileApplePlatformProfile } from "../src/mobile-platform-profile.ts";
 
 const sha256 = async (value) =>
   createHash("sha256").update(value).digest("hex");
@@ -33,6 +34,10 @@ test("mobile read-tool kernel binds one durable action to the native document ho
   };
   const operations = [];
   let nativeCalls = 0;
+  const platformProfile = createMobileApplePlatformProfile({
+    operatingSystem: "ios",
+    userInterfaceIdiom: "phone",
+  });
   const native = {
     agentJournalCall: async (value) => {
       const request = JSON.parse(value);
@@ -84,7 +89,7 @@ test("mobile read-tool kernel binds one durable action to the native document ho
   };
   const kernel = createMobileAgentReadToolKernel({
     catalogDigest: "0".repeat(64),
-    grantedCapabilities: ["documents.read"],
+    grantedCapabilities: platformProfile.capabilityCeiling,
     native,
     now: () => "2026-08-30T10:00:01.000Z",
     ownerId: "mobile-kernel",

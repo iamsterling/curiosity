@@ -107,16 +107,17 @@ final class CodexGenerationLedger {
   }
 
   private func requestDigest(_ request: CodexGenerationRequest) throws -> String {
-    let data = try JSONSerialization.data(
-      withJSONObject: [
-        "callId": request.callId,
-        "maximumOutputTokens": request.maximumOutputTokens,
-        "modelId": request.modelId,
-        "prompt": request.prompt,
-        "providerId": "openai-oauth",
-      ],
-      options: [.sortedKeys]
-    )
+    var value: [String: Any] = [
+      "callId": request.callId,
+      "maximumOutputTokens": request.maximumOutputTokens,
+      "modelId": request.modelId,
+      "prompt": request.prompt,
+      "providerId": "openai-oauth",
+    ]
+    if let outputSchemaJSON = request.outputSchemaJSON {
+      value["outputSchemaJSON"] = outputSchemaJSON
+    }
+    let data = try JSONSerialization.data(withJSONObject: value, options: [.sortedKeys])
     return SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
   }
 }

@@ -5,11 +5,19 @@ import {
 } from "./mobile-agent-kernel.ts";
 import { createFrontierAgentStep } from "./frontier-agent-step-port.ts";
 
-export const createNativeAgentKernel = (
-  config: Omit<MobileAgentKernelConfig, "agentStep" | "native">,
-) =>
+export interface NativeAgentKernelConfig extends Omit<
+  MobileAgentKernelConfig,
+  "agentStep" | "native"
+> {
+  readonly publishDelta?: (runId: string, delta: string) => void;
+}
+
+export const createNativeAgentKernel = (config: NativeAgentKernelConfig) =>
   createMobileAgentKernel({
     ...config,
-    agentStep: createFrontierAgentStep(CuriosityRuntimeModule),
+    agentStep: createFrontierAgentStep(
+      CuriosityRuntimeModule,
+      config.publishDelta,
+    ),
     native: CuriosityRuntimeModule,
   });

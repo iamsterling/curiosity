@@ -5,6 +5,7 @@ final class CodexGenerationRecord: Record {
   @Field var callId: String = ""
   @Field var maximumOutputTokens: Int = 0
   @Field var modelId: String = ""
+  @Field var outputSchemaJSON: String = ""
   @Field var prompt: String = ""
   @Field var providerId: String = ""
 }
@@ -13,6 +14,7 @@ struct CodexGenerationRequest: Sendable {
   let callId: String
   let maximumOutputTokens: Int
   let modelId: String
+  let outputSchemaJSON: String?
   let prompt: String
 }
 
@@ -48,10 +50,32 @@ func validateCodexGenerationRecord(
     input.providerId == "openai-oauth"
   else { throw CodexConnectionFailure.generationInvalid }
 
+  let outputSchemaJSON: String?
+  if input.outputSchemaJSON.isEmpty {
+    outputSchemaJSON = nil
+  } else {
+    guard
+      input.outputSchemaJSON.utf8.count <= 128 * 1_024,
+      let data = input.outputSchemaJSON.data(using: .utf8),
+      let schema = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+      schema["type"] as? String == "object",
+      schema["additionalProperties"] as? Bool == false,
+      let properties = schema["properties"] as? [String: Any],
+      properties["proposal"] != nil,
+      schema["required"] as? [String] == ["proposal"]
+    else { throw CodexConnectionFailure.generationInvalid }
+    let normalized = try JSONSerialization.data(withJSONObject: schema, options: [.sortedKeys])
+    guard let value = String(data: normalized, encoding: .utf8) else {
+      throw CodexConnectionFailure.generationInvalid
+    }
+    outputSchemaJSON = value
+  }
+
   return CodexGenerationRequest(
     callId: input.callId,
     maximumOutputTokens: input.maximumOutputTokens,
     modelId: input.modelId,
+    outputSchemaJSON: outputSchemaJSON,
     prompt: input.prompt
   )
 }
