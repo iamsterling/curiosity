@@ -3,6 +3,24 @@ import { defaultProjectId } from "./workspace-catalog";
 
 export type ThreadOwnership = Readonly<Record<string, string>>;
 
+const recencySequence = (thread: CuriosityThread): number =>
+  thread.updatedSequence ?? thread.sequence;
+
+export const sortThreadsByRecency = (
+  threads: readonly CuriosityThread[],
+): readonly CuriosityThread[] =>
+  Object.freeze(
+    [...threads].sort((left, right) => {
+      const activity = recencySequence(right) - recencySequence(left);
+      if (activity !== 0) return activity;
+      const opened = right.sequence - left.sequence;
+      if (opened !== 0) return opened;
+      if (left.threadId < right.threadId) return -1;
+      if (left.threadId > right.threadId) return 1;
+      return 0;
+    }),
+  );
+
 export const assignThreadToProject = (
   ownership: ThreadOwnership,
   projectId: string,
@@ -20,9 +38,11 @@ export const threadsForProject = (
   projectId: string,
   threads: readonly CuriosityThread[],
 ): readonly CuriosityThread[] =>
-  threads.filter(
-    ({ projectId: durableProjectId, threadId }) =>
-      projectIdForThread(ownership, threadId, durableProjectId) === projectId,
+  sortThreadsByRecency(
+    threads.filter(
+      ({ projectId: durableProjectId, threadId }) =>
+        projectIdForThread(ownership, threadId, durableProjectId) === projectId,
+    ),
   );
 
 export const threadsForProjects = (
@@ -31,7 +51,9 @@ export const threadsForProjects = (
   threads: readonly CuriosityThread[],
 ): readonly CuriosityThread[] => {
   const includedProjects = new Set(projectIds);
-  return threads.filter(({ projectId, threadId }) =>
-    includedProjects.has(projectIdForThread(ownership, threadId, projectId)),
+  return sortThreadsByRecency(
+    threads.filter(({ projectId, threadId }) =>
+      includedProjects.has(projectIdForThread(ownership, threadId, projectId)),
+    ),
   );
 };

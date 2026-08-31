@@ -1,5 +1,6 @@
 import type { CuriosityThread } from "./curiosity-client";
 import type { SidebarCollectionId } from "./components/notes-shell-model";
+import { sortThreadsByRecency } from "./project-session-index";
 
 export interface ProjectNavigationItem {
   readonly collectionId?: SidebarCollectionId;
@@ -61,7 +62,7 @@ export const projectNavigationSections = (
             title: "New Session",
           },
         ]),
-    ...threads.map((thread) => ({
+    ...sortThreadsByRecency(threads).map((thread) => ({
       detail: `Session ${thread.sequence}  Durable conversation`,
       id: thread.threadId,
       threadId: thread.threadId,

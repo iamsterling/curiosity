@@ -16,7 +16,7 @@ test("unassigned durable threads belong to the default project", () => {
   assert.equal(projectIdForThread({}, "default-thread"), "curiosity");
   assert.deepEqual(
     threadsForProject({}, "curiosity", threads).map(({ threadId }) => threadId),
-    ["default-thread", "other-thread"],
+    ["other-thread", "default-thread"],
   );
 });
 
@@ -64,5 +64,17 @@ test("durable project identity restores ownership after relaunch", () => {
       ({ threadId }) => threadId,
     ),
     ["default-thread"],
+  );
+});
+
+test("session lists order latest activity first", () => {
+  const active = [
+    { ...threads[0], updatedSequence: 12 },
+    { ...threads[1], updatedSequence: 8 },
+  ];
+
+  assert.deepEqual(
+    threadsForProject({}, "curiosity", active).map(({ threadId }) => threadId),
+    ["default-thread", "other-thread"],
   );
 });

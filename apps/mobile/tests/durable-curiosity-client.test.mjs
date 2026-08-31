@@ -250,6 +250,7 @@ test("durable session restores project ownership from turn admission", async () 
       sequence: 1,
       threadId: "thread-1",
       title: "Moon",
+      updatedSequence: 1,
     },
   ]);
 });
@@ -461,6 +462,7 @@ test("durable client returns a resumable wait only for a pending operator reques
         sequence: 1,
         threadId: "thread-1",
         title: "Question",
+        updatedSequence: 1,
       },
     ],
     turnId: "turn-1",

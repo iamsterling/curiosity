@@ -91,6 +91,42 @@ const threadProjects = (
   return projects;
 };
 
+const threadActivitySequences = (
+  events: readonly StoredEvent[],
+): ReadonlyMap<string, number> => {
+  const threadsByExecution = new Map<string, string>();
+  for (const event of events) {
+    if (event.type !== "turn.requested") continue;
+    const body = record(event.body);
+    if (
+      typeof body?.threadId !== "string" ||
+      !body.threadId ||
+      typeof body.turnId !== "string" ||
+      !body.turnId
+    )
+      continue;
+    threadsByExecution.set(body.turnId, body.threadId);
+    threadsByExecution.set(`agent-execution:${body.turnId}`, body.threadId);
+  }
+
+  const activity = new Map<string, number>();
+  for (const event of events) {
+    const body = record(event.body);
+    const directThreadId =
+      typeof body?.threadId === "string" && body.threadId
+        ? body.threadId
+        : undefined;
+    const threadId =
+      directThreadId ?? threadsByExecution.get(event.rootExecutionId);
+    if (!threadId) continue;
+    activity.set(
+      threadId,
+      Math.max(activity.get(threadId) ?? 0, event.sequence),
+    );
+  }
+  return activity;
+};
+
 export const projectDurableSessionMessages = (
   events: readonly StoredEvent[],
   chatMessages: readonly ChatMessageProjection[],
@@ -169,6 +205,7 @@ const sessionFrom = (
 ): CuriositySession => {
   const events = authority.events();
   const projects = threadProjects(events);
+  const activity = threadActivitySequences(events);
   return Object.freeze({
     messages: projectDurableSessionMessages(
       events,
@@ -181,6 +218,7 @@ const sessionFrom = (
         sequence,
         threadId: id,
         title,
+        updatedSequence: activity.get(id) ?? sequence,
       }),
     ),
   });

@@ -11,7 +11,7 @@ test("sessions expose only session navigation items", () => {
   const sections = projectNavigationSections("sessions", undefined, threads);
   assert.deepEqual(
     sections.flatMap(({ data }) => data).map(({ id }) => id),
-    ["new-session", "thread-1", "thread-2"],
+    ["new-session", "thread-2", "thread-1"],
   );
 });
 
@@ -21,7 +21,11 @@ test("project collections replace the session list with their own landing item",
     ["memory", "project-memory"],
     ["audio", "project-audio"],
   ]) {
-    const sections = projectNavigationSections(collectionId, "thread-1", threads);
+    const sections = projectNavigationSections(
+      collectionId,
+      "thread-1",
+      threads,
+    );
     assert.equal(sections.length, 1);
     assert.equal(sections[0].data.length, 1);
     assert.equal(sections[0].data[0].id, itemId);

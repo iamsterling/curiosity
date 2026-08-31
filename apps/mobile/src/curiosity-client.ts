@@ -13,6 +13,7 @@ export interface CuriosityThread {
   readonly sequence: number;
   readonly threadId: string;
   readonly title: string;
+  readonly updatedSequence?: number;
 }
 
 export interface CuriosityMessage {
